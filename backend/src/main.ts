@@ -1,3 +1,4 @@
+import './config/variables-environnement.config';
 import { createServer } from './app/serveur';
 import { configurationApplication } from './config/app.config';
 import { InfrastructureError } from './shared/exceptions/InfrastructureError';

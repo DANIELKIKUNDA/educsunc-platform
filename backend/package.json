@@ -7,6 +7,7 @@
     "dev": "tsx watch src/main.ts",
     "build": "tsc -p tsconfig.json --ignoreDeprecations 6.0",
     "start": "tsx src/main.ts",
+    "db:migrate:referentiel": "tsx src/scripts/MigrerReferentielAcademique.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json --ignoreDeprecations 6.0",
     "typecheck:strict": "tsc --noEmit -p tsconfig.json --ignoreDeprecations 6.0 --noUnusedLocals --noUnusedParameters",
     "test": "tsx --test src/contexts/referentiel-academique/tests/depot-annee-scolaire-postgres.test.ts src/contexts/referentiel-academique/tests/execution-http-referentiel-academique.test.ts src/contexts/referentiel-academique/tests/migrations-postgres-referentiel-academique.test.ts src/contexts/referentiel-academique/tests/publier-version-referentiel.test.ts",

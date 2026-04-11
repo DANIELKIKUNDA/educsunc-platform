@@ -31,6 +31,26 @@ npm test
 Les fichiers `.env` locaux ne doivent pas etre versionnes.
 Utiliser les fichiers `.env.exemple` comme base de configuration.
 
+## Base PostgreSQL locale
+
+Le backend lit automatiquement `backend/.env` au demarrage.
+Pour le poste local courant, la base de developpement utilise :
+
+- host : `localhost`
+- port : `5433`
+- utilisateur : `postgres`
+- mot de passe : `postgres`
+- base : `educsyn`
+
+Pour relancer uniquement les migrations du BC Referentiel Academique :
+
+```powershell
+cd backend
+npm run db:migrate:referentiel
+```
+
+Dans PgAdmin, ajouter un serveur avec `localhost` et le port `5433`, puis se connecter avec `postgres/postgres`.
+
 ## GitHub Actions
 
 Le workflow CI se trouve dans `.github/workflows/ci.yml`.
