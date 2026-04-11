@@ -1,0 +1,27 @@
+{
+  "name": "educsyn-backend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Socle backend Clean Architecture et DDD pour EducSyn.",
+  "scripts": {
+    "dev": "tsx watch src/main.ts",
+    "build": "tsc -p tsconfig.json --ignoreDeprecations 6.0",
+    "start": "tsx src/main.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json --ignoreDeprecations 6.0",
+    "typecheck:strict": "tsc --noEmit -p tsconfig.json --ignoreDeprecations 6.0 --noUnusedLocals --noUnusedParameters",
+    "test": "tsx --test src/contexts/referentiel-academique/tests/depot-annee-scolaire-postgres.test.ts src/contexts/referentiel-academique/tests/execution-http-referentiel-academique.test.ts src/contexts/referentiel-academique/tests/migrations-postgres-referentiel-academique.test.ts src/contexts/referentiel-academique/tests/publier-version-referentiel.test.ts",
+    "test:verification": "tsx src/contexts/referentiel-academique/tests/VerificationBcReferentielAcademique.ts",
+    "test:ci": "npm run test && npm run test:verification"
+  },
+  "dependencies": {
+    "fastify": "^5.8.4",
+    "pg": "^8.20.0",
+    "pino": "^10.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "@types/pg": "^8.20.0",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.2"
+  }
+}

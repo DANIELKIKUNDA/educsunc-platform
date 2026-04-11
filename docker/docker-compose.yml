@@ -1,0 +1,4 @@
+# Placeholder de composition locale.
+version: "3.9"
+
+services: {}

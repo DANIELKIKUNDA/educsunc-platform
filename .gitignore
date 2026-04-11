@@ -1,0 +1,26 @@
+# Dependances JavaScript
+node_modules/
+
+# Sorties de build
+dist/
+dist-cjs/
+coverage/
+
+# Fichiers d'environnement locaux
+.env
+.env.*
+!.env.exemple
+!.env.example
+.env.local
+.env.*.local
+
+# Journaux et caches
+*.log
+.vite/
+.turbo/
+.tmp/
+backend/.tmp/
+
+# Fichiers systeme
+.DS_Store
+Thumbs.db

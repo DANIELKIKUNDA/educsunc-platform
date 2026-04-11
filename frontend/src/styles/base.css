@@ -1,0 +1,5 @@
+/* Base visuelle minimale du frontend. */
+body {
+  margin: 0;
+  font-family: sans-serif;
+}

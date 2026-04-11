@@ -1,0 +1,4 @@
+/* Centralise les styles transversaux des composants. */
+.carte-placeholder {
+  border-radius: 0.75rem;
+}

@@ -1,0 +1,9 @@
+# Dependances et sorties du backend
+node_modules/
+dist/
+
+# Fichiers d'environnement
+.env
+
+# Journaux
+*.log

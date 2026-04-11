@@ -1,0 +1,12 @@
+{
+  "name": "educsyn-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Socle frontend hybride offline-first pour EducSyn.",
+  "scripts": {
+    "dev": "node -e \"console.log('Script dev frontend a configurer.')\"",
+    "build": "node -e \"console.log('Script build frontend a configurer.')\"",
+    "preview": "node -e \"console.log('Script preview frontend a configurer.')\"",
+    "test": "node -e \"console.log('Tests frontend a configurer.')\""
+  }
+}

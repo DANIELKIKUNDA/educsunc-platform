@@ -1,0 +1,4 @@
+# Placeholder de composition de production.
+version: "3.9"
+
+services: {}

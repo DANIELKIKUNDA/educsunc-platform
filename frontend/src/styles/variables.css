@@ -1,0 +1,5 @@
+/* Definit les variables CSS transversales. */
+:root {
+  --couleur-principale: #0f766e;
+  --couleur-fond: #ffffff;
+}

@@ -1,0 +1,29 @@
+import type { FastifyPluginAsync } from 'fastify';
+
+import { routeBulletinsEvaluations } from './bulletins-evaluations.routes';
+import { routeHealth } from './health.routes';
+import { routePaiementsFacturation } from './paiements-facturation.routes';
+import { routeReferentielAcademique } from './referentiel-academique.routes';
+import { routeScolariteEleves } from './scolarite-eleves.routes';
+
+const routesActives = [routeReferentielAcademique];
+
+const routesPrevues = [
+  routeScolariteEleves,
+  routePaiementsFacturation,
+  routeBulletinsEvaluations,
+];
+
+// Agrege les routes globales deja actives.
+export const registerGlobalRoutes: FastifyPluginAsync = async (serveur) => {
+  await serveur.register(routeHealth);
+  await serveur.register(routeReferentielAcademique);
+
+  serveur.log.debug(
+    {
+      routesActives: routesActives.map((route) => route.prefixe),
+      routesPrevues: routesPrevues.map((route) => route.prefixe),
+    },
+    'Routes globales initialisees.',
+  );
+};
