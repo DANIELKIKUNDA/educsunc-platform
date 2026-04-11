@@ -37,9 +37,9 @@ Le backend lit automatiquement `backend/.env` au demarrage.
 Pour le poste local courant, la base de developpement utilise :
 
 - host : `localhost`
-- port : `5433`
-- utilisateur : `postgres`
-- mot de passe : `postgres`
+- port : `5432`
+- utilisateur : `educsyn`
+- mot de passe : `educsyn`
 - base : `educsyn`
 
 Pour relancer uniquement les migrations du BC Referentiel Academique :
@@ -49,7 +49,7 @@ cd backend
 npm run db:migrate:referentiel
 ```
 
-Dans PgAdmin, ajouter un serveur avec `localhost` et le port `5433`, puis se connecter avec `postgres/postgres`.
+Dans PgAdmin, utiliser le serveur PostgreSQL local `localhost:5432`, puis ouvrir la base `educsyn`.
 
 ## GitHub Actions
 
