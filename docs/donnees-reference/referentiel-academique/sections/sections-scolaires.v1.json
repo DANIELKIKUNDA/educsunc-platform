@@ -1,0 +1,20 @@
+{
+  "sections": [
+    {
+      "code": "MAT",
+      "libelle": "Maternelle",
+      "ordreAffichage": 1
+    },
+    {
+      "code": "PRI",
+      "libelle": "Primaire",
+      "ordreAffichage": 2
+    },
+    {
+      "code": "SEC",
+      "libelle": "Secondaire",
+      "ordreAffichage": 3
+    }
+  ],
+  "importePar": "seed-referentiel-academique"
+}
