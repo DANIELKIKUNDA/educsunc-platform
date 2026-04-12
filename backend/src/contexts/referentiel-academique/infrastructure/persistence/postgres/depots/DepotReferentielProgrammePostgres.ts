@@ -158,6 +158,8 @@ export class DepotReferentielProgrammePostgres
       'est_calculable',
       'source_ligne',
       'ponderation',
+      'domaine',
+      'sous_domaine',
     ] as const;
 
     for (const versionReferentielProgramme of versionsReferentielProgramme) {

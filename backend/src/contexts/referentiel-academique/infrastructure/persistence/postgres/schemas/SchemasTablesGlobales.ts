@@ -807,6 +807,20 @@ export const schemaTableLignesReferentielProgramme: SchemaTablePostgres =
         obligatoire: true,
         commentaire: 'Grille complete de ponderation de la ligne.',
       },
+      {
+        nom: 'domaine',
+        type: 'varchar',
+        taille: 160,
+        obligatoire: false,
+        commentaire: 'Domaine officiel du bulletin porte par la ligne de programme.',
+      },
+      {
+        nom: 'sous_domaine',
+        type: 'varchar',
+        taille: 160,
+        obligatoire: false,
+        commentaire: 'Sous-domaine officiel du bulletin porte par la ligne de programme.',
+      },
     ],
     references: [
       {

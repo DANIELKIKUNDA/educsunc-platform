@@ -16,6 +16,8 @@ export class LigneReferentielProgrammeApplicationMapper {
       estCalculable: ligneReferentielProgramme.estCalculableDansProgramme(),
       sourceLigne: ligneReferentielProgramme.obtenirSourceLigne(),
       ponderation: ligneReferentielProgramme.obtenirPonderation().obtenirValeurs(),
+      domaine: ligneReferentielProgramme.obtenirDomaine(),
+      sousDomaine: ligneReferentielProgramme.obtenirSousDomaine(),
     };
   }
 }

@@ -6,6 +6,7 @@ export * from './Migration_004_AlignementVersionsReferentielProgramme';
 export * from './Migration_005_NettoyageLegacyReferentielProgramme';
 export * from './Migration_006_RlsTablesLocalesReferentielAcademique';
 export * from './Migration_007_AjoutAbreviationOptionsEtudes';
+export * from './Migration_008_AjoutClassificationLignesProgramme';
 
 import { MigrationPostgresReferentielAcademique } from './MigrationPostgresReferentielAcademique';
 import { migration001TablesGlobalesReferentielAcademique } from './Migration_001_TablesGlobalesReferentielAcademique';
@@ -15,6 +16,7 @@ import { migration004AlignementVersionsReferentielProgramme } from './Migration_
 import { migration005NettoyageLegacyReferentielProgramme } from './Migration_005_NettoyageLegacyReferentielProgramme';
 import { migration006RlsTablesLocalesReferentielAcademique } from './Migration_006_RlsTablesLocalesReferentielAcademique';
 import { migration007AjoutAbreviationOptionsEtudes } from './Migration_007_AjoutAbreviationOptionsEtudes';
+import { migration008AjoutClassificationLignesProgramme } from './Migration_008_AjoutClassificationLignesProgramme';
 
 // Cette collection ordonne les migrations PostgreSQL du BC Referentiel Academique.
 export const migrationsPostgresReferentielAcademique: readonly MigrationPostgresReferentielAcademique[] = [
@@ -25,4 +27,5 @@ export const migrationsPostgresReferentielAcademique: readonly MigrationPostgres
   migration005NettoyageLegacyReferentielProgramme,
   migration006RlsTablesLocalesReferentielAcademique,
   migration007AjoutAbreviationOptionsEtudes,
+  migration008AjoutClassificationLignesProgramme,
 ];

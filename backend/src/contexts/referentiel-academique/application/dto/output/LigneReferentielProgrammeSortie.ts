@@ -11,4 +11,6 @@ export interface LigneReferentielProgrammeSortie {
   estCalculable: boolean;
   sourceLigne: SourceLigneProgramme;
   ponderation: ProprietesPonderationEvaluation;
+  domaine?: string;
+  sousDomaine?: string;
 }

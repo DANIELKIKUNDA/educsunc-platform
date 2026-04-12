@@ -11,12 +11,16 @@
     "seed:sections-scolaires": "tsx ../scripts/seed/seed-sections-scolaires.ts",
     "seed:options-etudes": "tsx ../scripts/seed/seed-options-etudes.ts",
     "seed:classes-academiques": "tsx ../scripts/seed/seed-classes-academiques.ts",
-    "seed:referentiel-academique": "tsx ../scripts/seed/seed-referentiel-academique.ts",
+    "seed:cours-officiels": "tsx ../scripts/seed/seed-cours-officiels.ts",
+    "seed:programmes-academiques": "tsx ../scripts/seed/seed-programmes-academiques.ts",
+    "seed:referentiel-academique": "npm run verifier:donnees-reference && tsx ../scripts/seed/seed-referentiel-academique.ts",
+    "verifier:programme-classe": "tsx ../scripts/verification/afficher-programme-classe.ts",
+    "verifier:donnees-reference": "tsx ../scripts/verification/valider-donnees-reference-referentiel-academique.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json --ignoreDeprecations 6.0",
     "typecheck:strict": "tsc --noEmit -p tsconfig.json --ignoreDeprecations 6.0 --noUnusedLocals --noUnusedParameters",
     "test": "tsx --test src/contexts/referentiel-academique/tests/depot-annee-scolaire-postgres.test.ts src/contexts/referentiel-academique/tests/execution-http-referentiel-academique.test.ts src/contexts/referentiel-academique/tests/migrations-postgres-referentiel-academique.test.ts src/contexts/referentiel-academique/tests/publier-version-referentiel.test.ts",
     "test:verification": "tsx src/contexts/referentiel-academique/tests/VerificationBcReferentielAcademique.ts",
-    "test:ci": "npm run test && npm run test:verification"
+    "test:ci": "npm run verifier:donnees-reference && npm run test && npm run test:verification"
   },
   "dependencies": {
     "fastify": "^5.8.4",

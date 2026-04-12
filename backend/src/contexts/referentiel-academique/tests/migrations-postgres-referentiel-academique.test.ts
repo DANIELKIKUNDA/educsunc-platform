@@ -18,7 +18,7 @@ test('les migrations PostgreSQL du BC incluent bien le RLS local', () => {
   assert.match(sqlMontee, /CREATE POLICY "rls_transformations_note_suppression"/);
 });
 
-test('les migrations sont ordonnees jusqu au RLS puis a l ajout additif des abreviations', () => {
+test('les migrations sont ordonnees jusqu aux ajouts additifs du referentiel', () => {
   const identifiants = migrationsPostgresReferentielAcademique.map(
     (migration) => migration.idMigration,
   );
@@ -31,5 +31,6 @@ test('les migrations sont ordonnees jusqu au RLS puis a l ajout additif des abre
     '005_nettoyage_legacy_referentiel_programme',
     '006_rls_tables_locales_referentiel_academique',
     '007_ajout_abreviation_options_etudes',
+    '008_ajout_classification_lignes_programme',
   ]);
 });

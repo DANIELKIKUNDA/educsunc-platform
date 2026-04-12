@@ -15,6 +15,8 @@ export class LigneReferentielProgramme extends Entite<LigneReferentielProgrammeI
   private estCalculable: boolean;
   private sourceLigne: SourceLigneProgramme;
   private ponderation: PonderationEvaluation;
+  private domaine?: string;
+  private sousDomaine?: string;
 
   // Ce constructeur initialise une ligne officielle et en valide les invariants.
   constructor(
@@ -26,6 +28,8 @@ export class LigneReferentielProgramme extends Entite<LigneReferentielProgrammeI
     estCalculable: boolean,
     sourceLigne: SourceLigneProgramme,
     ponderation: PonderationEvaluation,
+    domaine?: string,
+    sousDomaine?: string,
   ) {
     super(id);
 
@@ -36,6 +40,9 @@ export class LigneReferentielProgramme extends Entite<LigneReferentielProgrammeI
     this.estCalculable = this.validerBooleen(estCalculable, 'estCalculable');
     this.sourceLigne = this.validerSourceLigne(sourceLigne);
     this.ponderation = this.validerPonderation(ponderation, this.aExamen);
+    this.domaine = this.validerTexteOptionnel(domaine, 'domaine');
+    this.sousDomaine = this.validerTexteOptionnel(sousDomaine, 'sousDomaine');
+    this.verifierCoherenceClassification();
   }
 
   // Cette methode retourne l'identifiant du cours officiel reference.
@@ -71,6 +78,16 @@ export class LigneReferentielProgramme extends Entite<LigneReferentielProgrammeI
   // Cette methode retourne la ponderation officielle de la ligne.
   public obtenirPonderation(): PonderationEvaluation {
     return this.ponderation;
+  }
+
+  // Cette methode retourne le domaine officiel de bulletin porte par la ligne.
+  public obtenirDomaine(): string | undefined {
+    return this.domaine;
+  }
+
+  // Cette methode retourne le sous-domaine officiel de bulletin porte par la ligne.
+  public obtenirSousDomaine(): string | undefined {
+    return this.sousDomaine;
   }
 
   // Cette methode verifie la compatibilite de la ligne avec une structure d'evaluation.
@@ -141,5 +158,33 @@ export class LigneReferentielProgramme extends Entite<LigneReferentielProgrammeI
     valeur.verifierCompatibiliteAvecExamen(aExamen);
 
     return valeur;
+  }
+
+  // Cette methode valide une classification textuelle optionnelle issue du bulletin officiel.
+  private validerTexteOptionnel(valeur: string | undefined, nomChamp: string): string | undefined {
+    if (valeur === undefined) {
+      return undefined;
+    }
+
+    if (typeof valeur !== 'string') {
+      throw new ValidationError(
+        `Le champ "${nomChamp}" doit etre une chaine de caracteres si il est renseigne.`,
+        'LIGNE_REFERENTIEL_PROGRAMME_CLASSIFICATION_INVALIDE',
+      );
+    }
+
+    const valeurNettoyee = valeur.trim();
+
+    return valeurNettoyee.length === 0 ? undefined : valeurNettoyee;
+  }
+
+  // Cette methode garantit qu'un sous-domaine ne flotte jamais sans domaine parent.
+  private verifierCoherenceClassification(): void {
+    if (this.sousDomaine !== undefined && this.domaine === undefined) {
+      throw new ValidationError(
+        'Un sous-domaine de ligne de programme ne peut pas etre renseigne sans domaine.',
+        'LIGNE_REFERENTIEL_PROGRAMME_CLASSIFICATION_INCOHERENTE',
+      );
+    }
   }
 }

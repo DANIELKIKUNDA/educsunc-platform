@@ -70,11 +70,39 @@ cd backend
 npm run seed:classes-academiques
 ```
 
+Pour initialiser les cours officiels extraits des bulletins MINEDUC :
+
+```powershell
+cd backend
+npm run seed:cours-officiels
+```
+
+Pour initialiser les programmes academiques officiels par classe :
+
+```powershell
+cd backend
+npm run seed:programmes-academiques
+```
+
 Pour lancer le seed principal du referentiel academique :
 
 ```powershell
 cd backend
 npm run seed:referentiel-academique
+```
+
+Pour afficher le programme complet d'une classe depuis PostgreSQL :
+
+```powershell
+cd backend
+npm run verifier:programme-classe -- 1PR
+```
+
+Pour cibler explicitement une version de referentiel :
+
+```powershell
+cd backend
+npm run verifier:programme-classe -- 4ELEC --version=MINEDUC-2024-2025-V2
 ```
 
 Dans PgAdmin, utiliser le serveur PostgreSQL local `localhost:5432`, puis ouvrir la base `educsyn`.

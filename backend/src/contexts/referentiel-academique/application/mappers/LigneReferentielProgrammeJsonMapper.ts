@@ -19,6 +19,8 @@ export class LigneReferentielProgrammeJsonMapper {
       enregistrement.estCalculable,
       enregistrement.sourceLigne,
       new PonderationEvaluation(enregistrement.ponderation),
+      enregistrement.domaine,
+      enregistrement.sousDomaine,
     );
   }
 

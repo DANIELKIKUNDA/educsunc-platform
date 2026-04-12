@@ -126,6 +126,8 @@ export interface PersistanceLigneReferentielProgrammePostgres {
     maxP6: number;
     maxEX3: number;
   };
+  domaine?: string | null;
+  sous_domaine?: string | null;
 }
 
 // Ce mapper traduit une ligne officielle de programme entre domaine et persistance.
@@ -145,6 +147,8 @@ export class MapperLigneReferentielProgrammePostgres
       ligne.est_calculable,
       ligne.source_ligne,
       this.versPonderationEvaluation(ligne.ponderation),
+      ligne.domaine ?? undefined,
+      ligne.sous_domaine ?? undefined,
     );
   }
 
@@ -170,6 +174,8 @@ export class MapperLigneReferentielProgrammePostgres
       est_calculable: ligneReferentielProgramme.estCalculableDansProgramme(),
       source_ligne: ligneReferentielProgramme.obtenirSourceLigne(),
       ponderation: this.versPonderationPersistance(ligneReferentielProgramme.obtenirPonderation()),
+      domaine: ligneReferentielProgramme.obtenirDomaine() ?? null,
+      sous_domaine: ligneReferentielProgramme.obtenirSousDomaine() ?? null,
     };
   }
 }

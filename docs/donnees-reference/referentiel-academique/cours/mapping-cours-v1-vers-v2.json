@@ -1,0 +1,3633 @@
+{
+  "correspondances": [
+    {
+      "ancienCode": "ACTUALITES",
+      "ancienLibelle": "Actualités",
+      "nouveauCode": "ACTUALITES",
+      "nouveauLibelle": "Actualités",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "ACTUALITES_GEOGRAPHIE",
+      "ancienLibelle": "Actualités / Géographie",
+      "nouveauCode": "ACTUALITES_GEOGRAPHIE",
+      "nouveauLibelle": "Actualités / Géographie",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "AEROBIE_DANCE",
+      "ancienLibelle": "Aérobie – dance",
+      "nouveauCode": "AEROBIE_DANCE",
+      "nouveauLibelle": "Aérobie - dance",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "AGRICULTURE",
+      "ancienLibelle": "Agriculture",
+      "nouveauCode": "AGRICULTURE",
+      "nouveauLibelle": "Agriculture",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "AGRICULTURE_GENERALE",
+      "ancienLibelle": "Agriculture générale",
+      "nouveauCode": "AGRICULTURE_GENERALE",
+      "nouveauLibelle": "Agriculture générale",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "AGRICULTURE_PETIT_ELEV",
+      "ancienLibelle": "Agriculture / Petit élev.",
+      "nouveauCode": "AGRICULTURE_PETIT_ELEV",
+      "nouveauLibelle": "Agriculture / Petit élev.",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "AGRICULTURE_PETIT_ELEVAGE",
+      "ancienLibelle": "Agriculture / petit élevage",
+      "nouveauCode": "AGRICULTURE_PETIT_ELEVAGE",
+      "nouveauLibelle": "Agriculture / petit élevage",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "AGROSTOLOGIE",
+      "ancienLibelle": "Agrostologie",
+      "nouveauCode": "AGROSTOLOGIE",
+      "nouveauLibelle": "Agrostologie",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "ALIMENTATION",
+      "ancienLibelle": "Alimentation",
+      "nouveauCode": "ALIMENTATION",
+      "nouveauLibelle": "Alimentation",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "AMELIORATION_DES_PLANTES",
+      "ancienLibelle": "Amélioration des plantes",
+      "nouveauCode": "AMELIORATION_DES_PLANTES",
+      "nouveauLibelle": "Amélioration des plantes",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "AMENAGEMENT_FORESTIER",
+      "ancienLibelle": "Aménagement forestier",
+      "nouveauCode": "AMENAGEMENT_FORESTIER",
+      "nouveauLibelle": "Aménagement forestier",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "ANAT_ET_PHYSIO_ANIMALE",
+      "ancienLibelle": "Anat. & physio. animale",
+      "nouveauCode": "ANAT_ET_PHYSIO_ANIMALE",
+      "nouveauLibelle": "Anat. et physio. animale",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "ANATOMIE",
+      "ancienLibelle": "Anatomie",
+      "nouveauCode": "ANATOMIE",
+      "nouveauLibelle": "Anatomie",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "ANATOMIE_ARTISTIQUE",
+      "ancienLibelle": "Anatomie artistique",
+      "nouveauCode": "ANATOMIE_ARTISTIQUE",
+      "nouveauLibelle": "Anatomie artistique",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "ANATOMIE_ET_PHYSIOLOGIE",
+      "ancienLibelle": "Anatomie & physiologie",
+      "nouveauCode": "ANATOMIE_ET_PHYSIOLOGIE",
+      "nouveauLibelle": "Anatomie et physiologie",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "ANGLAIS",
+      "ancienLibelle": "Anglais",
+      "nouveauCode": "ANGLAIS",
+      "nouveauLibelle": "Anglais",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "ANGLAIS_TECHNIQUE",
+      "ancienLibelle": "Anglais technique",
+      "nouveauCode": "ANGLAIS_TECHNIQUE",
+      "nouveauLibelle": "Anglais technique",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "ARITHMETIQUE_ARTISANAL",
+      "ancienLibelle": "Arithmétique artisanal",
+      "nouveauCode": "ARITHMETIQUE_ARTISANAL",
+      "nouveauLibelle": "Arithmétique artisanal",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "ARTS_DESSIN",
+      "ancienLibelle": "Dessin",
+      "nouveauCode": "DESSIN",
+      "nouveauLibelle": "Dessin",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "ARTS"
+    },
+    {
+      "ancienCode": "ARTS_MUSIQUE",
+      "ancienLibelle": "Musique",
+      "nouveauCode": "MUSIQUE",
+      "nouveauLibelle": "Musique",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "ARTS"
+    },
+    {
+      "ancienCode": "ASSAINISSEMENT",
+      "ancienLibelle": "Assainissement",
+      "nouveauCode": "ASSAINISSEMENT",
+      "nouveauLibelle": "Assainissement",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "ATELIER",
+      "ancienLibelle": "Atelier",
+      "nouveauCode": "ATELIER",
+      "nouveauLibelle": "Atelier",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "ATELIER_AJUSTAGE",
+      "ancienLibelle": "Atelier ajustage",
+      "nouveauCode": "ATELIER_AJUSTAGE",
+      "nouveauLibelle": "Atelier ajustage",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "ATELIER_AUTO",
+      "ancienLibelle": "Atelier Auto.",
+      "nouveauCode": "ATELIER_AUTO",
+      "nouveauLibelle": "Atelier Auto.",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "ATELIER_ELECTRIQUE",
+      "ancienLibelle": "Atelier électrique",
+      "nouveauCode": "ATELIER_ELECTRIQUE",
+      "nouveauLibelle": "Atelier électrique",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "AUDITIONS_MUSICALES",
+      "ancienLibelle": "Auditions musicales",
+      "nouveauCode": "AUDITIONS_MUSICALES",
+      "nouveauLibelle": "Auditions musicales",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "AUTOM_PROGRAM_INDUST_A_P_I",
+      "ancienLibelle": "Autom. program. Indust.(A.P.I.)",
+      "nouveauCode": "AUTOM_PROGRAM_INDUST_A_P_I",
+      "nouveauLibelle": "Autom. program. Indust.(A.P.I.)",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "AUTOMATE_PROGR",
+      "ancienLibelle": "Automate progr.",
+      "nouveauCode": "AUTOMATE_PROGR",
+      "nouveauLibelle": "Automate progr.",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "AUTOMATE_PROGRAMMABLE",
+      "ancienLibelle": "Automate programmable",
+      "nouveauCode": "AUTOMATE_PROGRAMMABLE",
+      "nouveauLibelle": "Automate programmable",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "AUTOMATION",
+      "ancienLibelle": "Automation",
+      "nouveauCode": "AUTOMATION",
+      "nouveauLibelle": "Automation",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "BACTERIOLOGIE",
+      "ancienLibelle": "Bactériologie",
+      "nouveauCode": "BACTERIOLOGIE",
+      "nouveauLibelle": "Bactériologie",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "BETON_ARME",
+      "ancienLibelle": "Béton armé",
+      "nouveauCode": "BETON_ARME",
+      "nouveauLibelle": "Béton armé",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "BIO_ANATOMIE_PHYSIO",
+      "ancienLibelle": "Bio.: anatomie – Physio.",
+      "nouveauCode": "BIO_ANATOMIE_PHYSIO",
+      "nouveauLibelle": "Bio.: anatomie - Physio.",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "BIOLOGIE",
+      "ancienLibelle": "Biologie",
+      "nouveauCode": "BIOLOGIE",
+      "nouveauLibelle": "Biologie",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "BIOLOGIE_ANATOMIE_PHYSIOL",
+      "ancienLibelle": "Biologie: Anatomie – Physiol.",
+      "nouveauCode": "BIOLOGIE_ANATOMIE_PHYSIOL",
+      "nouveauLibelle": "Biologie: Anatomie - Physiol.",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "BIOLOGIE_APPLIQUEE",
+      "ancienLibelle": "Biologie appliquée",
+      "nouveauCode": "BIOLOGIE_APPLIQUEE",
+      "nouveauLibelle": "Biologie appliquée",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "BIOLOGIE_MICROBIO",
+      "ancienLibelle": "Biologie / Microbio",
+      "nouveauCode": "BIOLOGIE_MICROBIO",
+      "nouveauLibelle": "Biologie / Microbio",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "BIOLOGIE_MICROBIOLOGIE",
+      "ancienLibelle": "Biologie / Microbiologie",
+      "nouveauCode": "BIOLOGIE_MICROBIOLOGIE",
+      "nouveauLibelle": "Biologie / Microbiologie",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "BRICOLAGE_TRAV_MENAG",
+      "ancienLibelle": "Bricolage / Trav. ménag.",
+      "nouveauCode": "BRICOLAGE_TRAV_MENAG",
+      "nouveauLibelle": "Bricolage / Trav. ménag.",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "BUANDERIE",
+      "ancienLibelle": "Buanderie",
+      "nouveauCode": "BUANDERIE",
+      "nouveauLibelle": "Buanderie",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "CARTOGRAPHIE",
+      "ancienLibelle": "Cartographie",
+      "nouveauCode": "CARTOGRAPHIE",
+      "nouveauLibelle": "Cartographie",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "CHIMIE",
+      "ancienLibelle": "Chimie",
+      "nouveauCode": "CHIMIE",
+      "nouveauLibelle": "Chimie",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "CHIMIE_APPLIQUEE",
+      "ancienLibelle": "Chimie appliquée",
+      "nouveauCode": "CHIMIE_APPLIQUEE",
+      "nouveauLibelle": "Chimie appliquée",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "CHIRURGIE",
+      "ancienLibelle": "Chirurgie",
+      "nouveauCode": "CHIRURGIE",
+      "nouveauLibelle": "Chirurgie",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "CIRCUIT_LOGIQUE",
+      "ancienLibelle": "Circuit logique",
+      "nouveauCode": "CIRCUIT_LOGIQUE",
+      "nouveauLibelle": "Circuit logique",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "COLORATION",
+      "ancienLibelle": "Coloration",
+      "nouveauCode": "COLORATION",
+      "nouveauLibelle": "Coloration",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "COLORATION_DECOLORATION",
+      "ancienLibelle": "Coloration / Décoloration",
+      "nouveauCode": "COLORATION_DECOLORATION",
+      "nouveauLibelle": "Coloration / Décoloration",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "COMPTABILITE",
+      "ancienLibelle": "Comptabilité",
+      "nouveauCode": "COMPTABILITE",
+      "nouveauLibelle": "Comptabilité",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "COMPTABILITE_GENERALE",
+      "ancienLibelle": "Comptabilité générale",
+      "nouveauCode": "COMPTABILITE_GENERALE",
+      "nouveauLibelle": "Comptabilité générale",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "COMPTABILITE_HOTELIERE",
+      "ancienLibelle": "Comptabilité hôtelière",
+      "nouveauCode": "COMPTABILITE_HOTELIERE",
+      "nouveauLibelle": "Comptabilité hôtelière",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "CONNAIS_DES_MATERIAUX",
+      "ancienLibelle": "Connais. des matériaux",
+      "nouveauCode": "CONNAIS_DES_MATERIAUX",
+      "nouveauLibelle": "Connais. des matériaux",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "CONNAISS_DES_MATERIAUX",
+      "ancienLibelle": "Connaiss. des matériaux",
+      "nouveauCode": "CONNAISS_DES_MATERIAUX",
+      "nouveauLibelle": "Connaiss. des matériaux",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "CONNAISSANCE_COM",
+      "ancienLibelle": "Connaissance com.",
+      "nouveauCode": "CONNAISSANCE_COM",
+      "nouveauLibelle": "Connaissance com.",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "CONNAISSANCE_DES_MATER",
+      "ancienLibelle": "Connaissance des matér.",
+      "nouveauCode": "CONNAISSANCE_DES_MATER",
+      "nouveauLibelle": "Connaissance des matér.",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "CONSERV_PRODUITS_AGRICOLES",
+      "ancienLibelle": "Conserv. produits agricoles",
+      "nouveauCode": "CONSERV_PRODUITS_AGRICOLES",
+      "nouveauLibelle": "Conserv. produits agricoles",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "CONSERVATION",
+      "ancienLibelle": "Conservation",
+      "nouveauCode": "CONSERVATION",
+      "nouveauLibelle": "Conservation",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "CONSTRUCTION",
+      "ancienLibelle": "Construction",
+      "nouveauCode": "CONSTRUCTION",
+      "nouveauLibelle": "Construction",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "CONTROLE_DE_FABRICATION",
+      "ancienLibelle": "Contrôle de fabrication",
+      "nouveauCode": "CONTROLE_DE_FABRICATION",
+      "nouveauLibelle": "Contrôle de fabrication",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "CONTROLE_FABRICATION",
+      "ancienLibelle": "Contrôle fabrication",
+      "nouveauCode": "CONTROLE_FABRICATION",
+      "nouveauLibelle": "Contrôle fabrication",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "CORRESP_COM_ET_ADM_ANGLAISE",
+      "ancienLibelle": "Corresp. com. & adm. anglaise",
+      "nouveauCode": "CORRESP_COM_ET_ADM_ANGLAISE",
+      "nouveauLibelle": "Corresp. com. et adm. anglaise",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "CORRESP_COM_ET_ADM_FRANCAISE",
+      "ancienLibelle": "Corresp. com. & adm. française",
+      "nouveauCode": "CORRESP_COM_ET_ADM_FRANCAISE",
+      "nouveauLibelle": "Corresp. com. et adm. française",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "COUPE_CHEVEUX",
+      "ancienLibelle": "Coupe cheveux",
+      "nouveauCode": "COUPE_CHEVEUX",
+      "nouveauLibelle": "Coupe cheveux",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "CROQUIS",
+      "ancienLibelle": "Croquis",
+      "nouveauCode": "CROQUIS",
+      "nouveauLibelle": "Croquis",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "CULTURES_FOURRAGERES",
+      "ancienLibelle": "Cultures fourragères",
+      "nouveauCode": "CULTURES_FOURRAGERES",
+      "nouveauLibelle": "Cultures fourragères",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "DEMOGRAPHIE",
+      "ancienLibelle": "Démographie",
+      "nouveauCode": "DEMOGRAPHIE",
+      "nouveauLibelle": "Démographie",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "DENDROLOGIE",
+      "ancienLibelle": "Dendrologie",
+      "nouveauCode": "DENDROLOGIE",
+      "nouveauLibelle": "Dendrologie",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "DENDROMETRIE",
+      "ancienLibelle": "Dendrométrie",
+      "nouveauCode": "DENDROMETRIE",
+      "nouveauLibelle": "Dendrométrie",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "DEONT_ET_ORGAN_SCOLAIRE",
+      "ancienLibelle": "Déont. & organ. scolaire",
+      "nouveauCode": "DEONT_ET_ORGAN_SCOLAIRE",
+      "nouveauLibelle": "Déont. et organ. scolaire",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "DEONT_ET_ORGANIS_SCOLAIRE",
+      "ancienLibelle": "Déont. & organis. scolaire",
+      "nouveauCode": "DEONT_ET_ORGANIS_SCOLAIRE",
+      "nouveauLibelle": "Déont. et organis. scolaire",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "DEONTOLOGIE",
+      "ancienLibelle": "Déontologie",
+      "nouveauCode": "DEONTOLOGIE",
+      "nouveauLibelle": "Déontologie",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "DEONTOLOGIE_DU_SECRETARIAT",
+      "ancienLibelle": "Déontologie du secrétariat",
+      "nouveauCode": "DEONTOLOGIE_DU_SECRETARIAT",
+      "nouveauLibelle": "Déontologie du secrétariat",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "DESSIN",
+      "ancienLibelle": "Dessin",
+      "nouveauCode": "DESSIN",
+      "nouveauLibelle": "Dessin",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "DESSIN_DE_CONSTRUCTION",
+      "ancienLibelle": "Dessin de construction",
+      "nouveauCode": "DESSIN_DE_CONSTRUCTION",
+      "nouveauLibelle": "Dessin de construction",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "DESSIN_ELECTRIQUE",
+      "ancienLibelle": "Dessin électrique",
+      "nouveauCode": "DESSIN_ELECTRIQUE",
+      "nouveauLibelle": "Dessin électrique",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "DESSIN_ET_TOPOGRAPHIE",
+      "ancienLibelle": "Dessin & topographie",
+      "nouveauCode": "DESSIN_ET_TOPOGRAPHIE",
+      "nouveauLibelle": "Dessin et topographie",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "DESSIN_GEOMETRIE",
+      "ancienLibelle": "Dessin géométrie",
+      "nouveauCode": "DESSIN_GEOMETRIE",
+      "nouveauLibelle": "Dessin géométrie",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "DESSIN_INDUSTRIEL",
+      "ancienLibelle": "Dessin industriel",
+      "nouveauCode": "DESSIN_INDUSTRIEL",
+      "nouveauLibelle": "Dessin industriel",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "DESSIN_PED_ET_ARTISTIQUE",
+      "ancienLibelle": "Dessin péd. et Artistique",
+      "nouveauCode": "DESSIN_PED_ET_ARTISTIQUE",
+      "nouveauLibelle": "Dessin péd. et Artistique",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "DESSIN_PEDAGOGIE",
+      "ancienLibelle": "Dessin pédagogie",
+      "nouveauCode": "DESSIN_PEDAGOGIE",
+      "nouveauLibelle": "Dessin pédagogie",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "DESSIN_PEDAGOGIQUE_ET_IAD",
+      "ancienLibelle": "Dessin pédagogique & IAD",
+      "nouveauCode": "DESSIN_PEDAGOGIQUE_ET_IAD",
+      "nouveauLibelle": "Dessin pédagogique et IAD",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "DESSIN_PROFESSIONNEL",
+      "ancienLibelle": "Dessin professionnel",
+      "nouveauCode": "DESSIN_PROFESSIONNEL",
+      "nouveauLibelle": "Dessin professionnel",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "DESSIN_PROJECTION",
+      "ancienLibelle": "Dessin projection",
+      "nouveauCode": "DESSIN_PROJECTION",
+      "nouveauLibelle": "Dessin projection",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "DESSIN_TECHNIQUE",
+      "ancienLibelle": "Dessin technique",
+      "nouveauCode": "DESSIN_TECHNIQUE",
+      "nouveauLibelle": "Dessin technique",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "DEV_COMMUNAUTAIRE",
+      "ancienLibelle": "Dév. communautaire",
+      "nouveauCode": "DEV_COMMUNAUTAIRE",
+      "nouveauLibelle": "Dév. communautaire",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "DEVELOPPEMENT_PERSONNEL_ED_PHYS_ET_SPORTIVE",
+      "ancienLibelle": "Ed. phys. & sportive",
+      "nouveauCode": "ED_PHYS_ET_SPORTIVE",
+      "nouveauLibelle": "Ed. phys. et sportive",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "DEVELOPPEMENT PERSONNEL"
+    },
+    {
+      "ancienCode": "DEVELOPPEMENT_PERSONNEL_ED_PHYSIQUE_ET_SPORTIVE",
+      "ancienLibelle": "Ed. Physique & Sportive",
+      "nouveauCode": "EDUCATION_PHYSIQUE_ET_SPORTIVE",
+      "nouveauLibelle": "Education physique et sportive",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "DEVELOPPEMENT PERSONNEL"
+    },
+    {
+      "ancienCode": "DEVELOPPEMENT_PERSONNEL_EDUCAT_PHYS_ET_SPORT",
+      "ancienLibelle": "Educat. Phys. & sport.",
+      "nouveauCode": "EDUCATION_PHYSIQUE_ET_SPORTIVE",
+      "nouveauLibelle": "Education physique et sportive",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "DEVELOPPEMENT PERSONNEL"
+    },
+    {
+      "ancienCode": "DEVELOPPEMENT_PERSONNEL_INIT_TRAV_PROD",
+      "ancienLibelle": "Init. Trav. Prod.",
+      "nouveauCode": "INIT_TRAV_PROD",
+      "nouveauLibelle": "Init. Trav. Prod.",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "DEVELOPPEMENT PERSONNEL"
+    },
+    {
+      "ancienCode": "DEVELOPPEMENT_PERSONNEL_RELIGION",
+      "ancienLibelle": "Religion",
+      "nouveauCode": "RELIGION",
+      "nouveauLibelle": "Religion",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "DEVELOPPEMENT PERSONNEL"
+    },
+    {
+      "ancienCode": "DEVELOPPEMENT_RURAL",
+      "ancienLibelle": "Développement rural",
+      "nouveauCode": "DEVELOPPEMENT_RURAL",
+      "nouveauLibelle": "Développement rural",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "DICTEE_MUSICALE",
+      "ancienLibelle": "Dictée musicale",
+      "nouveauCode": "DICTEE_MUSICALE",
+      "nouveauLibelle": "Dictée musicale",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "DID_DISC_PRAT_D_ENS",
+      "ancienLibelle": "Did. disc.+ Prat. d’ens.",
+      "nouveauCode": "DID_DISC_PRAT_D_ENS",
+      "nouveauLibelle": "Did. disc.+ Prat. d’ens.",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "DIDACTIQUE_DE_L_E_P_S",
+      "ancienLibelle": "Didactique de l’E.P.S.",
+      "nouveauCode": "DIDACTIQUE_DE_L_E_P_S",
+      "nouveauLibelle": "Didactique de l’E.P.S.",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "DIDACTIQUE_DES_DISCIPLINES",
+      "ancienLibelle": "Didactique des disciplines",
+      "nouveauCode": "DIDACTIQUE_DES_DISCIPLINES",
+      "nouveauLibelle": "Didactique des disciplines",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "DIDACTIQUE_GENERALE",
+      "ancienLibelle": "Didactique générale",
+      "nouveauCode": "DIDACTIQUE_GENERALE",
+      "nouveauLibelle": "Didactique générale",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "DIDACTIQUE_MATERNELLE",
+      "ancienLibelle": "Didactique maternelle",
+      "nouveauCode": "DIDACTIQUE_MATERNELLE",
+      "nouveauLibelle": "Didactique maternelle",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "DIETETIQUE",
+      "ancienLibelle": "Diététique",
+      "nouveauCode": "DIETETIQUE",
+      "nouveauLibelle": "Diététique",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "DOCTRINE_SOCIALE",
+      "ancienLibelle": "Doctrine sociale",
+      "nouveauCode": "DOCTRINE_SOCIALE",
+      "nouveauLibelle": "Doctrine sociale",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "DROIT",
+      "ancienLibelle": "Droit",
+      "nouveauCode": "DROIT",
+      "nouveauLibelle": "Droit",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "DROIT_ADMINISTRATIF",
+      "ancienLibelle": "Droit administratif",
+      "nouveauCode": "DROIT_ADMINISTRATIF",
+      "nouveauLibelle": "Droit administratif",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "DROIT_CIVIL",
+      "ancienLibelle": "Droit civil",
+      "nouveauCode": "DROIT_CIVIL",
+      "nouveauLibelle": "Droit civil",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "DROIT_PENAL",
+      "ancienLibelle": "Droit pénal",
+      "nouveauCode": "DROIT_PENAL",
+      "nouveauLibelle": "Droit pénal",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "DROIT_PENAL_ET_CIVIL",
+      "ancienLibelle": "Droit pénal & civil",
+      "nouveauCode": "DROIT_PENAL_ET_CIVIL",
+      "nouveauLibelle": "Droit pénal et civil",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "ECOLOGIE",
+      "ancienLibelle": "Ecologie",
+      "nouveauCode": "ECOLOGIE",
+      "nouveauLibelle": "Ecologie",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "ECONOMIE_ALIMENTAIRE",
+      "ancienLibelle": "Economie alimentaire",
+      "nouveauCode": "ECONOMIE_ALIMENTAIRE",
+      "nouveauLibelle": "Economie alimentaire",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "ECONOMIE_ARTISANALE",
+      "ancienLibelle": "Economie artisanale",
+      "nouveauCode": "ECONOMIE_ARTISANALE",
+      "nouveauLibelle": "Economie artisanale",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "ECONOMIE_DU_DEVELOPPEMENT",
+      "ancienLibelle": "Economie du développement",
+      "nouveauCode": "ECONOMIE_DU_DEVELOPPEMENT",
+      "nouveauLibelle": "Economie du développement",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "ECONOMIE_POLITIQUE",
+      "ancienLibelle": "Economie politique",
+      "nouveauCode": "ECONOMIE_POLITIQUE",
+      "nouveauLibelle": "Economie politique",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "ECONOMIE_PROFESSIONNELLE",
+      "ancienLibelle": "Economie professionnelle",
+      "nouveauCode": "ECONOMIE_PROFESSIONNELLE",
+      "nouveauLibelle": "Economie professionnelle",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "ECRITURE_ET_TRAVAIL_MANUEL",
+      "ancienLibelle": "Ecriture et travail manuel",
+      "nouveauCode": "ECRITURE_ET_TRAVAIL_MANUEL",
+      "nouveauLibelle": "Ecriture et travail manuel",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "ED_CIV_ET_MORALE",
+      "ancienLibelle": "Ed. civ. & morale",
+      "nouveauCode": "EDUCATION_CIVIQUE_ET_MORALE",
+      "nouveauLibelle": "Education civique et morale",
+      "strategie": "NORMALISATION_LIBELLE"
+    },
+    {
+      "ancienCode": "ED_CIVIQUE_ET_MORALE",
+      "ancienLibelle": "Ed. civique & morale",
+      "nouveauCode": "EDUCATION_CIVIQUE_ET_MORALE",
+      "nouveauLibelle": "Education civique et morale",
+      "strategie": "NORMALISATION_LIBELLE"
+    },
+    {
+      "ancienCode": "ED_MUSICALE_THEATRALE",
+      "ancienLibelle": "Ed. musicale / Théâtrale",
+      "nouveauCode": "ED_MUSICALE_THEATRALE",
+      "nouveauLibelle": "Ed. musicale / Théâtrale",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "ED_MUSICALE_THEATRE",
+      "ancienLibelle": "Ed. musicale / Théâtre",
+      "nouveauCode": "ED_MUSICALE_THEATRE",
+      "nouveauLibelle": "Ed. musicale / Théâtre",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "ED_PHYSIQUE_ET_SECOURISME",
+      "ancienLibelle": "Ed. physique & secourisme",
+      "nouveauCode": "ED_PHYSIQUE_ET_SECOURISME",
+      "nouveauLibelle": "Ed. physique et secourisme",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "ED_PHYSIQUE_ET_SPORTIVE",
+      "ancienLibelle": "Éd. Physique & sportive",
+      "nouveauCode": "EDUCATION_PHYSIQUE_ET_SPORTIVE",
+      "nouveauLibelle": "Education physique et sportive",
+      "strategie": "NORMALISATION_LIBELLE"
+    },
+    {
+      "ancienCode": "ED_PLAST_BRICOLAGE",
+      "ancienLibelle": "Ed. plast. – bricolage",
+      "nouveauCode": "ED_PLAST_BRICOLAGE",
+      "nouveauLibelle": "Ed. plast. - bricolage",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "ED_PLASTIQUE_BRICOLAGE",
+      "ancienLibelle": "Ed. plastique – bricolage",
+      "nouveauCode": "ED_PLASTIQUE_BRICOLAGE",
+      "nouveauLibelle": "Ed. plastique - bricolage",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "EDUC_CIV_ET_MORALE",
+      "ancienLibelle": "Educ. civ. & morale",
+      "nouveauCode": "EDUCATION_CIVIQUE_ET_MORALE",
+      "nouveauLibelle": "Education civique et morale",
+      "strategie": "NORMALISATION_LIBELLE"
+    },
+    {
+      "ancienCode": "EDUCAT_MUSIC_THEATRALE",
+      "ancienLibelle": "Educat. music./Théâtrale",
+      "nouveauCode": "EDUCAT_MUSIC_THEATRALE",
+      "nouveauLibelle": "Educat. music. / Théâtrale",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "EDUCAT_PHYS_ET_SPORTIVE",
+      "ancienLibelle": "Educat. phys. & sportive",
+      "nouveauCode": "EDUCATION_PHYSIQUE_ET_SPORTIVE",
+      "nouveauLibelle": "Education physique et sportive",
+      "strategie": "NORMALISATION_LIBELLE"
+    },
+    {
+      "ancienCode": "EDUCATION_A_LA_VIE",
+      "ancienLibelle": "Education à la Vie",
+      "nouveauCode": "EDUCATION_A_LA_VIE",
+      "nouveauLibelle": "Education à la vie",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "EDUCATION_ARTISTIQUE_ARTS_DRAMATIQUES",
+      "ancienLibelle": "Arts dramatiques",
+      "nouveauCode": "ARTS_DRAMATIQUES",
+      "nouveauLibelle": "Arts dramatiques",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "ARTS",
+      "sousDomaineOrigine": "EDUCATION ARTISTIQUE"
+    },
+    {
+      "ancienCode": "EDUCATION_ARTISTIQUE_ARTS_PLASTIQUES",
+      "ancienLibelle": "Arts plastiques",
+      "nouveauCode": "ARTS_PLASTIQUES",
+      "nouveauLibelle": "Arts plastiques",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "ARTS",
+      "sousDomaineOrigine": "EDUCATION ARTISTIQUE"
+    },
+    {
+      "ancienCode": "EDUCATION_ARTISTIQUE_ED_PHYS_ET_SPORTIVE",
+      "ancienLibelle": "Ed. phys. & sportive",
+      "nouveauCode": "ED_PHYS_ET_SPORTIVE",
+      "nouveauLibelle": "Ed. phys. et sportive",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "DEVELOPPEMENT PERSONNEL",
+      "sousDomaineOrigine": "EDUCATION ARTISTIQUE"
+    },
+    {
+      "ancienCode": "EDUCATION_ARTISTIQUE_INIT_TRAV_PROD",
+      "ancienLibelle": "Init. Trav. Prod.",
+      "nouveauCode": "INIT_TRAV_PROD",
+      "nouveauLibelle": "Init. Trav. Prod.",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "DEVELOPPEMENT PERSONNEL",
+      "sousDomaineOrigine": "EDUCATION ARTISTIQUE"
+    },
+    {
+      "ancienCode": "EDUCATION_ARTISTIQUE_RELIGION",
+      "ancienLibelle": "Religion",
+      "nouveauCode": "RELIGION",
+      "nouveauLibelle": "Religion",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "DEVELOPPEMENT PERSONNEL",
+      "sousDomaineOrigine": "EDUCATION ARTISTIQUE"
+    },
+    {
+      "ancienCode": "EDUCATION_CIV_ET_MORALE",
+      "ancienLibelle": "Education civ. & morale",
+      "nouveauCode": "EDUCATION_CIVIQUE_ET_MORALE",
+      "nouveauLibelle": "Education civique et morale",
+      "strategie": "NORMALISATION_LIBELLE"
+    },
+    {
+      "ancienCode": "EDUCATION_CIVIQUE_ET_MORALE",
+      "ancienLibelle": "Education civique & morale",
+      "nouveauCode": "EDUCATION_CIVIQUE_ET_MORALE",
+      "nouveauLibelle": "Education civique et morale",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "EDUCATION_FAMILIALE",
+      "ancienLibelle": "Education familiale",
+      "nouveauCode": "EDUCATION_FAMILIALE",
+      "nouveauLibelle": "Education familiale",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "EDUCATION_MUSIC_THEATRALE",
+      "ancienLibelle": "Education music. / Théâtrale",
+      "nouveauCode": "EDUCATION_MUSIC_THEATRALE",
+      "nouveauLibelle": "Education music. / Théâtrale",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "EDUCATION_NUTRITIONNELLE",
+      "ancienLibelle": "Education nutritionnelle",
+      "nouveauCode": "EDUCATION_NUTRITIONNELLE",
+      "nouveauLibelle": "Education nutritionnelle",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "EDUCATION_PHYS_ET",
+      "ancienLibelle": "Education phys. &",
+      "nouveauCode": "EDUCATION_PHYS_ET",
+      "nouveauLibelle": "Education phys. et",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "EDUCATION_PHYS_ET_SPORT",
+      "ancienLibelle": "Education phys. & sport.",
+      "nouveauCode": "EDUCATION_PHYSIQUE_ET_SPORTIVE",
+      "nouveauLibelle": "Education physique et sportive",
+      "strategie": "NORMALISATION_LIBELLE"
+    },
+    {
+      "ancienCode": "EDUCATION_PHYS_ET_SPORTIVE",
+      "ancienLibelle": "Education phys. & sportive",
+      "nouveauCode": "EDUCATION_PHYSIQUE_ET_SPORTIVE",
+      "nouveauLibelle": "Education physique et sportive",
+      "strategie": "NORMALISATION_LIBELLE"
+    },
+    {
+      "ancienCode": "EDUCATION_PHYSIQUE",
+      "ancienLibelle": "Education physique",
+      "nouveauCode": "EDUCATION_PHYSIQUE",
+      "nouveauLibelle": "Education physique",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "EDUCATION_PLASTIQUE",
+      "ancienLibelle": "Education plastique",
+      "nouveauCode": "EDUCATION_PLASTIQUE",
+      "nouveauLibelle": "Education plastique",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "EDUCATION_POPULAIRE",
+      "ancienLibelle": "Education populaire",
+      "nouveauCode": "EDUCATION_POPULAIRE",
+      "nouveauLibelle": "Education populaire",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "EDUCATION_SANITAIRE",
+      "ancienLibelle": "Education sanitaire",
+      "nouveauCode": "EDUCATION_SANITAIRE",
+      "nouveauLibelle": "Education sanitaire",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "ELECT_ELECTRO_AUTOMOB_E_E_A",
+      "ancienLibelle": "Elect. Electro. Automob. (E.E.A)",
+      "nouveauCode": "ELECT_ELECTRO_AUTOMOB_E_E_A",
+      "nouveauLibelle": "Elect. Electro. Automob. (E.E.A)",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "ELECTRICITE",
+      "ancienLibelle": "Electricité",
+      "nouveauCode": "ELECTRICITE",
+      "nouveauLibelle": "Electricité",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "ELECTRICITE_AUTO",
+      "ancienLibelle": "Electricité auto.",
+      "nouveauCode": "ELECTRICITE_AUTO",
+      "nouveauLibelle": "Electricité auto.",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "ELECTRICITE_GENERALE",
+      "ancienLibelle": "Electricité générale",
+      "nouveauCode": "ELECTRICITE_GENERALE",
+      "nouveauLibelle": "Electricité générale",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "ELECTRONIQUE",
+      "ancienLibelle": "Electronique",
+      "nouveauCode": "ELECTRONIQUE",
+      "nouveauLibelle": "Electronique",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "ELECTRONIQUE_LABO",
+      "ancienLibelle": "Electronique + labo.",
+      "nouveauCode": "ELECTRONIQUE_LABO",
+      "nouveauLibelle": "Electronique + labo.",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "ELECTRONIQUE_NUMERIQUE",
+      "ancienLibelle": "Electronique numérique",
+      "nouveauCode": "ELECTRONIQUE_NUMERIQUE",
+      "nouveauLibelle": "Electronique numérique",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "ELEMENTS_DE_MACHINE",
+      "ancienLibelle": "Eléments de machine",
+      "nouveauCode": "ELEMENTS_DE_MACHINE",
+      "nouveauLibelle": "Eléments de machine",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "ELEMENTS_DES_MACHINES",
+      "ancienLibelle": "Eléments des machines",
+      "nouveauCode": "ELEMENTS_DES_MACHINES",
+      "nouveauLibelle": "Eléments des machines",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "ENQUETE_NUTRITIONNELLE",
+      "ancienLibelle": "Enquête nutritionnelle",
+      "nouveauCode": "ENQUETE_NUTRITIONNELLE",
+      "nouveauLibelle": "Enquête nutritionnelle",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "ENTOMOLOGIE",
+      "ancienLibelle": "Entomologie",
+      "nouveauCode": "ENTOMOLOGIE",
+      "nouveauLibelle": "Entomologie",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "ENTREPRENARIAT",
+      "ancienLibelle": "Entreprenariat",
+      "nouveauCode": "ENTREPRENARIAT",
+      "nouveauLibelle": "Entreprenariat",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "ENTREPRENEURIAT",
+      "ancienLibelle": "Entrepreneuriat",
+      "nouveauCode": "ENTREPRENEURIAT",
+      "nouveauLibelle": "Entrepreneuriat",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "ERGONOMIE",
+      "ancienLibelle": "Ergonomie",
+      "nouveauCode": "ERGONOMIE",
+      "nouveauLibelle": "Ergonomie",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "ESTHETIQUE",
+      "ancienLibelle": "Esthétique",
+      "nouveauCode": "ESTHETIQUE",
+      "nouveauLibelle": "Esthétique",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "EVEIL_RELIGIEUX",
+      "ancienLibelle": "Eveil religieux",
+      "nouveauCode": "EVEIL_RELIGIEUX",
+      "nouveauLibelle": "Eveil religieux",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "EXPLOITATION_DU_MILIEU",
+      "ancienLibelle": "Exploitation du milieu",
+      "nouveauCode": "EXPLOITATION_DU_MILIEU",
+      "nouveauLibelle": "Exploitation du milieu",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "EXPLOITATION_FORESTIERE",
+      "ancienLibelle": "Exploitation forestière",
+      "nouveauCode": "EXPLOITATION_FORESTIERE",
+      "nouveauLibelle": "Exploitation forestière",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "EXPLORATION_DU_MILIEU",
+      "ancienLibelle": "Exploration du milieu",
+      "nouveauCode": "EXPLORATION_DU_MILIEU",
+      "nouveauLibelle": "Exploration du milieu",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "EXPRES_CORPOR_ET_DANCE",
+      "ancienLibelle": "Expres. Corpor. & dance",
+      "nouveauCode": "EXPRES_CORPOR_ET_DANCE",
+      "nouveauLibelle": "Expres. Corpor. et dance",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "EXPRESSION_CORPORELLE",
+      "ancienLibelle": "Expression corporelle",
+      "nouveauCode": "EXPRESSION_CORPORELLE",
+      "nouveauLibelle": "Expression corporelle",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "EXPRESSION_GRAPH_ET_MAN",
+      "ancienLibelle": "Expression graph. & man.",
+      "nouveauCode": "EXPRESSION_GRAPH_ET_MAN",
+      "nouveauLibelle": "Expression graph. et man.",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "EXPRESSION_MUSICALE",
+      "ancienLibelle": "Expression musicale",
+      "nouveauCode": "EXPRESSION_MUSICALE",
+      "nouveauLibelle": "Expression musicale",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "FAB_MAT_DIDACTIQUES",
+      "ancienLibelle": "Fab. mat. didactiques",
+      "nouveauCode": "FAB_MAT_DIDACTIQUES",
+      "nouveauLibelle": "Fab. mat. didactiques",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "FILMOLOGIE",
+      "ancienLibelle": "Filmologie",
+      "nouveauCode": "FILMOLOGIE",
+      "nouveauLibelle": "Filmologie",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "FISCALITE",
+      "ancienLibelle": "Fiscalité",
+      "nouveauCode": "FISCALITE",
+      "nouveauLibelle": "Fiscalité",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "FRAB_DU_MAT_DIDACT",
+      "ancienLibelle": "Frab. du mat. didact.",
+      "nouveauCode": "FRAB_DU_MAT_DIDACT",
+      "nouveauLibelle": "Frab. du mat. didact.",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "FRANCAIS",
+      "ancienLibelle": "Français",
+      "nouveauCode": "FRANCAIS",
+      "nouveauLibelle": "Français",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "FRANCAIS_EXP_ORAL_ET_VOCAB",
+      "ancienLibelle": "Exp. Oral & Vocab.",
+      "nouveauCode": "EXP_ORAL_ET_VOCAB",
+      "nouveauLibelle": "Exp. Oral et Vocab.",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "LANGUES",
+      "sousDomaineOrigine": "FRANÇAIS"
+    },
+    {
+      "ancienCode": "FRANCAIS_EXPR_ORALE_RECIT_VOC",
+      "ancienLibelle": "Expr. orale – Récit. –Voc.",
+      "nouveauCode": "EXPR_ORALE_RECIT_VOC",
+      "nouveauLibelle": "Expr. orale - Récit. - Voc.",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "LANGUES",
+      "sousDomaineOrigine": "FRANÇAIS"
+    },
+    {
+      "ancienCode": "FRANCAIS_EXPRESSION_ORALE",
+      "ancienLibelle": "Expression Orale",
+      "nouveauCode": "FRANCAIS_EXPRESSION_ORALE",
+      "nouveauLibelle": "Expression Orale",
+      "strategie": "CONSERVATION_HOMONYME_OFFICIEL",
+      "domaineOrigine": "LANGUES",
+      "sousDomaineOrigine": "FRANÇAIS"
+    },
+    {
+      "ancienCode": "FRANCAIS_GRAM_CONJ_ANALYSE",
+      "ancienLibelle": "Gram. – Conj. - Analyse",
+      "nouveauCode": "GRAM_CONJ_ANALYSE",
+      "nouveauLibelle": "Gram. - Conj. - Analyse",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "LANGUES",
+      "sousDomaineOrigine": "FRANÇAIS"
+    },
+    {
+      "ancienCode": "FRANCAIS_LECT_ECRIT_EN_LANGUE_FRANCAISE",
+      "ancienLibelle": "LECT-ECRIT EN LANGUE FRANÇAISE",
+      "nouveauCode": "LECT_ECRIT_EN_LANGUE_FRANCAISE",
+      "nouveauLibelle": "Lect - Ecrit En Langue Française",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "LANGUES",
+      "sousDomaineOrigine": "FRANÇAIS"
+    },
+    {
+      "ancienCode": "FRANCAIS_LECT_ECRIT_EN_LANGUES_CONGOLAISES",
+      "ancienLibelle": "LECT-ECRIT EN LANGUES CONGOLAISES",
+      "nouveauCode": "LECT_ECRIT_EN_LANGUES_CONGOLAISES",
+      "nouveauLibelle": "Lect - Ecrit En Langues Congolaises",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "LANGUES",
+      "sousDomaineOrigine": "FRANÇAIS"
+    },
+    {
+      "ancienCode": "FRANCAIS_LECT_ECRITURE_EN_LANGUE_FRANCAISE",
+      "ancienLibelle": "LECT. - ECRITURE EN LANGUE FRANÇAISE",
+      "nouveauCode": "LECT_ECRITURE_EN_LANGUE_FRANCAISE",
+      "nouveauLibelle": "Lect. - Ecriture En Langue Française",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "LANGUES",
+      "sousDomaineOrigine": "FRANÇAIS"
+    },
+    {
+      "ancienCode": "FRANCAIS_LECT_ECRITURE_EN_LANGUES_CONGOLAISES",
+      "ancienLibelle": "LECT. – ECRITURE EN LANGUES CONGOLAISES",
+      "nouveauCode": "LECT_ECRITURE_EN_LANGUES_CONGOLAISES",
+      "nouveauLibelle": "Lect. - Ecriture En Langues Congolaises",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "LANGUES",
+      "sousDomaineOrigine": "FRANÇAIS"
+    },
+    {
+      "ancienCode": "FRANCAIS_ORTH_PHRAS_ECRIT_ET_RED",
+      "ancienLibelle": "Orth. phras. Ecrit. & réd.",
+      "nouveauCode": "ORTH_PHRAS_ECRIT_ET_RED",
+      "nouveauLibelle": "Orth. phras. Ecrit. et réd.",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "LANGUES",
+      "sousDomaineOrigine": "FRANÇAIS"
+    },
+    {
+      "ancienCode": "FRANCAIS_ORTHOGRAPHE",
+      "ancienLibelle": "Orthographe",
+      "nouveauCode": "ORTHOGRAPHE",
+      "nouveauLibelle": "Orthographe",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "LANGUES",
+      "sousDomaineOrigine": "FRANÇAIS"
+    },
+    {
+      "ancienCode": "FRANCAIS_REDACTION",
+      "ancienLibelle": "Rédaction",
+      "nouveauCode": "REDACTION",
+      "nouveauLibelle": "Rédaction",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "LANGUES",
+      "sousDomaineOrigine": "FRANÇAIS"
+    },
+    {
+      "ancienCode": "FRANCAIS_VOCABULAIRE",
+      "ancienLibelle": "Vocabulaire",
+      "nouveauCode": "VOCABULAIRE",
+      "nouveauLibelle": "Vocabulaire",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "LANGUES",
+      "sousDomaineOrigine": "FRANÇAIS"
+    },
+    {
+      "ancienCode": "GENIE_INDUSTRIEL",
+      "ancienLibelle": "Génie industriel",
+      "nouveauCode": "GENIE_INDUSTRIEL",
+      "nouveauLibelle": "Génie industriel",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "GENIE_RURAL",
+      "ancienLibelle": "Génie rural",
+      "nouveauCode": "GENIE_RURAL",
+      "nouveauLibelle": "Génie rural",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "GEO_TOURISTIQUE",
+      "ancienLibelle": "Géo-touristique",
+      "nouveauCode": "GEO_TOURISTIQUE",
+      "nouveauLibelle": "Géo - touristique",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "GEOGRAPHIE",
+      "ancienLibelle": "Géographie",
+      "nouveauCode": "GEOGRAPHIE",
+      "nouveauLibelle": "Géographie",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "GEOGRAPHIE_ACTUALITES",
+      "ancienLibelle": "Géographie / actualités",
+      "nouveauCode": "GEOGRAPHIE_ACTUALITES",
+      "nouveauLibelle": "Géographie / actualités",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "GEOGRAPHIE_APPLIQUEE",
+      "ancienLibelle": "Géographie appliquée",
+      "nouveauCode": "GEOGRAPHIE_APPLIQUEE",
+      "nouveauLibelle": "Géographie appliquée",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "GEOGRAPHIE_TOURISTIQUE",
+      "ancienLibelle": "Géographie Touristique",
+      "nouveauCode": "GEOGRAPHIE_TOURISTIQUE",
+      "nouveauLibelle": "Géographie Touristique",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "GESTION_ET_ADMINISTRATION",
+      "ancienLibelle": "Gestion & administration",
+      "nouveauCode": "GESTION_ET_ADMINISTRATION",
+      "nouveauLibelle": "Gestion et administration",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "GRAPHOSTATIQUE",
+      "ancienLibelle": "Graphostatique",
+      "nouveauCode": "GRAPHOSTATIQUE",
+      "nouveauLibelle": "Graphostatique",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "GREC",
+      "ancienLibelle": "Grec",
+      "nouveauCode": "GREC",
+      "nouveauLibelle": "Grec",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "GYMNASTIQUE_SPORTIVE",
+      "ancienLibelle": "Gymnastique sportive",
+      "nouveauCode": "GYMNASTIQUE_SPORTIVE",
+      "nouveauLibelle": "Gymnastique sportive",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "HIST_DU_TRAVAIL_ORG_PROFES",
+      "ancienLibelle": "Hist. du travail org. Profes.",
+      "nouveauCode": "HIST_DU_TRAVAIL_ORG_PROFES",
+      "nouveauLibelle": "Hist. du travail org. Profes.",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "HISTOIRE",
+      "ancienLibelle": "Histoire",
+      "nouveauCode": "HISTOIRE",
+      "nouveauLibelle": "Histoire",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "HISTOIRE_ACTUALITES",
+      "ancienLibelle": "Histoire - Actualités",
+      "nouveauCode": "HISTOIRE_ACTUALITES",
+      "nouveauLibelle": "Histoire - Actualités",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "HISTOIRE_DE_L_ART",
+      "ancienLibelle": "Histoire de l’art",
+      "nouveauCode": "HISTOIRE_DE_L_ART",
+      "nouveauLibelle": "Histoire de l’art",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "HISTOIRE_DE_LA_COIFFURE",
+      "ancienLibelle": "Histoire de la coiffure",
+      "nouveauCode": "HISTOIRE_DE_LA_COIFFURE",
+      "nouveauLibelle": "Histoire de la coiffure",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "HISTOIRE_DE_LA_MUSIQUE",
+      "ancienLibelle": "Histoire de la musique",
+      "nouveauCode": "HISTOIRE_DE_LA_MUSIQUE",
+      "nouveauLibelle": "Histoire de la musique",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "HISTOIRE_DU_MEUBLE",
+      "ancienLibelle": "Histoire du meuble",
+      "nouveauCode": "HISTOIRE_DU_MEUBLE",
+      "nouveauLibelle": "Histoire du meuble",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "HISTOIRE_GENERALE",
+      "ancienLibelle": "Histoire générale",
+      "nouveauCode": "HISTOIRE_GENERALE",
+      "nouveauLibelle": "Histoire générale",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "HORTICULTURE",
+      "ancienLibelle": "Horticulture",
+      "nouveauCode": "HORTICULTURE",
+      "nouveauLibelle": "Horticulture",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "HYGIENE",
+      "ancienLibelle": "Hygiène",
+      "nouveauCode": "HYGIENE",
+      "nouveauLibelle": "Hygiène",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "HYGIENE_ALIMENT_ET_NUTRIT",
+      "ancienLibelle": "Hygiène aliment. et nutrit",
+      "nouveauCode": "HYGIENE_ALIMENT_ET_NUTRIT",
+      "nouveauLibelle": "Hygiène aliment. et nutrit",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "HYGIENE_ALIMENT_NUTRIT",
+      "ancienLibelle": "Hygiène aliment. / Nutrit.",
+      "nouveauCode": "HYGIENE_ALIMENT_NUTRIT",
+      "nouveauLibelle": "Hygiène aliment. / Nutrit.",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "HYGIENE_ALIMENT_NUTRITION",
+      "ancienLibelle": "Hygiène aliment. nutrition",
+      "nouveauCode": "HYGIENE_ALIMENT_NUTRITION",
+      "nouveauLibelle": "Hygiène aliment. nutrition",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "HYGIENE_ALIMENTAIRE",
+      "ancienLibelle": "Hygiène alimentaire",
+      "nouveauCode": "HYGIENE_ALIMENTAIRE",
+      "nouveauLibelle": "Hygiène alimentaire",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "HYGIENE_DE_LA_FAMILLE",
+      "ancienLibelle": "Hygiène de la famille",
+      "nouveauCode": "HYGIENE_DE_LA_FAMILLE",
+      "nouveauLibelle": "Hygiène de la famille",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "HYGIENE_ET_ASS_HYG_ALIM",
+      "ancienLibelle": "Hygiène & ass. /Hyg. Alim.",
+      "nouveauCode": "HYGIENE_ET_ASS_HYG_ALIM",
+      "nouveauLibelle": "Hygiène et ass. / Hyg. Alim.",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "HYGIENE_ET_ENVIRONNEMENT",
+      "ancienLibelle": "Hygiène & environnement",
+      "nouveauCode": "HYGIENE_ET_ENVIRONNEMENT",
+      "nouveauLibelle": "Hygiène et environnement",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "HYGIENE_GESTION_DU_TRAVAIL",
+      "ancienLibelle": "Hygiène gestion du travail",
+      "nouveauCode": "HYGIENE_GESTION_DU_TRAVAIL",
+      "nouveauLibelle": "Hygiène gestion du travail",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "HYGIENE_INDIVIDUELLE_ET_COLLECTIVE",
+      "ancienLibelle": "Hygiène individuelle & collective",
+      "nouveauCode": "HYGIENE_INDIVIDUELLE_ET_COLLECTIVE",
+      "nouveauLibelle": "Hygiène individuelle et collective",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "HYGIENE_PROFESSIONNELLE",
+      "ancienLibelle": "Hygiène professionnelle",
+      "nouveauCode": "HYGIENE_PROFESSIONNELLE",
+      "nouveauLibelle": "Hygiène professionnelle",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "ICHTYO_PATHOLOGIE",
+      "ancienLibelle": "Ichtyo – pathologie",
+      "nouveauCode": "ICHTYO_PATHOLOGIE",
+      "nouveauLibelle": "Ichtyo - pathologie",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "ICHTYOLOGIE",
+      "ancienLibelle": "Ichtyologie",
+      "nouveauCode": "ICHTYOLOGIE",
+      "nouveauLibelle": "Ichtyologie",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "INDUSTRIE_DU_BOIS",
+      "ancienLibelle": "Industrie du bois",
+      "nouveauCode": "INDUSTRIE_DU_BOIS",
+      "nouveauLibelle": "Industrie du bois",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "INFORMATIQUE",
+      "ancienLibelle": "Informatique",
+      "nouveauCode": "INFORMATIQUE",
+      "nouveauLibelle": "Informatique",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "INITIATION_A_L_ART_DRAMATIQUE",
+      "ancienLibelle": "Initiation à l’art dramatique",
+      "nouveauCode": "INITIATION_A_L_ART_DRAMATIQUE",
+      "nouveauLibelle": "Initiation à l’art dramatique",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "INITIATION_A_L_ART_PLASTIQUE",
+      "ancienLibelle": "Initiation à l’art plastique",
+      "nouveauCode": "INITIATION_A_L_ART_PLASTIQUE",
+      "nouveauLibelle": "Initiation à l’art plastique",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "INITIATION_A_L_H_P",
+      "ancienLibelle": "Initiation à l’H.P.",
+      "nouveauCode": "INITIATION_A_L_H_P",
+      "nouveauLibelle": "Initiation à l’H.P.",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "INITIATION_A_L_HYDRO_PNEU",
+      "ancienLibelle": "Initiation à l’Hydro. Pneu.",
+      "nouveauCode": "INITIATION_A_L_HYDRO_PNEU",
+      "nouveauLibelle": "Initiation à l’Hydro. Pneu.",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "INSTALLATION_POMPAGE",
+      "ancienLibelle": "Installation pompage",
+      "nouveauCode": "INSTALLATION_POMPAGE",
+      "nouveauLibelle": "Installation pompage",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "INSTITUTIONS",
+      "ancienLibelle": "Institutions",
+      "nouveauCode": "INSTITUTIONS",
+      "nouveauLibelle": "Institutions",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "INSTITUTIONS_INTERNATIONALES",
+      "ancienLibelle": "Institutions internationales",
+      "nouveauCode": "INSTITUTIONS_INTERNATIONALES",
+      "nouveauLibelle": "Institutions internationales",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "INSTR_AUX_SCIENCES_SOCIALES_I_S_S",
+      "ancienLibelle": "Instr. aux sciences sociales (I.S.S.)",
+      "nouveauCode": "INSTR_AUX_SCIENCES_SOCIALES_I_S_S",
+      "nouveauLibelle": "Instr. aux sciences sociales (I.S.S.)",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "INSTR_METH_MESURES",
+      "ancienLibelle": "Instr. méth. Mesures",
+      "nouveauCode": "INSTR_METH_MESURES",
+      "nouveauLibelle": "Instr. méth. Mesures",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "INSTRUMENTS_PRINCIPAUX",
+      "ancienLibelle": "Instruments principaux",
+      "nouveauCode": "INSTRUMENTS_PRINCIPAUX",
+      "nouveauLibelle": "Instruments principaux",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "INSTRUMENTS_TRADITIONNELS",
+      "ancienLibelle": "Instruments traditionnels",
+      "nouveauCode": "INSTRUMENTS_TRADITIONNELS",
+      "nouveauLibelle": "Instruments traditionnels",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "INTERPRETATION_MUSICALE",
+      "ancienLibelle": "Interprétation musicale",
+      "nouveauCode": "INTERPRETATION_MUSICALE",
+      "nouveauLibelle": "Interprétation musicale",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "INTRO_AUX_INST_SOCIALES_I_I_S",
+      "ancienLibelle": "Intro. aux inst. sociales (I.I.S.)",
+      "nouveauCode": "INTRO_AUX_INST_SOCIALES_I_I_S",
+      "nouveauLibelle": "Intro. aux inst. sociales (I.I.S.)",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "INVENTAIRE_FORESTIER",
+      "ancienLibelle": "Inventaire forestier",
+      "nouveauCode": "INVENTAIRE_FORESTIER",
+      "nouveauLibelle": "Inventaire forestier",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "L_UNIVERS_SOCIAL_ET_ENVIRONNEMENT_ED_CIV_ET_MORALE",
+      "ancienLibelle": "Ed. Civ. & Morale",
+      "nouveauCode": "EDUCATION_CIVIQUE_ET_MORALE",
+      "nouveauLibelle": "Education civique et morale",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "L’UNIVERS SOCIAL ET ENVIRONNEMENT"
+    },
+    {
+      "ancienCode": "L_UNIVERS_SOCIAL_ET_ENVIRONNEMENT_ED_CIVIQUE_ET_MORALE",
+      "ancienLibelle": "Ed. civique et morale",
+      "nouveauCode": "EDUCATION_CIVIQUE_ET_MORALE",
+      "nouveauLibelle": "Education civique et morale",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "L'UNIVERS SOCIAL ET ENVIRONNEMENT"
+    },
+    {
+      "ancienCode": "L_UNIVERS_SOCIAL_ET_ENVIRONNEMENT_ED_SANTE_ET_ENV",
+      "ancienLibelle": "Ed. Santé & Env.",
+      "nouveauCode": "ED_SANTE_ET_ENV",
+      "nouveauLibelle": "Ed. Santé et Env.",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "L’UNIVERS SOCIAL ET ENVIRONNEMENT"
+    },
+    {
+      "ancienCode": "L_UNIVERS_SOCIAL_ET_ENVIRONNEMENT_EDUCATION_A_LA_VIE",
+      "ancienLibelle": "Education à la vie",
+      "nouveauCode": "EDUCATION_A_LA_VIE",
+      "nouveauLibelle": "Education à la vie",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "L'UNIVERS SOCIAL ET ENVIRONNEMENT"
+    },
+    {
+      "ancienCode": "L_UNIVERS_SOCIAL_ET_ENVIRONNEMENT_EDUCATION_CIV_ET_MORALE",
+      "ancienLibelle": "Education civ. & morale",
+      "nouveauCode": "EDUCATION_CIVIQUE_ET_MORALE",
+      "nouveauLibelle": "Education civique et morale",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "L’UNIVERS SOCIAL ET ENVIRONNEMENT"
+    },
+    {
+      "ancienCode": "L_UNIVERS_SOCIAL_ET_ENVIRONNEMENT_EDUCATION_SANTE_ET_ENV",
+      "ancienLibelle": "Education santé & env.",
+      "nouveauCode": "EDUCATION_SANTE_ET_ENV",
+      "nouveauLibelle": "Education Santé et Env.",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "L’UNIVERS SOCIAL ET ENVIRONNEMENT"
+    },
+    {
+      "ancienCode": "L_UNIVERS_SOCIAL_ET_ENVIRONNEMENT_GEOGRAPHIE",
+      "ancienLibelle": "Géographie",
+      "nouveauCode": "GEOGRAPHIE",
+      "nouveauLibelle": "Géographie",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "L’UNIVERS SOCIAL ET ENVIRONNEMENT"
+    },
+    {
+      "ancienCode": "L_UNIVERS_SOCIAL_ET_ENVIRONNEMENT_HISTOIRE",
+      "ancienLibelle": "Histoire",
+      "nouveauCode": "HISTOIRE",
+      "nouveauLibelle": "Histoire",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "L’UNIVERS SOCIAL ET ENVIRONNEMENT"
+    },
+    {
+      "ancienCode": "L_UNIVERS_SOCIAL_ET_ENVIRONNEMENT_RELIGION",
+      "ancienLibelle": "Religion",
+      "nouveauCode": "RELIGION",
+      "nouveauLibelle": "Religion",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "L'UNIVERS SOCIAL ET ENVIRONNEMENT"
+    },
+    {
+      "ancienCode": "L_UNIVERS_SOCIAL_ET_ENVIRONNEMENT_SOCIOLOGIE_AFRICAINE",
+      "ancienLibelle": "Sociologie africaine",
+      "nouveauCode": "SOCIOLOGIE_AFRICAINE",
+      "nouveauLibelle": "Sociologie africaine",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "L’UNIVERS SOCIAL ET ENVIRONNEMENT"
+    },
+    {
+      "ancienCode": "LABO_ELECTRIQUE",
+      "ancienLibelle": "Labo. électrique",
+      "nouveauCode": "LABO_ELECTRIQUE",
+      "nouveauLibelle": "Labo. électrique",
+      "strategie": "CONSERVATION_HOMONYME_OFFICIEL"
+    },
+    {
+      "ancienCode": "LABO_ELECTRIQUE_2",
+      "ancienLibelle": "Labo. électrique",
+      "nouveauCode": "LABO_ELECTRIQUE_2",
+      "nouveauLibelle": "Labo. électrique",
+      "strategie": "CONSERVATION_HOMONYME_OFFICIEL"
+    },
+    {
+      "ancienCode": "LANGUES_ANGLAIS",
+      "ancienLibelle": "Anglais",
+      "nouveauCode": "ANGLAIS",
+      "nouveauLibelle": "Anglais",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "LANGUES"
+    },
+    {
+      "ancienCode": "LANGUES_CONGOLAISES_EXP_ORALE_ET_VOCAB",
+      "ancienLibelle": "Exp. Orale & Vocab.",
+      "nouveauCode": "EXP_ORALE_ET_VOCAB",
+      "nouveauLibelle": "Exp. Orale et Vocab.",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "LANGUES",
+      "sousDomaineOrigine": "LANGUES CONGOLAISES"
+    },
+    {
+      "ancienCode": "LANGUES_CONGOLAISES_EXP_ORALE_ET_VOCABULAIRE",
+      "ancienLibelle": "Exp. Orale & Vocabulaire",
+      "nouveauCode": "EXP_ORALE_ET_VOCABULAIRE",
+      "nouveauLibelle": "Exp. Orale et Vocabulaire",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "LANGUES",
+      "sousDomaineOrigine": "LANGUES CONGOLAISES"
+    },
+    {
+      "ancienCode": "LANGUES_CONGOLAISES_EXPR_ORALE_ET_VOCAB",
+      "ancienLibelle": "Expr. Orale & Vocab.",
+      "nouveauCode": "EXPR_ORALE_ET_VOCAB",
+      "nouveauLibelle": "Expr. Orale et Vocab.",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "LANGUES",
+      "sousDomaineOrigine": "LANGUES CONGOLAISES"
+    },
+    {
+      "ancienCode": "LANGUES_CONGOLAISES_EXPRESSION_ECRITE",
+      "ancienLibelle": "Expression Ecrite",
+      "nouveauCode": "EXPRESSION_ECRITE",
+      "nouveauLibelle": "Expression Ecrite",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "LANGUES",
+      "sousDomaineOrigine": "LANGUES CONGOLAISES"
+    },
+    {
+      "ancienCode": "LANGUES_CONGOLAISES_EXPRESSION_ORALE",
+      "ancienLibelle": "Expression Orale",
+      "nouveauCode": "LANGUES_CONGOLAISES_EXPRESSION_ORALE",
+      "nouveauLibelle": "Expression Orale",
+      "strategie": "CONSERVATION_HOMONYME_OFFICIEL",
+      "domaineOrigine": "LANGUES",
+      "sousDomaineOrigine": "LANGUES CONGOLAISES"
+    },
+    {
+      "ancienCode": "LANGUES_CONGOLAISES_GRAM_ET_CONJ",
+      "ancienLibelle": "Gram. & Conj.",
+      "nouveauCode": "GRAM_ET_CONJ",
+      "nouveauLibelle": "Gram. et Conj.",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "LANGUES",
+      "sousDomaineOrigine": "LANGUES CONGOLAISES"
+    },
+    {
+      "ancienCode": "LANGUES_CONGOLAISES_GRAMMAIRE_ET_CONJUG",
+      "ancienLibelle": "Grammaire & Conjug.",
+      "nouveauCode": "GRAMMAIRE_ET_CONJUG",
+      "nouveauLibelle": "Grammaire et Conjug.",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "LANGUES",
+      "sousDomaineOrigine": "LANGUES CONGOLAISES"
+    },
+    {
+      "ancienCode": "LANGUES_CONGOLAISES_ORTH_ET_REDACTION",
+      "ancienLibelle": "Orth. & Rédaction",
+      "nouveauCode": "ORTH_ET_REDACTION",
+      "nouveauLibelle": "Orth. et Rédaction",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "LANGUES",
+      "sousDomaineOrigine": "LANGUES CONGOLAISES"
+    },
+    {
+      "ancienCode": "LANGUES_FRANCAIS",
+      "ancienLibelle": "Français",
+      "nouveauCode": "FRANCAIS",
+      "nouveauLibelle": "Français",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "LANGUES"
+    },
+    {
+      "ancienCode": "LANGUES_LOCALES",
+      "ancienLibelle": "Langues locales",
+      "nouveauCode": "LANGUES_LOCALES",
+      "nouveauLibelle": "Langues locales",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "LANGUES_NATIONALES",
+      "ancienLibelle": "Langues nationales",
+      "nouveauCode": "LANGUES_NATIONALES",
+      "nouveauLibelle": "Langues nationales",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "LANGUES_SOCAF",
+      "ancienLibelle": "Langues / Socaf.",
+      "nouveauCode": "LANGUES_SOCAF",
+      "nouveauLibelle": "Langues / Socaf.",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "LATIN",
+      "ancienLibelle": "Latin",
+      "nouveauCode": "LATIN",
+      "nouveauLibelle": "Latin",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "LEGISLATION",
+      "ancienLibelle": "Législation",
+      "nouveauCode": "LEGISLATION",
+      "nouveauLibelle": "Législation",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "LEGISLATION_DU_TRAVAIL",
+      "ancienLibelle": "Législation du travail",
+      "nouveauCode": "LEGISLATION_DU_TRAVAIL",
+      "nouveauLibelle": "Législation du travail",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "LEGISLATION_FISCALE_ET_SOC",
+      "ancienLibelle": "Législation fiscale & soc.",
+      "nouveauCode": "LEGISLATION_FISCALE_ET_SOC",
+      "nouveauLibelle": "Législation fiscale et soc.",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "LEGISLATION_FORESTIERE",
+      "ancienLibelle": "Législation forestière",
+      "nouveauCode": "LEGISLATION_FORESTIERE",
+      "nouveauLibelle": "Législation forestière",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "LEGISLATION_ORG_DU_TRAVAIL",
+      "ancienLibelle": "Législation / Org. du travail",
+      "nouveauCode": "LEGISLATION_ORG_DU_TRAVAIL",
+      "nouveauLibelle": "Législation / Org. du travail",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "LEGISLATION_SOCIALE",
+      "ancienLibelle": "Législation sociale",
+      "nouveauCode": "LEGISLATION_SOCIALE",
+      "nouveauLibelle": "Législation sociale",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "MACHINE_ELECTRIQUE",
+      "ancienLibelle": "Machine électrique",
+      "nouveauCode": "MACHINE_ELECTRIQUE",
+      "nouveauLibelle": "Machine électrique",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "MACHINES_ELECTRIQUES",
+      "ancienLibelle": "Machines électriques",
+      "nouveauCode": "MACHINES_ELECTRIQUES",
+      "nouveauLibelle": "Machines électriques",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "MAINTENANCE_INFORMATIQUE",
+      "ancienLibelle": "Maintenance informatique",
+      "nouveauCode": "MAINTENANCE_INFORMATIQUE",
+      "nouveauLibelle": "Maintenance informatique",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "MALADIES_INFECTIEUSES",
+      "ancienLibelle": "Maladies infectieuses",
+      "nouveauCode": "MALADIES_INFECTIEUSES",
+      "nouveauLibelle": "Maladies infectieuses",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "MALADIES_PARASITAIRES",
+      "ancienLibelle": "Maladies parasitaires",
+      "nouveauCode": "MALADIES_PARASITAIRES",
+      "nouveauLibelle": "Maladies parasitaires",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "MATHEMATIQUE",
+      "ancienLibelle": "Mathématique",
+      "nouveauCode": "MATHEMATIQUE",
+      "nouveauLibelle": "Mathématique",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "MATHEMATIQUES",
+      "ancienLibelle": "Mathématiques",
+      "nouveauCode": "MATHEMATIQUES",
+      "nouveauLibelle": "Mathématiques",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "MATHEMATIQUES_ALGEBRE",
+      "ancienLibelle": "Algèbre",
+      "nouveauCode": "ALGEBRE",
+      "nouveauLibelle": "Algèbre",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "SCIENCES",
+      "sousDomaineOrigine": "Mathématiques"
+    },
+    {
+      "ancienCode": "MATHEMATIQUES_ALGEBRE_STAT_ET_ANALY",
+      "ancienLibelle": "Algèbre, Stat. & Analy.",
+      "nouveauCode": "ALGEBRE_STAT_ET_ANALY",
+      "nouveauLibelle": "Algèbre, Stat. et Analy.",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "SCIENCES",
+      "sousDomaineOrigine": "mathématiques"
+    },
+    {
+      "ancienCode": "MATHEMATIQUES_ARITHMETIQUE",
+      "ancienLibelle": "Arithmétique",
+      "nouveauCode": "ARITHMETIQUE",
+      "nouveauLibelle": "Arithmétique",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "SCIENCES",
+      "sousDomaineOrigine": "Mathématiques"
+    },
+    {
+      "ancienCode": "MATHEMATIQUES_DESSIN_SCIENTIFIQUE",
+      "ancienLibelle": "Dessin scientifique",
+      "nouveauCode": "DESSIN_SCIENTIFIQUE",
+      "nouveauLibelle": "Dessin scientifique",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "SCIENCES",
+      "sousDomaineOrigine": "mathématiques"
+    },
+    {
+      "ancienCode": "MATHEMATIQUES_FORMES_GEOMETRIQUES",
+      "ancienLibelle": "Formes géométriques",
+      "nouveauCode": "FORMES_GEOMETRIQUES",
+      "nouveauLibelle": "Formes géométriques",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "MATHEMATIQUES, SCIENCES ET TECHNOLOGIE",
+      "sousDomaineOrigine": "MATHEMATIQUES"
+    },
+    {
+      "ancienCode": "MATHEMATIQUES_GEOMETRIE",
+      "ancienLibelle": "Géométrie",
+      "nouveauCode": "GEOMETRIE",
+      "nouveauLibelle": "Géométrie",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "SCIENCES",
+      "sousDomaineOrigine": "Mathématiques"
+    },
+    {
+      "ancienCode": "MATHEMATIQUES_GEOMETRIE_ET_TRIGO",
+      "ancienLibelle": "Géometrie et Trigo.",
+      "nouveauCode": "GEOMETRIE_ET_TRIGO",
+      "nouveauLibelle": "Géometrie et Trigo.",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "SCIENCES",
+      "sousDomaineOrigine": "mathématiques"
+    },
+    {
+      "ancienCode": "MATHEMATIQUES_MESURES_DES_GRANDEURS",
+      "ancienLibelle": "Mesures des grandeurs",
+      "nouveauCode": "MESURES_DES_GRANDEURS",
+      "nouveauLibelle": "Mesures des grandeurs",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "MATHEMATIQUES, SCIENCES ET TECHNOLOGIE",
+      "sousDomaineOrigine": "MATHEMATIQUES"
+    },
+    {
+      "ancienCode": "MATHEMATIQUES_NUMERATION",
+      "ancienLibelle": "Numération",
+      "nouveauCode": "NUMERATION",
+      "nouveauLibelle": "Numération",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "MATHEMATIQUES, SCIENCES ET TECHNOLOGIE",
+      "sousDomaineOrigine": "MATHEMATIQUES"
+    },
+    {
+      "ancienCode": "MATHEMATIQUES_OPERATIONS",
+      "ancienLibelle": "Opérations",
+      "nouveauCode": "OPERATIONS",
+      "nouveauLibelle": "Opérations",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "MATHEMATIQUES, SCIENCES ET TECHNOLOGIE",
+      "sousDomaineOrigine": "MATHEMATIQUES"
+    },
+    {
+      "ancienCode": "MATHEMATIQUES_PROBLEMES",
+      "ancienLibelle": "Problèmes",
+      "nouveauCode": "PROBLEMES",
+      "nouveauLibelle": "Problèmes",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "MATHEMATIQUES, SCIENCES ET TECHNOLOGIE",
+      "sousDomaineOrigine": "MATHEMATIQUES"
+    },
+    {
+      "ancienCode": "MATHEMATIQUES_STATISTIQUE",
+      "ancienLibelle": "Statistique",
+      "nouveauCode": "STATISTIQUE",
+      "nouveauLibelle": "Statistique",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "SCIENCES",
+      "sousDomaineOrigine": "Mathématiques"
+    },
+    {
+      "ancienCode": "MATHEMATIQUES_TRIGO_ET_STATISTIQUES",
+      "ancienLibelle": "Trigo. & Statistiques",
+      "nouveauCode": "TRIGO_ET_STATISTIQUES",
+      "nouveauLibelle": "Trigo. et Statistiques",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "SCIENCES",
+      "sousDomaineOrigine": "mathématiques"
+    },
+    {
+      "ancienCode": "MAX",
+      "ancienLibelle": "MAX",
+      "nouveauCode": "MAX",
+      "nouveauLibelle": "MAX",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "MECANIQUE",
+      "ancienLibelle": "Mécanique",
+      "nouveauCode": "MECANIQUE",
+      "nouveauLibelle": "Mécanique",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "MECANIQUE_APPLIQUEE",
+      "ancienLibelle": "Mécanique appliquée",
+      "nouveauCode": "MECANIQUE_APPLIQUEE",
+      "nouveauLibelle": "Mécanique appliquée",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "MECANIQUE_GENERALE",
+      "ancienLibelle": "Mécanique générale",
+      "nouveauCode": "MECANIQUE_GENERALE",
+      "nouveauLibelle": "Mécanique générale",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "MECANIQUE_OUTILLAGES_FORESTIERS",
+      "ancienLibelle": "Mécanique-outillages forestiers",
+      "nouveauCode": "MECANIQUE_OUTILLAGES_FORESTIERS",
+      "nouveauLibelle": "Mécanique - outillages forestiers",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "MECANISME",
+      "ancienLibelle": "Mécanisme",
+      "nouveauCode": "MECANISME",
+      "nouveauLibelle": "Mécanisme",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "MENUISERIE_DU_BAT",
+      "ancienLibelle": "Menuiserie du bât.",
+      "nouveauCode": "MENUISERIE_DU_BAT",
+      "nouveauLibelle": "Menuiserie du bât.",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "METALLURGIE",
+      "ancienLibelle": "Métallurgie",
+      "nouveauCode": "METALLURGIE",
+      "nouveauLibelle": "Métallurgie",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "METHODE_DE_L_ETUDIANT",
+      "ancienLibelle": "Méthode de l’étudiant",
+      "nouveauCode": "METHODE_DE_L_ETUDIANT",
+      "nouveauLibelle": "Méthode de l’étudiant",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "METHODOLOGIE",
+      "ancienLibelle": "Méthodologie",
+      "nouveauCode": "METHODOLOGIE",
+      "nouveauLibelle": "Méthodologie",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "MICROBIOLOGIE",
+      "ancienLibelle": "Microbiologie",
+      "nouveauCode": "MICROBIOLOGIE",
+      "nouveauLibelle": "Microbiologie",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "MICROBIOLOGIE_ALIMENTAIRE",
+      "ancienLibelle": "Microbiologie alimentaire",
+      "nouveauCode": "MICROBIOLOGIE_ALIMENTAIRE",
+      "nouveauLibelle": "Microbiologie alimentaire",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "MICROBIOLOGIE_BIO",
+      "ancienLibelle": "Microbiologie / Bio.",
+      "nouveauCode": "MICROBIOLOGIE_BIO",
+      "nouveauLibelle": "Microbiologie / Bio.",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "MOTEUR_THERMIQUE",
+      "ancienLibelle": "Moteur thermique",
+      "nouveauCode": "MOTEUR_THERMIQUE",
+      "nouveauLibelle": "Moteur thermique",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "MUSICOLOGIE",
+      "ancienLibelle": "Musicologie",
+      "nouveauCode": "MUSICOLOGIE",
+      "nouveauLibelle": "Musicologie",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "NAVIGATION",
+      "ancienLibelle": "Navigation",
+      "nouveauCode": "NAVIGATION",
+      "nouveauLibelle": "Navigation",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "NOLOGIE_ET_BOISSONS",
+      "ancienLibelle": "Œnologie & boissons",
+      "nouveauCode": "NOLOGIE_ET_BOISSONS",
+      "nouveauLibelle": "Œnologie et boissons",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "NUTRITION_GENERALE",
+      "ancienLibelle": "Nutrition générale",
+      "nouveauCode": "NUTRITION_GENERALE",
+      "nouveauLibelle": "Nutrition générale",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "O_D_T",
+      "ancienLibelle": "O.D.T.",
+      "nouveauCode": "O_D_T",
+      "nouveauLibelle": "O.d.t.",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "OBSTETRIQUE",
+      "ancienLibelle": "Obstétrique",
+      "nouveauCode": "OBSTETRIQUE",
+      "nouveauLibelle": "Obstétrique",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "OBT",
+      "ancienLibelle": "Obt.",
+      "nouveauCode": "OBT",
+      "nouveauLibelle": "Obt.",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "ORGAN_DU_TRAVAIL_ET_GESTION",
+      "ancienLibelle": "Organ. du travail et gestion",
+      "nouveauCode": "ORGAN_DU_TRAVAIL_ET_GESTION",
+      "nouveauLibelle": "Organ. du travail et gestion",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "ORGANES_DE_TRANSMISSION",
+      "ancienLibelle": "Organes de transmission",
+      "nouveauCode": "ORGANES_DE_TRANSMISSION",
+      "nouveauLibelle": "Organes de transmission",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "ORGANISATION",
+      "ancienLibelle": "Organisation",
+      "nouveauCode": "ORGANISATION",
+      "nouveauLibelle": "Organisation",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "ORGANISATION_DE_BUREAU",
+      "ancienLibelle": "Organisation de bureau",
+      "nouveauCode": "ORGANISATION_DE_BUREAU",
+      "nouveauLibelle": "Organisation de bureau",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "ORGANISATION_DES_ENTREPR",
+      "ancienLibelle": "Organisation des entrepr.",
+      "nouveauCode": "ORGANISATION_DES_ENTREPR",
+      "nouveauLibelle": "Organisation des entrepr.",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "ORGANISATION_DES_ENTREPRISES",
+      "ancienLibelle": "Organisation des entreprises",
+      "nouveauCode": "ORGANISATION_DES_ENTREPRISES",
+      "nouveauLibelle": "Organisation des entreprises",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "ORGANISATION_DU_TRAVAIL",
+      "ancienLibelle": "Organisation du travail",
+      "nouveauCode": "ORGANISATION_DU_TRAVAIL",
+      "nouveauLibelle": "Organisation du travail",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "ORGANISATION_INDUSTRIELLE",
+      "ancienLibelle": "Organisation industrielle",
+      "nouveauCode": "ORGANISATION_INDUSTRIELLE",
+      "nouveauLibelle": "Organisation industrielle",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "OUTILLAGE",
+      "ancienLibelle": "Outillage",
+      "nouveauCode": "OUTILLAGE",
+      "nouveauLibelle": "Outillage",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "OUTILLAGE_DE_CHANTIER",
+      "ancienLibelle": "Outillage de chantier",
+      "nouveauCode": "OUTILLAGE_DE_CHANTIER",
+      "nouveauLibelle": "Outillage de chantier",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "PARASITOLOGIE",
+      "ancienLibelle": "Parasitologie",
+      "nouveauCode": "PARASITOLOGIE",
+      "nouveauLibelle": "Parasitologie",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "PATHOLOGIE",
+      "ancienLibelle": "Pathologie",
+      "nouveauCode": "PATHOLOGIE",
+      "nouveauLibelle": "Pathologie",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "PATHOLOGIE_DE_LA_NUTRITION",
+      "ancienLibelle": "Pathologie de la nutrition",
+      "nouveauCode": "PATHOLOGIE_DE_LA_NUTRITION",
+      "nouveauLibelle": "Pathologie de la nutrition",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "PATHOLOGIE_FORESTIERE",
+      "ancienLibelle": "Pathologie forestière",
+      "nouveauCode": "PATHOLOGIE_FORESTIERE",
+      "nouveauLibelle": "Pathologie forestière",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "PECHE",
+      "ancienLibelle": "Pêche",
+      "nouveauCode": "PECHE",
+      "nouveauLibelle": "Pêche",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "PEDAGOGIE",
+      "ancienLibelle": "Pédagogie",
+      "nouveauCode": "PEDAGOGIE",
+      "nouveauLibelle": "Pédagogie",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "PEDAGOGIE_GENERALE",
+      "ancienLibelle": "Pédagogie générale",
+      "nouveauCode": "PEDAGOGIE_GENERALE",
+      "nouveauLibelle": "Pédagogie générale",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "PEDOLOGIE",
+      "ancienLibelle": "Pédologie",
+      "nouveauCode": "PEDOLOGIE",
+      "nouveauLibelle": "Pédologie",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "PHARMACOLOGIE",
+      "ancienLibelle": "Pharmacologie",
+      "nouveauCode": "PHARMACOLOGIE",
+      "nouveauLibelle": "Pharmacologie",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "PHILOSOPHIE",
+      "ancienLibelle": "Philosophie",
+      "nouveauCode": "PHILOSOPHIE",
+      "nouveauLibelle": "Philosophie",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "PHYSIOLOGIE_VEGETALE",
+      "ancienLibelle": "Physiologie végétale",
+      "nouveauCode": "PHYSIOLOGIE_VEGETALE",
+      "nouveauLibelle": "Physiologie végétale",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "PHYSIQUE",
+      "ancienLibelle": "Physique",
+      "nouveauCode": "PHYSIQUE",
+      "nouveauLibelle": "Physique",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "PHYTOPATHOLOGIE",
+      "ancienLibelle": "Phytopathologie",
+      "nouveauCode": "PHYTOPATHOLOGIE",
+      "nouveauLibelle": "Phytopathologie",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "PISCICULTURE",
+      "ancienLibelle": "Pisciculture",
+      "nouveauCode": "PISCICULTURE",
+      "nouveauLibelle": "Pisciculture",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "POUR_LE_CONTROLE",
+      "ancienLibelle": "Pour le contrôle",
+      "nouveauCode": "POUR_LE_CONTROLE",
+      "nouveauLibelle": "Pour le contrôle",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "PRAT_DE_SALLE_ET_CUISINE",
+      "ancienLibelle": "Prat. de salle et cuisine",
+      "nouveauCode": "PRAT_DE_SALLE_ET_CUISINE",
+      "nouveauLibelle": "Prat. de salle et cuisine",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "PRATIQUE_D_APPR_DE_L_E_P_S",
+      "ancienLibelle": "Pratique d’appr. de l’E.P.S.",
+      "nouveauCode": "PRATIQUE_D_APPR_DE_L_E_P_S",
+      "nouveauLibelle": "Pratique d’appr. de l’E.P.S.",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "PRATIQUE_D_ENSEI_DE_L_E_P_S",
+      "ancienLibelle": "Pratique d’ensei. de l’E.P.S.",
+      "nouveauCode": "PRATIQUE_D_ENSEI_DE_L_E_P_S",
+      "nouveauLibelle": "Pratique d’ensei. de l’E.P.S.",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "PRATIQUE_D_ENSEIGNEMENT",
+      "ancienLibelle": "Pratique d’Enseignement",
+      "nouveauCode": "PRATIQUE_D_ENSEIGNEMENT",
+      "nouveauLibelle": "Pratique d’Enseignement",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "PRATIQUE_DE_CLASSE",
+      "ancienLibelle": "Pratique de classe",
+      "nouveauCode": "PRATIQUE_DE_CLASSE",
+      "nouveauLibelle": "Pratique de classe",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "PRATIQUE_HOTESSE_1_MOIS",
+      "ancienLibelle": "Pratique hôtesse 1 mois",
+      "nouveauCode": "PRATIQUE_HOTESSE_1_MOIS",
+      "nouveauLibelle": "Pratique hôtesse 1 mois",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "PRATIQUE_PROFESSIONNELLE",
+      "ancienLibelle": "Pratique professionnelle",
+      "nouveauCode": "PRATIQUE_PROFESSIONNELLE",
+      "nouveauLibelle": "Pratique professionnelle",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "PRATIQUE_SPORTIVE",
+      "ancienLibelle": "Pratique sportive",
+      "nouveauCode": "PRATIQUE_SPORTIVE",
+      "nouveauLibelle": "Pratique sportive",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "PRINCIPE_DE_L_EDUCATION",
+      "ancienLibelle": "Principe de l’éducation",
+      "nouveauCode": "PRINCIPE_DE_L_EDUCATION",
+      "nouveauLibelle": "Principe de l’éducation",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "PROCEDES_DE_CONSTRUCTION",
+      "ancienLibelle": "Procédés de construction",
+      "nouveauCode": "PROCEDES_DE_CONSTRUCTION",
+      "nouveauLibelle": "Procédés de construction",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "PROCEDES_DES_CONSTRUCT",
+      "ancienLibelle": "Procédés des construct.",
+      "nouveauCode": "PROCEDES_DES_CONSTRUCT",
+      "nouveauLibelle": "Procédés des construct.",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "PROTECTION_DE_L_ENFANT",
+      "ancienLibelle": "Protection de l’enfant",
+      "nouveauCode": "PROTECTION_DE_L_ENFANT",
+      "nouveauLibelle": "Protection de l’enfant",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "PSYCHO_DE_L_ENFANT_ET_ADOL",
+      "ancienLibelle": "Psycho. de l’enfant & adol.",
+      "nouveauCode": "PSYCHO_DE_L_ENFANT_ET_ADOL",
+      "nouveauLibelle": "Psycho. de l’enfant et adol.",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "PSYCHO_PEDAGOGIE",
+      "ancienLibelle": "Psycho.-pédagogie",
+      "nouveauCode": "PSYCHO_PEDAGOGIE",
+      "nouveauLibelle": "Psycho. - pédagogie",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "PSYCHOLOGIE",
+      "ancienLibelle": "Psychologie",
+      "nouveauCode": "PSYCHOLOGIE",
+      "nouveauLibelle": "Psychologie",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "PSYCHOLOGIE_APPLIQUEE",
+      "ancienLibelle": "Psychologie appliquée",
+      "nouveauCode": "PSYCHOLOGIE_APPLIQUEE",
+      "nouveauLibelle": "Psychologie appliquée",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "PSYCHOLOGIE_DE_CLIENT",
+      "ancienLibelle": "Psychologie de client",
+      "nouveauCode": "PSYCHOLOGIE_DE_CLIENT",
+      "nouveauLibelle": "Psychologie de client",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "PSYCHOLOGIE_DE_L_ENFANT",
+      "ancienLibelle": "Psychologie de l’enfant",
+      "nouveauCode": "PSYCHOLOGIE_DE_L_ENFANT",
+      "nouveauLibelle": "Psychologie de l’enfant",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "PSYCHOLOGIE_GENERALE",
+      "ancienLibelle": "Psychologie générale",
+      "nouveauCode": "PSYCHOLOGIE_GENERALE",
+      "nouveauLibelle": "Psychologie générale",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "PSYCHOLOGIE_SOCIALE",
+      "ancienLibelle": "Psychologie sociale",
+      "nouveauCode": "PSYCHOLOGIE_SOCIALE",
+      "nouveauLibelle": "Psychologie sociale",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "PSYCHOMOTRICITE",
+      "ancienLibelle": "Psychomotricité",
+      "nouveauCode": "PSYCHOMOTRICITE",
+      "nouveauLibelle": "Psychomotricité",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "QUESTION_D_ACTUALITES",
+      "ancienLibelle": "Question d’actualités",
+      "nouveauCode": "QUESTION_D_ACTUALITES",
+      "nouveauLibelle": "Question d’actualités",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "QUESTIONS_D_ACTUALITES",
+      "ancienLibelle": "Questions d’actualités",
+      "nouveauCode": "QUESTIONS_D_ACTUALITES",
+      "nouveauLibelle": "Questions d’actualités",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "R_D_M",
+      "ancienLibelle": "R.D.M.",
+      "nouveauCode": "R_D_M",
+      "nouveauLibelle": "R.d.m.",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "RELIGION",
+      "ancienLibelle": "Religion",
+      "nouveauCode": "RELIGION",
+      "nouveauLibelle": "Religion",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "RESIS_ELEMENTS_MACH",
+      "ancienLibelle": "Résis. + éléments mach.",
+      "nouveauCode": "RESIS_ELEMENTS_MACH",
+      "nouveauLibelle": "Résis. + éléments mach.",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "RESIST_DES_MATERIAUX",
+      "ancienLibelle": "Résist. des matériaux",
+      "nouveauCode": "RESIST_DES_MATERIAUX",
+      "nouveauLibelle": "Résist. des matériaux",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "RESIST_ELEMENTS_MATER",
+      "ancienLibelle": "Résist.+ Eléments matér.",
+      "nouveauCode": "RESIST_ELEMENTS_MATER",
+      "nouveauLibelle": "Résist.+ Eléments matér.",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "RESISTANCE_DES_MATER",
+      "ancienLibelle": "Résistance des mater.",
+      "nouveauCode": "RESISTANCE_DES_MATER",
+      "nouveauLibelle": "Résistance des mater.",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "RESISTANCE_DES_MATERIAUX",
+      "ancienLibelle": "Résistance des matériaux",
+      "nouveauCode": "RESISTANCE_DES_MATERIAUX",
+      "nouveauLibelle": "Résistance des matériaux",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "RESISTANCE_MATERIELLE",
+      "ancienLibelle": "Résistance matérielle",
+      "nouveauCode": "RESISTANCE_MATERIELLE",
+      "nouveauLibelle": "Résistance matérielle",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "RESISTANCES_DES_MATER",
+      "ancienLibelle": "Résistances des matér.",
+      "nouveauCode": "RESISTANCES_DES_MATER",
+      "nouveauLibelle": "Résistances des matér.",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "SCHEMA",
+      "ancienLibelle": "Schéma",
+      "nouveauCode": "SCHEMA",
+      "nouveauLibelle": "Schéma",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "SCHEMAS_ELECTRIQUE",
+      "ancienLibelle": "Schémas électrique",
+      "nouveauCode": "SCHEMAS_ELECTRIQUE",
+      "nouveauLibelle": "Schémas électrique",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "SCHEMAS_ELECTRIQUES",
+      "ancienLibelle": "Schémas électriques",
+      "nouveauCode": "SCHEMAS_ELECTRIQUES",
+      "nouveauLibelle": "Schémas électriques",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "SCHEMAS_H_P",
+      "ancienLibelle": "Schémas H.P.",
+      "nouveauCode": "SCHEMAS_H_P",
+      "nouveauLibelle": "Schémas H.P.",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "SCIENCES_ANATOMIE_BOTANIQUE",
+      "ancienLibelle": "Anatomie –botanique",
+      "nouveauCode": "ANATOMIE_BOTANIQUE",
+      "nouveauLibelle": "Anatomie - botanique",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "MATHEMATIQUES, SCIENCES ET TECHNOLOGIE",
+      "sousDomaineOrigine": "SCIENCES"
+    },
+    {
+      "ancienCode": "SCIENCES_DE_LA_VIE_ET_DE_LA_TERRE_ANATOMIE",
+      "ancienLibelle": "Anatomie",
+      "nouveauCode": "ANATOMIE",
+      "nouveauLibelle": "Anatomie",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "SCIENCES",
+      "sousDomaineOrigine": "Sciences de la Vie et de la Terre"
+    },
+    {
+      "ancienCode": "SCIENCES_DE_LA_VIE_ET_DE_LA_TERRE_BIOLOGIE_GENERALE",
+      "ancienLibelle": "Biologie générale",
+      "nouveauCode": "BIOLOGIE_GENERALE",
+      "nouveauLibelle": "Biologie générale",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "SCIENCES",
+      "sousDomaineOrigine": "Sciences de la Vie et de la Terre"
+    },
+    {
+      "ancienCode": "SCIENCES_DE_LA_VIE_ET_DE_LA_TERRE_BOTANIQUE",
+      "ancienLibelle": "Botanique",
+      "nouveauCode": "BOTANIQUE",
+      "nouveauLibelle": "Botanique",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "SCIENCES",
+      "sousDomaineOrigine": "Sciences de la Vie et de la Terre"
+    },
+    {
+      "ancienCode": "SCIENCES_DE_LA_VIE_ET_DE_LA_TERRE_GEOLOGIE",
+      "ancienLibelle": "Géologie",
+      "nouveauCode": "GEOLOGIE",
+      "nouveauLibelle": "Géologie",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "SCIENCES",
+      "sousDomaineOrigine": "Sciences de la Vie et de la Terre"
+    },
+    {
+      "ancienCode": "SCIENCES_DE_LA_VIE_ET_DE_LA_TERRE_GEOLOGIE_ECOLOGIE",
+      "ancienLibelle": "Géologie / Ecologie",
+      "nouveauCode": "GEOLOGIE_ECOLOGIE",
+      "nouveauLibelle": "Géologie / Ecologie",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "SCIENCES",
+      "sousDomaineOrigine": "Sciences de la Vie et de la Terre"
+    },
+    {
+      "ancienCode": "SCIENCES_DE_LA_VIE_ET_DE_LA_TERRE_MICROBIOLOGIE",
+      "ancienLibelle": "microbiologie",
+      "nouveauCode": "MICROBIOLOGIE",
+      "nouveauLibelle": "Microbiologie",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "SCIENCES",
+      "sousDomaineOrigine": "Sciences de la Vie et de la Terre"
+    },
+    {
+      "ancienCode": "SCIENCES_DE_LA_VIE_ET_DE_LA_TERRE_NUTRITION",
+      "ancienLibelle": "Nutrition",
+      "nouveauCode": "NUTRITION",
+      "nouveauLibelle": "Nutrition",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "SCIENCES",
+      "sousDomaineOrigine": "Sciences de la Vie et de la Terre"
+    },
+    {
+      "ancienCode": "SCIENCES_DE_LA_VIE_ET_DE_LA_TERRE_SYSTEMATIQUE_ET_JARDIN",
+      "ancienLibelle": "Systématique et Jardin.",
+      "nouveauCode": "SYSTEMATIQUE_ET_JARDIN",
+      "nouveauLibelle": "Systématique et Jardin.",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "SCIENCES",
+      "sousDomaineOrigine": "Sciences de la Vie et de la Terre"
+    },
+    {
+      "ancienCode": "SCIENCES_DE_LA_VIE_ET_DE_LA_TERRE_ZOOLOGIE",
+      "ancienLibelle": "Zoologie",
+      "nouveauCode": "ZOOLOGIE",
+      "nouveauLibelle": "Zoologie",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "SCIENCES",
+      "sousDomaineOrigine": "Sciences de la Vie et de la Terre"
+    },
+    {
+      "ancienCode": "SCIENCES_PHYS_ZOOLO_INFO",
+      "ancienLibelle": "Phys.- zoolo. - Info.",
+      "nouveauCode": "PHYS_ZOOLO_INFO",
+      "nouveauLibelle": "Phys. - zoolo. - Info.",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "MATHEMATIQUES, SCIENCES ET TECHNOLOGIE",
+      "sousDomaineOrigine": "SCIENCES"
+    },
+    {
+      "ancienCode": "SCIENCES_PHYSIQUES_TECHNOLOGIE_ET_TECHNOLOGIES_DE_L_INFORMATION_E_1IPQR1",
+      "ancienLibelle": "Sciences Physiques",
+      "nouveauCode": "SCIENCES_PHYSIQUES",
+      "nouveauLibelle": "Sciences Physiques",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "SCIENCES",
+      "sousDomaineOrigine": "Sciences Physiques, Technologie et Technologies de l’Information et de la communication (TIC)"
+    },
+    {
+      "ancienCode": "SCIENCES_PHYSIQUES_TECHNOLOGIE_ET_TECHNOLOGIES_DE_L_INFORMATION_E_1JALCX",
+      "ancienLibelle": "Techn. d’Info. & Com (TIC)",
+      "nouveauCode": "TECHNOLOGIES_DE_L_INFORMATION_ET_DE_LA_COMMUNICATION_TIC",
+      "nouveauLibelle": "Technologies de l'information et de la communication (TIC)",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "SCIENCES",
+      "sousDomaineOrigine": "Sciences Physiques, Technologie et Technologies de l’Information et de la communication (TIC)"
+    },
+    {
+      "ancienCode": "SCIENCES_PHYSIQUES_TECHNOLOGIE_ET_TECHNOLOGIES_DE_L_INFORMATION_E_1M97GT",
+      "ancienLibelle": "Technologie",
+      "nouveauCode": "TECHNOLOGIE",
+      "nouveauLibelle": "Technologie",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "SCIENCES",
+      "sousDomaineOrigine": "Sciences Physiques, Technologie et Technologies de l’Information et de la communication (TIC)"
+    },
+    {
+      "ancienCode": "SCIENCES_PHYSIQUES_TECHNOLOGIE_ET_TECHNOLOGIES_DE_L_INFORMATION_E_T81LO8",
+      "ancienLibelle": "Chimie",
+      "nouveauCode": "CHIMIE",
+      "nouveauLibelle": "Chimie",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "SCIENCES",
+      "sousDomaineOrigine": "Sciences Physiques, Technologie et Technologies de l’Information et de la communication (TIC)"
+    },
+    {
+      "ancienCode": "SCIENCES_PHYSIQUES_TECHNOLOGIE_ET_TIC_CHIMIE",
+      "ancienLibelle": "Chimie",
+      "nouveauCode": "CHIMIE",
+      "nouveauLibelle": "Chimie",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "SCIENCES",
+      "sousDomaineOrigine": "Sciences Physiques, Technologie et TIC"
+    },
+    {
+      "ancienCode": "SCIENCES_PHYSIQUES_TECHNOLOGIE_ET_TIC_PHYSIQUE",
+      "ancienLibelle": "Physique",
+      "nouveauCode": "PHYSIQUE",
+      "nouveauLibelle": "Physique",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "SCIENCES",
+      "sousDomaineOrigine": "Sciences Physiques, Technologie et TIC"
+    },
+    {
+      "ancienCode": "SCIENCES_PHYSIQUES_TECHNOLOGIE_ET_TIC_TECH_D_INFO_ET_COM_TIC",
+      "ancienLibelle": "Tech. d’Info et Com (TIC)",
+      "nouveauCode": "TECHNOLOGIES_DE_L_INFORMATION_ET_DE_LA_COMMUNICATION_TIC",
+      "nouveauLibelle": "Technologies de l'information et de la communication (TIC)",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "SCIENCES",
+      "sousDomaineOrigine": "Sciences Physiques, Technologie et TIC"
+    },
+    {
+      "ancienCode": "SCIENCES_SCIENCES_D_EVEIL",
+      "ancienLibelle": "Sciences d’éveil",
+      "nouveauCode": "SCIENCES_D_EVEIL",
+      "nouveauLibelle": "Sciences d’éveil",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "MATHEMATIQUES, SCIENCES ET TECHNOLOGIE",
+      "sousDomaineOrigine": "SCIENCES"
+    },
+    {
+      "ancienCode": "SCIENCES_ZOOLOGIE_BOTANIQUE_ET_INFO",
+      "ancienLibelle": "Zoologie – botanique & Info.",
+      "nouveauCode": "ZOOLOGIE_BOTANIQUE_ET_INFO",
+      "nouveauLibelle": "Zoologie - botanique et Info.",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "MATHEMATIQUES, SCIENCES ET TECHNOLOGIE",
+      "sousDomaineOrigine": "SCIENCES"
+    },
+    {
+      "ancienCode": "SECOURISME",
+      "ancienLibelle": "Secourisme",
+      "nouveauCode": "SECOURISME",
+      "nouveauLibelle": "Secourisme",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "SOCAF_ECOPOL",
+      "ancienLibelle": "Socaf. / Ecopol.",
+      "nouveauCode": "SOCAF_ECOPOL",
+      "nouveauLibelle": "Socaf. / Ecopol.",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "SOCAF_ECOPOL_ESTHETIQUE",
+      "ancienLibelle": "Socaf. / Ecopol. / Esthétique",
+      "nouveauCode": "SOCAF_ECOPOL_ESTHETIQUE",
+      "nouveauLibelle": "Socaf. / Ecopol. / Esthétique",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "SOCIOLOGIE",
+      "ancienLibelle": "Sociologie",
+      "nouveauCode": "SOCIOLOGIE",
+      "nouveauLibelle": "Sociologie",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "SOCIOLOGIE_AFR_ECOPOL",
+      "ancienLibelle": "Sociologie afr. /Ecopol",
+      "nouveauCode": "SOCIOLOGIE_AFR_ECOPOL",
+      "nouveauLibelle": "Sociologie afr. / Ecopol",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "SOCIOLOGIE_AFRICAINE",
+      "ancienLibelle": "Sociologie africaine",
+      "nouveauCode": "SOCIOLOGIE_AFRICAINE",
+      "nouveauLibelle": "Sociologie africaine",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "SOCIOLOGIE_DU_MILIEU",
+      "ancienLibelle": "Sociologie du milieu",
+      "nouveauCode": "SOCIOLOGIE_DU_MILIEU",
+      "nouveauLibelle": "Sociologie du milieu",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "SOCIOLOGIE_ECOPOL",
+      "ancienLibelle": "Sociologie / Ecopol",
+      "nouveauCode": "SOCIOLOGIE_ECOPOL",
+      "nouveauLibelle": "Sociologie / Ecopol",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "SOCIOLOGIE_GENERALE",
+      "ancienLibelle": "Sociologie générale",
+      "nouveauCode": "SOCIOLOGIE_GENERALE",
+      "nouveauLibelle": "Sociologie générale",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "SOIN_DE_BEAUTE",
+      "ancienLibelle": "Soin de beauté",
+      "nouveauCode": "SOIN_DE_BEAUTE",
+      "nouveauLibelle": "Soin de beauté",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "SOINS_DE_BEAUTE",
+      "ancienLibelle": "Soins de beauté",
+      "nouveauCode": "SOINS_DE_BEAUTE",
+      "nouveauLibelle": "Soins de beauté",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "SOLFEGE_CHANTE",
+      "ancienLibelle": "Solfège chanté",
+      "nouveauCode": "SOLFEGE_CHANTE",
+      "nouveauLibelle": "Solfège chanté",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "SOUTIEN_DE_COIFFURE",
+      "ancienLibelle": "Soutien de coiffure",
+      "nouveauCode": "SOUTIEN_DE_COIFFURE",
+      "nouveauLibelle": "Soutien de coiffure",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "SPORTIVE",
+      "ancienLibelle": "sportive",
+      "nouveauCode": "SPORTIVE",
+      "nouveauLibelle": "Sportive",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "SPORTS",
+      "ancienLibelle": "Sports",
+      "nouveauCode": "SPORTS",
+      "nouveauLibelle": "Sports",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "SPORTS_DES_DISCIPLINES",
+      "ancienLibelle": "Sports des disciplines",
+      "nouveauCode": "SPORTS_DES_DISCIPLINES",
+      "nouveauLibelle": "Sports des disciplines",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "STAGE",
+      "ancienLibelle": "Stage",
+      "nouveauCode": "STAGE",
+      "nouveauLibelle": "Stage",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "STAGE_1_MOIS",
+      "ancienLibelle": "Stage 1 mois",
+      "nouveauCode": "STAGE_1_MOIS",
+      "nouveauLibelle": "Stage 1 mois",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "STAGE_VISITES_GUIDEES",
+      "ancienLibelle": "Stage / visites guidées",
+      "nouveauCode": "STAGE_VISITES_GUIDEES",
+      "nouveauLibelle": "Stage / visites guidées",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "STATISTIQUES",
+      "ancienLibelle": "Statistiques",
+      "nouveauCode": "STATISTIQUES",
+      "nouveauLibelle": "Statistiques",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "STENOGRAPHIE",
+      "ancienLibelle": "Sténographie",
+      "nouveauCode": "STENOGRAPHIE",
+      "nouveauLibelle": "Sténographie",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "SYLVICULTURE",
+      "ancienLibelle": "Sylviculture",
+      "nouveauCode": "SYLVICULTURE",
+      "nouveauLibelle": "Sylviculture",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "T_H_ENTRET_DES_LOCAUX",
+      "ancienLibelle": "T.H. entret. des locaux",
+      "nouveauCode": "T_H_ENTRET_DES_LOCAUX",
+      "nouveauLibelle": "T.H. entret. des locaux",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "T_H_LINGERIE_ET_BUANDERIE",
+      "ancienLibelle": "T.H. lingerie et buanderie",
+      "nouveauCode": "T_H_LINGERIE_ET_BUANDERIE",
+      "nouveauLibelle": "T.H. lingerie et buanderie",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "T_H_P",
+      "ancienLibelle": "T.H.P.",
+      "nouveauCode": "T_H_P",
+      "nouveauLibelle": "T.h.p.",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "T_P_LABO",
+      "ancienLibelle": "T.P. labo.",
+      "nouveauCode": "T_P_LABO",
+      "nouveauLibelle": "T.P. labo.",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TECH_AUDIO_VISUELLE",
+      "ancienLibelle": "Tech. audio – visuelle",
+      "nouveauCode": "TECH_AUDIO_VISUELLE",
+      "nouveauLibelle": "Tech. audio - visuelle",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TECHN_HOT_ECON",
+      "ancienLibelle": "Techn. hot. écon.",
+      "nouveauCode": "TECHN_HOT_ECON",
+      "nouveauLibelle": "Techn. hot. écon.",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TECHN_LABO_CHIMIE",
+      "ancienLibelle": "Techn. labo. chimie",
+      "nouveauCode": "TECHN_LABO_CHIMIE",
+      "nouveauLibelle": "Techn. labo. chimie",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TECHNIQUE_ANIMATION",
+      "ancienLibelle": "Technique animation",
+      "nouveauCode": "TECHNIQUE_ANIMATION",
+      "nouveauLibelle": "Technique animation",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TECHNIQUE_D_ENQUETE",
+      "ancienLibelle": "Technique d’enquête",
+      "nouveauCode": "TECHNIQUE_D_ENQUETE",
+      "nouveauLibelle": "Technique d’enquête",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TECHNIQUE_HOT_ECONOMIQUE",
+      "ancienLibelle": "Technique hot. économique",
+      "nouveauCode": "TECHNIQUE_HOT_ECONOMIQUE",
+      "nouveauLibelle": "Technique hot. économique",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TECHNIQUE_LABO_CHIMIE",
+      "ancienLibelle": "Technique labo. chimie",
+      "nouveauCode": "TECHNIQUE_LABO_CHIMIE",
+      "nouveauLibelle": "Technique labo. chimie",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TECHNO_AJUSTAGE",
+      "ancienLibelle": "Techno. ajustage",
+      "nouveauCode": "TECHNO_AJUSTAGE",
+      "nouveauLibelle": "Techno. ajustage",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TECHNO_AMEUBLEMENT",
+      "ancienLibelle": "Techno / Ameublement",
+      "nouveauCode": "TECHNO_AMEUBLEMENT",
+      "nouveauLibelle": "Techno / Ameublement",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TECHNO_AUTO",
+      "ancienLibelle": "Techno. Auto.",
+      "nouveauCode": "TECHNO_AUTO",
+      "nouveauLibelle": "Techno. Auto.",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TECHNO_AUTOMOBILE",
+      "ancienLibelle": "Techno. automobile",
+      "nouveauCode": "TECHNO_AUTOMOBILE",
+      "nouveauLibelle": "Techno. automobile",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TECHNO_D_EQUIPEMENT",
+      "ancienLibelle": "Techno. d’équipement",
+      "nouveauCode": "TECHNO_D_EQUIPEMENT",
+      "nouveauLibelle": "Techno. d’équipement",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TECHNO_D_HEBE_BUAND_LING",
+      "ancienLibelle": "Techno. d’hebe. buand. ling.",
+      "nouveauCode": "TECHNO_D_HEBE_BUAND_LING",
+      "nouveauLibelle": "Techno. d’hebe. buand. ling.",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TECHNO_D_HEBE_ENTRET_LOC",
+      "ancienLibelle": "Techno. d’hebe. entret. loc.",
+      "nouveauCode": "TECHNO_D_HEBE_ENTRET_LOC",
+      "nouveauLibelle": "Techno. d’hebe. entret. loc.",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TECHNO_DE_CONSTRUCTION",
+      "ancienLibelle": "Techno. de construction",
+      "nouveauCode": "TECHNO_DE_CONSTRUCTION",
+      "nouveauLibelle": "Techno. de construction",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TECHNO_DE_CULINAIRE",
+      "ancienLibelle": "Techno. de culinaire",
+      "nouveauCode": "TECHNO_DE_CULINAIRE",
+      "nouveauLibelle": "Techno. de culinaire",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TECHNO_DE_RESTAURATION",
+      "ancienLibelle": "Techno. de restauration",
+      "nouveauCode": "TECHNO_DE_RESTAURATION",
+      "nouveauLibelle": "Techno. de restauration",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TECHNO_DU_RESTAURANT",
+      "ancienLibelle": "Techno du restaurant",
+      "nouveauCode": "TECHNO_DU_RESTAURANT",
+      "nouveauLibelle": "Techno du restaurant",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TECHNO_ELECTR",
+      "ancienLibelle": "Techno. électr.",
+      "nouveauCode": "TECHNO_ELECTR",
+      "nouveauLibelle": "Techno. électr.",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TECHNO_ELECTRIQUE",
+      "ancienLibelle": "Techno. électrique",
+      "nouveauCode": "TECHNO_ELECTRIQUE",
+      "nouveauLibelle": "Techno. électrique",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TECHNO_HOTELIERE",
+      "ancienLibelle": "Techno. hôtelière",
+      "nouveauCode": "TECHNO_HOTELIERE",
+      "nouveauLibelle": "Techno. hôtelière",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TECHNO_MACH_OUTIL",
+      "ancienLibelle": "Techno-mach-outil",
+      "nouveauCode": "TECHNO_MACH_OUTIL",
+      "nouveauLibelle": "Techno - mach - outil",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TECHNO_MACHINE_OUTILS",
+      "ancienLibelle": "Techno.-machine-outils",
+      "nouveauCode": "TECHNO_MACHINE_OUTILS",
+      "nouveauLibelle": "Techno. - machine - outils",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TECHNO_MECANIQUE",
+      "ancienLibelle": "Techno. mécanique",
+      "nouveauCode": "TECHNO_MECANIQUE",
+      "nouveauLibelle": "Techno. mécanique",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TECHNOLOGIE",
+      "ancienLibelle": "Technologie",
+      "nouveauCode": "TECHNOLOGIE",
+      "nouveauLibelle": "Technologie",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TECHNOLOGIE_AGRICOLE",
+      "ancienLibelle": "Technologie agricole",
+      "nouveauCode": "TECHNOLOGIE_AGRICOLE",
+      "nouveauLibelle": "Technologie agricole",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TECHNOLOGIE_ALIMENTAIRE",
+      "ancienLibelle": "Technologie alimentaire",
+      "nouveauCode": "TECHNOLOGIE_ALIMENTAIRE",
+      "nouveauLibelle": "Technologie alimentaire",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TECHNOLOGIE_AUTO",
+      "ancienLibelle": "Technologie auto.",
+      "nouveauCode": "TECHNOLOGIE_AUTO",
+      "nouveauLibelle": "Technologie auto.",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TECHNOLOGIE_CULINAIRE",
+      "ancienLibelle": "Technologie culinaire",
+      "nouveauCode": "TECHNOLOGIE_CULINAIRE",
+      "nouveauLibelle": "Technologie culinaire",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TECHNOLOGIE_DE_CUISINE",
+      "ancienLibelle": "Technologie de cuisine",
+      "nouveauCode": "TECHNOLOGIE_DE_CUISINE",
+      "nouveauLibelle": "Technologie de cuisine",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TECHNOLOGIE_DE_RESTAURATION",
+      "ancienLibelle": "Technologie de restauration",
+      "nouveauCode": "TECHNOLOGIE_DE_RESTAURATION",
+      "nouveauLibelle": "Technologie de restauration",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TECHNOLOGIE_DE_SOUDURE",
+      "ancienLibelle": "Technologie de soudure",
+      "nouveauCode": "TECHNOLOGIE_DE_SOUDURE",
+      "nouveauLibelle": "Technologie de soudure",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TECHNOLOGIE_DES_MOTEURS",
+      "ancienLibelle": "Technologie des moteurs",
+      "nouveauCode": "TECHNOLOGIE_DES_MOTEURS",
+      "nouveauLibelle": "Technologie des moteurs",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TECHNOLOGIE_DU_METIER",
+      "ancienLibelle": "Technologie du métier",
+      "nouveauCode": "TECHNOLOGIE_DU_METIER",
+      "nouveauLibelle": "Technologie du métier",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TECHNOLOGIE_DU_RESTAURANT",
+      "ancienLibelle": "Technologie du restaurant",
+      "nouveauCode": "TECHNOLOGIE_DU_RESTAURANT",
+      "nouveauLibelle": "Technologie du restaurant",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TECHNOLOGIE_EXPERTISE",
+      "ancienLibelle": "Technologie (expertise)",
+      "nouveauCode": "TECHNOLOGIE_EXPERTISE",
+      "nouveauLibelle": "Technologie (expertise)",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TECHNOLOGIE_GENIE",
+      "ancienLibelle": "Technologie (génie)",
+      "nouveauCode": "TECHNOLOGIE_GENIE",
+      "nouveauLibelle": "Technologie (génie)",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TECHNOLOGIE_HOT_ECONOMIQUE",
+      "ancienLibelle": "Technologie hot. économique",
+      "nouveauCode": "TECHNOLOGIE_HOT_ECONOMIQUE",
+      "nouveauLibelle": "Technologie hot. économique",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TECHNOLOGIE_HOTELIERE",
+      "ancienLibelle": "Technologie hôtelière",
+      "nouveauCode": "TECHNOLOGIE_HOTELIERE",
+      "nouveauLibelle": "Technologie hôtelière",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TECHNOLOGIE_MACHINE",
+      "ancienLibelle": "Technologie machine",
+      "nouveauCode": "TECHNOLOGIE_MACHINE",
+      "nouveauLibelle": "Technologie machine",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TECHNOLOGIE_MECANIQUE",
+      "ancienLibelle": "Technologie mécanique",
+      "nouveauCode": "TECHNOLOGIE_MECANIQUE",
+      "nouveauLibelle": "Technologie mécanique",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TECHNOLOGIE_MEUBLE",
+      "ancienLibelle": "Technologie meuble",
+      "nouveauCode": "TECHNOLOGIE_MEUBLE",
+      "nouveauLibelle": "Technologie meuble",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TECHNOLOGIE_OUTILLE",
+      "ancienLibelle": "Technologie outille",
+      "nouveauCode": "TECHNOLOGIE_OUTILLE",
+      "nouveauLibelle": "Technologie outille",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TECHNOLOGIE_SOUDURE",
+      "ancienLibelle": "Technologie soudure",
+      "nouveauCode": "TECHNOLOGIE_SOUDURE",
+      "nouveauLibelle": "Technologie soudure",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TECHNOLOGIE_TECHNOLOGIE",
+      "ancienLibelle": "Technologie",
+      "nouveauCode": "TECHNOLOGIE",
+      "nouveauLibelle": "Technologie",
+      "strategie": "FUSION_CLASSIFICATION",
+      "domaineOrigine": "MATHEMATIQUES, SCIENCES ET TECHNOLOGIE",
+      "sousDomaineOrigine": "TECHNOLOGIE"
+    },
+    {
+      "ancienCode": "THEORIE_DE_L_E_P_S",
+      "ancienLibelle": "Théorie de l’E.P.S.",
+      "nouveauCode": "THEORIE_DE_L_E_P_S",
+      "nouveauLibelle": "Théorie de l’E.P.S.",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "THEORIE_MUSICALE",
+      "ancienLibelle": "Théorie musicale",
+      "nouveauCode": "THEORIE_MUSICALE",
+      "nouveauLibelle": "Théorie musicale",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "THEORIES_DE_L_E_P_S",
+      "ancienLibelle": "Théories de l’E.P.S.",
+      "nouveauCode": "THEORIES_DE_L_E_P_S",
+      "nouveauLibelle": "Théories de l’E.P.S.",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "THERAPEUTIQUE",
+      "ancienLibelle": "Thérapeutique",
+      "nouveauCode": "THERAPEUTIQUE",
+      "nouveauLibelle": "Thérapeutique",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TOPOGRAPHIE",
+      "ancienLibelle": "Topographie",
+      "nouveauCode": "TOPOGRAPHIE",
+      "nouveauLibelle": "Topographie",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TOXICOLOGIE",
+      "ancienLibelle": "Toxicologie",
+      "nouveauCode": "TOXICOLOGIE",
+      "nouveauLibelle": "Toxicologie",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TRANS_HYDRO_PNEUMAT_T_H_P",
+      "ancienLibelle": "Trans. Hydro. Pneumat. (T.H.P)",
+      "nouveauCode": "TRANS_HYDRO_PNEUMAT_T_H_P",
+      "nouveauLibelle": "Trans. Hydro. Pneumat. (T.H.P)",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TRANSPOSITION_MUSICALE",
+      "ancienLibelle": "Transposition musicale",
+      "nouveauCode": "TRANSPOSITION_MUSICALE",
+      "nouveauLibelle": "Transposition musicale",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TRAV_SOC_IND_ET_DE_GROUPE",
+      "ancienLibelle": "Trav. soc. ind. & de groupe",
+      "nouveauCode": "TRAV_SOC_IND_ET_DE_GROUPE",
+      "nouveauLibelle": "Trav. soc. ind. et de groupe",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TRAVAIL_DE_MAT_DES_SPORTS",
+      "ancienLibelle": "Travail de Mat. des Sports",
+      "nouveauCode": "TRAVAIL_DE_MAT_DES_SPORTS",
+      "nouveauLibelle": "Travail de Mat. des Sports",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TRAVAIL_MAN_DE_SPORT",
+      "ancienLibelle": "Travail man. de sport",
+      "nouveauCode": "TRAVAIL_MAN_DE_SPORT",
+      "nouveauLibelle": "Travail man. de sport",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TRAVAIL_MAN_ET_MAT_SPORTS",
+      "ancienLibelle": "Travail man. & mat. Sports",
+      "nouveauCode": "TRAVAIL_MAN_ET_MAT_SPORTS",
+      "nouveauLibelle": "Travail man. et mat. Sports",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TRAVAIL_MANUEL",
+      "ancienLibelle": "Travail manuel",
+      "nouveauCode": "TRAVAIL_MANUEL",
+      "nouveauLibelle": "Travail manuel",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TRAVAIL_MANUEL_ECRITURE",
+      "ancienLibelle": "Travail manuel / Ecriture",
+      "nouveauCode": "TRAVAIL_MANUEL_ECRITURE",
+      "nouveauLibelle": "Travail manuel / Ecriture",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "TUYAUTERIE_INDUSTRIELLE",
+      "ancienLibelle": "Tuyauterie industrielle",
+      "nouveauCode": "TUYAUTERIE_INDUSTRIELLE",
+      "nouveauLibelle": "Tuyauterie industrielle",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "VISITE",
+      "ancienLibelle": "Visite",
+      "nouveauCode": "VISITE",
+      "nouveauLibelle": "Visite",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "VOIES_DE_COMMUNICATION",
+      "ancienLibelle": "Voies de communication",
+      "nouveauCode": "VOIES_DE_COMMUNICATION",
+      "nouveauLibelle": "Voies de communication",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "ZOOTECHNIE",
+      "ancienLibelle": "Zootechnie",
+      "nouveauCode": "ZOOTECHNIE",
+      "nouveauLibelle": "Zootechnie",
+      "strategie": "IDENTIQUE"
+    },
+    {
+      "ancienCode": "ZOOTECHNIE_ELEVAGE",
+      "ancienLibelle": "Zootechnie (élevage)",
+      "nouveauCode": "ZOOTECHNIE_ELEVAGE",
+      "nouveauLibelle": "Zootechnie (élevage)",
+      "strategie": "IDENTIQUE"
+    }
+  ],
+  "anomalies": {
+    "nonMappes": [],
+    "collisions": [
+      {
+        "nouveauCode": "EDUCATION_CIVIQUE_ET_MORALE",
+        "nouveauLibelle": "Education civique et morale",
+        "anciensCodes": [
+          "ED_CIV_ET_MORALE",
+          "ED_CIVIQUE_ET_MORALE",
+          "EDUC_CIV_ET_MORALE",
+          "EDUCATION_CIV_ET_MORALE",
+          "EDUCATION_CIVIQUE_ET_MORALE",
+          "L_UNIVERS_SOCIAL_ET_ENVIRONNEMENT_ED_CIV_ET_MORALE",
+          "L_UNIVERS_SOCIAL_ET_ENVIRONNEMENT_ED_CIVIQUE_ET_MORALE",
+          "L_UNIVERS_SOCIAL_ET_ENVIRONNEMENT_EDUCATION_CIV_ET_MORALE"
+        ],
+        "total": 8
+      },
+      {
+        "nouveauCode": "EDUCATION_PHYSIQUE_ET_SPORTIVE",
+        "nouveauLibelle": "Education physique et sportive",
+        "anciensCodes": [
+          "DEVELOPPEMENT_PERSONNEL_ED_PHYSIQUE_ET_SPORTIVE",
+          "DEVELOPPEMENT_PERSONNEL_EDUCAT_PHYS_ET_SPORT",
+          "ED_PHYSIQUE_ET_SPORTIVE",
+          "EDUCAT_PHYS_ET_SPORTIVE",
+          "EDUCATION_PHYS_ET_SPORT",
+          "EDUCATION_PHYS_ET_SPORTIVE"
+        ],
+        "total": 6
+      },
+      {
+        "nouveauCode": "RELIGION",
+        "nouveauLibelle": "Religion",
+        "anciensCodes": [
+          "DEVELOPPEMENT_PERSONNEL_RELIGION",
+          "EDUCATION_ARTISTIQUE_RELIGION",
+          "L_UNIVERS_SOCIAL_ET_ENVIRONNEMENT_RELIGION",
+          "RELIGION"
+        ],
+        "total": 4
+      },
+      {
+        "nouveauCode": "CHIMIE",
+        "nouveauLibelle": "Chimie",
+        "anciensCodes": [
+          "CHIMIE",
+          "SCIENCES_PHYSIQUES_TECHNOLOGIE_ET_TECHNOLOGIES_DE_L_INFORMATION_E_T81LO8",
+          "SCIENCES_PHYSIQUES_TECHNOLOGIE_ET_TIC_CHIMIE"
+        ],
+        "total": 3
+      },
+      {
+        "nouveauCode": "TECHNOLOGIE",
+        "nouveauLibelle": "Technologie",
+        "anciensCodes": [
+          "SCIENCES_PHYSIQUES_TECHNOLOGIE_ET_TECHNOLOGIES_DE_L_INFORMATION_E_1M97GT",
+          "TECHNOLOGIE",
+          "TECHNOLOGIE_TECHNOLOGIE"
+        ],
+        "total": 3
+      },
+      {
+        "nouveauCode": "ANATOMIE",
+        "nouveauLibelle": "Anatomie",
+        "anciensCodes": [
+          "ANATOMIE",
+          "SCIENCES_DE_LA_VIE_ET_DE_LA_TERRE_ANATOMIE"
+        ],
+        "total": 2
+      },
+      {
+        "nouveauCode": "ANGLAIS",
+        "nouveauLibelle": "Anglais",
+        "anciensCodes": [
+          "ANGLAIS",
+          "LANGUES_ANGLAIS"
+        ],
+        "total": 2
+      },
+      {
+        "nouveauCode": "DESSIN",
+        "nouveauLibelle": "Dessin",
+        "anciensCodes": [
+          "ARTS_DESSIN",
+          "DESSIN"
+        ],
+        "total": 2
+      },
+      {
+        "nouveauCode": "ED_PHYS_ET_SPORTIVE",
+        "nouveauLibelle": "Ed. phys. et sportive",
+        "anciensCodes": [
+          "DEVELOPPEMENT_PERSONNEL_ED_PHYS_ET_SPORTIVE",
+          "EDUCATION_ARTISTIQUE_ED_PHYS_ET_SPORTIVE"
+        ],
+        "total": 2
+      },
+      {
+        "nouveauCode": "EDUCATION_A_LA_VIE",
+        "nouveauLibelle": "Education à la vie",
+        "anciensCodes": [
+          "EDUCATION_A_LA_VIE",
+          "L_UNIVERS_SOCIAL_ET_ENVIRONNEMENT_EDUCATION_A_LA_VIE"
+        ],
+        "total": 2
+      },
+      {
+        "nouveauCode": "FRANCAIS",
+        "nouveauLibelle": "Français",
+        "anciensCodes": [
+          "FRANCAIS",
+          "LANGUES_FRANCAIS"
+        ],
+        "total": 2
+      },
+      {
+        "nouveauCode": "GEOGRAPHIE",
+        "nouveauLibelle": "Géographie",
+        "anciensCodes": [
+          "GEOGRAPHIE",
+          "L_UNIVERS_SOCIAL_ET_ENVIRONNEMENT_GEOGRAPHIE"
+        ],
+        "total": 2
+      },
+      {
+        "nouveauCode": "HISTOIRE",
+        "nouveauLibelle": "Histoire",
+        "anciensCodes": [
+          "HISTOIRE",
+          "L_UNIVERS_SOCIAL_ET_ENVIRONNEMENT_HISTOIRE"
+        ],
+        "total": 2
+      },
+      {
+        "nouveauCode": "INIT_TRAV_PROD",
+        "nouveauLibelle": "Init. Trav. Prod.",
+        "anciensCodes": [
+          "DEVELOPPEMENT_PERSONNEL_INIT_TRAV_PROD",
+          "EDUCATION_ARTISTIQUE_INIT_TRAV_PROD"
+        ],
+        "total": 2
+      },
+      {
+        "nouveauCode": "MICROBIOLOGIE",
+        "nouveauLibelle": "Microbiologie",
+        "anciensCodes": [
+          "MICROBIOLOGIE",
+          "SCIENCES_DE_LA_VIE_ET_DE_LA_TERRE_MICROBIOLOGIE"
+        ],
+        "total": 2
+      },
+      {
+        "nouveauCode": "PHYSIQUE",
+        "nouveauLibelle": "Physique",
+        "anciensCodes": [
+          "PHYSIQUE",
+          "SCIENCES_PHYSIQUES_TECHNOLOGIE_ET_TIC_PHYSIQUE"
+        ],
+        "total": 2
+      },
+      {
+        "nouveauCode": "SOCIOLOGIE_AFRICAINE",
+        "nouveauLibelle": "Sociologie africaine",
+        "anciensCodes": [
+          "L_UNIVERS_SOCIAL_ET_ENVIRONNEMENT_SOCIOLOGIE_AFRICAINE",
+          "SOCIOLOGIE_AFRICAINE"
+        ],
+        "total": 2
+      },
+      {
+        "nouveauCode": "TECHNOLOGIES_DE_L_INFORMATION_ET_DE_LA_COMMUNICATION_TIC",
+        "nouveauLibelle": "Technologies de l'information et de la communication (TIC)",
+        "anciensCodes": [
+          "SCIENCES_PHYSIQUES_TECHNOLOGIE_ET_TECHNOLOGIES_DE_L_INFORMATION_E_1JALCX",
+          "SCIENCES_PHYSIQUES_TECHNOLOGIE_ET_TIC_TECH_D_INFO_ET_COM_TIC"
+        ],
+        "total": 2
+      }
+    ]
+  },
+  "metadata": {
+    "sourceCoursV1": "cours-officiels.v1.json",
+    "sourceCoursV2": "cours-officiels.v2.json",
+    "sourceProgrammesV1": "programmes-academiques.v1.json",
+    "statut": "valide",
+    "regle": "Chaque ancien cours utilise par un programme V1 est relie au cours V2 par libelle canonique, sauf homonymes officiels necessaires pour eviter un meme cours deux fois dans une classe."
+  }
+}

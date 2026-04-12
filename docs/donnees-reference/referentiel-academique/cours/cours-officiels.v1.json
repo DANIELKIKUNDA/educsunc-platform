@@ -1,0 +1,2030 @@
+{
+  "cours": [
+    {
+      "code": "ACTUALITES",
+      "libelle": "Actualités"
+    },
+    {
+      "code": "ACTUALITES_GEOGRAPHIE",
+      "libelle": "Actualités / Géographie"
+    },
+    {
+      "code": "AEROBIE_DANCE",
+      "libelle": "Aérobie – dance"
+    },
+    {
+      "code": "AGRICULTURE",
+      "libelle": "Agriculture"
+    },
+    {
+      "code": "AGRICULTURE_GENERALE",
+      "libelle": "Agriculture générale"
+    },
+    {
+      "code": "AGRICULTURE_PETIT_ELEV",
+      "libelle": "Agriculture / Petit élev."
+    },
+    {
+      "code": "AGRICULTURE_PETIT_ELEVAGE",
+      "libelle": "Agriculture / petit élevage"
+    },
+    {
+      "code": "AGROSTOLOGIE",
+      "libelle": "Agrostologie"
+    },
+    {
+      "code": "ALIMENTATION",
+      "libelle": "Alimentation"
+    },
+    {
+      "code": "AMELIORATION_DES_PLANTES",
+      "libelle": "Amélioration des plantes"
+    },
+    {
+      "code": "AMENAGEMENT_FORESTIER",
+      "libelle": "Aménagement forestier"
+    },
+    {
+      "code": "ANAT_ET_PHYSIO_ANIMALE",
+      "libelle": "Anat. & physio. animale"
+    },
+    {
+      "code": "ANATOMIE",
+      "libelle": "Anatomie"
+    },
+    {
+      "code": "ANATOMIE_ARTISTIQUE",
+      "libelle": "Anatomie artistique"
+    },
+    {
+      "code": "ANATOMIE_ET_PHYSIOLOGIE",
+      "libelle": "Anatomie & physiologie"
+    },
+    {
+      "code": "ANGLAIS",
+      "libelle": "Anglais"
+    },
+    {
+      "code": "ANGLAIS_TECHNIQUE",
+      "libelle": "Anglais technique"
+    },
+    {
+      "code": "ARITHMETIQUE_ARTISANAL",
+      "libelle": "Arithmétique artisanal"
+    },
+    {
+      "code": "ARTS_DESSIN",
+      "libelle": "Dessin",
+      "domaine": "ARTS"
+    },
+    {
+      "code": "ARTS_MUSIQUE",
+      "libelle": "Musique",
+      "domaine": "ARTS"
+    },
+    {
+      "code": "ASSAINISSEMENT",
+      "libelle": "Assainissement"
+    },
+    {
+      "code": "ATELIER",
+      "libelle": "Atelier"
+    },
+    {
+      "code": "ATELIER_AJUSTAGE",
+      "libelle": "Atelier ajustage"
+    },
+    {
+      "code": "ATELIER_AUTO",
+      "libelle": "Atelier Auto."
+    },
+    {
+      "code": "ATELIER_ELECTRIQUE",
+      "libelle": "Atelier électrique"
+    },
+    {
+      "code": "AUDITIONS_MUSICALES",
+      "libelle": "Auditions musicales"
+    },
+    {
+      "code": "AUTOM_PROGRAM_INDUST_A_P_I",
+      "libelle": "Autom. program. Indust.(A.P.I.)"
+    },
+    {
+      "code": "AUTOMATE_PROGR",
+      "libelle": "Automate progr."
+    },
+    {
+      "code": "AUTOMATE_PROGRAMMABLE",
+      "libelle": "Automate programmable"
+    },
+    {
+      "code": "AUTOMATION",
+      "libelle": "Automation"
+    },
+    {
+      "code": "BACTERIOLOGIE",
+      "libelle": "Bactériologie"
+    },
+    {
+      "code": "BETON_ARME",
+      "libelle": "Béton armé"
+    },
+    {
+      "code": "BIO_ANATOMIE_PHYSIO",
+      "libelle": "Bio.: anatomie – Physio."
+    },
+    {
+      "code": "BIOLOGIE",
+      "libelle": "Biologie"
+    },
+    {
+      "code": "BIOLOGIE_ANATOMIE_PHYSIOL",
+      "libelle": "Biologie: Anatomie – Physiol."
+    },
+    {
+      "code": "BIOLOGIE_APPLIQUEE",
+      "libelle": "Biologie appliquée"
+    },
+    {
+      "code": "BIOLOGIE_MICROBIO",
+      "libelle": "Biologie / Microbio"
+    },
+    {
+      "code": "BIOLOGIE_MICROBIOLOGIE",
+      "libelle": "Biologie / Microbiologie"
+    },
+    {
+      "code": "BRICOLAGE_TRAV_MENAG",
+      "libelle": "Bricolage / Trav. ménag."
+    },
+    {
+      "code": "BUANDERIE",
+      "libelle": "Buanderie"
+    },
+    {
+      "code": "CARTOGRAPHIE",
+      "libelle": "Cartographie"
+    },
+    {
+      "code": "CHIMIE",
+      "libelle": "Chimie"
+    },
+    {
+      "code": "CHIMIE_APPLIQUEE",
+      "libelle": "Chimie appliquée"
+    },
+    {
+      "code": "CHIRURGIE",
+      "libelle": "Chirurgie"
+    },
+    {
+      "code": "CIRCUIT_LOGIQUE",
+      "libelle": "Circuit logique"
+    },
+    {
+      "code": "COLORATION",
+      "libelle": "Coloration"
+    },
+    {
+      "code": "COLORATION_DECOLORATION",
+      "libelle": "Coloration / Décoloration"
+    },
+    {
+      "code": "COMPTABILITE",
+      "libelle": "Comptabilité"
+    },
+    {
+      "code": "COMPTABILITE_GENERALE",
+      "libelle": "Comptabilité générale"
+    },
+    {
+      "code": "COMPTABILITE_HOTELIERE",
+      "libelle": "Comptabilité hôtelière"
+    },
+    {
+      "code": "CONNAIS_DES_MATERIAUX",
+      "libelle": "Connais. des matériaux"
+    },
+    {
+      "code": "CONNAISS_DES_MATERIAUX",
+      "libelle": "Connaiss. des matériaux"
+    },
+    {
+      "code": "CONNAISSANCE_COM",
+      "libelle": "Connaissance com."
+    },
+    {
+      "code": "CONNAISSANCE_DES_MATER",
+      "libelle": "Connaissance des matér."
+    },
+    {
+      "code": "CONSERV_PRODUITS_AGRICOLES",
+      "libelle": "Conserv. produits agricoles"
+    },
+    {
+      "code": "CONSERVATION",
+      "libelle": "Conservation"
+    },
+    {
+      "code": "CONSTRUCTION",
+      "libelle": "Construction"
+    },
+    {
+      "code": "CONTROLE_DE_FABRICATION",
+      "libelle": "Contrôle de fabrication"
+    },
+    {
+      "code": "CONTROLE_FABRICATION",
+      "libelle": "Contrôle fabrication"
+    },
+    {
+      "code": "CORRESP_COM_ET_ADM_ANGLAISE",
+      "libelle": "Corresp. com. & adm. anglaise"
+    },
+    {
+      "code": "CORRESP_COM_ET_ADM_FRANCAISE",
+      "libelle": "Corresp. com. & adm. française"
+    },
+    {
+      "code": "COUPE_CHEVEUX",
+      "libelle": "Coupe cheveux"
+    },
+    {
+      "code": "CROQUIS",
+      "libelle": "Croquis"
+    },
+    {
+      "code": "CULTURES_FOURRAGERES",
+      "libelle": "Cultures fourragères"
+    },
+    {
+      "code": "DEMOGRAPHIE",
+      "libelle": "Démographie"
+    },
+    {
+      "code": "DENDROLOGIE",
+      "libelle": "Dendrologie"
+    },
+    {
+      "code": "DENDROMETRIE",
+      "libelle": "Dendrométrie"
+    },
+    {
+      "code": "DEONT_ET_ORGAN_SCOLAIRE",
+      "libelle": "Déont. & organ. scolaire"
+    },
+    {
+      "code": "DEONT_ET_ORGANIS_SCOLAIRE",
+      "libelle": "Déont. & organis. scolaire"
+    },
+    {
+      "code": "DEONTOLOGIE",
+      "libelle": "Déontologie"
+    },
+    {
+      "code": "DEONTOLOGIE_DU_SECRETARIAT",
+      "libelle": "Déontologie du secrétariat"
+    },
+    {
+      "code": "DESSIN",
+      "libelle": "Dessin"
+    },
+    {
+      "code": "DESSIN_DE_CONSTRUCTION",
+      "libelle": "Dessin de construction"
+    },
+    {
+      "code": "DESSIN_ELECTRIQUE",
+      "libelle": "Dessin électrique"
+    },
+    {
+      "code": "DESSIN_ET_TOPOGRAPHIE",
+      "libelle": "Dessin & topographie"
+    },
+    {
+      "code": "DESSIN_GEOMETRIE",
+      "libelle": "Dessin géométrie"
+    },
+    {
+      "code": "DESSIN_INDUSTRIEL",
+      "libelle": "Dessin industriel"
+    },
+    {
+      "code": "DESSIN_PED_ET_ARTISTIQUE",
+      "libelle": "Dessin péd. et Artistique"
+    },
+    {
+      "code": "DESSIN_PEDAGOGIE",
+      "libelle": "Dessin pédagogie"
+    },
+    {
+      "code": "DESSIN_PEDAGOGIQUE_ET_IAD",
+      "libelle": "Dessin pédagogique & IAD"
+    },
+    {
+      "code": "DESSIN_PROFESSIONNEL",
+      "libelle": "Dessin professionnel"
+    },
+    {
+      "code": "DESSIN_PROJECTION",
+      "libelle": "Dessin projection"
+    },
+    {
+      "code": "DESSIN_TECHNIQUE",
+      "libelle": "Dessin technique"
+    },
+    {
+      "code": "DEV_COMMUNAUTAIRE",
+      "libelle": "Dév. communautaire"
+    },
+    {
+      "code": "DEVELOPPEMENT_PERSONNEL_ED_PHYS_ET_SPORTIVE",
+      "libelle": "Ed. phys. & sportive",
+      "domaine": "DEVELOPPEMENT PERSONNEL"
+    },
+    {
+      "code": "DEVELOPPEMENT_PERSONNEL_ED_PHYSIQUE_ET_SPORTIVE",
+      "libelle": "Ed. Physique & Sportive",
+      "domaine": "DEVELOPPEMENT PERSONNEL"
+    },
+    {
+      "code": "DEVELOPPEMENT_PERSONNEL_EDUCAT_PHYS_ET_SPORT",
+      "libelle": "Educat. Phys. & sport.",
+      "domaine": "DEVELOPPEMENT PERSONNEL"
+    },
+    {
+      "code": "DEVELOPPEMENT_PERSONNEL_INIT_TRAV_PROD",
+      "libelle": "Init. Trav. Prod.",
+      "domaine": "DEVELOPPEMENT PERSONNEL"
+    },
+    {
+      "code": "DEVELOPPEMENT_PERSONNEL_RELIGION",
+      "libelle": "Religion",
+      "domaine": "DEVELOPPEMENT PERSONNEL"
+    },
+    {
+      "code": "DEVELOPPEMENT_RURAL",
+      "libelle": "Développement rural"
+    },
+    {
+      "code": "DICTEE_MUSICALE",
+      "libelle": "Dictée musicale"
+    },
+    {
+      "code": "DID_DISC_PRAT_D_ENS",
+      "libelle": "Did. disc.+ Prat. d’ens."
+    },
+    {
+      "code": "DIDACTIQUE_DE_L_E_P_S",
+      "libelle": "Didactique de l’E.P.S."
+    },
+    {
+      "code": "DIDACTIQUE_DES_DISCIPLINES",
+      "libelle": "Didactique des disciplines"
+    },
+    {
+      "code": "DIDACTIQUE_GENERALE",
+      "libelle": "Didactique générale"
+    },
+    {
+      "code": "DIDACTIQUE_MATERNELLE",
+      "libelle": "Didactique maternelle"
+    },
+    {
+      "code": "DIETETIQUE",
+      "libelle": "Diététique"
+    },
+    {
+      "code": "DOCTRINE_SOCIALE",
+      "libelle": "Doctrine sociale"
+    },
+    {
+      "code": "DROIT",
+      "libelle": "Droit"
+    },
+    {
+      "code": "DROIT_ADMINISTRATIF",
+      "libelle": "Droit administratif"
+    },
+    {
+      "code": "DROIT_CIVIL",
+      "libelle": "Droit civil"
+    },
+    {
+      "code": "DROIT_PENAL",
+      "libelle": "Droit pénal"
+    },
+    {
+      "code": "DROIT_PENAL_ET_CIVIL",
+      "libelle": "Droit pénal & civil"
+    },
+    {
+      "code": "ECOLOGIE",
+      "libelle": "Ecologie"
+    },
+    {
+      "code": "ECONOMIE_ALIMENTAIRE",
+      "libelle": "Economie alimentaire"
+    },
+    {
+      "code": "ECONOMIE_ARTISANALE",
+      "libelle": "Economie artisanale"
+    },
+    {
+      "code": "ECONOMIE_DU_DEVELOPPEMENT",
+      "libelle": "Economie du développement"
+    },
+    {
+      "code": "ECONOMIE_POLITIQUE",
+      "libelle": "Economie politique"
+    },
+    {
+      "code": "ECONOMIE_PROFESSIONNELLE",
+      "libelle": "Economie professionnelle"
+    },
+    {
+      "code": "ECRITURE_ET_TRAVAIL_MANUEL",
+      "libelle": "Ecriture et travail manuel"
+    },
+    {
+      "code": "ED_CIV_ET_MORALE",
+      "libelle": "Ed. civ. & morale"
+    },
+    {
+      "code": "ED_CIVIQUE_ET_MORALE",
+      "libelle": "Ed. civique & morale"
+    },
+    {
+      "code": "ED_MUSICALE_THEATRALE",
+      "libelle": "Ed. musicale / Théâtrale"
+    },
+    {
+      "code": "ED_MUSICALE_THEATRE",
+      "libelle": "Ed. musicale / Théâtre"
+    },
+    {
+      "code": "ED_PHYSIQUE_ET_SECOURISME",
+      "libelle": "Ed. physique & secourisme"
+    },
+    {
+      "code": "ED_PHYSIQUE_ET_SPORTIVE",
+      "libelle": "Éd. Physique & sportive"
+    },
+    {
+      "code": "ED_PLAST_BRICOLAGE",
+      "libelle": "Ed. plast. – bricolage"
+    },
+    {
+      "code": "ED_PLASTIQUE_BRICOLAGE",
+      "libelle": "Ed. plastique – bricolage"
+    },
+    {
+      "code": "EDUC_CIV_ET_MORALE",
+      "libelle": "Educ. civ. & morale"
+    },
+    {
+      "code": "EDUCAT_MUSIC_THEATRALE",
+      "libelle": "Educat. music./Théâtrale"
+    },
+    {
+      "code": "EDUCAT_PHYS_ET_SPORTIVE",
+      "libelle": "Educat. phys. & sportive"
+    },
+    {
+      "code": "EDUCATION_A_LA_VIE",
+      "libelle": "Education à la Vie"
+    },
+    {
+      "code": "EDUCATION_ARTISTIQUE_ARTS_DRAMATIQUES",
+      "libelle": "Arts dramatiques",
+      "domaine": "ARTS",
+      "sousDomaine": "EDUCATION ARTISTIQUE"
+    },
+    {
+      "code": "EDUCATION_ARTISTIQUE_ARTS_PLASTIQUES",
+      "libelle": "Arts plastiques",
+      "domaine": "ARTS",
+      "sousDomaine": "EDUCATION ARTISTIQUE"
+    },
+    {
+      "code": "EDUCATION_ARTISTIQUE_ED_PHYS_ET_SPORTIVE",
+      "libelle": "Ed. phys. & sportive",
+      "domaine": "DEVELOPPEMENT PERSONNEL",
+      "sousDomaine": "EDUCATION ARTISTIQUE"
+    },
+    {
+      "code": "EDUCATION_ARTISTIQUE_INIT_TRAV_PROD",
+      "libelle": "Init. Trav. Prod.",
+      "domaine": "DEVELOPPEMENT PERSONNEL",
+      "sousDomaine": "EDUCATION ARTISTIQUE"
+    },
+    {
+      "code": "EDUCATION_ARTISTIQUE_RELIGION",
+      "libelle": "Religion",
+      "domaine": "DEVELOPPEMENT PERSONNEL",
+      "sousDomaine": "EDUCATION ARTISTIQUE"
+    },
+    {
+      "code": "EDUCATION_CIV_ET_MORALE",
+      "libelle": "Education civ. & morale"
+    },
+    {
+      "code": "EDUCATION_CIVIQUE_ET_MORALE",
+      "libelle": "Education civique & morale"
+    },
+    {
+      "code": "EDUCATION_FAMILIALE",
+      "libelle": "Education familiale"
+    },
+    {
+      "code": "EDUCATION_MUSIC_THEATRALE",
+      "libelle": "Education music. / Théâtrale"
+    },
+    {
+      "code": "EDUCATION_NUTRITIONNELLE",
+      "libelle": "Education nutritionnelle"
+    },
+    {
+      "code": "EDUCATION_PHYS_ET",
+      "libelle": "Education phys. &"
+    },
+    {
+      "code": "EDUCATION_PHYS_ET_SPORT",
+      "libelle": "Education phys. & sport."
+    },
+    {
+      "code": "EDUCATION_PHYS_ET_SPORTIVE",
+      "libelle": "Education phys. & sportive"
+    },
+    {
+      "code": "EDUCATION_PHYSIQUE",
+      "libelle": "Education physique"
+    },
+    {
+      "code": "EDUCATION_PLASTIQUE",
+      "libelle": "Education plastique"
+    },
+    {
+      "code": "EDUCATION_POPULAIRE",
+      "libelle": "Education populaire"
+    },
+    {
+      "code": "EDUCATION_SANITAIRE",
+      "libelle": "Education sanitaire"
+    },
+    {
+      "code": "ELECT_ELECTRO_AUTOMOB_E_E_A",
+      "libelle": "Elect. Electro. Automob. (E.E.A)"
+    },
+    {
+      "code": "ELECTRICITE",
+      "libelle": "Electricité"
+    },
+    {
+      "code": "ELECTRICITE_AUTO",
+      "libelle": "Electricité auto."
+    },
+    {
+      "code": "ELECTRICITE_GENERALE",
+      "libelle": "Electricité générale"
+    },
+    {
+      "code": "ELECTRONIQUE",
+      "libelle": "Electronique"
+    },
+    {
+      "code": "ELECTRONIQUE_LABO",
+      "libelle": "Electronique + labo."
+    },
+    {
+      "code": "ELECTRONIQUE_NUMERIQUE",
+      "libelle": "Electronique numérique"
+    },
+    {
+      "code": "ELEMENTS_DE_MACHINE",
+      "libelle": "Eléments de machine"
+    },
+    {
+      "code": "ELEMENTS_DES_MACHINES",
+      "libelle": "Eléments des machines"
+    },
+    {
+      "code": "ENQUETE_NUTRITIONNELLE",
+      "libelle": "Enquête nutritionnelle"
+    },
+    {
+      "code": "ENTOMOLOGIE",
+      "libelle": "Entomologie"
+    },
+    {
+      "code": "ENTREPRENARIAT",
+      "libelle": "Entreprenariat"
+    },
+    {
+      "code": "ENTREPRENEURIAT",
+      "libelle": "Entrepreneuriat"
+    },
+    {
+      "code": "ERGONOMIE",
+      "libelle": "Ergonomie"
+    },
+    {
+      "code": "ESTHETIQUE",
+      "libelle": "Esthétique"
+    },
+    {
+      "code": "EVEIL_RELIGIEUX",
+      "libelle": "Eveil religieux"
+    },
+    {
+      "code": "EXPLOITATION_DU_MILIEU",
+      "libelle": "Exploitation du milieu"
+    },
+    {
+      "code": "EXPLOITATION_FORESTIERE",
+      "libelle": "Exploitation forestière"
+    },
+    {
+      "code": "EXPLORATION_DU_MILIEU",
+      "libelle": "Exploration du milieu"
+    },
+    {
+      "code": "EXPRES_CORPOR_ET_DANCE",
+      "libelle": "Expres. Corpor. & dance"
+    },
+    {
+      "code": "EXPRESSION_CORPORELLE",
+      "libelle": "Expression corporelle"
+    },
+    {
+      "code": "EXPRESSION_GRAPH_ET_MAN",
+      "libelle": "Expression graph. & man."
+    },
+    {
+      "code": "EXPRESSION_MUSICALE",
+      "libelle": "Expression musicale"
+    },
+    {
+      "code": "FAB_MAT_DIDACTIQUES",
+      "libelle": "Fab. mat. didactiques"
+    },
+    {
+      "code": "FILMOLOGIE",
+      "libelle": "Filmologie"
+    },
+    {
+      "code": "FISCALITE",
+      "libelle": "Fiscalité"
+    },
+    {
+      "code": "FRAB_DU_MAT_DIDACT",
+      "libelle": "Frab. du mat. didact."
+    },
+    {
+      "code": "FRANCAIS",
+      "libelle": "Français"
+    },
+    {
+      "code": "FRANCAIS_EXP_ORAL_ET_VOCAB",
+      "libelle": "Exp. Oral & Vocab.",
+      "domaine": "LANGUES",
+      "sousDomaine": "FRANÇAIS"
+    },
+    {
+      "code": "FRANCAIS_EXPR_ORALE_RECIT_VOC",
+      "libelle": "Expr. orale – Récit. –Voc.",
+      "domaine": "LANGUES",
+      "sousDomaine": "FRANÇAIS"
+    },
+    {
+      "code": "FRANCAIS_EXPRESSION_ORALE",
+      "libelle": "Expression Orale",
+      "domaine": "LANGUES",
+      "sousDomaine": "FRANÇAIS"
+    },
+    {
+      "code": "FRANCAIS_GRAM_CONJ_ANALYSE",
+      "libelle": "Gram. – Conj. - Analyse",
+      "domaine": "LANGUES",
+      "sousDomaine": "FRANÇAIS"
+    },
+    {
+      "code": "FRANCAIS_LECT_ECRIT_EN_LANGUE_FRANCAISE",
+      "libelle": "LECT-ECRIT EN LANGUE FRANÇAISE",
+      "domaine": "LANGUES",
+      "sousDomaine": "FRANÇAIS"
+    },
+    {
+      "code": "FRANCAIS_LECT_ECRIT_EN_LANGUES_CONGOLAISES",
+      "libelle": "LECT-ECRIT EN LANGUES CONGOLAISES",
+      "domaine": "LANGUES",
+      "sousDomaine": "FRANÇAIS"
+    },
+    {
+      "code": "FRANCAIS_LECT_ECRITURE_EN_LANGUE_FRANCAISE",
+      "libelle": "LECT. - ECRITURE EN LANGUE FRANÇAISE",
+      "domaine": "LANGUES",
+      "sousDomaine": "FRANÇAIS"
+    },
+    {
+      "code": "FRANCAIS_LECT_ECRITURE_EN_LANGUES_CONGOLAISES",
+      "libelle": "LECT. – ECRITURE EN LANGUES CONGOLAISES",
+      "domaine": "LANGUES",
+      "sousDomaine": "FRANÇAIS"
+    },
+    {
+      "code": "FRANCAIS_ORTH_PHRAS_ECRIT_ET_RED",
+      "libelle": "Orth. phras. Ecrit. & réd.",
+      "domaine": "LANGUES",
+      "sousDomaine": "FRANÇAIS"
+    },
+    {
+      "code": "FRANCAIS_ORTHOGRAPHE",
+      "libelle": "Orthographe",
+      "domaine": "LANGUES",
+      "sousDomaine": "FRANÇAIS"
+    },
+    {
+      "code": "FRANCAIS_REDACTION",
+      "libelle": "Rédaction",
+      "domaine": "LANGUES",
+      "sousDomaine": "FRANÇAIS"
+    },
+    {
+      "code": "FRANCAIS_VOCABULAIRE",
+      "libelle": "Vocabulaire",
+      "domaine": "LANGUES",
+      "sousDomaine": "FRANÇAIS"
+    },
+    {
+      "code": "GENIE_INDUSTRIEL",
+      "libelle": "Génie industriel"
+    },
+    {
+      "code": "GENIE_RURAL",
+      "libelle": "Génie rural"
+    },
+    {
+      "code": "GEO_TOURISTIQUE",
+      "libelle": "Géo-touristique"
+    },
+    {
+      "code": "GEOGRAPHIE",
+      "libelle": "Géographie"
+    },
+    {
+      "code": "GEOGRAPHIE_ACTUALITES",
+      "libelle": "Géographie / actualités"
+    },
+    {
+      "code": "GEOGRAPHIE_APPLIQUEE",
+      "libelle": "Géographie appliquée"
+    },
+    {
+      "code": "GEOGRAPHIE_TOURISTIQUE",
+      "libelle": "Géographie Touristique"
+    },
+    {
+      "code": "GESTION_ET_ADMINISTRATION",
+      "libelle": "Gestion & administration"
+    },
+    {
+      "code": "GRAPHOSTATIQUE",
+      "libelle": "Graphostatique"
+    },
+    {
+      "code": "GREC",
+      "libelle": "Grec"
+    },
+    {
+      "code": "GYMNASTIQUE_SPORTIVE",
+      "libelle": "Gymnastique sportive"
+    },
+    {
+      "code": "HIST_DU_TRAVAIL_ORG_PROFES",
+      "libelle": "Hist. du travail org. Profes."
+    },
+    {
+      "code": "HISTOIRE",
+      "libelle": "Histoire"
+    },
+    {
+      "code": "HISTOIRE_ACTUALITES",
+      "libelle": "Histoire - Actualités"
+    },
+    {
+      "code": "HISTOIRE_DE_L_ART",
+      "libelle": "Histoire de l’art"
+    },
+    {
+      "code": "HISTOIRE_DE_LA_COIFFURE",
+      "libelle": "Histoire de la coiffure"
+    },
+    {
+      "code": "HISTOIRE_DE_LA_MUSIQUE",
+      "libelle": "Histoire de la musique"
+    },
+    {
+      "code": "HISTOIRE_DU_MEUBLE",
+      "libelle": "Histoire du meuble"
+    },
+    {
+      "code": "HISTOIRE_GENERALE",
+      "libelle": "Histoire générale"
+    },
+    {
+      "code": "HORTICULTURE",
+      "libelle": "Horticulture"
+    },
+    {
+      "code": "HYGIENE",
+      "libelle": "Hygiène"
+    },
+    {
+      "code": "HYGIENE_ALIMENT_ET_NUTRIT",
+      "libelle": "Hygiène aliment. et nutrit"
+    },
+    {
+      "code": "HYGIENE_ALIMENT_NUTRIT",
+      "libelle": "Hygiène aliment. / Nutrit."
+    },
+    {
+      "code": "HYGIENE_ALIMENT_NUTRITION",
+      "libelle": "Hygiène aliment. nutrition"
+    },
+    {
+      "code": "HYGIENE_ALIMENTAIRE",
+      "libelle": "Hygiène alimentaire"
+    },
+    {
+      "code": "HYGIENE_DE_LA_FAMILLE",
+      "libelle": "Hygiène de la famille"
+    },
+    {
+      "code": "HYGIENE_ET_ASS_HYG_ALIM",
+      "libelle": "Hygiène & ass. /Hyg. Alim."
+    },
+    {
+      "code": "HYGIENE_ET_ENVIRONNEMENT",
+      "libelle": "Hygiène & environnement"
+    },
+    {
+      "code": "HYGIENE_GESTION_DU_TRAVAIL",
+      "libelle": "Hygiène gestion du travail"
+    },
+    {
+      "code": "HYGIENE_INDIVIDUELLE_ET_COLLECTIVE",
+      "libelle": "Hygiène individuelle & collective"
+    },
+    {
+      "code": "HYGIENE_PROFESSIONNELLE",
+      "libelle": "Hygiène professionnelle"
+    },
+    {
+      "code": "ICHTYO_PATHOLOGIE",
+      "libelle": "Ichtyo – pathologie"
+    },
+    {
+      "code": "ICHTYOLOGIE",
+      "libelle": "Ichtyologie"
+    },
+    {
+      "code": "INDUSTRIE_DU_BOIS",
+      "libelle": "Industrie du bois"
+    },
+    {
+      "code": "INFORMATIQUE",
+      "libelle": "Informatique"
+    },
+    {
+      "code": "INITIATION_A_L_ART_DRAMATIQUE",
+      "libelle": "Initiation à l’art dramatique"
+    },
+    {
+      "code": "INITIATION_A_L_ART_PLASTIQUE",
+      "libelle": "Initiation à l’art plastique"
+    },
+    {
+      "code": "INITIATION_A_L_H_P",
+      "libelle": "Initiation à l’H.P."
+    },
+    {
+      "code": "INITIATION_A_L_HYDRO_PNEU",
+      "libelle": "Initiation à l’Hydro. Pneu."
+    },
+    {
+      "code": "INSTALLATION_POMPAGE",
+      "libelle": "Installation pompage"
+    },
+    {
+      "code": "INSTITUTIONS",
+      "libelle": "Institutions"
+    },
+    {
+      "code": "INSTITUTIONS_INTERNATIONALES",
+      "libelle": "Institutions internationales"
+    },
+    {
+      "code": "INSTR_AUX_SCIENCES_SOCIALES_I_S_S",
+      "libelle": "Instr. aux sciences sociales (I.S.S.)"
+    },
+    {
+      "code": "INSTR_METH_MESURES",
+      "libelle": "Instr. méth. Mesures"
+    },
+    {
+      "code": "INSTRUMENTS_PRINCIPAUX",
+      "libelle": "Instruments principaux"
+    },
+    {
+      "code": "INSTRUMENTS_TRADITIONNELS",
+      "libelle": "Instruments traditionnels"
+    },
+    {
+      "code": "INTERPRETATION_MUSICALE",
+      "libelle": "Interprétation musicale"
+    },
+    {
+      "code": "INTRO_AUX_INST_SOCIALES_I_I_S",
+      "libelle": "Intro. aux inst. sociales (I.I.S.)"
+    },
+    {
+      "code": "INVENTAIRE_FORESTIER",
+      "libelle": "Inventaire forestier"
+    },
+    {
+      "code": "L_UNIVERS_SOCIAL_ET_ENVIRONNEMENT_ED_CIV_ET_MORALE",
+      "libelle": "Ed. Civ. & Morale",
+      "domaine": "L’UNIVERS SOCIAL ET ENVIRONNEMENT"
+    },
+    {
+      "code": "L_UNIVERS_SOCIAL_ET_ENVIRONNEMENT_ED_CIVIQUE_ET_MORALE",
+      "libelle": "Ed. civique et morale",
+      "domaine": "L'UNIVERS SOCIAL ET ENVIRONNEMENT"
+    },
+    {
+      "code": "L_UNIVERS_SOCIAL_ET_ENVIRONNEMENT_ED_SANTE_ET_ENV",
+      "libelle": "Ed. Santé & Env.",
+      "domaine": "L’UNIVERS SOCIAL ET ENVIRONNEMENT"
+    },
+    {
+      "code": "L_UNIVERS_SOCIAL_ET_ENVIRONNEMENT_EDUCATION_A_LA_VIE",
+      "libelle": "Education à la vie",
+      "domaine": "L'UNIVERS SOCIAL ET ENVIRONNEMENT"
+    },
+    {
+      "code": "L_UNIVERS_SOCIAL_ET_ENVIRONNEMENT_EDUCATION_CIV_ET_MORALE",
+      "libelle": "Education civ. & morale",
+      "domaine": "L’UNIVERS SOCIAL ET ENVIRONNEMENT"
+    },
+    {
+      "code": "L_UNIVERS_SOCIAL_ET_ENVIRONNEMENT_EDUCATION_SANTE_ET_ENV",
+      "libelle": "Education santé & env.",
+      "domaine": "L’UNIVERS SOCIAL ET ENVIRONNEMENT"
+    },
+    {
+      "code": "L_UNIVERS_SOCIAL_ET_ENVIRONNEMENT_GEOGRAPHIE",
+      "libelle": "Géographie",
+      "domaine": "L’UNIVERS SOCIAL ET ENVIRONNEMENT"
+    },
+    {
+      "code": "L_UNIVERS_SOCIAL_ET_ENVIRONNEMENT_HISTOIRE",
+      "libelle": "Histoire",
+      "domaine": "L’UNIVERS SOCIAL ET ENVIRONNEMENT"
+    },
+    {
+      "code": "L_UNIVERS_SOCIAL_ET_ENVIRONNEMENT_RELIGION",
+      "libelle": "Religion",
+      "domaine": "L'UNIVERS SOCIAL ET ENVIRONNEMENT"
+    },
+    {
+      "code": "L_UNIVERS_SOCIAL_ET_ENVIRONNEMENT_SOCIOLOGIE_AFRICAINE",
+      "libelle": "Sociologie africaine",
+      "domaine": "L’UNIVERS SOCIAL ET ENVIRONNEMENT"
+    },
+    {
+      "code": "LABO_ELECTRIQUE",
+      "libelle": "Labo. électrique"
+    },
+    {
+      "code": "LABO_ELECTRIQUE_2",
+      "libelle": "Labo. électrique"
+    },
+    {
+      "code": "LANGUES_ANGLAIS",
+      "libelle": "Anglais",
+      "domaine": "LANGUES"
+    },
+    {
+      "code": "LANGUES_CONGOLAISES_EXP_ORALE_ET_VOCAB",
+      "libelle": "Exp. Orale & Vocab.",
+      "domaine": "LANGUES",
+      "sousDomaine": "LANGUES CONGOLAISES"
+    },
+    {
+      "code": "LANGUES_CONGOLAISES_EXP_ORALE_ET_VOCABULAIRE",
+      "libelle": "Exp. Orale & Vocabulaire",
+      "domaine": "LANGUES",
+      "sousDomaine": "LANGUES CONGOLAISES"
+    },
+    {
+      "code": "LANGUES_CONGOLAISES_EXPR_ORALE_ET_VOCAB",
+      "libelle": "Expr. Orale & Vocab.",
+      "domaine": "LANGUES",
+      "sousDomaine": "LANGUES CONGOLAISES"
+    },
+    {
+      "code": "LANGUES_CONGOLAISES_EXPRESSION_ECRITE",
+      "libelle": "Expression Ecrite",
+      "domaine": "LANGUES",
+      "sousDomaine": "LANGUES CONGOLAISES"
+    },
+    {
+      "code": "LANGUES_CONGOLAISES_EXPRESSION_ORALE",
+      "libelle": "Expression Orale",
+      "domaine": "LANGUES",
+      "sousDomaine": "LANGUES CONGOLAISES"
+    },
+    {
+      "code": "LANGUES_CONGOLAISES_GRAM_ET_CONJ",
+      "libelle": "Gram. & Conj.",
+      "domaine": "LANGUES",
+      "sousDomaine": "LANGUES CONGOLAISES"
+    },
+    {
+      "code": "LANGUES_CONGOLAISES_GRAMMAIRE_ET_CONJUG",
+      "libelle": "Grammaire & Conjug.",
+      "domaine": "LANGUES",
+      "sousDomaine": "LANGUES CONGOLAISES"
+    },
+    {
+      "code": "LANGUES_CONGOLAISES_ORTH_ET_REDACTION",
+      "libelle": "Orth. & Rédaction",
+      "domaine": "LANGUES",
+      "sousDomaine": "LANGUES CONGOLAISES"
+    },
+    {
+      "code": "LANGUES_FRANCAIS",
+      "libelle": "Français",
+      "domaine": "LANGUES"
+    },
+    {
+      "code": "LANGUES_LOCALES",
+      "libelle": "Langues locales"
+    },
+    {
+      "code": "LANGUES_NATIONALES",
+      "libelle": "Langues nationales"
+    },
+    {
+      "code": "LANGUES_SOCAF",
+      "libelle": "Langues / Socaf."
+    },
+    {
+      "code": "LATIN",
+      "libelle": "Latin"
+    },
+    {
+      "code": "LEGISLATION",
+      "libelle": "Législation"
+    },
+    {
+      "code": "LEGISLATION_DU_TRAVAIL",
+      "libelle": "Législation du travail"
+    },
+    {
+      "code": "LEGISLATION_FISCALE_ET_SOC",
+      "libelle": "Législation fiscale & soc."
+    },
+    {
+      "code": "LEGISLATION_FORESTIERE",
+      "libelle": "Législation forestière"
+    },
+    {
+      "code": "LEGISLATION_ORG_DU_TRAVAIL",
+      "libelle": "Législation / Org. du travail"
+    },
+    {
+      "code": "LEGISLATION_SOCIALE",
+      "libelle": "Législation sociale"
+    },
+    {
+      "code": "MACHINE_ELECTRIQUE",
+      "libelle": "Machine électrique"
+    },
+    {
+      "code": "MACHINES_ELECTRIQUES",
+      "libelle": "Machines électriques"
+    },
+    {
+      "code": "MAINTENANCE_INFORMATIQUE",
+      "libelle": "Maintenance informatique"
+    },
+    {
+      "code": "MALADIES_INFECTIEUSES",
+      "libelle": "Maladies infectieuses"
+    },
+    {
+      "code": "MALADIES_PARASITAIRES",
+      "libelle": "Maladies parasitaires"
+    },
+    {
+      "code": "MATHEMATIQUE",
+      "libelle": "Mathématique"
+    },
+    {
+      "code": "MATHEMATIQUES",
+      "libelle": "Mathématiques"
+    },
+    {
+      "code": "MATHEMATIQUES_ALGEBRE",
+      "libelle": "Algèbre",
+      "domaine": "SCIENCES",
+      "sousDomaine": "Mathématiques"
+    },
+    {
+      "code": "MATHEMATIQUES_ALGEBRE_STAT_ET_ANALY",
+      "libelle": "Algèbre, Stat. & Analy.",
+      "domaine": "SCIENCES",
+      "sousDomaine": "mathématiques"
+    },
+    {
+      "code": "MATHEMATIQUES_ARITHMETIQUE",
+      "libelle": "Arithmétique",
+      "domaine": "SCIENCES",
+      "sousDomaine": "Mathématiques"
+    },
+    {
+      "code": "MATHEMATIQUES_DESSIN_SCIENTIFIQUE",
+      "libelle": "Dessin scientifique",
+      "domaine": "SCIENCES",
+      "sousDomaine": "mathématiques"
+    },
+    {
+      "code": "MATHEMATIQUES_FORMES_GEOMETRIQUES",
+      "libelle": "Formes géométriques",
+      "domaine": "MATHEMATIQUES, SCIENCES ET TECHNOLOGIE",
+      "sousDomaine": "MATHEMATIQUES"
+    },
+    {
+      "code": "MATHEMATIQUES_GEOMETRIE",
+      "libelle": "Géométrie",
+      "domaine": "SCIENCES",
+      "sousDomaine": "Mathématiques"
+    },
+    {
+      "code": "MATHEMATIQUES_GEOMETRIE_ET_TRIGO",
+      "libelle": "Géometrie et Trigo.",
+      "domaine": "SCIENCES",
+      "sousDomaine": "mathématiques"
+    },
+    {
+      "code": "MATHEMATIQUES_MESURES_DES_GRANDEURS",
+      "libelle": "Mesures des grandeurs",
+      "domaine": "MATHEMATIQUES, SCIENCES ET TECHNOLOGIE",
+      "sousDomaine": "MATHEMATIQUES"
+    },
+    {
+      "code": "MATHEMATIQUES_NUMERATION",
+      "libelle": "Numération",
+      "domaine": "MATHEMATIQUES, SCIENCES ET TECHNOLOGIE",
+      "sousDomaine": "MATHEMATIQUES"
+    },
+    {
+      "code": "MATHEMATIQUES_OPERATIONS",
+      "libelle": "Opérations",
+      "domaine": "MATHEMATIQUES, SCIENCES ET TECHNOLOGIE",
+      "sousDomaine": "MATHEMATIQUES"
+    },
+    {
+      "code": "MATHEMATIQUES_PROBLEMES",
+      "libelle": "Problèmes",
+      "domaine": "MATHEMATIQUES, SCIENCES ET TECHNOLOGIE",
+      "sousDomaine": "MATHEMATIQUES"
+    },
+    {
+      "code": "MATHEMATIQUES_STATISTIQUE",
+      "libelle": "Statistique",
+      "domaine": "SCIENCES",
+      "sousDomaine": "Mathématiques"
+    },
+    {
+      "code": "MATHEMATIQUES_TRIGO_ET_STATISTIQUES",
+      "libelle": "Trigo. & Statistiques",
+      "domaine": "SCIENCES",
+      "sousDomaine": "mathématiques"
+    },
+    {
+      "code": "MAX",
+      "libelle": "MAX"
+    },
+    {
+      "code": "MECANIQUE",
+      "libelle": "Mécanique"
+    },
+    {
+      "code": "MECANIQUE_APPLIQUEE",
+      "libelle": "Mécanique appliquée"
+    },
+    {
+      "code": "MECANIQUE_GENERALE",
+      "libelle": "Mécanique générale"
+    },
+    {
+      "code": "MECANIQUE_OUTILLAGES_FORESTIERS",
+      "libelle": "Mécanique-outillages forestiers"
+    },
+    {
+      "code": "MECANISME",
+      "libelle": "Mécanisme"
+    },
+    {
+      "code": "MENUISERIE_DU_BAT",
+      "libelle": "Menuiserie du bât."
+    },
+    {
+      "code": "METALLURGIE",
+      "libelle": "Métallurgie"
+    },
+    {
+      "code": "METHODE_DE_L_ETUDIANT",
+      "libelle": "Méthode de l’étudiant"
+    },
+    {
+      "code": "METHODOLOGIE",
+      "libelle": "Méthodologie"
+    },
+    {
+      "code": "MICROBIOLOGIE",
+      "libelle": "Microbiologie"
+    },
+    {
+      "code": "MICROBIOLOGIE_ALIMENTAIRE",
+      "libelle": "Microbiologie alimentaire"
+    },
+    {
+      "code": "MICROBIOLOGIE_BIO",
+      "libelle": "Microbiologie / Bio."
+    },
+    {
+      "code": "MOTEUR_THERMIQUE",
+      "libelle": "Moteur thermique"
+    },
+    {
+      "code": "MUSICOLOGIE",
+      "libelle": "Musicologie"
+    },
+    {
+      "code": "NAVIGATION",
+      "libelle": "Navigation"
+    },
+    {
+      "code": "NOLOGIE_ET_BOISSONS",
+      "libelle": "Œnologie & boissons"
+    },
+    {
+      "code": "NUTRITION_GENERALE",
+      "libelle": "Nutrition générale"
+    },
+    {
+      "code": "O_D_T",
+      "libelle": "O.D.T."
+    },
+    {
+      "code": "OBSTETRIQUE",
+      "libelle": "Obstétrique"
+    },
+    {
+      "code": "OBT",
+      "libelle": "Obt."
+    },
+    {
+      "code": "ORGAN_DU_TRAVAIL_ET_GESTION",
+      "libelle": "Organ. du travail et gestion"
+    },
+    {
+      "code": "ORGANES_DE_TRANSMISSION",
+      "libelle": "Organes de transmission"
+    },
+    {
+      "code": "ORGANISATION",
+      "libelle": "Organisation"
+    },
+    {
+      "code": "ORGANISATION_DE_BUREAU",
+      "libelle": "Organisation de bureau"
+    },
+    {
+      "code": "ORGANISATION_DES_ENTREPR",
+      "libelle": "Organisation des entrepr."
+    },
+    {
+      "code": "ORGANISATION_DES_ENTREPRISES",
+      "libelle": "Organisation des entreprises"
+    },
+    {
+      "code": "ORGANISATION_DU_TRAVAIL",
+      "libelle": "Organisation du travail"
+    },
+    {
+      "code": "ORGANISATION_INDUSTRIELLE",
+      "libelle": "Organisation industrielle"
+    },
+    {
+      "code": "OUTILLAGE",
+      "libelle": "Outillage"
+    },
+    {
+      "code": "OUTILLAGE_DE_CHANTIER",
+      "libelle": "Outillage de chantier"
+    },
+    {
+      "code": "PARASITOLOGIE",
+      "libelle": "Parasitologie"
+    },
+    {
+      "code": "PATHOLOGIE",
+      "libelle": "Pathologie"
+    },
+    {
+      "code": "PATHOLOGIE_DE_LA_NUTRITION",
+      "libelle": "Pathologie de la nutrition"
+    },
+    {
+      "code": "PATHOLOGIE_FORESTIERE",
+      "libelle": "Pathologie forestière"
+    },
+    {
+      "code": "PECHE",
+      "libelle": "Pêche"
+    },
+    {
+      "code": "PEDAGOGIE",
+      "libelle": "Pédagogie"
+    },
+    {
+      "code": "PEDAGOGIE_GENERALE",
+      "libelle": "Pédagogie générale"
+    },
+    {
+      "code": "PEDOLOGIE",
+      "libelle": "Pédologie"
+    },
+    {
+      "code": "PHARMACOLOGIE",
+      "libelle": "Pharmacologie"
+    },
+    {
+      "code": "PHILOSOPHIE",
+      "libelle": "Philosophie"
+    },
+    {
+      "code": "PHYSIOLOGIE_VEGETALE",
+      "libelle": "Physiologie végétale"
+    },
+    {
+      "code": "PHYSIQUE",
+      "libelle": "Physique"
+    },
+    {
+      "code": "PHYTOPATHOLOGIE",
+      "libelle": "Phytopathologie"
+    },
+    {
+      "code": "PISCICULTURE",
+      "libelle": "Pisciculture"
+    },
+    {
+      "code": "POUR_LE_CONTROLE",
+      "libelle": "Pour le contrôle"
+    },
+    {
+      "code": "PRAT_DE_SALLE_ET_CUISINE",
+      "libelle": "Prat. de salle et cuisine"
+    },
+    {
+      "code": "PRATIQUE_D_APPR_DE_L_E_P_S",
+      "libelle": "Pratique d’appr. de l’E.P.S."
+    },
+    {
+      "code": "PRATIQUE_D_ENSEI_DE_L_E_P_S",
+      "libelle": "Pratique d’ensei. de l’E.P.S."
+    },
+    {
+      "code": "PRATIQUE_D_ENSEIGNEMENT",
+      "libelle": "Pratique d’Enseignement"
+    },
+    {
+      "code": "PRATIQUE_DE_CLASSE",
+      "libelle": "Pratique de classe"
+    },
+    {
+      "code": "PRATIQUE_HOTESSE_1_MOIS",
+      "libelle": "Pratique hôtesse 1 mois"
+    },
+    {
+      "code": "PRATIQUE_PROFESSIONNELLE",
+      "libelle": "Pratique professionnelle"
+    },
+    {
+      "code": "PRATIQUE_SPORTIVE",
+      "libelle": "Pratique sportive"
+    },
+    {
+      "code": "PRINCIPE_DE_L_EDUCATION",
+      "libelle": "Principe de l’éducation"
+    },
+    {
+      "code": "PROCEDES_DE_CONSTRUCTION",
+      "libelle": "Procédés de construction"
+    },
+    {
+      "code": "PROCEDES_DES_CONSTRUCT",
+      "libelle": "Procédés des construct."
+    },
+    {
+      "code": "PROTECTION_DE_L_ENFANT",
+      "libelle": "Protection de l’enfant"
+    },
+    {
+      "code": "PSYCHO_DE_L_ENFANT_ET_ADOL",
+      "libelle": "Psycho. de l’enfant & adol."
+    },
+    {
+      "code": "PSYCHO_PEDAGOGIE",
+      "libelle": "Psycho.-pédagogie"
+    },
+    {
+      "code": "PSYCHOLOGIE",
+      "libelle": "Psychologie"
+    },
+    {
+      "code": "PSYCHOLOGIE_APPLIQUEE",
+      "libelle": "Psychologie appliquée"
+    },
+    {
+      "code": "PSYCHOLOGIE_DE_CLIENT",
+      "libelle": "Psychologie de client"
+    },
+    {
+      "code": "PSYCHOLOGIE_DE_L_ENFANT",
+      "libelle": "Psychologie de l’enfant"
+    },
+    {
+      "code": "PSYCHOLOGIE_GENERALE",
+      "libelle": "Psychologie générale"
+    },
+    {
+      "code": "PSYCHOLOGIE_SOCIALE",
+      "libelle": "Psychologie sociale"
+    },
+    {
+      "code": "PSYCHOMOTRICITE",
+      "libelle": "Psychomotricité"
+    },
+    {
+      "code": "QUESTION_D_ACTUALITES",
+      "libelle": "Question d’actualités"
+    },
+    {
+      "code": "QUESTIONS_D_ACTUALITES",
+      "libelle": "Questions d’actualités"
+    },
+    {
+      "code": "R_D_M",
+      "libelle": "R.D.M."
+    },
+    {
+      "code": "RELIGION",
+      "libelle": "Religion"
+    },
+    {
+      "code": "RESIS_ELEMENTS_MACH",
+      "libelle": "Résis. + éléments mach."
+    },
+    {
+      "code": "RESIST_DES_MATERIAUX",
+      "libelle": "Résist. des matériaux"
+    },
+    {
+      "code": "RESIST_ELEMENTS_MATER",
+      "libelle": "Résist.+ Eléments matér."
+    },
+    {
+      "code": "RESISTANCE_DES_MATER",
+      "libelle": "Résistance des mater."
+    },
+    {
+      "code": "RESISTANCE_DES_MATERIAUX",
+      "libelle": "Résistance des matériaux"
+    },
+    {
+      "code": "RESISTANCE_MATERIELLE",
+      "libelle": "Résistance matérielle"
+    },
+    {
+      "code": "RESISTANCES_DES_MATER",
+      "libelle": "Résistances des matér."
+    },
+    {
+      "code": "SCHEMA",
+      "libelle": "Schéma"
+    },
+    {
+      "code": "SCHEMAS_ELECTRIQUE",
+      "libelle": "Schémas électrique"
+    },
+    {
+      "code": "SCHEMAS_ELECTRIQUES",
+      "libelle": "Schémas électriques"
+    },
+    {
+      "code": "SCHEMAS_H_P",
+      "libelle": "Schémas H.P."
+    },
+    {
+      "code": "SCIENCES_ANATOMIE_BOTANIQUE",
+      "libelle": "Anatomie –botanique",
+      "domaine": "MATHEMATIQUES, SCIENCES ET TECHNOLOGIE",
+      "sousDomaine": "SCIENCES"
+    },
+    {
+      "code": "SCIENCES_DE_LA_VIE_ET_DE_LA_TERRE_ANATOMIE",
+      "libelle": "Anatomie",
+      "domaine": "SCIENCES",
+      "sousDomaine": "Sciences de la Vie et de la Terre"
+    },
+    {
+      "code": "SCIENCES_DE_LA_VIE_ET_DE_LA_TERRE_BIOLOGIE_GENERALE",
+      "libelle": "Biologie générale",
+      "domaine": "SCIENCES",
+      "sousDomaine": "Sciences de la Vie et de la Terre"
+    },
+    {
+      "code": "SCIENCES_DE_LA_VIE_ET_DE_LA_TERRE_BOTANIQUE",
+      "libelle": "Botanique",
+      "domaine": "SCIENCES",
+      "sousDomaine": "Sciences de la Vie et de la Terre"
+    },
+    {
+      "code": "SCIENCES_DE_LA_VIE_ET_DE_LA_TERRE_GEOLOGIE",
+      "libelle": "Géologie",
+      "domaine": "SCIENCES",
+      "sousDomaine": "Sciences de la Vie et de la Terre"
+    },
+    {
+      "code": "SCIENCES_DE_LA_VIE_ET_DE_LA_TERRE_GEOLOGIE_ECOLOGIE",
+      "libelle": "Géologie / Ecologie",
+      "domaine": "SCIENCES",
+      "sousDomaine": "Sciences de la Vie et de la Terre"
+    },
+    {
+      "code": "SCIENCES_DE_LA_VIE_ET_DE_LA_TERRE_MICROBIOLOGIE",
+      "libelle": "microbiologie",
+      "domaine": "SCIENCES",
+      "sousDomaine": "Sciences de la Vie et de la Terre"
+    },
+    {
+      "code": "SCIENCES_DE_LA_VIE_ET_DE_LA_TERRE_NUTRITION",
+      "libelle": "Nutrition",
+      "domaine": "SCIENCES",
+      "sousDomaine": "Sciences de la Vie et de la Terre"
+    },
+    {
+      "code": "SCIENCES_DE_LA_VIE_ET_DE_LA_TERRE_SYSTEMATIQUE_ET_JARDIN",
+      "libelle": "Systématique et Jardin.",
+      "domaine": "SCIENCES",
+      "sousDomaine": "Sciences de la Vie et de la Terre"
+    },
+    {
+      "code": "SCIENCES_DE_LA_VIE_ET_DE_LA_TERRE_ZOOLOGIE",
+      "libelle": "Zoologie",
+      "domaine": "SCIENCES",
+      "sousDomaine": "Sciences de la Vie et de la Terre"
+    },
+    {
+      "code": "SCIENCES_PHYS_ZOOLO_INFO",
+      "libelle": "Phys.- zoolo. - Info.",
+      "domaine": "MATHEMATIQUES, SCIENCES ET TECHNOLOGIE",
+      "sousDomaine": "SCIENCES"
+    },
+    {
+      "code": "SCIENCES_PHYSIQUES_TECHNOLOGIE_ET_TECHNOLOGIES_DE_L_INFORMATION_E_1IPQR1",
+      "libelle": "Sciences Physiques",
+      "domaine": "SCIENCES",
+      "sousDomaine": "Sciences Physiques, Technologie et Technologies de l’Information et de la communication (TIC)"
+    },
+    {
+      "code": "SCIENCES_PHYSIQUES_TECHNOLOGIE_ET_TECHNOLOGIES_DE_L_INFORMATION_E_1JALCX",
+      "libelle": "Techn. d’Info. & Com (TIC)",
+      "domaine": "SCIENCES",
+      "sousDomaine": "Sciences Physiques, Technologie et Technologies de l’Information et de la communication (TIC)"
+    },
+    {
+      "code": "SCIENCES_PHYSIQUES_TECHNOLOGIE_ET_TECHNOLOGIES_DE_L_INFORMATION_E_1M97GT",
+      "libelle": "Technologie",
+      "domaine": "SCIENCES",
+      "sousDomaine": "Sciences Physiques, Technologie et Technologies de l’Information et de la communication (TIC)"
+    },
+    {
+      "code": "SCIENCES_PHYSIQUES_TECHNOLOGIE_ET_TECHNOLOGIES_DE_L_INFORMATION_E_T81LO8",
+      "libelle": "Chimie",
+      "domaine": "SCIENCES",
+      "sousDomaine": "Sciences Physiques, Technologie et Technologies de l’Information et de la communication (TIC)"
+    },
+    {
+      "code": "SCIENCES_PHYSIQUES_TECHNOLOGIE_ET_TIC_CHIMIE",
+      "libelle": "Chimie",
+      "domaine": "SCIENCES",
+      "sousDomaine": "Sciences Physiques, Technologie et TIC"
+    },
+    {
+      "code": "SCIENCES_PHYSIQUES_TECHNOLOGIE_ET_TIC_PHYSIQUE",
+      "libelle": "Physique",
+      "domaine": "SCIENCES",
+      "sousDomaine": "Sciences Physiques, Technologie et TIC"
+    },
+    {
+      "code": "SCIENCES_PHYSIQUES_TECHNOLOGIE_ET_TIC_TECH_D_INFO_ET_COM_TIC",
+      "libelle": "Tech. d’Info et Com (TIC)",
+      "domaine": "SCIENCES",
+      "sousDomaine": "Sciences Physiques, Technologie et TIC"
+    },
+    {
+      "code": "SCIENCES_SCIENCES_D_EVEIL",
+      "libelle": "Sciences d’éveil",
+      "domaine": "MATHEMATIQUES, SCIENCES ET TECHNOLOGIE",
+      "sousDomaine": "SCIENCES"
+    },
+    {
+      "code": "SCIENCES_ZOOLOGIE_BOTANIQUE_ET_INFO",
+      "libelle": "Zoologie – botanique & Info.",
+      "domaine": "MATHEMATIQUES, SCIENCES ET TECHNOLOGIE",
+      "sousDomaine": "SCIENCES"
+    },
+    {
+      "code": "SECOURISME",
+      "libelle": "Secourisme"
+    },
+    {
+      "code": "SOCAF_ECOPOL",
+      "libelle": "Socaf. / Ecopol."
+    },
+    {
+      "code": "SOCAF_ECOPOL_ESTHETIQUE",
+      "libelle": "Socaf. / Ecopol. / Esthétique"
+    },
+    {
+      "code": "SOCIOLOGIE",
+      "libelle": "Sociologie"
+    },
+    {
+      "code": "SOCIOLOGIE_AFR_ECOPOL",
+      "libelle": "Sociologie afr. /Ecopol"
+    },
+    {
+      "code": "SOCIOLOGIE_AFRICAINE",
+      "libelle": "Sociologie africaine"
+    },
+    {
+      "code": "SOCIOLOGIE_DU_MILIEU",
+      "libelle": "Sociologie du milieu"
+    },
+    {
+      "code": "SOCIOLOGIE_ECOPOL",
+      "libelle": "Sociologie / Ecopol"
+    },
+    {
+      "code": "SOCIOLOGIE_GENERALE",
+      "libelle": "Sociologie générale"
+    },
+    {
+      "code": "SOIN_DE_BEAUTE",
+      "libelle": "Soin de beauté"
+    },
+    {
+      "code": "SOINS_DE_BEAUTE",
+      "libelle": "Soins de beauté"
+    },
+    {
+      "code": "SOLFEGE_CHANTE",
+      "libelle": "Solfège chanté"
+    },
+    {
+      "code": "SOUTIEN_DE_COIFFURE",
+      "libelle": "Soutien de coiffure"
+    },
+    {
+      "code": "SPORTIVE",
+      "libelle": "sportive"
+    },
+    {
+      "code": "SPORTS",
+      "libelle": "Sports"
+    },
+    {
+      "code": "SPORTS_DES_DISCIPLINES",
+      "libelle": "Sports des disciplines"
+    },
+    {
+      "code": "STAGE",
+      "libelle": "Stage"
+    },
+    {
+      "code": "STAGE_1_MOIS",
+      "libelle": "Stage 1 mois"
+    },
+    {
+      "code": "STAGE_VISITES_GUIDEES",
+      "libelle": "Stage / visites guidées"
+    },
+    {
+      "code": "STATISTIQUES",
+      "libelle": "Statistiques"
+    },
+    {
+      "code": "STENOGRAPHIE",
+      "libelle": "Sténographie"
+    },
+    {
+      "code": "SYLVICULTURE",
+      "libelle": "Sylviculture"
+    },
+    {
+      "code": "T_H_ENTRET_DES_LOCAUX",
+      "libelle": "T.H. entret. des locaux"
+    },
+    {
+      "code": "T_H_LINGERIE_ET_BUANDERIE",
+      "libelle": "T.H. lingerie et buanderie"
+    },
+    {
+      "code": "T_H_P",
+      "libelle": "T.H.P."
+    },
+    {
+      "code": "T_P_LABO",
+      "libelle": "T.P. labo."
+    },
+    {
+      "code": "TECH_AUDIO_VISUELLE",
+      "libelle": "Tech. audio – visuelle"
+    },
+    {
+      "code": "TECHN_HOT_ECON",
+      "libelle": "Techn. hot. écon."
+    },
+    {
+      "code": "TECHN_LABO_CHIMIE",
+      "libelle": "Techn. labo. chimie"
+    },
+    {
+      "code": "TECHNIQUE_ANIMATION",
+      "libelle": "Technique animation"
+    },
+    {
+      "code": "TECHNIQUE_D_ENQUETE",
+      "libelle": "Technique d’enquête"
+    },
+    {
+      "code": "TECHNIQUE_HOT_ECONOMIQUE",
+      "libelle": "Technique hot. économique"
+    },
+    {
+      "code": "TECHNIQUE_LABO_CHIMIE",
+      "libelle": "Technique labo. chimie"
+    },
+    {
+      "code": "TECHNO_AJUSTAGE",
+      "libelle": "Techno. ajustage"
+    },
+    {
+      "code": "TECHNO_AMEUBLEMENT",
+      "libelle": "Techno / Ameublement"
+    },
+    {
+      "code": "TECHNO_AUTO",
+      "libelle": "Techno. Auto."
+    },
+    {
+      "code": "TECHNO_AUTOMOBILE",
+      "libelle": "Techno. automobile"
+    },
+    {
+      "code": "TECHNO_D_EQUIPEMENT",
+      "libelle": "Techno. d’équipement"
+    },
+    {
+      "code": "TECHNO_D_HEBE_BUAND_LING",
+      "libelle": "Techno. d’hebe. buand. ling."
+    },
+    {
+      "code": "TECHNO_D_HEBE_ENTRET_LOC",
+      "libelle": "Techno. d’hebe. entret. loc."
+    },
+    {
+      "code": "TECHNO_DE_CONSTRUCTION",
+      "libelle": "Techno. de construction"
+    },
+    {
+      "code": "TECHNO_DE_CULINAIRE",
+      "libelle": "Techno. de culinaire"
+    },
+    {
+      "code": "TECHNO_DE_RESTAURATION",
+      "libelle": "Techno. de restauration"
+    },
+    {
+      "code": "TECHNO_DU_RESTAURANT",
+      "libelle": "Techno du restaurant"
+    },
+    {
+      "code": "TECHNO_ELECTR",
+      "libelle": "Techno. électr."
+    },
+    {
+      "code": "TECHNO_ELECTRIQUE",
+      "libelle": "Techno. électrique"
+    },
+    {
+      "code": "TECHNO_HOTELIERE",
+      "libelle": "Techno. hôtelière"
+    },
+    {
+      "code": "TECHNO_MACH_OUTIL",
+      "libelle": "Techno-mach-outil"
+    },
+    {
+      "code": "TECHNO_MACHINE_OUTILS",
+      "libelle": "Techno.-machine-outils"
+    },
+    {
+      "code": "TECHNO_MECANIQUE",
+      "libelle": "Techno. mécanique"
+    },
+    {
+      "code": "TECHNOLOGIE",
+      "libelle": "Technologie"
+    },
+    {
+      "code": "TECHNOLOGIE_AGRICOLE",
+      "libelle": "Technologie agricole"
+    },
+    {
+      "code": "TECHNOLOGIE_ALIMENTAIRE",
+      "libelle": "Technologie alimentaire"
+    },
+    {
+      "code": "TECHNOLOGIE_AUTO",
+      "libelle": "Technologie auto."
+    },
+    {
+      "code": "TECHNOLOGIE_CULINAIRE",
+      "libelle": "Technologie culinaire"
+    },
+    {
+      "code": "TECHNOLOGIE_DE_CUISINE",
+      "libelle": "Technologie de cuisine"
+    },
+    {
+      "code": "TECHNOLOGIE_DE_RESTAURATION",
+      "libelle": "Technologie de restauration"
+    },
+    {
+      "code": "TECHNOLOGIE_DE_SOUDURE",
+      "libelle": "Technologie de soudure"
+    },
+    {
+      "code": "TECHNOLOGIE_DES_MOTEURS",
+      "libelle": "Technologie des moteurs"
+    },
+    {
+      "code": "TECHNOLOGIE_DU_METIER",
+      "libelle": "Technologie du métier"
+    },
+    {
+      "code": "TECHNOLOGIE_DU_RESTAURANT",
+      "libelle": "Technologie du restaurant"
+    },
+    {
+      "code": "TECHNOLOGIE_EXPERTISE",
+      "libelle": "Technologie (expertise)"
+    },
+    {
+      "code": "TECHNOLOGIE_GENIE",
+      "libelle": "Technologie (génie)"
+    },
+    {
+      "code": "TECHNOLOGIE_HOT_ECONOMIQUE",
+      "libelle": "Technologie hot. économique"
+    },
+    {
+      "code": "TECHNOLOGIE_HOTELIERE",
+      "libelle": "Technologie hôtelière"
+    },
+    {
+      "code": "TECHNOLOGIE_MACHINE",
+      "libelle": "Technologie machine"
+    },
+    {
+      "code": "TECHNOLOGIE_MECANIQUE",
+      "libelle": "Technologie mécanique"
+    },
+    {
+      "code": "TECHNOLOGIE_MEUBLE",
+      "libelle": "Technologie meuble"
+    },
+    {
+      "code": "TECHNOLOGIE_OUTILLE",
+      "libelle": "Technologie outille"
+    },
+    {
+      "code": "TECHNOLOGIE_SOUDURE",
+      "libelle": "Technologie soudure"
+    },
+    {
+      "code": "TECHNOLOGIE_TECHNOLOGIE",
+      "libelle": "Technologie",
+      "domaine": "MATHEMATIQUES, SCIENCES ET TECHNOLOGIE",
+      "sousDomaine": "TECHNOLOGIE"
+    },
+    {
+      "code": "THEORIE_DE_L_E_P_S",
+      "libelle": "Théorie de l’E.P.S."
+    },
+    {
+      "code": "THEORIE_MUSICALE",
+      "libelle": "Théorie musicale"
+    },
+    {
+      "code": "THEORIES_DE_L_E_P_S",
+      "libelle": "Théories de l’E.P.S."
+    },
+    {
+      "code": "THERAPEUTIQUE",
+      "libelle": "Thérapeutique"
+    },
+    {
+      "code": "TOPOGRAPHIE",
+      "libelle": "Topographie"
+    },
+    {
+      "code": "TOXICOLOGIE",
+      "libelle": "Toxicologie"
+    },
+    {
+      "code": "TRANS_HYDRO_PNEUMAT_T_H_P",
+      "libelle": "Trans. Hydro. Pneumat. (T.H.P)"
+    },
+    {
+      "code": "TRANSPOSITION_MUSICALE",
+      "libelle": "Transposition musicale"
+    },
+    {
+      "code": "TRAV_SOC_IND_ET_DE_GROUPE",
+      "libelle": "Trav. soc. ind. & de groupe"
+    },
+    {
+      "code": "TRAVAIL_DE_MAT_DES_SPORTS",
+      "libelle": "Travail de Mat. des Sports"
+    },
+    {
+      "code": "TRAVAIL_MAN_DE_SPORT",
+      "libelle": "Travail man. de sport"
+    },
+    {
+      "code": "TRAVAIL_MAN_ET_MAT_SPORTS",
+      "libelle": "Travail man. & mat. Sports"
+    },
+    {
+      "code": "TRAVAIL_MANUEL",
+      "libelle": "Travail manuel"
+    },
+    {
+      "code": "TRAVAIL_MANUEL_ECRITURE",
+      "libelle": "Travail manuel / Ecriture"
+    },
+    {
+      "code": "TUYAUTERIE_INDUSTRIELLE",
+      "libelle": "Tuyauterie industrielle"
+    },
+    {
+      "code": "VISITE",
+      "libelle": "Visite"
+    },
+    {
+      "code": "VOIES_DE_COMMUNICATION",
+      "libelle": "Voies de communication"
+    },
+    {
+      "code": "ZOOTECHNIE",
+      "libelle": "Zootechnie"
+    },
+    {
+      "code": "ZOOTECHNIE_ELEVAGE",
+      "libelle": "Zootechnie (élevage)"
+    }
+  ],
+  "importePar": "seed-referentiel-academique"
+}
