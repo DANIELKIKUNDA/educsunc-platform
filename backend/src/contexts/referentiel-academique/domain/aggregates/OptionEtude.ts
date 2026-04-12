@@ -8,6 +8,7 @@ export class OptionEtude extends RacineAgregat<OptionEtudeId> {
   private code: CodeOption;
   private libelle: string;
   private typeOption?: string;
+  private abreviation?: string;
   private active: boolean;
   private ordreAffichage?: number;
   private creeLe: Date;
@@ -21,6 +22,7 @@ export class OptionEtude extends RacineAgregat<OptionEtudeId> {
     libelle: string,
     typeOption?: string,
     ordreAffichage?: number,
+    abreviation?: string,
     active = true,
     creeLe: Date = new Date(),
     modifieLe?: Date,
@@ -31,6 +33,7 @@ export class OptionEtude extends RacineAgregat<OptionEtudeId> {
     this.code = this.validerCode(code);
     this.libelle = this.validerTexteObligatoire(libelle, 'libelle');
     this.typeOption = this.validerTexteOptionnel(typeOption);
+    this.abreviation = this.validerTexteOptionnel(abreviation);
     this.ordreAffichage = this.validerOrdreOptionnel(ordreAffichage);
     this.active = this.validerBooleen(active, 'active');
     this.creeLe = this.validerDate(creeLe, 'creeLe');
@@ -56,6 +59,11 @@ export class OptionEtude extends RacineAgregat<OptionEtudeId> {
   // Cette methode retourne le type d'option si il existe.
   public obtenirTypeOption(): string | undefined {
     return this.typeOption;
+  }
+
+  // Cette methode retourne l'abreviation officielle ou locale de l'option.
+  public obtenirAbreviation(): string | undefined {
+    return this.abreviation;
   }
 
   // Cette methode retourne l'ordre d'affichage si il existe.

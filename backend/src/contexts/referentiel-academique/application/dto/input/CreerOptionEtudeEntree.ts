@@ -3,6 +3,7 @@ export interface CreerOptionEtudeEntree {
   code: number;
   libelle: string;
   typeOption?: string;
+  abreviation?: string;
   ordreAffichage?: number;
   creePar: string;
 }

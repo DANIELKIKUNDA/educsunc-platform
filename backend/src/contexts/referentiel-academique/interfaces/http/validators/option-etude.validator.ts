@@ -28,6 +28,10 @@ export class ValidateurOptionEtudeHttp {
         donnees,
         'typeOption',
       ),
+      abreviation: OutilsValidationHttpReferentielAcademique.lireChaineOptionnelle(
+        donnees,
+        'abreviation',
+      ),
       ordreAffichage: OutilsValidationHttpReferentielAcademique.lireNombreEntierOptionnel(
         donnees,
         'ordreAffichage',

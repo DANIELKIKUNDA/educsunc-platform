@@ -49,6 +49,20 @@ cd backend
 npm run db:migrate:referentiel
 ```
 
+Pour initialiser les options d'etudes EXETAT dans PostgreSQL :
+
+```powershell
+cd backend
+npm run seed:options-etudes
+```
+
+Pour lancer le seed principal du referentiel academique :
+
+```powershell
+cd backend
+npm run seed:referentiel-academique
+```
+
 Dans PgAdmin, utiliser le serveur PostgreSQL local `localhost:5432`, puis ouvrir la base `educsyn`.
 
 ## GitHub Actions

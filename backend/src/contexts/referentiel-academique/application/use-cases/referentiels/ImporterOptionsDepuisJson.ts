@@ -63,8 +63,9 @@ export class ImporterOptionsDepuisJson
         new OptionEtudeId(),
         new CodeOption(enregistrement.code),
         enregistrement.libelle,
-        enregistrement.typeOption,
+        undefined,
         enregistrement.ordreAffichage,
+        enregistrement.abreviation,
       );
 
       await this.depotOptionEtude.sauvegarder(optionEtude);
@@ -111,7 +112,7 @@ export class ImporterOptionsDepuisJson
     return {
       code: this.validerEntierPositif(option.code, 'code'),
       libelle: this.validerTexteObligatoire(option.libelle, 'libelle'),
-      typeOption: this.validerTexteOptionnel(option.typeOption),
+      abreviation: this.validerTexteOptionnel(option.abreviation),
       ordreAffichage: this.validerEntierPositifOptionnel(option.ordreAffichage, 'ordreAffichage'),
     };
   }
@@ -122,7 +123,7 @@ export class ImporterOptionsDepuisJson
   ): void {
     if (
       optionExistante.obtenirLibelle() !== enregistrement.libelle
-      || optionExistante.obtenirTypeOption() !== enregistrement.typeOption
+      || optionExistante.obtenirAbreviation() !== enregistrement.abreviation
       || optionExistante.obtenirOrdreAffichage() !== enregistrement.ordreAffichage
     ) {
       throw new ErreurOptionEtudeDupliquee(

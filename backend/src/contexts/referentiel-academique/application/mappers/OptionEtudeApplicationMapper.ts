@@ -10,6 +10,7 @@ export class OptionEtudeApplicationMapper {
       code: optionEtude.obtenirCodeNumerique(),
       libelle: optionEtude.obtenirLibelle(),
       typeOption: optionEtude.obtenirTypeOption(),
+      abreviation: optionEtude.obtenirAbreviation(),
       ordreAffichage: optionEtude.obtenirOrdreAffichage(),
       active: optionEtude.estActive(),
       creeLe: optionEtude.obtenirCreeLe().toISOString(),

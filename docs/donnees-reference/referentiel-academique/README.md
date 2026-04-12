@@ -5,7 +5,7 @@ Ce dossier regroupe les donnees JSON stables utilisees pour initialiser le BC Re
 Organisation actuelle :
 
 - `sections/` : sections scolaires officielles importees par le cas d'usage `ImporterSectionsDepuisJson`.
-- `options/` : options d'etudes officielles du secondaire importees par le cas d'usage `ImporterOptionsDepuisJson`.
+- `options/` : options d'etudes officielles du secondaire importees par le seed `seed:options-etudes`.
 
 Les fichiers JSON doivent rester alignes sur les DTO d'import du backend.
-Les champs metier de reference non persistants, comme `sectionCode`, servent uniquement a documenter le rattachement officiel quand le cas d'usage d'import courant ne porte pas encore cette propriete.
+Les options d'etudes portent `abreviation` comme champ metier dedie aux sigles, tandis que le champ legacy `typeOption` n'est plus utilise par les donnees de reference.

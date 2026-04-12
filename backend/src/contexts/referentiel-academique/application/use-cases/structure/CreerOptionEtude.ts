@@ -56,6 +56,7 @@ export class CreerOptionEtude
       entreeValidee.libelle,
       entreeValidee.typeOption,
       entreeValidee.ordreAffichage,
+      entreeValidee.abreviation,
     );
 
     await this.depotOptionEtude.sauvegarder(optionEtude);
@@ -76,6 +77,7 @@ export class CreerOptionEtude
       code: this.validerEntierPositif(entree.code, 'code'),
       libelle: this.validerTexteObligatoire(entree.libelle, 'libelle'),
       typeOption: this.validerTexteOptionnel(entree.typeOption),
+      abreviation: this.validerTexteOptionnel(entree.abreviation),
       ordreAffichage: this.validerEntierPositifOptionnel(entree.ordreAffichage, 'ordreAffichage'),
       creePar: this.validerTexteObligatoire(entree.creePar, 'creePar'),
     };

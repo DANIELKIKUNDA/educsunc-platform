@@ -4,6 +4,7 @@ export interface OptionEtudeSortie {
   code: number;
   libelle: string;
   typeOption?: string;
+  abreviation?: string;
   ordreAffichage?: number;
   active: boolean;
   creeLe: string;

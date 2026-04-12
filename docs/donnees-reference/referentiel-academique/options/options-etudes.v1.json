@@ -3,359 +3,308 @@
     {
       "code": 101,
       "libelle": "Latin Philosophie",
-      "typeOption": "LP",
-      "ordreAffichage": 1,
-      "sectionCode": "SEC"
+      "abreviation": "LP",
+      "ordreAffichage": 1
     },
     {
       "code": 102,
       "libelle": "Sciences",
-      "typeOption": "SC",
-      "ordreAffichage": 2,
-      "sectionCode": "SEC"
+      "abreviation": "SC",
+      "ordreAffichage": 2
     },
     {
       "code": 103,
       "libelle": "Latin-Grec",
-      "typeOption": "LG",
-      "ordreAffichage": 3,
-      "sectionCode": "SEC"
+      "abreviation": "LG",
+      "ordreAffichage": 3
     },
     {
       "code": 104,
       "libelle": "Latin Mathématique",
-      "typeOption": "LM",
-      "ordreAffichage": 4,
-      "sectionCode": "SEC"
+      "abreviation": "LM",
+      "ordreAffichage": 4
     },
     {
       "code": 201,
       "libelle": "Pédagogie Générale",
-      "typeOption": "HP",
-      "ordreAffichage": 5,
-      "sectionCode": "SEC"
+      "abreviation": "HP",
+      "ordreAffichage": 5
     },
     {
       "code": 202,
       "libelle": "Éducation Physique et Sportive",
-      "typeOption": "EPS",
-      "ordreAffichage": 6,
-      "sectionCode": "SEC"
+      "abreviation": "EPS",
+      "ordreAffichage": 6
     },
     {
       "code": 203,
       "libelle": "Normale",
-      "typeOption": "NOR",
-      "ordreAffichage": 7,
-      "sectionCode": "SEC"
+      "abreviation": "NOR",
+      "ordreAffichage": 7
     },
     {
       "code": 204,
       "libelle": "Pédagogie Maternelle",
-      "typeOption": "PM",
-      "ordreAffichage": 8,
-      "sectionCode": "SEC"
+      "abreviation": "PM",
+      "ordreAffichage": 8
     },
     {
       "code": 205,
       "libelle": "Pédagogie Pré-scolaire",
-      "typeOption": "PPS",
-      "ordreAffichage": 9,
-      "sectionCode": "SEC"
+      "abreviation": "PPS",
+      "ordreAffichage": 9
     },
     {
       "code": 301,
       "libelle": "Commerciale et Gestion",
-      "typeOption": "CG",
-      "ordreAffichage": 10,
-      "sectionCode": "SEC"
+      "abreviation": "CG",
+      "ordreAffichage": 10
     },
     {
       "code": 302,
       "libelle": "Secrétariat-Administration",
-      "typeOption": "SA",
-      "ordreAffichage": 11,
-      "sectionCode": "SEC"
+      "abreviation": "SA",
+      "ordreAffichage": 11
     },
     {
       "code": 401,
       "libelle": "Sociale",
-      "typeOption": "SOC",
-      "ordreAffichage": 12,
-      "sectionCode": "SEC"
+      "abreviation": "SOC",
+      "ordreAffichage": 12
     },
     {
       "code": 501,
       "libelle": "Arts Plastiques",
-      "typeOption": "AP",
-      "ordreAffichage": 13,
-      "sectionCode": "SEC"
+      "abreviation": "AP",
+      "ordreAffichage": 13
     },
     {
       "code": 502,
       "libelle": "Arts Dramatiques",
-      "typeOption": "AD",
-      "ordreAffichage": 14,
-      "sectionCode": "SEC"
+      "abreviation": "AD",
+      "ordreAffichage": 14
     },
     {
       "code": 503,
       "libelle": "Musique",
-      "typeOption": "MUS",
-      "ordreAffichage": 15,
-      "sectionCode": "SEC"
+      "abreviation": "MUS",
+      "ordreAffichage": 15
     },
     {
       "code": 504,
       "libelle": "Esthétique & Coiffure",
-      "typeOption": "EC",
-      "ordreAffichage": 16,
-      "sectionCode": "SEC"
+      "abreviation": "EC",
+      "ordreAffichage": 16
     },
     {
       "code": 505,
       "libelle": "Coiffure",
-      "typeOption": "COIF",
-      "ordreAffichage": 17,
-      "sectionCode": "SEC"
+      "abreviation": "COIF",
+      "ordreAffichage": 17
     },
     {
       "code": 601,
       "libelle": "Coupe et Couture",
-      "typeOption": "TCC",
-      "ordreAffichage": 18,
-      "sectionCode": "SEC"
+      "abreviation": "TCC",
+      "ordreAffichage": 18
     },
     {
       "code": 701,
       "libelle": "Hôtesse d'Accueil",
-      "typeOption": "HA",
-      "ordreAffichage": 19,
-      "sectionCode": "SEC"
+      "abreviation": "HA",
+      "ordreAffichage": 19
     },
     {
       "code": 702,
       "libelle": "Hôtellerie et Restauration",
-      "typeOption": "HR",
-      "ordreAffichage": 20,
-      "sectionCode": "SEC"
+      "abreviation": "HR",
+      "ordreAffichage": 20
     },
     {
       "code": 703,
       "libelle": "Hébergement",
-      "typeOption": "HEB",
-      "ordreAffichage": 21,
-      "sectionCode": "SEC"
+      "abreviation": "HEB",
+      "ordreAffichage": 21
     },
     {
       "code": 704,
       "libelle": "Tourisme",
-      "typeOption": "TOUR",
-      "ordreAffichage": 22,
-      "sectionCode": "SEC"
+      "abreviation": "TOUR",
+      "ordreAffichage": 22
     },
     {
       "code": 801,
       "libelle": "Agriculture Générale",
-      "typeOption": "AG",
-      "ordreAffichage": 23,
-      "sectionCode": "SEC"
+      "abreviation": "AG",
+      "ordreAffichage": 23
     },
     {
       "code": 802,
       "libelle": "Pêche et Navigation",
-      "typeOption": "PN",
-      "ordreAffichage": 24,
-      "sectionCode": "SEC"
+      "abreviation": "PN",
+      "ordreAffichage": 24
     },
     {
       "code": 803,
       "libelle": "Vétérinaire",
-      "typeOption": "VET",
-      "ordreAffichage": 25,
-      "sectionCode": "SEC"
+      "abreviation": "VET",
+      "ordreAffichage": 25
     },
     {
       "code": 804,
       "libelle": "Industries Agricoles",
-      "typeOption": "IA",
-      "ordreAffichage": 26,
-      "sectionCode": "SEC"
+      "abreviation": "IA",
+      "ordreAffichage": 26
     },
     {
       "code": 805,
       "libelle": "Nutrition",
-      "typeOption": "NUT",
-      "ordreAffichage": 27,
-      "sectionCode": "SEC"
+      "abreviation": "NUT",
+      "ordreAffichage": 27
     },
     {
       "code": 806,
       "libelle": "Foresterie",
-      "typeOption": "FOR",
-      "ordreAffichage": 28,
-      "sectionCode": "SEC"
+      "abreviation": "FOR",
+      "ordreAffichage": 28
     },
     {
       "code": 901,
       "libelle": "Mécanique Générale",
-      "typeOption": "MG",
-      "ordreAffichage": 29,
-      "sectionCode": "SEC"
+      "abreviation": "MG",
+      "ordreAffichage": 29
     },
     {
       "code": 902,
       "libelle": "Mécanique Machines-Outils",
-      "typeOption": "MMO",
-      "ordreAffichage": 30,
-      "sectionCode": "SEC"
+      "abreviation": "MMO",
+      "ordreAffichage": 30
     },
     {
       "code": 903,
       "libelle": "Électricité Générale",
-      "typeOption": "ELEC",
-      "ordreAffichage": 31,
-      "sectionCode": "SEC"
+      "abreviation": "ELEC",
+      "ordreAffichage": 31
     },
     {
       "code": 904,
       "libelle": "Construction",
-      "typeOption": "CONS",
-      "ordreAffichage": 32,
-      "sectionCode": "SEC"
+      "abreviation": "CONS",
+      "ordreAffichage": 32
     },
     {
       "code": 905,
       "libelle": "Chimie Industrielle",
-      "typeOption": "CHI",
-      "ordreAffichage": 33,
-      "sectionCode": "SEC"
+      "abreviation": "CHI",
+      "ordreAffichage": 33
     },
     {
       "code": 906,
       "libelle": "Électronique Industrielle",
-      "typeOption": "EI",
-      "ordreAffichage": 34,
-      "sectionCode": "SEC"
+      "abreviation": "EI",
+      "ordreAffichage": 34
     },
     {
       "code": 907,
       "libelle": "Imprimerie",
-      "typeOption": "IMP",
-      "ordreAffichage": 35,
-      "sectionCode": "SEC"
+      "abreviation": "IMP",
+      "ordreAffichage": 35
     },
     {
       "code": 908,
       "libelle": "Commutation",
-      "typeOption": "COM",
-      "ordreAffichage": 36,
-      "sectionCode": "SEC"
+      "abreviation": "COM",
+      "ordreAffichage": 36
     },
     {
       "code": 909,
       "libelle": "Radio Transmission",
-      "typeOption": "RT",
-      "ordreAffichage": 37,
-      "sectionCode": "SEC"
+      "abreviation": "RT",
+      "ordreAffichage": 37
     },
     {
       "code": 910,
       "libelle": "Météorologie",
-      "typeOption": "METEO",
-      "ordreAffichage": 38,
-      "sectionCode": "SEC"
+      "abreviation": "METEO",
+      "ordreAffichage": 38
     },
     {
       "code": 911,
       "libelle": "Aviation Civile",
-      "typeOption": "AC",
-      "ordreAffichage": 39,
-      "sectionCode": "SEC"
+      "abreviation": "AC",
+      "ordreAffichage": 39
     },
     {
       "code": 912,
       "libelle": "Mécanique Dessin",
-      "typeOption": "MD",
-      "ordreAffichage": 40,
-      "sectionCode": "SEC"
+      "abreviation": "MD",
+      "ordreAffichage": 40
     },
     {
       "code": 913,
       "libelle": "Hydro-Pneumatique",
-      "typeOption": "HYDRO",
-      "ordreAffichage": 41,
-      "sectionCode": "SEC"
+      "abreviation": "HYDRO",
+      "ordreAffichage": 41
     },
     {
       "code": 914,
       "libelle": "Pétrochimie",
-      "typeOption": "PETRO",
-      "ordreAffichage": 42,
-      "sectionCode": "SEC"
+      "abreviation": "PETRO",
+      "ordreAffichage": 42
     },
     {
       "code": 915,
       "libelle": "Mécanique Automobile",
-      "typeOption": "MA",
-      "ordreAffichage": 43,
-      "sectionCode": "SEC"
+      "abreviation": "MA",
+      "ordreAffichage": 43
     },
     {
       "code": 916,
       "libelle": "Construction Métallique",
-      "typeOption": "CM",
-      "ordreAffichage": 44,
-      "sectionCode": "SEC"
+      "abreviation": "CM",
+      "ordreAffichage": 44
     },
     {
       "code": 917,
       "libelle": "Menuiserie",
-      "typeOption": "MEN",
-      "ordreAffichage": 45,
-      "sectionCode": "SEC"
+      "abreviation": "MEN",
+      "ordreAffichage": 45
     },
     {
       "code": 918,
       "libelle": "Mine et Géologie",
-      "typeOption": "MINGEO",
-      "ordreAffichage": 46,
-      "sectionCode": "SEC"
+      "abreviation": "MINGEO",
+      "ordreAffichage": 46
     },
     {
       "code": 919,
       "libelle": "Métallurgie",
-      "typeOption": "METAL",
-      "ordreAffichage": 47,
-      "sectionCode": "SEC"
+      "abreviation": "METAL",
+      "ordreAffichage": 47
     },
     {
       "code": 920,
       "libelle": "Dessin de Bâtiment",
-      "typeOption": "DB",
-      "ordreAffichage": 48,
-      "sectionCode": "SEC"
+      "abreviation": "DB",
+      "ordreAffichage": 48
     },
     {
       "code": 921,
       "libelle": "Plomberie (Installation Sanitaire)",
-      "typeOption": "PIS",
-      "ordreAffichage": 49,
-      "sectionCode": "SEC"
+      "abreviation": "PIS",
+      "ordreAffichage": 49
     },
     {
       "code": 922,
       "libelle": "Mines et Carrières",
-      "typeOption": "MC",
-      "ordreAffichage": 50,
-      "sectionCode": "SEC"
+      "abreviation": "MC",
+      "ordreAffichage": 50
     },
     {
       "code": 923,
       "libelle": "Géologie",
-      "typeOption": "GEO",
-      "ordreAffichage": 51,
-      "sectionCode": "SEC"
+      "abreviation": "GEO",
+      "ordreAffichage": 51
     }
   ],
   "importePar": "seed-referentiel-academique"

@@ -79,6 +79,7 @@ export class DepotOptionEtudePostgres
       'code',
       'libelle',
       'type_option',
+      'abreviation',
       'ordre_affichage',
       'active',
       'cree_le',

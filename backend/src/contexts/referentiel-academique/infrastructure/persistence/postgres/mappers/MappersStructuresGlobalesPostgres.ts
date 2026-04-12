@@ -198,6 +198,7 @@ export interface PersistanceOptionEtudePostgres {
   code: number;
   libelle: string;
   type_option?: string | null;
+  abreviation?: string | null;
   ordre_affichage?: number | null;
   active: boolean;
   cree_le: ValeurDatePostgres;
@@ -215,6 +216,7 @@ export class MapperOptionEtudePostgres extends BaseMapperPostgresReferentielAcad
       ligne.libelle,
       ligne.type_option ?? undefined,
       ligne.ordre_affichage ?? undefined,
+      ligne.abreviation ?? undefined,
       ligne.active,
       this.versDate(ligne.cree_le, 'cree_le'),
       this.versDateOptionnelle(ligne.modifie_le, 'modifie_le'),
@@ -229,6 +231,7 @@ export class MapperOptionEtudePostgres extends BaseMapperPostgresReferentielAcad
       code: optionEtude.obtenirCodeNumerique(),
       libelle: optionEtude.obtenirLibelle(),
       type_option: optionEtude.obtenirTypeOption() ?? null,
+      abreviation: optionEtude.obtenirAbreviation() ?? null,
       ordre_affichage: optionEtude.obtenirOrdreAffichage() ?? null,
       active: optionEtude.estActive(),
       cree_le: this.versDatePersistance(optionEtude.obtenirCreeLe()),

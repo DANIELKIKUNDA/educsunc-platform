@@ -343,6 +343,13 @@ export const schemaTableOptionsEtudes: SchemaTablePostgres = creerSchemaTablePos
       commentaire: "Type ou famille descriptive de l'option.",
     },
     {
+      nom: 'abreviation',
+      type: 'varchar',
+      taille: 40,
+      obligatoire: false,
+      commentaire: "Abreviation officielle ou locale de l'option d'etude.",
+    },
+    {
       nom: 'ordre_affichage',
       type: 'integer',
       obligatoire: false,

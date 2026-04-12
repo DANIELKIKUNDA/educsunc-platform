@@ -2,7 +2,7 @@
 export interface EnregistrementOptionEtudeJson {
   code: number;
   libelle: string;
-  typeOption?: string;
+  abreviation?: string;
   ordreAffichage?: number;
 }
 

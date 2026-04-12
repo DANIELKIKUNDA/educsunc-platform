@@ -343,9 +343,9 @@ export class ValidateurReferentielImportHttp {
         donnees,
         'libelle',
       ),
-      typeOption: OutilsValidationHttpReferentielAcademique.lireChaineOptionnelle(
+      abreviation: OutilsValidationHttpReferentielAcademique.lireChaineOptionnelle(
         donnees,
-        'typeOption',
+        'abreviation',
       ),
       ordreAffichage: OutilsValidationHttpReferentielAcademique.lireNombreEntierOptionnel(
         donnees,
