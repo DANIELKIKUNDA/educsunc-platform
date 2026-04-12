@@ -63,6 +63,13 @@ cd backend
 npm run seed:options-etudes
 ```
 
+Pour initialiser les classes academiques officielles dans PostgreSQL :
+
+```powershell
+cd backend
+npm run seed:classes-academiques
+```
+
 Pour lancer le seed principal du referentiel academique :
 
 ```powershell
