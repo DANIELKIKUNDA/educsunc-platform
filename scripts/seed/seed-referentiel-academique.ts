@@ -1,10 +1,13 @@
+import { executerSeedSectionsScolaires } from './seed-sections-scolaires';
 import { executerSeedOptionsEtudes } from './seed-options-etudes';
 
 // Ce seed principal regroupe les donnees de reference du BC Referentiel Academique.
 const executerSeedReferentielAcademique = async (): Promise<void> => {
+  const bilanSections = await executerSeedSectionsScolaires();
   const bilanOptions = await executerSeedOptionsEtudes();
 
   console.log('Seed du referentiel academique termine.', {
+    sectionsScolaires: bilanSections,
     optionsEtudes: bilanOptions,
   });
 };

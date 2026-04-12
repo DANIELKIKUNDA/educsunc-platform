@@ -49,6 +49,13 @@ cd backend
 npm run db:migrate:referentiel
 ```
 
+Pour initialiser les sections scolaires dans PostgreSQL :
+
+```powershell
+cd backend
+npm run seed:sections-scolaires
+```
+
 Pour initialiser les options d'etudes EXETAT dans PostgreSQL :
 
 ```powershell

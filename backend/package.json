@@ -8,6 +8,7 @@
     "build": "tsc -p tsconfig.json --ignoreDeprecations 6.0",
     "start": "tsx src/main.ts",
     "db:migrate:referentiel": "tsx src/scripts/MigrerReferentielAcademique.ts",
+    "seed:sections-scolaires": "tsx ../scripts/seed/seed-sections-scolaires.ts",
     "seed:options-etudes": "tsx ../scripts/seed/seed-options-etudes.ts",
     "seed:referentiel-academique": "tsx ../scripts/seed/seed-referentiel-academique.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json --ignoreDeprecations 6.0",
