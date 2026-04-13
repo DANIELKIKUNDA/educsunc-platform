@@ -1,3 +1,5 @@
+import { randomUUID } from 'node:crypto';
+
 import { ValidationError } from '../../../../shared/exceptions/ValidationError';
 import { ObjetValeur } from '../../../../shared/domain/ValueObject';
 
@@ -7,7 +9,7 @@ export abstract class IdentifiantUnique extends ObjetValeur<string> {
 
   // Ce constructeur reutilise une valeur fournie ou genere un identifiant unique si necessaire.
   constructor(valeur?: string) {
-    const valeurFinale = valeur ?? `${Date.now()}-${Math.random().toString(36).substring(2, 10)}`;
+    const valeurFinale = valeur ?? randomUUID();
 
     if (typeof valeurFinale !== 'string') {
       throw new ValidationError(

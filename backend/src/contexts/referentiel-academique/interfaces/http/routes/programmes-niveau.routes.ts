@@ -1,11 +1,13 @@
 import type { FastifyPluginAsync } from 'fastify';
 import { ControleurProgrammesNiveau } from '../controllers/ControleurProgrammesNiveau';
+import { ExecuteurRouteIdempotenteReferentielAcademique } from './ExecutionRouteIdempotenteReferentielAcademique';
 import { ExecuteurRouteTenantReferentielAcademique } from './ExecutionRouteTenantReferentielAcademique';
 
 // Cette interface regroupe les dependances des routes programmes niveau.
 export interface DependancesRoutesProgrammesNiveau {
   controleurProgrammesNiveau: ControleurProgrammesNiveau;
   executerRouteTenant: ExecuteurRouteTenantReferentielAcademique;
+  executerRouteIdempotente: ExecuteurRouteIdempotenteReferentielAcademique;
 }
 
 // Cette fonction cree les routes HTTP des programmes niveau.
@@ -13,12 +15,31 @@ export const creerRoutesProgrammesNiveau = (
   dependances: DependancesRoutesProgrammesNiveau,
 ): FastifyPluginAsync => async (serveur) => {
   serveur.post('/api/programmes-niveau/initialiser', async (requete, reponse) => {
+    const resultat = await dependances.executerRouteIdempotente(
+      requete,
+      () => dependances.executerRouteTenant(
+        requete,
+        () => dependances.controleurProgrammesNiveau.initialiserProgrammeNiveau(requete.body),
+        {
+          mode: 'tenant_requis',
+          clesTenant: ['idEcole'],
+        },
+      ),
+      {
+        operation: 'INITIALISER_PROGRAMME_NIVEAU',
+      },
+    );
+    return reponse.code(200).send(resultat);
+  });
+
+  serveur.get('/api/programmes-niveau/:id/etat-local', async (requete, reponse) => {
     const resultat = await dependances.executerRouteTenant(
       requete,
-      () => dependances.controleurProgrammesNiveau.initialiserProgrammeNiveau(requete.body),
+      () => dependances.controleurProgrammesNiveau.produireEtatLocalProgramme(
+        requete.params,
+      ),
       {
-        mode: 'tenant_requis',
-        clesTenant: ['idEcole'],
+        mode: 'lecture_organisationnelle_ou_tenant',
       },
     );
     return reponse.code(200).send(resultat);
@@ -36,12 +57,18 @@ export const creerRoutesProgrammesNiveau = (
   });
 
   serveur.post('/api/programmes-niveau/:id/valider', async (requete, reponse) => {
-    const resultat = await dependances.executerRouteTenant(
+    const resultat = await dependances.executerRouteIdempotente(
       requete,
-      () => dependances.controleurProgrammesNiveau
-        .validerProgrammeNiveau(requete.params, requete.body),
+      () => dependances.executerRouteTenant(
+        requete,
+        () => dependances.controleurProgrammesNiveau
+          .validerProgrammeNiveau(requete.params, requete.body),
+        {
+          mode: 'tenant_requis',
+        },
+      ),
       {
-        mode: 'tenant_requis',
+        operation: 'VALIDER_PROGRAMME_NIVEAU',
       },
     );
     return reponse.code(200).send(resultat);

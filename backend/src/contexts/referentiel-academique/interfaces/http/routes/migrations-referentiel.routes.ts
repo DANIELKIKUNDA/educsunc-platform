@@ -70,6 +70,24 @@ export const creerRoutesMigrationsReferentiel = (
     return reponse.code(200).send(resultat);
   });
 
+  serveur.post('/api/migrations-referentiel/:id/relancer-recalcul', async (requete, reponse) => {
+    const resultat = await dependances.executerRouteIdempotente(
+      requete,
+      () => dependances.executerRouteTenant(
+        requete,
+        () => dependances.controleurMigrationsReferentiel
+          .relancerRecalculApresMigration(requete.params, requete.body),
+        {
+          mode: 'tenant_requis',
+        },
+      ),
+      {
+        operation: 'RELANCER_RECALCUL_APRES_MIGRATION',
+      },
+    );
+    return reponse.code(200).send(resultat);
+  });
+
   serveur.get('/api/migrations-referentiel/:id', async (requete, reponse) => {
     const resultat = await dependances.executerRouteTenant(
       requete,

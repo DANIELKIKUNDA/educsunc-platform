@@ -1,3 +1,5 @@
+import { randomUUID } from 'node:crypto';
+
 import { InfrastructureError } from '../../../../shared/exceptions/InfrastructureError';
 import {
   EntreeJournalAuditReferentielAcademique,
@@ -114,18 +116,9 @@ export class ServiceJournalAuditReferentielAcademiquePostgres
     };
   }
 
-  // Cette methode genere un identifiant technique d'audit sans dependance externe.
+  // Cette methode genere un identifiant technique compatible avec les colonnes PostgreSQL de type uuid.
   private genererIdentifiantAudit(): string {
-    const segmentAleatoire = Math.random().toString(16).slice(2, 14).padEnd(12, '0');
-    const segmentHorodatage = Date.now().toString(16).slice(-12).padStart(12, '0');
-
-    return [
-      segmentHorodatage.slice(0, 8),
-      segmentHorodatage.slice(8, 12),
-      `4${segmentAleatoire.slice(0, 3)}`,
-      `a${segmentAleatoire.slice(3, 6)}`,
-      `${segmentAleatoire.slice(6, 12)}${segmentHorodatage.slice(0, 6)}`.slice(0, 12),
-    ].join('-');
+    return randomUUID();
   }
 
   // Cette methode produit une description robuste d'une erreur inconnue.

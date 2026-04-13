@@ -8,6 +8,10 @@ import { CalendrierAcademiqueId } from '../../../domain/value-objects/Calendrier
 import { ValiderCalendrierAcademiqueEntree } from '../../dto/input/ValiderCalendrierAcademiqueEntree';
 import { CalendrierAcademiqueSortie } from '../../dto/output/CalendrierAcademiqueSortie';
 import { CalendrierAcademiqueApplicationMapper } from '../../mappers/CalendrierAcademiqueApplicationMapper';
+import {
+  ServiceJournalAuditReferentielAcademique,
+  ServiceJournalAuditReferentielAcademiqueSansEffet,
+} from '../../services/ServiceJournalAuditReferentielAcademique';
 
 // Cette interface represente la sortie du cas d'usage ValiderCalendrierAcademique.
 export interface SortieValiderCalendrierAcademique {
@@ -22,6 +26,7 @@ export class ValiderCalendrierAcademique
   private readonly policyCalendrier: PolicyCalendrier;
   private readonly moteurCalendrierAcademique: MoteurCalendrierAcademique;
   private readonly policyAudit: PolicyAudit;
+  private readonly serviceJournalAudit: ServiceJournalAuditReferentielAcademique;
 
   // Ce constructeur injecte les dependances applicatives necessaires a la validation d'un calendrier academique.
   constructor(
@@ -29,11 +34,14 @@ export class ValiderCalendrierAcademique
     policyCalendrier: PolicyCalendrier = new PolicyCalendrier(),
     moteurCalendrierAcademique: MoteurCalendrierAcademique = new MoteurCalendrierAcademique(),
     policyAudit: PolicyAudit = new PolicyAudit(),
+    serviceJournalAudit: ServiceJournalAuditReferentielAcademique =
+      new ServiceJournalAuditReferentielAcademiqueSansEffet(),
   ) {
     this.depotCalendrierAcademique = depotCalendrierAcademique;
     this.policyCalendrier = policyCalendrier;
     this.moteurCalendrierAcademique = moteurCalendrierAcademique;
     this.policyAudit = policyAudit;
+    this.serviceJournalAudit = serviceJournalAudit;
   }
 
   // Cette methode valide la coherence globale d'un calendrier academique existant.
@@ -61,6 +69,19 @@ export class ValiderCalendrierAcademique
 
     this.policyCalendrier.verifierCoherenceTemporelleObligatoire(calendrierAcademique);
     this.moteurCalendrierAcademique.validerCalendrier(calendrierAcademique);
+    await this.serviceJournalAudit.journaliser({
+      action: 'VALIDER_CALENDRIER_ACADEMIQUE',
+      acteur: entreeValidee.validePar,
+      typeRessource: 'CalendrierAcademique',
+      idRessource: calendrierAcademique.obtenirId().obtenirValeur(),
+      idEcole: calendrierAcademique.obtenirEcoleId().obtenirValeur(),
+      details: {
+        idAnneeScolaire: calendrierAcademique.obtenirAnneeScolaireId().obtenirValeur(),
+        typeStructureEvaluation: calendrierAcademique.obtenirTypeStructureEvaluation(),
+        nombrePeriodes: calendrierAcademique.obtenirPeriodes().length,
+      },
+      creeLe: horodatageValidation,
+    });
 
     return {
       calendrierAcademique: CalendrierAcademiqueApplicationMapper.versSortie(calendrierAcademique),

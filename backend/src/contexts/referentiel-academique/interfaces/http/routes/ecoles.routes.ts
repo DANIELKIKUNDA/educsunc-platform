@@ -74,4 +74,49 @@ export const creerRoutesEcoles = (
     );
     return reponse.code(200).send(resultat);
   });
+
+  serveur.patch('/api/ecoles/:id/renommer', async (requete, reponse) => {
+    const resultat = await dependances.executerRouteTenant(
+      requete,
+      () => dependances.controleurEcoles.renommerEcole(
+        requete.params,
+        requete.body,
+      ),
+      {
+        mode: 'tenant_requis',
+        clesTenant: ['id'],
+      },
+    );
+    return reponse.code(200).send(resultat);
+  });
+
+  serveur.post('/api/ecoles/:id/activer', async (requete, reponse) => {
+    const resultat = await dependances.executerRouteTenant(
+      requete,
+      () => dependances.controleurEcoles.activerEcole(
+        requete.params,
+        requete.body,
+      ),
+      {
+        mode: 'tenant_requis',
+        clesTenant: ['id'],
+      },
+    );
+    return reponse.code(200).send(resultat);
+  });
+
+  serveur.post('/api/ecoles/:id/desactiver', async (requete, reponse) => {
+    const resultat = await dependances.executerRouteTenant(
+      requete,
+      () => dependances.controleurEcoles.desactiverEcole(
+        requete.params,
+        requete.body,
+      ),
+      {
+        mode: 'tenant_requis',
+        clesTenant: ['id'],
+      },
+    );
+    return reponse.code(200).send(resultat);
+  });
 };

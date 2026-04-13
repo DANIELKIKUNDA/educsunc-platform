@@ -3,10 +3,14 @@ import type { FastifyPluginAsync } from 'fastify';
 import {
   ActiverAnneeScolaire,
   ArchiverAnneeScolaire,
+  BasculerAnneeScolaire,
   CloturerAnneeScolaire,
+  ConsulterAnneeActiveParEcole,
   ConsulterAnneeScolaire,
   CreerAnneeScolaire,
+  GarantirAnneeScolaireActiveParEcole,
   ListerAnneesScolairesParEcole,
+  PreparerAnneeScolaireSuivante,
 } from '../../contexts/referentiel-academique/application/use-cases/annees';
 import {
   ConsulterCalendrierAcademique,
@@ -16,28 +20,36 @@ import {
   VerrouillerCalendrierAcademique,
 } from '../../contexts/referentiel-academique/application/use-cases/calendriers';
 import {
+  ActiverEcole,
   ChangerModeExploitationEcole,
   ConsulterEcole,
   CreerEcole,
+  DesactiverEcole,
   ListerEcoles,
   ListerEcolesParOrganisation,
+  RenommerEcole,
 } from '../../contexts/referentiel-academique/application/use-cases/ecoles';
 import {
   AnalyserMigrationReferentiel,
   AnnulerMigrationReferentiel,
   AppliquerMigrationReferentiel,
   ConsulterRapportMigration,
+  RelancerRecalculApresMigration,
 } from '../../contexts/referentiel-academique/application/use-cases/migrations';
 import {
+  ActiverOrganisation,
   ConsulterOrganisation,
   CreerOrganisation,
+  DesactiverOrganisation,
   ListerOrganisations,
+  RenommerOrganisation,
 } from '../../contexts/referentiel-academique/application/use-cases/organisations';
 import {
   ArchiverProgrammeNiveau,
   ConsulterProgrammeNiveau,
   InitialiserProgrammeNiveau,
   ListerProgrammesNiveauParEcoleEtAnnee,
+  ProduireEtatLocalProgramme,
   ValiderProgrammeNiveau,
 } from '../../contexts/referentiel-academique/application/use-cases/programmes';
 import {
@@ -54,15 +66,21 @@ import {
   PublierVersionReferentiel,
 } from '../../contexts/referentiel-academique/application/use-cases/referentiels';
 import {
+  ArchiverClassePedagogique,
   CreerClasseAcademique,
   CreerClassePedagogique,
   CreerOptionEtude,
   CreerSectionScolaire,
+  DesactiverClassePedagogique,
   ListerClassesAcademiques,
   ListerClassesPedagogiquesParEcoleEtAnnee,
   ListerOptionsEtudes,
+  RenommerClassePedagogique,
 } from '../../contexts/referentiel-academique/application/use-cases/structure';
-import { OrchestrateurImportReferentiel } from '../../contexts/referentiel-academique/application/services';
+import {
+  OrchestrateurImportReferentiel,
+  ServiceCycleAnneeScolaireRdc,
+} from '../../contexts/referentiel-academique/application/services';
 import {
   ControleurAnneesScolaires,
   ControleurCalendriersAcademiques,
@@ -198,6 +216,7 @@ function composerRoutesReferentielAcademique(): CompositionRoutesReferentielAcad
   );
   const depots = creerDepotsReferentielAcademique(infrastructure, contexteExecutionTenant);
   const serviceTransactionApplication = infrastructure.uniteDeTravail;
+  const serviceCycleAnneeScolaire = new ServiceCycleAnneeScolaireRdc();
   const serviceJournalAudit = new ServiceJournalAuditReferentielAcademiquePostgres(
     infrastructure.clientLecture,
     infrastructure.uniteDeTravail,
@@ -213,6 +232,9 @@ function composerRoutesReferentielAcademique(): CompositionRoutesReferentielAcad
     new CreerOrganisation(depots.depotOrganisation),
     new ConsulterOrganisation(depots.depotOrganisation),
     new ListerOrganisations(depots.depotOrganisation),
+    new RenommerOrganisation(depots.depotOrganisation),
+    new ActiverOrganisation(depots.depotOrganisation),
+    new DesactiverOrganisation(depots.depotOrganisation),
   );
 
   const controleurEcoles = new ControleurEcoles(
@@ -221,6 +243,9 @@ function composerRoutesReferentielAcademique(): CompositionRoutesReferentielAcad
     new ListerEcoles(depots.depotEcole),
     new ListerEcolesParOrganisation(depots.depotEcole),
     new ChangerModeExploitationEcole(depots.depotEcole),
+    new RenommerEcole(depots.depotEcole),
+    new ActiverEcole(depots.depotEcole),
+    new DesactiverEcole(depots.depotEcole),
   );
 
   const controleurAnneesScolaires = new ControleurAnneesScolaires(
@@ -229,12 +254,38 @@ function composerRoutesReferentielAcademique(): CompositionRoutesReferentielAcad
       depots.depotEcole,
       undefined,
       serviceTransactionApplication,
+      serviceJournalAudit,
     ),
     new ConsulterAnneeScolaire(depots.depotAnneeScolaire),
     new ListerAnneesScolairesParEcole(depots.depotAnneeScolaire, depots.depotEcole),
-    new ActiverAnneeScolaire(depots.depotAnneeScolaire),
-    new CloturerAnneeScolaire(depots.depotAnneeScolaire),
-    new ArchiverAnneeScolaire(depots.depotAnneeScolaire),
+    new ActiverAnneeScolaire(depots.depotAnneeScolaire, undefined, serviceJournalAudit),
+    new CloturerAnneeScolaire(depots.depotAnneeScolaire, undefined, serviceJournalAudit),
+    new ArchiverAnneeScolaire(depots.depotAnneeScolaire, undefined, serviceJournalAudit),
+    new ConsulterAnneeActiveParEcole(depots.depotAnneeScolaire, depots.depotEcole),
+    new PreparerAnneeScolaireSuivante(
+      depots.depotAnneeScolaire,
+      depots.depotEcole,
+      serviceCycleAnneeScolaire,
+      undefined,
+      serviceTransactionApplication,
+      serviceJournalAudit,
+    ),
+    new GarantirAnneeScolaireActiveParEcole(
+      depots.depotAnneeScolaire,
+      depots.depotEcole,
+      serviceCycleAnneeScolaire,
+      undefined,
+      serviceTransactionApplication,
+      serviceJournalAudit,
+    ),
+    new BasculerAnneeScolaire(
+      depots.depotAnneeScolaire,
+      depots.depotEcole,
+      serviceCycleAnneeScolaire,
+      undefined,
+      serviceTransactionApplication,
+      serviceJournalAudit,
+    ),
   );
 
   const controleurStructureScolaire = new ControleurStructureScolaire(
@@ -252,6 +303,7 @@ function composerRoutesReferentielAcademique(): CompositionRoutesReferentielAcad
       depots.depotClasseAcademique,
       undefined,
       serviceTransactionApplication,
+      serviceJournalAudit,
     ),
     new ListerClassesAcademiques(depots.depotClasseAcademique),
     new ListerClassesPedagogiquesParEcoleEtAnnee(
@@ -260,6 +312,9 @@ function composerRoutesReferentielAcademique(): CompositionRoutesReferentielAcad
       depots.depotAnneeScolaire,
     ),
     new ListerOptionsEtudes(depots.depotOptionEtude),
+    new RenommerClassePedagogique(depots.depotClassePedagogique),
+    new DesactiverClassePedagogique(depots.depotClassePedagogique),
+    new ArchiverClassePedagogique(depots.depotClassePedagogique),
   );
 
   const casUsageImporterSectionsDepuisJson = new ImporterSectionsDepuisJson(
@@ -319,6 +374,7 @@ function composerRoutesReferentielAcademique(): CompositionRoutesReferentielAcad
       undefined,
       undefined,
       serviceTransactionApplication,
+      serviceJournalAudit,
     ),
     new ConsulterProgrammeNiveau(depots.depotProgrammeNiveau),
     new ValiderProgrammeNiveau(
@@ -327,13 +383,15 @@ function composerRoutesReferentielAcademique(): CompositionRoutesReferentielAcad
       undefined,
       undefined,
       serviceTransactionApplication,
+      serviceJournalAudit,
     ),
-    new ArchiverProgrammeNiveau(depots.depotProgrammeNiveau),
+    new ArchiverProgrammeNiveau(depots.depotProgrammeNiveau, undefined, serviceJournalAudit),
     new ListerProgrammesNiveauParEcoleEtAnnee(
       depots.depotProgrammeNiveau,
       depots.depotEcole,
       depots.depotAnneeScolaire,
     ),
+    new ProduireEtatLocalProgramme(depots.depotProgrammeNiveau),
   );
 
   const controleurCalendriersAcademiques = new ControleurCalendriersAcademiques(
@@ -345,10 +403,28 @@ function composerRoutesReferentielAcademique(): CompositionRoutesReferentielAcad
       undefined,
       undefined,
       serviceTransactionApplication,
+      serviceJournalAudit,
     ),
-    new ModifierPeriodeCalendrier(depots.depotCalendrierAcademique),
-    new ValiderCalendrierAcademique(depots.depotCalendrierAcademique),
-    new VerrouillerCalendrierAcademique(depots.depotCalendrierAcademique),
+    new ModifierPeriodeCalendrier(
+      depots.depotCalendrierAcademique,
+      undefined,
+      undefined,
+      serviceJournalAudit,
+    ),
+    new ValiderCalendrierAcademique(
+      depots.depotCalendrierAcademique,
+      undefined,
+      undefined,
+      undefined,
+      serviceJournalAudit,
+    ),
+    new VerrouillerCalendrierAcademique(
+      depots.depotCalendrierAcademique,
+      undefined,
+      undefined,
+      undefined,
+      serviceJournalAudit,
+    ),
     new ConsulterCalendrierAcademique(depots.depotCalendrierAcademique),
   );
 
@@ -380,6 +456,7 @@ function composerRoutesReferentielAcademique(): CompositionRoutesReferentielAcad
       serviceJournalAudit,
     ),
     new ConsulterRapportMigration(depots.depotMigrationReferentielProgramme),
+    new RelancerRecalculApresMigration(depots.depotMigrationReferentielProgramme),
   );
 
   return {

@@ -3,10 +3,12 @@ import {
   ConsulterProgrammeNiveau,
   InitialiserProgrammeNiveau,
   ListerProgrammesNiveauParEcoleEtAnnee,
+  ProduireEtatLocalProgramme,
   ValiderProgrammeNiveau,
 } from '../../../application/use-cases/programmes';
 import {
   ProgrammeNiveauPresenter,
+  ReponseEtatLocalProgrammeNiveauHttp,
   ReponseListeProgrammesNiveauHttp,
   ReponseProgrammeNiveauHttp,
 } from '../presenters/ProgrammeNiveauPresenter';
@@ -20,6 +22,7 @@ export class ControleurProgrammesNiveau {
   private readonly casUsageArchiverProgrammeNiveau: ArchiverProgrammeNiveau;
   private readonly casUsageListerProgrammesNiveauParEcoleEtAnnee:
     ListerProgrammesNiveauParEcoleEtAnnee;
+  private readonly casUsageProduireEtatLocalProgramme: ProduireEtatLocalProgramme;
 
   // Ce constructeur injecte les cas d'usage exposes par les routes programmes niveau.
   constructor(
@@ -28,6 +31,7 @@ export class ControleurProgrammesNiveau {
     casUsageValiderProgrammeNiveau: ValiderProgrammeNiveau,
     casUsageArchiverProgrammeNiveau: ArchiverProgrammeNiveau,
     casUsageListerProgrammesNiveauParEcoleEtAnnee: ListerProgrammesNiveauParEcoleEtAnnee,
+    casUsageProduireEtatLocalProgramme: ProduireEtatLocalProgramme,
   ) {
     this.casUsageInitialiserProgrammeNiveau = casUsageInitialiserProgrammeNiveau;
     this.casUsageConsulterProgrammeNiveau = casUsageConsulterProgrammeNiveau;
@@ -35,6 +39,7 @@ export class ControleurProgrammesNiveau {
     this.casUsageArchiverProgrammeNiveau = casUsageArchiverProgrammeNiveau;
     this.casUsageListerProgrammesNiveauParEcoleEtAnnee =
       casUsageListerProgrammesNiveauParEcoleEtAnnee;
+    this.casUsageProduireEtatLocalProgramme = casUsageProduireEtatLocalProgramme;
   }
 
   // Cette methode traite l'initialisation HTTP d'un programme niveau.
@@ -87,5 +92,17 @@ export class ControleurProgrammesNiveau {
     const sortie = await this.casUsageListerProgrammesNiveauParEcoleEtAnnee.executer(entree);
 
     return ProgrammeNiveauPresenter.presenterListeProgrammesNiveau(sortie);
+  }
+
+  // Cette methode traite la production HTTP de l'etat local d'un programme niveau.
+  public async produireEtatLocalProgramme(
+    parametres: unknown,
+  ): Promise<ReponseEtatLocalProgrammeNiveauHttp> {
+    const entree = ValidateurProgrammeNiveauHttp.validerEtatLocal(parametres);
+    const sortie = await this.casUsageProduireEtatLocalProgramme.executer(entree);
+
+    return ProgrammeNiveauPresenter.presenterEtatLocalProgrammeNiveau(
+      sortie.etatLocalProgramme,
+    );
   }
 }

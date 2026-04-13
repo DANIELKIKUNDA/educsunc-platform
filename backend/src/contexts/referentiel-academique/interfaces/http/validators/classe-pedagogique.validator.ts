@@ -1,5 +1,8 @@
+import { ArchiverClassePedagogiqueEntree } from '../../../application/dto/input/ArchiverClassePedagogiqueEntree';
 import { CreerClassePedagogiqueEntree } from '../../../application/dto/input/CreerClassePedagogiqueEntree';
+import { DesactiverClassePedagogiqueEntree } from '../../../application/dto/input/DesactiverClassePedagogiqueEntree';
 import { ListerClassesPedagogiquesParEcoleEtAnneeEntree } from '../../../application/dto/input/ListerClassesPedagogiquesParEcoleEtAnneeEntree';
+import { RenommerClassePedagogiqueEntree } from '../../../application/dto/input/RenommerClassePedagogiqueEntree';
 import { OutilsValidationHttpReferentielAcademique } from './OutilsValidationHttpReferentielAcademique';
 
 // Ce validateur gere la validation HTTP des routes de classes pedagogiques.
@@ -68,6 +71,86 @@ export class ValidateurClassePedagogiqueHttp {
       ),
       page: pagination.page,
       taillePage: pagination.taillePage,
+    };
+  }
+
+  // Cette methode valide la requete HTTP de renommage d'une classe pedagogique.
+  public static validerRenommage(
+    parametres: unknown,
+    corps: unknown,
+  ): RenommerClassePedagogiqueEntree {
+    const donneesParametres = OutilsValidationHttpReferentielAcademique.obtenirObjet(
+      parametres,
+      'parametres',
+    );
+    const donneesCorps = OutilsValidationHttpReferentielAcademique.obtenirObjet(corps, 'corps');
+
+    OutilsValidationHttpReferentielAcademique.validerChampsRequis(
+      donneesCorps,
+      {
+        nouveauLibelle: true,
+        modifiePar: true,
+      },
+      'renommage-classe-pedagogique',
+    );
+
+    return {
+      idClassePedagogique: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
+        donneesParametres,
+        'id',
+      ),
+      nouveauLibelle: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
+        donneesCorps,
+        'nouveauLibelle',
+      ),
+      modifiePar: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
+        donneesCorps,
+        'modifiePar',
+      ),
+    };
+  }
+
+  // Cette methode valide la requete HTTP de desactivation d'une classe pedagogique.
+  public static validerDesactivation(
+    parametres: unknown,
+    corps: unknown,
+  ): DesactiverClassePedagogiqueEntree {
+    return this.validerChangementStatut(parametres, corps);
+  }
+
+  // Cette methode valide la requete HTTP d'archivage d'une classe pedagogique.
+  public static validerArchivage(
+    parametres: unknown,
+    corps: unknown,
+  ): ArchiverClassePedagogiqueEntree {
+    return this.validerChangementStatut(parametres, corps);
+  }
+
+  private static validerChangementStatut(
+    parametres: unknown,
+    corps: unknown,
+  ): DesactiverClassePedagogiqueEntree {
+    const donneesParametres = OutilsValidationHttpReferentielAcademique.obtenirObjet(
+      parametres,
+      'parametres',
+    );
+    const donneesCorps = OutilsValidationHttpReferentielAcademique.obtenirObjet(corps, 'corps');
+
+    OutilsValidationHttpReferentielAcademique.validerChampsRequis(
+      donneesCorps,
+      { modifiePar: true },
+      'changement-statut-classe-pedagogique',
+    );
+
+    return {
+      idClassePedagogique: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
+        donneesParametres,
+        'id',
+      ),
+      modifiePar: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
+        donneesCorps,
+        'modifiePar',
+      ),
     };
   }
 }

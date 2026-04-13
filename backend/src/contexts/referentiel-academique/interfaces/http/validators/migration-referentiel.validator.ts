@@ -3,6 +3,7 @@ import { AnnulerMigrationReferentielEntree } from '../../../application/dto/inpu
 import { AppliquerMigrationReferentielEntree } from '../../../application/dto/input/AppliquerMigrationReferentielEntree';
 import { ConsulterRapportMigrationEntree } from '../../../application/dto/input/ConsulterRapportMigrationEntree';
 import { DemandeTransformationNoteEntree } from '../../../application/dto/input/DemandeTransformationNoteEntree';
+import { RelancerRecalculApresMigrationEntree } from '../../../application/dto/input/RelancerRecalculApresMigrationEntree';
 import { OutilsValidationHttpReferentielAcademique } from './OutilsValidationHttpReferentielAcademique';
 
 // Ce validateur gere la validation HTTP des routes de migrations de referentiel.
@@ -126,7 +127,37 @@ export class ValidateurMigrationReferentielHttp {
         OutilsValidationHttpReferentielAcademique.lireChaineRequise(
           donnees,
           'id',
+      ),
+    };
+  }
+
+  // Cette methode valide la requete HTTP de relance de recalcul apres migration.
+  public static validerRelanceRecalcul(
+    parametres: unknown,
+    corps: unknown,
+  ): RelancerRecalculApresMigrationEntree {
+    const donneesParametres = OutilsValidationHttpReferentielAcademique.obtenirObjet(
+      parametres,
+      'parametres',
+    );
+    const donneesCorps = OutilsValidationHttpReferentielAcademique.obtenirObjet(corps, 'corps');
+
+    OutilsValidationHttpReferentielAcademique.validerChampsRequis(
+      donneesCorps,
+      { relancePar: true },
+      'relance-recalcul-migration',
+    );
+
+    return {
+      idMigrationReferentielProgramme:
+        OutilsValidationHttpReferentielAcademique.lireChaineRequise(
+          donneesParametres,
+          'id',
         ),
+      relancePar: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
+        donneesCorps,
+        'relancePar',
+      ),
     };
   }
 

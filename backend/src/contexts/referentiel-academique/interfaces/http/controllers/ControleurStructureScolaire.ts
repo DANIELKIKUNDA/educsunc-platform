@@ -2,13 +2,16 @@ import { ClasseAcademiqueSortie } from '../../../application/dto/output/ClasseAc
 import { OptionEtudeSortie } from '../../../application/dto/output/OptionEtudeSortie';
 import { SectionScolaireSortie } from '../../../application/dto/output/SectionScolaireSortie';
 import {
+  ArchiverClassePedagogique,
   CreerClasseAcademique,
   CreerClassePedagogique,
   CreerOptionEtude,
   CreerSectionScolaire,
+  DesactiverClassePedagogique,
   ListerClassesAcademiques,
   ListerClassesPedagogiquesParEcoleEtAnnee,
   ListerOptionsEtudes,
+  RenommerClassePedagogique,
 } from '../../../application/use-cases/structure';
 import {
   ClassePedagogiquePresenter,
@@ -63,6 +66,9 @@ export class ControleurStructureScolaire {
   private readonly casUsageListerClassesPedagogiquesParEcoleEtAnnee:
     ListerClassesPedagogiquesParEcoleEtAnnee;
   private readonly casUsageListerOptionsEtudes: ListerOptionsEtudes;
+  private readonly casUsageRenommerClassePedagogique: RenommerClassePedagogique;
+  private readonly casUsageDesactiverClassePedagogique: DesactiverClassePedagogique;
+  private readonly casUsageArchiverClassePedagogique: ArchiverClassePedagogique;
 
   // Ce constructeur injecte les cas d'usage exposes par les routes de structure scolaire.
   constructor(
@@ -73,6 +79,9 @@ export class ControleurStructureScolaire {
     casUsageListerClassesAcademiques: ListerClassesAcademiques,
     casUsageListerClassesPedagogiquesParEcoleEtAnnee: ListerClassesPedagogiquesParEcoleEtAnnee,
     casUsageListerOptionsEtudes: ListerOptionsEtudes,
+    casUsageRenommerClassePedagogique: RenommerClassePedagogique,
+    casUsageDesactiverClassePedagogique: DesactiverClassePedagogique,
+    casUsageArchiverClassePedagogique: ArchiverClassePedagogique,
   ) {
     this.casUsageCreerSectionScolaire = casUsageCreerSectionScolaire;
     this.casUsageCreerClasseAcademique = casUsageCreerClasseAcademique;
@@ -82,6 +91,9 @@ export class ControleurStructureScolaire {
     this.casUsageListerClassesPedagogiquesParEcoleEtAnnee =
       casUsageListerClassesPedagogiquesParEcoleEtAnnee;
     this.casUsageListerOptionsEtudes = casUsageListerOptionsEtudes;
+    this.casUsageRenommerClassePedagogique = casUsageRenommerClassePedagogique;
+    this.casUsageDesactiverClassePedagogique = casUsageDesactiverClassePedagogique;
+    this.casUsageArchiverClassePedagogique = casUsageArchiverClassePedagogique;
   }
 
   // Cette methode traite la creation HTTP d'une section scolaire.
@@ -166,6 +178,39 @@ export class ControleurStructureScolaire {
       })),
       pagination: this.creerPagination(sortie.total, sortie.page, sortie.taillePage),
     };
+  }
+
+  // Cette methode traite le renommage HTTP d'une classe pedagogique.
+  public async renommerClassePedagogique(
+    parametres: unknown,
+    corps: unknown,
+  ): Promise<ReponseClassePedagogiqueHttp> {
+    const entree = ValidateurClassePedagogiqueHttp.validerRenommage(parametres, corps);
+    const sortie = await this.casUsageRenommerClassePedagogique.executer(entree);
+
+    return ClassePedagogiquePresenter.presenterClassePedagogique(sortie.classePedagogique);
+  }
+
+  // Cette methode traite la desactivation HTTP d'une classe pedagogique.
+  public async desactiverClassePedagogique(
+    parametres: unknown,
+    corps: unknown,
+  ): Promise<ReponseClassePedagogiqueHttp> {
+    const entree = ValidateurClassePedagogiqueHttp.validerDesactivation(parametres, corps);
+    const sortie = await this.casUsageDesactiverClassePedagogique.executer(entree);
+
+    return ClassePedagogiquePresenter.presenterClassePedagogique(sortie.classePedagogique);
+  }
+
+  // Cette methode traite l'archivage HTTP d'une classe pedagogique.
+  public async archiverClassePedagogique(
+    parametres: unknown,
+    corps: unknown,
+  ): Promise<ReponseClassePedagogiqueHttp> {
+    const entree = ValidateurClassePedagogiqueHttp.validerArchivage(parametres, corps);
+    const sortie = await this.casUsageArchiverClassePedagogique.executer(entree);
+
+    return ClassePedagogiquePresenter.presenterClassePedagogique(sortie.classePedagogique);
   }
 
   // Cette methode construit le bloc de pagination HTTP d'une reponse liste.

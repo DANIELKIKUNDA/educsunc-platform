@@ -8,6 +8,10 @@ import { CalendrierAcademiqueId } from '../../../domain/value-objects/Calendrier
 import { VerrouillerCalendrierAcademiqueEntree } from '../../dto/input/VerrouillerCalendrierAcademiqueEntree';
 import { CalendrierAcademiqueSortie } from '../../dto/output/CalendrierAcademiqueSortie';
 import { CalendrierAcademiqueApplicationMapper } from '../../mappers/CalendrierAcademiqueApplicationMapper';
+import {
+  ServiceJournalAuditReferentielAcademique,
+  ServiceJournalAuditReferentielAcademiqueSansEffet,
+} from '../../services/ServiceJournalAuditReferentielAcademique';
 
 // Cette interface represente la sortie du cas d'usage VerrouillerCalendrierAcademique.
 export interface SortieVerrouillerCalendrierAcademique {
@@ -22,6 +26,7 @@ export class VerrouillerCalendrierAcademique
   private readonly policyCalendrier: PolicyCalendrier;
   private readonly moteurCalendrierAcademique: MoteurCalendrierAcademique;
   private readonly policyAudit: PolicyAudit;
+  private readonly serviceJournalAudit: ServiceJournalAuditReferentielAcademique;
 
   // Ce constructeur injecte les dependances applicatives necessaires au verrouillage d'un calendrier academique.
   constructor(
@@ -29,11 +34,14 @@ export class VerrouillerCalendrierAcademique
     policyCalendrier: PolicyCalendrier = new PolicyCalendrier(),
     moteurCalendrierAcademique: MoteurCalendrierAcademique = new MoteurCalendrierAcademique(),
     policyAudit: PolicyAudit = new PolicyAudit(),
+    serviceJournalAudit: ServiceJournalAuditReferentielAcademique =
+      new ServiceJournalAuditReferentielAcademiqueSansEffet(),
   ) {
     this.depotCalendrierAcademique = depotCalendrierAcademique;
     this.policyCalendrier = policyCalendrier;
     this.moteurCalendrierAcademique = moteurCalendrierAcademique;
     this.policyAudit = policyAudit;
+    this.serviceJournalAudit = serviceJournalAudit;
   }
 
   // Cette methode verrouille un calendrier academique apres verification complete de sa coherence.
@@ -66,6 +74,18 @@ export class VerrouillerCalendrierAcademique
     );
 
     await this.depotCalendrierAcademique.sauvegarder(calendrierAcademique);
+    await this.serviceJournalAudit.journaliser({
+      action: 'VERROUILLER_CALENDRIER_ACADEMIQUE',
+      acteur: entreeValidee.verrouillePar,
+      typeRessource: 'CalendrierAcademique',
+      idRessource: calendrierAcademique.obtenirId().obtenirValeur(),
+      idEcole: calendrierAcademique.obtenirEcoleId().obtenirValeur(),
+      details: {
+        idAnneeScolaire: calendrierAcademique.obtenirAnneeScolaireId().obtenirValeur(),
+        verrouille: calendrierAcademique.estVerrouille(),
+      },
+      creeLe: horodatageVerrouillage,
+    });
 
     return {
       calendrierAcademique: CalendrierAcademiqueApplicationMapper.versSortie(calendrierAcademique),

@@ -5,3 +5,6 @@ export * from './ArchiverAnneeScolaire';
 export * from './ConsulterAnneeScolaire';
 export * from './ListerAnneesScolairesParEcole';
 export * from './ConsulterAnneeActiveParEcole';
+export * from './PreparerAnneeScolaireSuivante';
+export * from './GarantirAnneeScolaireActiveParEcole';
+export * from './BasculerAnneeScolaire';

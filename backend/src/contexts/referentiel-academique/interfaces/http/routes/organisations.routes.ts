@@ -37,4 +37,37 @@ export const creerRoutesOrganisations = (
     );
     return reponse.code(200).send(resultat);
   });
+
+  serveur.patch('/api/organisations/:id/renommer', async (requete, reponse) => {
+    const resultat = await dependances.executerRouteTenant(
+      requete,
+      () => dependances.controleurOrganisations.renommerOrganisation(
+        requete.params,
+        requete.body,
+      ),
+    );
+    return reponse.code(200).send(resultat);
+  });
+
+  serveur.post('/api/organisations/:id/activer', async (requete, reponse) => {
+    const resultat = await dependances.executerRouteTenant(
+      requete,
+      () => dependances.controleurOrganisations.activerOrganisation(
+        requete.params,
+        requete.body,
+      ),
+    );
+    return reponse.code(200).send(resultat);
+  });
+
+  serveur.post('/api/organisations/:id/desactiver', async (requete, reponse) => {
+    const resultat = await dependances.executerRouteTenant(
+      requete,
+      () => dependances.controleurOrganisations.desactiverOrganisation(
+        requete.params,
+        requete.body,
+      ),
+    );
+    return reponse.code(200).send(resultat);
+  });
 };

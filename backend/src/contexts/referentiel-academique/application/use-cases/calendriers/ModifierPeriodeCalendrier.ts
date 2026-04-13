@@ -11,6 +11,10 @@ import { ModifierPeriodeCalendrierEntree } from '../../dto/input/ModifierPeriode
 import { PeriodeCalendrierEntree } from '../../dto/input/PeriodeCalendrierEntree';
 import { CalendrierAcademiqueSortie } from '../../dto/output/CalendrierAcademiqueSortie';
 import { CalendrierAcademiqueApplicationMapper } from '../../mappers/CalendrierAcademiqueApplicationMapper';
+import {
+  ServiceJournalAuditReferentielAcademique,
+  ServiceJournalAuditReferentielAcademiqueSansEffet,
+} from '../../services/ServiceJournalAuditReferentielAcademique';
 
 // Cette interface represente la sortie du cas d'usage ModifierPeriodeCalendrier.
 export interface SortieModifierPeriodeCalendrier {
@@ -24,16 +28,20 @@ export class ModifierPeriodeCalendrier
   private readonly depotCalendrierAcademique: DepotCalendrierAcademique;
   private readonly moteurCalendrierAcademique: MoteurCalendrierAcademique;
   private readonly policyAudit: PolicyAudit;
+  private readonly serviceJournalAudit: ServiceJournalAuditReferentielAcademique;
 
   // Ce constructeur injecte les dependances applicatives necessaires a la modification d'une periode de calendrier.
   constructor(
     depotCalendrierAcademique: DepotCalendrierAcademique,
     moteurCalendrierAcademique: MoteurCalendrierAcademique = new MoteurCalendrierAcademique(),
     policyAudit: PolicyAudit = new PolicyAudit(),
+    serviceJournalAudit: ServiceJournalAuditReferentielAcademique =
+      new ServiceJournalAuditReferentielAcademiqueSansEffet(),
   ) {
     this.depotCalendrierAcademique = depotCalendrierAcademique;
     this.moteurCalendrierAcademique = moteurCalendrierAcademique;
     this.policyAudit = policyAudit;
+    this.serviceJournalAudit = serviceJournalAudit;
   }
 
   // Cette methode remplace une periode existante d'un calendrier academique non verrouille.
@@ -90,6 +98,19 @@ export class ModifierPeriodeCalendrier
     );
 
     await this.depotCalendrierAcademique.sauvegarder(calendrierAcademique);
+    await this.serviceJournalAudit.journaliser({
+      action: 'MODIFIER_PERIODE_CALENDRIER',
+      acteur: entreeValidee.modifiePar,
+      typeRessource: 'CalendrierAcademique',
+      idRessource: calendrierAcademique.obtenirId().obtenirValeur(),
+      idEcole: calendrierAcademique.obtenirEcoleId().obtenirValeur(),
+      details: {
+        idAnneeScolaire: calendrierAcademique.obtenirAnneeScolaireId().obtenirValeur(),
+        idPeriodeCalendrier: idPeriodeCalendrier.obtenirValeur(),
+        codePeriode: periodeMiseAJour.obtenirCode(),
+      },
+      creeLe: horodatageModification,
+    });
 
     return {
       calendrierAcademique: CalendrierAcademiqueApplicationMapper.versSortie(calendrierAcademique),

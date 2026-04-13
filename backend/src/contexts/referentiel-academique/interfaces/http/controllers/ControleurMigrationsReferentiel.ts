@@ -4,6 +4,7 @@ import {
   AnnulerMigrationReferentiel,
   AppliquerMigrationReferentiel,
   ConsulterRapportMigration,
+  RelancerRecalculApresMigration,
 } from '../../../application/use-cases/migrations';
 import {
   MigrationReferentielPresenter,
@@ -27,6 +28,7 @@ export class ControleurMigrationsReferentiel {
   private readonly casUsageAppliquerMigrationReferentiel: AppliquerMigrationReferentiel;
   private readonly casUsageAnnulerMigrationReferentiel: AnnulerMigrationReferentiel;
   private readonly casUsageConsulterRapportMigration: ConsulterRapportMigration;
+  private readonly casUsageRelancerRecalculApresMigration: RelancerRecalculApresMigration;
 
   // Ce constructeur injecte les cas d'usage exposes par les routes de migration.
   constructor(
@@ -34,11 +36,13 @@ export class ControleurMigrationsReferentiel {
     casUsageAppliquerMigrationReferentiel: AppliquerMigrationReferentiel,
     casUsageAnnulerMigrationReferentiel: AnnulerMigrationReferentiel,
     casUsageConsulterRapportMigration: ConsulterRapportMigration,
+    casUsageRelancerRecalculApresMigration: RelancerRecalculApresMigration,
   ) {
     this.casUsageAnalyserMigrationReferentiel = casUsageAnalyserMigrationReferentiel;
     this.casUsageAppliquerMigrationReferentiel = casUsageAppliquerMigrationReferentiel;
     this.casUsageAnnulerMigrationReferentiel = casUsageAnnulerMigrationReferentiel;
     this.casUsageConsulterRapportMigration = casUsageConsulterRapportMigration;
+    this.casUsageRelancerRecalculApresMigration = casUsageRelancerRecalculApresMigration;
   }
 
   // Cette methode traite l'analyse HTTP d'une migration de referentiel.
@@ -92,5 +96,21 @@ export class ControleurMigrationsReferentiel {
     const sortie = await this.casUsageConsulterRapportMigration.executer(entree);
 
     return MigrationReferentielPresenter.presenterRapportMigration(sortie.rapportMigration);
+  }
+
+  // Cette methode traite la relance HTTP des recalculs apres une migration.
+  public async relancerRecalculApresMigration(
+    parametres: unknown,
+    corps: unknown,
+  ): Promise<ReponseMigrationReferentielHttp> {
+    const entree = ValidateurMigrationReferentielHttp.validerRelanceRecalcul(
+      parametres,
+      corps,
+    );
+    const sortie = await this.casUsageRelancerRecalculApresMigration.executer(entree);
+
+    return MigrationReferentielPresenter.presenterMigrationReferentiel(
+      sortie.migrationReferentielProgramme,
+    );
   }
 }

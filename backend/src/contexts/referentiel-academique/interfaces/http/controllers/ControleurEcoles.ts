@@ -1,9 +1,12 @@
 import {
+  ActiverEcole,
   ChangerModeExploitationEcole,
   ConsulterEcole,
   CreerEcole,
+  DesactiverEcole,
   ListerEcoles,
   ListerEcolesParOrganisation,
+  RenommerEcole,
 } from '../../../application/use-cases/ecoles';
 import {
   EcolePresenter,
@@ -19,6 +22,9 @@ export class ControleurEcoles {
   private readonly casUsageListerEcoles: ListerEcoles;
   private readonly casUsageListerEcolesParOrganisation: ListerEcolesParOrganisation;
   private readonly casUsageChangerModeExploitationEcole: ChangerModeExploitationEcole;
+  private readonly casUsageRenommerEcole: RenommerEcole;
+  private readonly casUsageActiverEcole: ActiverEcole;
+  private readonly casUsageDesactiverEcole: DesactiverEcole;
 
   // Ce constructeur injecte les cas d'usage exposes par les routes ecoles.
   constructor(
@@ -27,12 +33,18 @@ export class ControleurEcoles {
     casUsageListerEcoles: ListerEcoles,
     casUsageListerEcolesParOrganisation: ListerEcolesParOrganisation,
     casUsageChangerModeExploitationEcole: ChangerModeExploitationEcole,
+    casUsageRenommerEcole: RenommerEcole,
+    casUsageActiverEcole: ActiverEcole,
+    casUsageDesactiverEcole: DesactiverEcole,
   ) {
     this.casUsageCreerEcole = casUsageCreerEcole;
     this.casUsageConsulterEcole = casUsageConsulterEcole;
     this.casUsageListerEcoles = casUsageListerEcoles;
     this.casUsageListerEcolesParOrganisation = casUsageListerEcolesParOrganisation;
     this.casUsageChangerModeExploitationEcole = casUsageChangerModeExploitationEcole;
+    this.casUsageRenommerEcole = casUsageRenommerEcole;
+    this.casUsageActiverEcole = casUsageActiverEcole;
+    this.casUsageDesactiverEcole = casUsageDesactiverEcole;
   }
 
   // Cette methode traite la creation HTTP d'une ecole.
@@ -91,6 +103,39 @@ export class ControleurEcoles {
   ): Promise<ReponseEcoleHttp> {
     const entree = ValidateurEcoleHttp.validerChangementMode(parametres, corps);
     const sortie = await this.casUsageChangerModeExploitationEcole.executer(entree);
+
+    return EcolePresenter.presenterEcole(sortie.ecole);
+  }
+
+  // Cette methode traite le renommage HTTP d'une ecole.
+  public async renommerEcole(
+    parametres: unknown,
+    corps: unknown,
+  ): Promise<ReponseEcoleHttp> {
+    const entree = ValidateurEcoleHttp.validerRenommage(parametres, corps);
+    const sortie = await this.casUsageRenommerEcole.executer(entree);
+
+    return EcolePresenter.presenterEcole(sortie.ecole);
+  }
+
+  // Cette methode traite l'activation HTTP d'une ecole.
+  public async activerEcole(
+    parametres: unknown,
+    corps: unknown,
+  ): Promise<ReponseEcoleHttp> {
+    const entree = ValidateurEcoleHttp.validerActivation(parametres, corps);
+    const sortie = await this.casUsageActiverEcole.executer(entree);
+
+    return EcolePresenter.presenterEcole(sortie.ecole);
+  }
+
+  // Cette methode traite la desactivation HTTP d'une ecole.
+  public async desactiverEcole(
+    parametres: unknown,
+    corps: unknown,
+  ): Promise<ReponseEcoleHttp> {
+    const entree = ValidateurEcoleHttp.validerDesactivation(parametres, corps);
+    const sortie = await this.casUsageDesactiverEcole.executer(entree);
 
     return EcolePresenter.presenterEcole(sortie.ecole);
   }

@@ -1,11 +1,13 @@
 import type { FastifyPluginAsync } from 'fastify';
 import { ControleurCalendriersAcademiques } from '../controllers/ControleurCalendriersAcademiques';
+import { ExecuteurRouteIdempotenteReferentielAcademique } from './ExecutionRouteIdempotenteReferentielAcademique';
 import { ExecuteurRouteTenantReferentielAcademique } from './ExecutionRouteTenantReferentielAcademique';
 
 // Cette interface regroupe les dependances des routes calendriers academiques.
 export interface DependancesRoutesCalendriersAcademiques {
   controleurCalendriersAcademiques: ControleurCalendriersAcademiques;
   executerRouteTenant: ExecuteurRouteTenantReferentielAcademique;
+  executerRouteIdempotente: ExecuteurRouteIdempotenteReferentielAcademique;
 }
 
 // Cette fonction cree les routes HTTP des calendriers academiques.
@@ -13,13 +15,19 @@ export const creerRoutesCalendriersAcademiques = (
   dependances: DependancesRoutesCalendriersAcademiques,
 ): FastifyPluginAsync => async (serveur) => {
   serveur.post('/api/calendriers-academiques', async (requete, reponse) => {
-    const resultat = await dependances.executerRouteTenant(
+    const resultat = await dependances.executerRouteIdempotente(
       requete,
-      () => dependances.controleurCalendriersAcademiques
-        .creerCalendrierAcademique(requete.body),
+      () => dependances.executerRouteTenant(
+        requete,
+        () => dependances.controleurCalendriersAcademiques
+          .creerCalendrierAcademique(requete.body),
+        {
+          mode: 'tenant_requis',
+          clesTenant: ['idEcole'],
+        },
+      ),
       {
-        mode: 'tenant_requis',
-        clesTenant: ['idEcole'],
+        operation: 'CREER_CALENDRIER_ACADEMIQUE',
       },
     );
     return reponse.code(200).send(resultat);

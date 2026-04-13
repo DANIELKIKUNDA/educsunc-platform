@@ -5,3 +5,4 @@ export * from './OrchestrateurCalendrierAcademique';
 export * from './OrchestrateurSynchronisationReferentiel';
 export * from './ServiceTransactionApplication';
 export * from './ServiceJournalAuditReferentielAcademique';
+export * from './ServiceCycleAnneeScolaireRdc';

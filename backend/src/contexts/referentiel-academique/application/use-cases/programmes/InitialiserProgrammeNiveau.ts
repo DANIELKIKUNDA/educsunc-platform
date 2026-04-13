@@ -24,6 +24,10 @@ import { InitialiserProgrammeNiveauEntree } from '../../dto/input/InitialiserPro
 import { ProgrammeNiveauSortie } from '../../dto/output/ProgrammeNiveauSortie';
 import { ProgrammeNiveauApplicationMapper } from '../../mappers/ProgrammeNiveauApplicationMapper';
 import {
+  ServiceJournalAuditReferentielAcademique,
+  ServiceJournalAuditReferentielAcademiqueSansEffet,
+} from '../../services/ServiceJournalAuditReferentielAcademique';
+import {
   ServiceTransactionApplication,
   ServiceTransactionApplicationSansEffet,
 } from '../../services/ServiceTransactionApplication';
@@ -45,6 +49,7 @@ export class InitialiserProgrammeNiveau
   private readonly moteurProgrammeLocal: MoteurProgrammeLocal;
   private readonly policyAudit: PolicyAudit;
   private readonly serviceTransactionApplication: ServiceTransactionApplication;
+  private readonly serviceJournalAudit: ServiceJournalAuditReferentielAcademique;
 
   // Ce constructeur injecte les dependances applicatives necessaires a l'initialisation du programme niveau.
   constructor(
@@ -56,6 +61,8 @@ export class InitialiserProgrammeNiveau
     moteurProgrammeLocal: MoteurProgrammeLocal = new MoteurProgrammeLocal(),
     policyAudit: PolicyAudit = new PolicyAudit(),
     serviceTransactionApplication: ServiceTransactionApplication = new ServiceTransactionApplicationSansEffet(),
+    serviceJournalAudit: ServiceJournalAuditReferentielAcademique =
+      new ServiceJournalAuditReferentielAcademiqueSansEffet(),
   ) {
     this.depotProgrammeNiveau = depotProgrammeNiveau;
     this.depotEcole = depotEcole;
@@ -65,6 +72,7 @@ export class InitialiserProgrammeNiveau
     this.moteurProgrammeLocal = moteurProgrammeLocal;
     this.policyAudit = policyAudit;
     this.serviceTransactionApplication = serviceTransactionApplication;
+    this.serviceJournalAudit = serviceJournalAudit;
   }
 
   // Cette methode initialise un programme niveau brouillon a partir d'une version officielle de referentiel.
@@ -164,6 +172,21 @@ export class InitialiserProgrammeNiveau
       );
 
       await this.depotProgrammeNiveau.sauvegarder(programmeNiveau);
+      await this.serviceJournalAudit.journaliser({
+        action: 'INITIALISER_PROGRAMME_NIVEAU',
+        acteur: entreeValidee.creePar,
+        typeRessource: 'ProgrammeNiveau',
+        idRessource: programmeNiveau.obtenirId().obtenirValeur(),
+        idEcole: ecole.obtenirId().obtenirValeur(),
+        details: {
+          idAnneeScolaire: anneeScolaire.obtenirId().obtenirValeur(),
+          idClasseAcademique: classeAcademique.obtenirId().obtenirValeur(),
+          idReferentielProgramme: referentielProgramme.obtenirId().obtenirValeur(),
+          idVersionReferentielProgramme: versionDansReferentiel.obtenirId().obtenirValeur(),
+          statut: programmeNiveau.obtenirStatut(),
+        },
+        creeLe: horodatageCreation,
+      });
 
       return {
         programmeNiveau: ProgrammeNiveauApplicationMapper.versSortie(programmeNiveau),

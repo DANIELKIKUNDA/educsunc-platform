@@ -52,12 +52,14 @@ export const creerRoutesReferentielAcademique = (
     creerRoutesAnneesScolaires({
       controleurAnneesScolaires: dependances.controleurAnneesScolaires,
       executerRouteTenant: dependances.executerRouteTenant,
+      executerRouteIdempotente: dependances.executerRouteIdempotente,
     }),
   );
   await serveur.register(
     creerRoutesStructureScolaire({
       controleurStructureScolaire: dependances.controleurStructureScolaire,
       executerRouteTenant: dependances.executerRouteTenant,
+      executerRouteIdempotente: dependances.executerRouteIdempotente,
     }),
   );
   await serveur.register(
@@ -71,12 +73,14 @@ export const creerRoutesReferentielAcademique = (
     creerRoutesProgrammesNiveau({
       controleurProgrammesNiveau: dependances.controleurProgrammesNiveau,
       executerRouteTenant: dependances.executerRouteTenant,
+      executerRouteIdempotente: dependances.executerRouteIdempotente,
     }),
   );
   await serveur.register(
     creerRoutesCalendriersAcademiques({
       controleurCalendriersAcademiques: dependances.controleurCalendriersAcademiques,
       executerRouteTenant: dependances.executerRouteTenant,
+      executerRouteIdempotente: dependances.executerRouteIdempotente,
     }),
   );
   await serveur.register(

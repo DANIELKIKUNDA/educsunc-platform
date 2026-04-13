@@ -13,6 +13,10 @@ import { ProgrammeNiveauSortie } from '../../dto/output/ProgrammeNiveauSortie';
 import { EtatLocalProgrammeNiveauApplicationMapper } from '../../mappers/EtatLocalProgrammeNiveauApplicationMapper';
 import { ProgrammeNiveauApplicationMapper } from '../../mappers/ProgrammeNiveauApplicationMapper';
 import {
+  ServiceJournalAuditReferentielAcademique,
+  ServiceJournalAuditReferentielAcademiqueSansEffet,
+} from '../../services/ServiceJournalAuditReferentielAcademique';
+import {
   ServiceTransactionApplication,
   ServiceTransactionApplicationSansEffet,
 } from '../../services/ServiceTransactionApplication';
@@ -32,6 +36,7 @@ export class ValiderProgrammeNiveau
   private readonly moteurProgrammeLocal: MoteurProgrammeLocal;
   private readonly policyAudit: PolicyAudit;
   private readonly serviceTransactionApplication: ServiceTransactionApplication;
+  private readonly serviceJournalAudit: ServiceJournalAuditReferentielAcademique;
 
   // Ce constructeur injecte les dependances applicatives necessaires a la validation d'un programme niveau.
   constructor(
@@ -40,12 +45,15 @@ export class ValiderProgrammeNiveau
     moteurProgrammeLocal: MoteurProgrammeLocal = new MoteurProgrammeLocal(),
     policyAudit: PolicyAudit = new PolicyAudit(),
     serviceTransactionApplication: ServiceTransactionApplication = new ServiceTransactionApplicationSansEffet(),
+    serviceJournalAudit: ServiceJournalAuditReferentielAcademique =
+      new ServiceJournalAuditReferentielAcademiqueSansEffet(),
   ) {
     this.depotProgrammeNiveau = depotProgrammeNiveau;
     this.depotReferentielProgramme = depotReferentielProgramme;
     this.moteurProgrammeLocal = moteurProgrammeLocal;
     this.policyAudit = policyAudit;
     this.serviceTransactionApplication = serviceTransactionApplication;
+    this.serviceJournalAudit = serviceJournalAudit;
   }
 
   // Cette methode valide un programme niveau brouillon et retourne son etat local consolide.
@@ -104,6 +112,20 @@ export class ValiderProgrammeNiveau
       );
 
       await this.depotProgrammeNiveau.sauvegarder(programmeNiveau);
+      await this.serviceJournalAudit.journaliser({
+        action: 'VALIDER_PROGRAMME_NIVEAU',
+        acteur: entreeValidee.validePar,
+        typeRessource: 'ProgrammeNiveau',
+        idRessource: programmeNiveau.obtenirId().obtenirValeur(),
+        idEcole: programmeNiveau.obtenirEcoleId().obtenirValeur(),
+        details: {
+          idAnneeScolaire: programmeNiveau.obtenirAnneeScolaireId().obtenirValeur(),
+          idClasseAcademique: programmeNiveau.obtenirClasseAcademiqueId().obtenirValeur(),
+          statut: programmeNiveau.obtenirStatut(),
+          nombreLignesEtatLocal: etatLocalProgramme.lignes.length,
+        },
+        creeLe: horodatageValidation,
+      });
 
       return {
         programmeNiveau: ProgrammeNiveauApplicationMapper.versSortie(programmeNiveau),

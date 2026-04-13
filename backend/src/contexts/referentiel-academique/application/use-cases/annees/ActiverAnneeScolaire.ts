@@ -9,6 +9,10 @@ import { StatutAnneeScolaire } from '../../../domain/value-objects/StatutAnneeSc
 import { ActiverAnneeScolaireEntree } from '../../dto/input/ActiverAnneeScolaireEntree';
 import { AnneeScolaireSortie } from '../../dto/output/AnneeScolaireSortie';
 import { AnneeScolaireApplicationMapper } from '../../mappers/AnneeScolaireApplicationMapper';
+import {
+  ServiceJournalAuditReferentielAcademique,
+  ServiceJournalAuditReferentielAcademiqueSansEffet,
+} from '../../services/ServiceJournalAuditReferentielAcademique';
 
 // Cette interface represente la sortie du cas d'usage ActiverAnneeScolaire.
 export interface SortieActiverAnneeScolaire {
@@ -21,14 +25,18 @@ export class ActiverAnneeScolaire
 {
   private readonly depotAnneeScolaire: DepotAnneeScolaire;
   private readonly policyAudit: PolicyAudit;
+  private readonly serviceJournalAudit: ServiceJournalAuditReferentielAcademique;
 
   // Ce constructeur injecte les dependances applicatives necessaires a l'activation d'une annee scolaire.
   constructor(
     depotAnneeScolaire: DepotAnneeScolaire,
     policyAudit: PolicyAudit = new PolicyAudit(),
+    serviceJournalAudit: ServiceJournalAuditReferentielAcademique =
+      new ServiceJournalAuditReferentielAcademiqueSansEffet(),
   ) {
     this.depotAnneeScolaire = depotAnneeScolaire;
     this.policyAudit = policyAudit;
+    this.serviceJournalAudit = serviceJournalAudit;
   }
 
   // Cette methode active une annee scolaire planifiee en garantissant l'unicite de l'annee active.
@@ -79,6 +87,18 @@ export class ActiverAnneeScolaire
 
     anneeScolaire.activer(entreeValidee.modifiePar);
     await this.depotAnneeScolaire.sauvegarder(anneeScolaire);
+    await this.serviceJournalAudit.journaliser({
+      action: 'ACTIVER_ANNEE_SCOLAIRE',
+      acteur: entreeValidee.modifiePar,
+      typeRessource: 'AnneeScolaire',
+      idRessource: anneeScolaire.obtenirId().obtenirValeur(),
+      idEcole: anneeScolaire.obtenirEcoleId().obtenirValeur(),
+      details: {
+        code: anneeScolaire.obtenirCode(),
+        statut: anneeScolaire.obtenirStatut(),
+      },
+      creeLe: horodatageModification,
+    });
 
     return {
       anneeScolaire: AnneeScolaireApplicationMapper.versSortie(anneeScolaire),

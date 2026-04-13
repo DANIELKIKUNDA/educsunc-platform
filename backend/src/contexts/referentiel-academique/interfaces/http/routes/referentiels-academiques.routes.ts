@@ -118,10 +118,16 @@ export const creerRoutesReferentielsAcademiques = (
   });
 
   serveur.post('/api/referentiels/versions/:id/activer', async (requete, reponse) => {
-    const resultat = await dependances.executerRouteTenant(
+    const resultat = await dependances.executerRouteIdempotente(
       requete,
-      () => dependances.controleurReferentielsAcademiques
-        .activerVersionReferentiel(requete.params, requete.body),
+      () => dependances.executerRouteTenant(
+        requete,
+        () => dependances.controleurReferentielsAcademiques
+          .activerVersionReferentiel(requete.params, requete.body),
+      ),
+      {
+        operation: 'ACTIVER_VERSION_REFERENTIEL',
+      },
     );
     return reponse.code(200).send(resultat);
   });

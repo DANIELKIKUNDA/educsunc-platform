@@ -11,6 +11,18 @@ export interface DepotAnneeScolaire {
   // Cette methode retrouve l'annee scolaire active d'une ecole si elle existe.
   trouverActiveParEcole(idEcole: EcoleId): Promise<AnneeScolaire | null>;
 
+  // Cette methode retrouve une annee scolaire par son code fonctionnel dans une ecole.
+  trouverParCodeEtEcole(idEcole: EcoleId, code: string): Promise<AnneeScolaire | null>;
+
+  // Cette methode retrouve la derniere annee scolaire connue d'une ecole.
+  trouverDerniereParEcole(idEcole: EcoleId): Promise<AnneeScolaire | null>;
+
+  // Cette methode liste les annees scolaires planifiees d'une ecole.
+  listerPlanifieesParEcole(idEcole: EcoleId): Promise<readonly AnneeScolaire[]>;
+
+  // Cette methode verrouille l'annee active pendant une transition transactionnelle.
+  verrouillerActiveParEcole(idEcole: EcoleId): Promise<AnneeScolaire | null>;
+
   // Cette methode liste les annees scolaires d'une ecole avec pagination.
   listerParEcole(
     idEcole: EcoleId,

@@ -2,6 +2,7 @@ import { ArchiverProgrammeNiveauEntree } from '../../../application/dto/input/Ar
 import { ConsulterProgrammeNiveauEntree } from '../../../application/dto/input/ConsulterProgrammeNiveauEntree';
 import { InitialiserProgrammeNiveauEntree } from '../../../application/dto/input/InitialiserProgrammeNiveauEntree';
 import { ListerProgrammesNiveauParEcoleEtAnneeEntree } from '../../../application/dto/input/ListerProgrammesNiveauParEcoleEtAnneeEntree';
+import { ProduireEtatLocalProgrammeEntree } from '../../../application/dto/input/ProduireEtatLocalProgrammeEntree';
 import { ValiderProgrammeNiveauEntree } from '../../../application/dto/input/ValiderProgrammeNiveauEntree';
 import { OutilsValidationHttpReferentielAcademique } from './OutilsValidationHttpReferentielAcademique';
 
@@ -141,6 +142,23 @@ export class ValidateurProgrammeNiveauHttp {
       ),
       page: pagination.page,
       taillePage: pagination.taillePage,
+    };
+  }
+
+  // Cette methode valide la requete HTTP de production de l'etat local d'un programme.
+  public static validerEtatLocal(
+    parametres: unknown,
+  ): ProduireEtatLocalProgrammeEntree {
+    const donnees = OutilsValidationHttpReferentielAcademique.obtenirObjet(
+      parametres,
+      'parametres',
+    );
+
+    return {
+      idProgrammeNiveau: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
+        donnees,
+        'id',
+      ),
     };
   }
 }

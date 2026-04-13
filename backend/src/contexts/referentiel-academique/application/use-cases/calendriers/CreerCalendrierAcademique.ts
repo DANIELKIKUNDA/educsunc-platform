@@ -23,6 +23,10 @@ import { PeriodeCalendrierEntree } from '../../dto/input/PeriodeCalendrierEntree
 import { CalendrierAcademiqueSortie } from '../../dto/output/CalendrierAcademiqueSortie';
 import { CalendrierAcademiqueApplicationMapper } from '../../mappers/CalendrierAcademiqueApplicationMapper';
 import {
+  ServiceJournalAuditReferentielAcademique,
+  ServiceJournalAuditReferentielAcademiqueSansEffet,
+} from '../../services/ServiceJournalAuditReferentielAcademique';
+import {
   ServiceTransactionApplication,
   ServiceTransactionApplicationSansEffet,
 } from '../../services/ServiceTransactionApplication';
@@ -43,6 +47,7 @@ export class CreerCalendrierAcademique
   private readonly moteurCalendrierAcademique: MoteurCalendrierAcademique;
   private readonly policyAudit: PolicyAudit;
   private readonly serviceTransactionApplication: ServiceTransactionApplication;
+  private readonly serviceJournalAudit: ServiceJournalAuditReferentielAcademique;
 
   // Ce constructeur injecte les dependances applicatives necessaires a la creation d'un calendrier academique.
   constructor(
@@ -53,6 +58,8 @@ export class CreerCalendrierAcademique
     moteurCalendrierAcademique: MoteurCalendrierAcademique = new MoteurCalendrierAcademique(),
     policyAudit: PolicyAudit = new PolicyAudit(),
     serviceTransactionApplication: ServiceTransactionApplication = new ServiceTransactionApplicationSansEffet(),
+    serviceJournalAudit: ServiceJournalAuditReferentielAcademique =
+      new ServiceJournalAuditReferentielAcademiqueSansEffet(),
   ) {
     this.depotCalendrierAcademique = depotCalendrierAcademique;
     this.depotEcole = depotEcole;
@@ -61,6 +68,7 @@ export class CreerCalendrierAcademique
     this.moteurCalendrierAcademique = moteurCalendrierAcademique;
     this.policyAudit = policyAudit;
     this.serviceTransactionApplication = serviceTransactionApplication;
+    this.serviceJournalAudit = serviceJournalAudit;
   }
 
   // Cette methode cree un calendrier academique unique pour une ecole et une annee scolaire donnees.
@@ -109,6 +117,19 @@ export class CreerCalendrierAcademique
       this.moteurCalendrierAcademique.validerCalendrier(calendrierAcademique);
 
       await this.depotCalendrierAcademique.sauvegarder(calendrierAcademique);
+      await this.serviceJournalAudit.journaliser({
+        action: 'CREER_CALENDRIER_ACADEMIQUE',
+        acteur: entreeValidee.creePar,
+        typeRessource: 'CalendrierAcademique',
+        idRessource: calendrierAcademique.obtenirId().obtenirValeur(),
+        idEcole: ecole.obtenirId().obtenirValeur(),
+        details: {
+          idAnneeScolaire: anneeScolaire.obtenirId().obtenirValeur(),
+          typeStructureEvaluation: calendrierAcademique.obtenirTypeStructureEvaluation(),
+          nombrePeriodes: calendrierAcademique.obtenirPeriodes().length,
+        },
+        creeLe: horodatageCreation,
+      });
 
       return {
         calendrierAcademique: CalendrierAcademiqueApplicationMapper.versSortie(calendrierAcademique),

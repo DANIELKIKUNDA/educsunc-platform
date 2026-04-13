@@ -1,9 +1,13 @@
 import { ActiverAnneeScolaireEntree } from '../../../application/dto/input/ActiverAnneeScolaireEntree';
 import { ArchiverAnneeScolaireEntree } from '../../../application/dto/input/ArchiverAnneeScolaireEntree';
+import { BasculerAnneeScolaireEntree } from '../../../application/dto/input/BasculerAnneeScolaireEntree';
 import { CloturerAnneeScolaireEntree } from '../../../application/dto/input/CloturerAnneeScolaireEntree';
+import { ConsulterAnneeActiveParEcoleEntree } from '../../../application/dto/input/ConsulterAnneeActiveParEcoleEntree';
 import { ConsulterAnneeScolaireEntree } from '../../../application/dto/input/ConsulterAnneeScolaireEntree';
 import { CreerAnneeScolaireEntree } from '../../../application/dto/input/CreerAnneeScolaireEntree';
+import { GarantirAnneeScolaireActiveParEcoleEntree } from '../../../application/dto/input/GarantirAnneeScolaireActiveParEcoleEntree';
 import { ListerAnneesScolairesParEcoleEntree } from '../../../application/dto/input/ListerAnneesScolairesParEcoleEntree';
+import { PreparerAnneeScolaireSuivanteEntree } from '../../../application/dto/input/PreparerAnneeScolaireSuivanteEntree';
 import { OutilsValidationHttpReferentielAcademique } from './OutilsValidationHttpReferentielAcademique';
 
 // Ce validateur gere la validation HTTP des routes annees scolaires.
@@ -55,6 +59,118 @@ export class ValidateurAnneeScolaireHttp {
       idEcole: OutilsValidationHttpReferentielAcademique.lireChaineRequise(donnees, 'idEcole'),
       page: pagination.page,
       taillePage: pagination.taillePage,
+    };
+  }
+
+  // Cette methode valide la requete HTTP de consultation de l'annee active d'une ecole.
+  public static validerConsultationActive(
+    query: unknown,
+  ): ConsulterAnneeActiveParEcoleEntree {
+    const donnees = OutilsValidationHttpReferentielAcademique.obtenirObjet(query, 'query');
+
+    return {
+      idEcole: OutilsValidationHttpReferentielAcademique.lireChaineRequise(donnees, 'idEcole'),
+    };
+  }
+
+  // Cette methode valide la requete HTTP de preparation de l'annee scolaire suivante.
+  public static validerPreparationSuivante(
+    corps: unknown,
+  ): PreparerAnneeScolaireSuivanteEntree {
+    const donnees = OutilsValidationHttpReferentielAcademique.obtenirObjet(corps, 'corps');
+
+    OutilsValidationHttpReferentielAcademique.validerChampsRequis(
+      donnees,
+      {
+        idEcole: true,
+        creePar: true,
+      },
+      'preparation-annee-scolaire-suivante',
+    );
+
+    return {
+      idEcole: OutilsValidationHttpReferentielAcademique.lireChaineRequise(donnees, 'idEcole'),
+      creePar: OutilsValidationHttpReferentielAcademique.lireChaineRequise(donnees, 'creePar'),
+      dateDebut: OutilsValidationHttpReferentielAcademique.lireDateOptionnelle(
+        donnees,
+        'dateDebut',
+      ),
+      dateFin: OutilsValidationHttpReferentielAcademique.lireDateOptionnelle(
+        donnees,
+        'dateFin',
+      ),
+    };
+  }
+
+  // Cette methode valide la requete HTTP de garantie d'une annee scolaire active.
+  public static validerGarantieActive(
+    corps: unknown,
+  ): GarantirAnneeScolaireActiveParEcoleEntree {
+    const donnees = OutilsValidationHttpReferentielAcademique.obtenirObjet(corps, 'corps');
+
+    OutilsValidationHttpReferentielAcademique.validerChampsRequis(
+      donnees,
+      {
+        idEcole: true,
+        modifiePar: true,
+      },
+      'garantie-annee-scolaire-active',
+    );
+
+    return {
+      idEcole: OutilsValidationHttpReferentielAcademique.lireChaineRequise(donnees, 'idEcole'),
+      modifiePar: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
+        donnees,
+        'modifiePar',
+      ),
+      dateReference: OutilsValidationHttpReferentielAcademique.lireDateOptionnelle(
+        donnees,
+        'dateReference',
+      ),
+      dateDebut: OutilsValidationHttpReferentielAcademique.lireDateOptionnelle(
+        donnees,
+        'dateDebut',
+      ),
+      dateFin: OutilsValidationHttpReferentielAcademique.lireDateOptionnelle(
+        donnees,
+        'dateFin',
+      ),
+    };
+  }
+
+  // Cette methode valide la requete HTTP de bascule annuelle.
+  public static validerBascule(
+    corps: unknown,
+  ): BasculerAnneeScolaireEntree {
+    const donnees = OutilsValidationHttpReferentielAcademique.obtenirObjet(corps, 'corps');
+
+    OutilsValidationHttpReferentielAcademique.validerChampsRequis(
+      donnees,
+      {
+        idEcole: true,
+        modifiePar: true,
+      },
+      'bascule-annee-scolaire',
+    );
+
+    return {
+      idEcole: OutilsValidationHttpReferentielAcademique.lireChaineRequise(donnees, 'idEcole'),
+      modifiePar: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
+        donnees,
+        'modifiePar',
+      ),
+      creerSuivanteSiAbsente: OutilsValidationHttpReferentielAcademique.lireBooleenOptionnel(
+        donnees,
+        'creerSuivanteSiAbsente',
+      ),
+      dateDebutSuivante: OutilsValidationHttpReferentielAcademique.lireDateOptionnelle(
+        donnees,
+        'dateDebutSuivante',
+      ),
+      dateFinSuivante: OutilsValidationHttpReferentielAcademique.lireDateOptionnelle(
+        donnees,
+        'dateFinSuivante',
+      ),
     };
   }
 

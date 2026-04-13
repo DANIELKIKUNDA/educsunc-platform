@@ -21,6 +21,10 @@ import { CreerClassePedagogiqueEntree } from '../../dto/input/CreerClassePedagog
 import { ClassePedagogiqueSortie } from '../../dto/output/ClassePedagogiqueSortie';
 import { ClassePedagogiqueApplicationMapper } from '../../mappers/ClassePedagogiqueApplicationMapper';
 import {
+  ServiceJournalAuditReferentielAcademique,
+  ServiceJournalAuditReferentielAcademiqueSansEffet,
+} from '../../services/ServiceJournalAuditReferentielAcademique';
+import {
   ServiceTransactionApplication,
   ServiceTransactionApplicationSansEffet,
 } from '../../services/ServiceTransactionApplication';
@@ -40,6 +44,7 @@ export class CreerClassePedagogique
   private readonly depotClasseAcademique: DepotClasseAcademique;
   private readonly policyAudit: PolicyAudit;
   private readonly serviceTransactionApplication: ServiceTransactionApplication;
+  private readonly serviceJournalAudit: ServiceJournalAuditReferentielAcademique;
 
   // Ce constructeur injecte les dependances applicatives necessaires a la creation d'une classe pedagogique.
   constructor(
@@ -49,6 +54,8 @@ export class CreerClassePedagogique
     depotClasseAcademique: DepotClasseAcademique,
     policyAudit: PolicyAudit = new PolicyAudit(),
     serviceTransactionApplication: ServiceTransactionApplication = new ServiceTransactionApplicationSansEffet(),
+    serviceJournalAudit: ServiceJournalAuditReferentielAcademique =
+      new ServiceJournalAuditReferentielAcademiqueSansEffet(),
   ) {
     this.depotClassePedagogique = depotClassePedagogique;
     this.depotEcole = depotEcole;
@@ -56,6 +63,7 @@ export class CreerClassePedagogique
     this.depotClasseAcademique = depotClasseAcademique;
     this.policyAudit = policyAudit;
     this.serviceTransactionApplication = serviceTransactionApplication;
+    this.serviceJournalAudit = serviceJournalAudit;
   }
 
   // Cette methode cree une classe pedagogique locale dans le contexte d'une ecole et d'une annee.
@@ -106,6 +114,18 @@ export class CreerClassePedagogique
       );
 
       await this.depotClassePedagogique.sauvegarder(classePedagogique);
+      await this.serviceJournalAudit.journaliser({
+        action: 'CREER_CLASSE_PEDAGOGIQUE',
+        acteur: entreeValidee.creePar,
+        typeRessource: 'ClassePedagogique',
+        idRessource: classePedagogique.obtenirId().obtenirValeur(),
+        idEcole: ecole.obtenirId().obtenirValeur(),
+        details: {
+          code: classePedagogique.obtenirCode(),
+          idAnneeScolaire: anneeScolaire.obtenirId().obtenirValeur(),
+          idClasseAcademique: classeAcademique.obtenirId().obtenirValeur(),
+        },
+      });
 
       return {
         classePedagogique: ClassePedagogiqueApplicationMapper.versSortie(classePedagogique),

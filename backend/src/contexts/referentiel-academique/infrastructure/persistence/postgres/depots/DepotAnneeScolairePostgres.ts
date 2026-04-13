@@ -3,6 +3,7 @@ import { AnneeScolaire } from '../../../../domain/aggregates/AnneeScolaire';
 import { DepotAnneeScolaire as ContratDepotAnneeScolaire } from '../../../../domain/repositories/DepotAnneeScolaire';
 import { AnneeScolaireId } from '../../../../domain/value-objects/AnneeScolaireId';
 import { EcoleId } from '../../../../domain/value-objects/EcoleId';
+import { StatutAnneeScolaire } from '../../../../domain/value-objects/StatutAnneeScolaire';
 import {
   MapperAnneeScolairePostgres,
   PersistanceAnneeScolairePostgres,
@@ -44,6 +45,79 @@ export class DepotAnneeScolairePostgres
     const clauseIsolation = this.construireClauseIsolationLectureParEcole('"id_ecole"', 2);
     const ligne = await this.executerRequeteUnique<PersistanceAnneeScolairePostgres>(
       `SELECT * FROM annees_scolaires WHERE id_ecole = $1 ${clauseIsolation.clauseSql} AND active = true LIMIT 1`,
+      [idEcole.obtenirValeur(), ...clauseIsolation.parametres],
+    );
+
+    return ligne === null
+      ? null
+      : this.marquerAgregatCharge(MapperAnneeScolairePostgres.depuisPersistance(ligne));
+  }
+
+  // Cette methode retrouve une annee scolaire par son code fonctionnel dans une ecole.
+  public async trouverParCodeEtEcole(
+    idEcole: EcoleId,
+    code: string,
+  ): Promise<AnneeScolaire | null> {
+    const clauseIsolation = this.construireClauseIsolationLectureParEcole('"id_ecole"', 3);
+    const ligne = await this.executerRequeteUnique<PersistanceAnneeScolairePostgres>(
+      `SELECT * FROM annees_scolaires WHERE id_ecole = $1 AND code = $2 ${clauseIsolation.clauseSql} LIMIT 1`,
+      [idEcole.obtenirValeur(), code.trim(), ...clauseIsolation.parametres],
+    );
+
+    return ligne === null
+      ? null
+      : this.marquerAgregatCharge(MapperAnneeScolairePostgres.depuisPersistance(ligne));
+  }
+
+  // Cette methode retrouve la derniere annee scolaire connue d'une ecole.
+  public async trouverDerniereParEcole(idEcole: EcoleId): Promise<AnneeScolaire | null> {
+    const clauseIsolation = this.construireClauseIsolationLectureParEcole('"id_ecole"', 2);
+    const ligne = await this.executerRequeteUnique<PersistanceAnneeScolairePostgres>(
+      [
+        'SELECT * FROM annees_scolaires',
+        `WHERE id_ecole = $1 ${clauseIsolation.clauseSql}`,
+        'ORDER BY date_debut DESC, code DESC',
+        'LIMIT 1',
+      ].join(' '),
+      [idEcole.obtenirValeur(), ...clauseIsolation.parametres],
+    );
+
+    return ligne === null
+      ? null
+      : this.marquerAgregatCharge(MapperAnneeScolairePostgres.depuisPersistance(ligne));
+  }
+
+  // Cette methode liste les annees scolaires planifiees d'une ecole.
+  public async listerPlanifieesParEcole(idEcole: EcoleId): Promise<readonly AnneeScolaire[]> {
+    const clauseIsolation = this.construireClauseIsolationLectureParEcole('"id_ecole"', 3);
+    const lignes = await this.executerRequete<PersistanceAnneeScolairePostgres>(
+      [
+        'SELECT * FROM annees_scolaires',
+        `WHERE id_ecole = $1 AND statut = $2 ${clauseIsolation.clauseSql}`,
+        'ORDER BY date_debut ASC, code ASC',
+      ].join(' '),
+      [
+        idEcole.obtenirValeur(),
+        StatutAnneeScolaire.PLANIFIEE,
+        ...clauseIsolation.parametres,
+      ],
+    );
+
+    return lignes.map((ligne) =>
+      this.marquerAgregatCharge(MapperAnneeScolairePostgres.depuisPersistance(ligne))
+    );
+  }
+
+  // Cette methode verrouille l'annee active pendant une transition transactionnelle.
+  public async verrouillerActiveParEcole(idEcole: EcoleId): Promise<AnneeScolaire | null> {
+    const clauseIsolation = this.construireClauseIsolationLectureParEcole('"id_ecole"', 2);
+    const ligne = await this.executerRequeteUnique<PersistanceAnneeScolairePostgres>(
+      [
+        'SELECT * FROM annees_scolaires',
+        `WHERE id_ecole = $1 ${clauseIsolation.clauseSql} AND active = true`,
+        'LIMIT 1',
+        'FOR UPDATE',
+      ].join(' '),
       [idEcole.obtenirValeur(), ...clauseIsolation.parametres],
     );
 

@@ -153,6 +153,14 @@ export class OutilsValidationHttpReferentielAcademique {
     return valeur;
   }
 
+  // Cette methode lit une date optionnelle depuis une valeur HTTP.
+  public static lireDateOptionnelle(
+    donnees: ObjetHttpReferentielAcademique,
+    nomChamp: string,
+  ): Date | undefined {
+    return this.convertirEnDate(donnees[nomChamp], nomChamp);
+  }
+
   // Cette methode lit une valeur d'enumeration obligatoire depuis une valeur HTTP.
   public static lireEnumRequis<TValeur extends string>(
     donnees: ObjetHttpReferentielAcademique,

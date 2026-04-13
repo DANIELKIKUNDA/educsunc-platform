@@ -1,7 +1,10 @@
+import { ActiverEcoleEntree } from '../../../application/dto/input/ActiverEcoleEntree';
 import { ChangerModeExploitationEcoleEntree } from '../../../application/dto/input/ChangerModeExploitationEcoleEntree';
 import { ConsulterEcoleEntree } from '../../../application/dto/input/ConsulterEcoleEntree';
 import { CreerEcoleEntree } from '../../../application/dto/input/CreerEcoleEntree';
+import { DesactiverEcoleEntree } from '../../../application/dto/input/DesactiverEcoleEntree';
 import { ListerEcolesParOrganisationEntree } from '../../../application/dto/input/ListerEcolesParOrganisationEntree';
+import { RenommerEcoleEntree } from '../../../application/dto/input/RenommerEcoleEntree';
 import type { Pagination } from '../../../../../shared/application/Pagination';
 import { ModeExploitation } from '../../../domain/value-objects/ModeExploitation';
 import { OutilsValidationHttpReferentielAcademique } from './OutilsValidationHttpReferentielAcademique';
@@ -137,6 +140,86 @@ export class ValidateurEcoleHttp {
         donneesCorps,
         'nouveauModeExploitation',
         ModeExploitation,
+      ),
+      modifiePar: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
+        donneesCorps,
+        'modifiePar',
+      ),
+    };
+  }
+
+  // Cette methode valide la requete HTTP de renommage d'une ecole.
+  public static validerRenommage(
+    parametres: unknown,
+    corps: unknown,
+  ): RenommerEcoleEntree {
+    const donneesParametres = OutilsValidationHttpReferentielAcademique.obtenirObjet(
+      parametres,
+      'parametres',
+    );
+    const donneesCorps = OutilsValidationHttpReferentielAcademique.obtenirObjet(corps, 'corps');
+
+    OutilsValidationHttpReferentielAcademique.validerChampsRequis(
+      donneesCorps,
+      {
+        nouveauNom: true,
+        modifiePar: true,
+      },
+      'renommage-ecole',
+    );
+
+    return {
+      idEcole: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
+        donneesParametres,
+        'id',
+      ),
+      nouveauNom: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
+        donneesCorps,
+        'nouveauNom',
+      ),
+      modifiePar: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
+        donneesCorps,
+        'modifiePar',
+      ),
+    };
+  }
+
+  // Cette methode valide la requete HTTP d'activation d'une ecole.
+  public static validerActivation(
+    parametres: unknown,
+    corps: unknown,
+  ): ActiverEcoleEntree {
+    return this.validerChangementStatut(parametres, corps);
+  }
+
+  // Cette methode valide la requete HTTP de desactivation d'une ecole.
+  public static validerDesactivation(
+    parametres: unknown,
+    corps: unknown,
+  ): DesactiverEcoleEntree {
+    return this.validerChangementStatut(parametres, corps);
+  }
+
+  private static validerChangementStatut(
+    parametres: unknown,
+    corps: unknown,
+  ): ActiverEcoleEntree {
+    const donneesParametres = OutilsValidationHttpReferentielAcademique.obtenirObjet(
+      parametres,
+      'parametres',
+    );
+    const donneesCorps = OutilsValidationHttpReferentielAcademique.obtenirObjet(corps, 'corps');
+
+    OutilsValidationHttpReferentielAcademique.validerChampsRequis(
+      donneesCorps,
+      { modifiePar: true },
+      'changement-statut-ecole',
+    );
+
+    return {
+      idEcole: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
+        donneesParametres,
+        'id',
       ),
       modifiePar: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
         donneesCorps,

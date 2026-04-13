@@ -7,6 +7,10 @@ import { StatutProgrammeNiveau } from '../../../domain/value-objects/StatutProgr
 import { ArchiverProgrammeNiveauEntree } from '../../dto/input/ArchiverProgrammeNiveauEntree';
 import { ProgrammeNiveauSortie } from '../../dto/output/ProgrammeNiveauSortie';
 import { ProgrammeNiveauApplicationMapper } from '../../mappers/ProgrammeNiveauApplicationMapper';
+import {
+  ServiceJournalAuditReferentielAcademique,
+  ServiceJournalAuditReferentielAcademiqueSansEffet,
+} from '../../services/ServiceJournalAuditReferentielAcademique';
 
 // Cette interface represente la sortie du cas d'usage ArchiverProgrammeNiveau.
 export interface SortieArchiverProgrammeNiveau {
@@ -19,14 +23,18 @@ export class ArchiverProgrammeNiveau
 {
   private readonly depotProgrammeNiveau: DepotProgrammeNiveau;
   private readonly policyAudit: PolicyAudit;
+  private readonly serviceJournalAudit: ServiceJournalAuditReferentielAcademique;
 
   // Ce constructeur injecte les dependances applicatives necessaires a l'archivage d'un programme niveau.
   constructor(
     depotProgrammeNiveau: DepotProgrammeNiveau,
     policyAudit: PolicyAudit = new PolicyAudit(),
+    serviceJournalAudit: ServiceJournalAuditReferentielAcademique =
+      new ServiceJournalAuditReferentielAcademiqueSansEffet(),
   ) {
     this.depotProgrammeNiveau = depotProgrammeNiveau;
     this.policyAudit = policyAudit;
+    this.serviceJournalAudit = serviceJournalAudit;
   }
 
   // Cette methode archive un programme niveau deja valide.
@@ -60,6 +68,19 @@ export class ArchiverProgrammeNiveau
 
     programmeNiveau.archiver();
     await this.depotProgrammeNiveau.sauvegarder(programmeNiveau);
+    await this.serviceJournalAudit.journaliser({
+      action: 'ARCHIVER_PROGRAMME_NIVEAU',
+      acteur: entreeValidee.archivePar,
+      typeRessource: 'ProgrammeNiveau',
+      idRessource: programmeNiveau.obtenirId().obtenirValeur(),
+      idEcole: programmeNiveau.obtenirEcoleId().obtenirValeur(),
+      details: {
+        idAnneeScolaire: programmeNiveau.obtenirAnneeScolaireId().obtenirValeur(),
+        idClasseAcademique: programmeNiveau.obtenirClasseAcademiqueId().obtenirValeur(),
+        statut: programmeNiveau.obtenirStatut(),
+      },
+      creeLe: horodatageArchivage,
+    });
 
     return {
       programmeNiveau: ProgrammeNiveauApplicationMapper.versSortie(programmeNiveau),

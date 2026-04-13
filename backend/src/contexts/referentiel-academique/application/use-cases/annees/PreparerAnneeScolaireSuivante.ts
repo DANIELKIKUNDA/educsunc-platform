@@ -7,9 +7,13 @@ import { DepotAnneeScolaire } from '../../../domain/repositories/DepotAnneeScola
 import { DepotEcole } from '../../../domain/repositories/DepotEcole';
 import { AnneeScolaireId } from '../../../domain/value-objects/AnneeScolaireId';
 import { EcoleId } from '../../../domain/value-objects/EcoleId';
-import { CreerAnneeScolaireEntree } from '../../dto/input/CreerAnneeScolaireEntree';
+import { PreparerAnneeScolaireSuivanteEntree } from '../../dto/input/PreparerAnneeScolaireSuivanteEntree';
 import { AnneeScolaireSortie } from '../../dto/output/AnneeScolaireSortie';
 import { AnneeScolaireApplicationMapper } from '../../mappers/AnneeScolaireApplicationMapper';
+import {
+  ServiceCycleAnneeScolaireRdc,
+  SurchargeDatesAnneeScolaireAdministrative,
+} from '../../services/ServiceCycleAnneeScolaireRdc';
 import {
   ServiceJournalAuditReferentielAcademique,
   ServiceJournalAuditReferentielAcademiqueSansEffet,
@@ -19,25 +23,28 @@ import {
   ServiceTransactionApplicationSansEffet,
 } from '../../services/ServiceTransactionApplication';
 
-// Cette interface represente la sortie du cas d'usage CreerAnneeScolaire.
-export interface SortieCreerAnneeScolaire {
+// Cette interface represente la sortie de preparation de l'annee scolaire suivante.
+export interface SortiePreparerAnneeScolaireSuivante {
   anneeScolaire: AnneeScolaireSortie;
+  dejaExistante: boolean;
 }
 
-// Ce cas d'usage orchestre la creation d'une annee scolaire.
-export class CreerAnneeScolaire
-  implements UseCase<CreerAnneeScolaireEntree, SortieCreerAnneeScolaire>
+// Ce cas d'usage prepare une annee suivante planifiee sans modifier l'annee active.
+export class PreparerAnneeScolaireSuivante
+  implements UseCase<PreparerAnneeScolaireSuivanteEntree, SortiePreparerAnneeScolaireSuivante>
 {
   private readonly depotAnneeScolaire: DepotAnneeScolaire;
   private readonly depotEcole: DepotEcole;
+  private readonly serviceCycleAnneeScolaire: ServiceCycleAnneeScolaireRdc;
   private readonly policyAudit: PolicyAudit;
   private readonly serviceTransactionApplication: ServiceTransactionApplication;
   private readonly serviceJournalAudit: ServiceJournalAuditReferentielAcademique;
 
-  // Ce constructeur injecte les dependances applicatives necessaires a la creation d'une annee scolaire.
+  // Ce constructeur injecte les dependances applicatives utiles a la preparation annuelle.
   constructor(
     depotAnneeScolaire: DepotAnneeScolaire,
     depotEcole: DepotEcole,
+    serviceCycleAnneeScolaire: ServiceCycleAnneeScolaireRdc = new ServiceCycleAnneeScolaireRdc(),
     policyAudit: PolicyAudit = new PolicyAudit(),
     serviceTransactionApplication: ServiceTransactionApplication = new ServiceTransactionApplicationSansEffet(),
     serviceJournalAudit: ServiceJournalAuditReferentielAcademique =
@@ -45,75 +52,117 @@ export class CreerAnneeScolaire
   ) {
     this.depotAnneeScolaire = depotAnneeScolaire;
     this.depotEcole = depotEcole;
+    this.serviceCycleAnneeScolaire = serviceCycleAnneeScolaire;
     this.policyAudit = policyAudit;
     this.serviceTransactionApplication = serviceTransactionApplication;
     this.serviceJournalAudit = serviceJournalAudit;
   }
 
-  // Cette methode cree une annee scolaire pour une ecole existante.
-  public async executer(entree: CreerAnneeScolaireEntree): Promise<SortieCreerAnneeScolaire> {
+  // Cette methode cree l'annee suivante si elle n'existe pas encore.
+  public async executer(
+    entree: PreparerAnneeScolaireSuivanteEntree,
+  ): Promise<SortiePreparerAnneeScolaireSuivante> {
     const entreeValidee = this.validerEntree(entree);
+
     return this.serviceTransactionApplication.executerDansTransaction(async () => {
-      const horodatageCreation = new Date();
+      const horodatagePreparation = new Date();
 
       this.policyAudit.verifierTracabiliteObligatoire(
-        'CREER_ANNEE_SCOLAIRE',
+        'PREPARER_ANNEE_SCOLAIRE_SUIVANTE',
         entreeValidee.creePar,
-        horodatageCreation,
+        horodatagePreparation,
       );
 
       const ecole = await this.depotEcole.trouverParId(new EcoleId(entreeValidee.idEcole));
 
       if (ecole === null) {
         throw new ErreurEcoleInvalide(
-          "L'ecole de rattachement de l'annee scolaire est introuvable.",
+          "L'ecole de rattachement de l'annee suivante est introuvable.",
         );
       }
 
-      const anneeScolaire = new AnneeScolaire(
+      const anneeActive = await this.depotAnneeScolaire.trouverActiveParEcole(
+        ecole.obtenirId(),
+      );
+
+      if (anneeActive === null) {
+        throw new ErreurAnneeScolaireInvalide(
+          "Une annee active est necessaire pour preparer l'annee suivante.",
+        );
+      }
+
+      const proposition = this.serviceCycleAnneeScolaire.proposerAnneeSuivante(
+        anneeActive,
+        this.creerSurchargeDates(entreeValidee.dateDebut, entreeValidee.dateFin),
+      );
+      const anneeExistante = await this.depotAnneeScolaire.trouverParCodeEtEcole(
+        ecole.obtenirId(),
+        proposition.code,
+      );
+
+      if (anneeExistante !== null) {
+        return {
+          anneeScolaire: AnneeScolaireApplicationMapper.versSortie(anneeExistante),
+          dejaExistante: true,
+        };
+      }
+
+      const anneeSuivante = new AnneeScolaire(
         new AnneeScolaireId(),
         ecole.obtenirId(),
-        entreeValidee.code,
-        entreeValidee.libelle,
-        entreeValidee.dateDebut,
-        entreeValidee.dateFin,
+        proposition.code,
+        proposition.libelle,
+        proposition.dateDebut,
+        proposition.dateFin,
         entreeValidee.creePar,
       );
 
-      await this.depotAnneeScolaire.sauvegarder(anneeScolaire);
+      await this.depotAnneeScolaire.sauvegarder(anneeSuivante);
       await this.serviceJournalAudit.journaliser({
-        action: 'CREER_ANNEE_SCOLAIRE',
+        action: 'PREPARER_ANNEE_SCOLAIRE_SUIVANTE',
         acteur: entreeValidee.creePar,
         typeRessource: 'AnneeScolaire',
-        idRessource: anneeScolaire.obtenirId().obtenirValeur(),
+        idRessource: anneeSuivante.obtenirId().obtenirValeur(),
         idEcole: ecole.obtenirId().obtenirValeur(),
         details: {
-          code: anneeScolaire.obtenirCode(),
-          statut: anneeScolaire.obtenirStatut(),
+          code: anneeSuivante.obtenirCode(),
+          statut: anneeSuivante.obtenirStatut(),
+          anneeSource: anneeActive.obtenirId().obtenirValeur(),
         },
-        creeLe: horodatageCreation,
+        creeLe: horodatagePreparation,
       });
 
       return {
-        anneeScolaire: AnneeScolaireApplicationMapper.versSortie(anneeScolaire),
+        anneeScolaire: AnneeScolaireApplicationMapper.versSortie(anneeSuivante),
+        dejaExistante: false,
       };
     });
   }
 
-  private validerEntree(entree: CreerAnneeScolaireEntree): CreerAnneeScolaireEntree {
+  private validerEntree(
+    entree: PreparerAnneeScolaireSuivanteEntree,
+  ): PreparerAnneeScolaireSuivanteEntree {
     if (entree === null || entree === undefined) {
       throw new ErreurAnneeScolaireInvalide(
-        "L'entree du cas d'usage CreerAnneeScolaire est obligatoire.",
+        "L'entree du cas d'usage PreparerAnneeScolaireSuivante est obligatoire.",
       );
     }
 
     return {
       idEcole: this.validerTexteObligatoire(entree.idEcole, 'idEcole'),
-      code: this.validerTexteObligatoire(entree.code, 'code'),
-      libelle: this.validerTexteObligatoire(entree.libelle, 'libelle'),
-      dateDebut: this.validerDate(entree.dateDebut, 'dateDebut'),
-      dateFin: this.validerDate(entree.dateFin, 'dateFin'),
       creePar: this.validerTexteObligatoire(entree.creePar, 'creePar'),
+      dateDebut: this.validerDateOptionnelle(entree.dateDebut, 'dateDebut'),
+      dateFin: this.validerDateOptionnelle(entree.dateFin, 'dateFin'),
+    };
+  }
+
+  private creerSurchargeDates(
+    dateDebut?: Date,
+    dateFin?: Date,
+  ): SurchargeDatesAnneeScolaireAdministrative {
+    return {
+      dateDebut,
+      dateFin,
     };
   }
 
@@ -135,7 +184,11 @@ export class CreerAnneeScolaire
     return valeurNettoyee;
   }
 
-  private validerDate(valeur: Date, nomChamp: string): Date {
+  private validerDateOptionnelle(valeur: Date | undefined, nomChamp: string): Date | undefined {
+    if (valeur === undefined) {
+      return undefined;
+    }
+
     if (!(valeur instanceof Date) || Number.isNaN(valeur.getTime())) {
       throw new ErreurAnneeScolaireInvalide(
         `Le champ "${nomChamp}" doit etre une date valide.`,
