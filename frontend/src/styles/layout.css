@@ -2,3 +2,191 @@
 .app-shell {
   padding: 2rem;
 }
+
+.layout-admin {
+  display: grid;
+  grid-template-columns: var(--largeur-navigation) minmax(0, 1fr);
+  min-height: 100vh;
+  background: var(--couleur-fond);
+}
+
+.layout-admin__navigation {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding: 0;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(142, 183, 242, 0.18), transparent 14rem),
+    linear-gradient(180deg, #2d5f9f 0%, #18365f 100%);
+  color: #eef5ff;
+  box-shadow: 4px 0 24px rgba(24, 54, 95, 0.16);
+}
+
+.layout-admin__marque {
+  display: grid;
+  height: var(--hauteur-barre-contexte);
+  place-items: center;
+  border-bottom: 1px solid rgba(238, 245, 255, 0.08);
+  background: rgba(12, 35, 68, 0.18);
+}
+
+.layout-admin__marque .icone-layout {
+  width: 1.65rem;
+  height: 1.65rem;
+  color: #d9e8ff;
+  stroke-width: 2.35;
+}
+
+.layout-admin__menu {
+  display: grid;
+  padding: 1rem 0.55rem 0;
+}
+
+.layout-admin__menu-section {
+  margin: 0.9rem 0.95rem 0.35rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid rgba(230, 241, 255, 0.16);
+  color: rgba(215, 231, 252, 0.78);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.layout-admin__menu-section:first-child {
+  margin-top: 0.1rem;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.layout-admin__menu a {
+  display: flex;
+  min-height: 3.05rem;
+  gap: 0.95rem;
+  align-items: center;
+  padding: 0 0.95rem;
+  border-left: 4px solid transparent;
+  border-radius: 0.65rem;
+  color: rgba(238, 245, 255, 0.92);
+  font-size: 0.96rem;
+  font-weight: 700;
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease,
+    transform 160ms ease;
+}
+
+.layout-admin__menu .icone-layout {
+  width: 1.12rem;
+  height: 1.12rem;
+  flex: 0 0 auto;
+  color: #d6e4f6;
+  stroke-width: 2;
+  transition: transform 160ms ease, color 180ms ease;
+}
+
+.layout-admin__menu a.router-link-exact-active,
+.layout-admin__menu a:hover {
+  border-left-color: #8eb7f2;
+  background: linear-gradient(90deg, rgba(177, 208, 255, 0.34), rgba(255, 255, 255, 0.1));
+  color: #ffffff;
+  transform: translateX(1px);
+}
+
+.layout-admin__menu a.router-link-exact-active .icone-layout,
+.layout-admin__menu a:hover .icone-layout {
+  color: #ffffff;
+  transform: translateX(1px);
+}
+
+.layout-admin__menu a.router-link-exact-active {
+  box-shadow:
+    inset 0 0 0 1px rgba(198, 221, 255, 0.45),
+    0 8px 16px rgba(8, 26, 51, 0.22);
+}
+
+.layout-admin__menu a:focus-visible {
+  outline: 2px solid #9abcf0;
+  outline-offset: -2px;
+  border-left-color: #9abcf0;
+  background: rgba(255, 255, 255, 0.11);
+  color: #ffffff;
+}
+
+.layout-admin__menu a:focus-visible .icone-layout {
+  color: #ffffff;
+}
+
+.layout-admin__contenu {
+  min-width: 0;
+}
+
+.layout-admin__principal {
+  padding: 1.55rem 1.55rem 2.25rem;
+}
+
+.barre-contexte {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr auto;
+  align-items: stretch;
+  min-height: var(--hauteur-barre-contexte);
+  border-bottom: 1px solid var(--couleur-bordure);
+  background: #ffffff;
+  box-shadow: 0 3px 14px rgba(31, 41, 55, 0.05);
+}
+
+.barre-contexte__selection,
+.barre-contexte__utilisateur {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0.65rem 1.15rem;
+  border-right: 1px solid var(--couleur-bordure);
+}
+
+.barre-contexte__selection span,
+.barre-contexte__utilisateur span {
+  color: var(--couleur-texte-douce);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.barre-contexte__selection strong,
+.barre-contexte__utilisateur strong {
+  margin-top: 0.2rem;
+  color: var(--couleur-encre);
+  font-size: 0.95rem;
+}
+
+.barre-contexte__utilisateur {
+  min-width: 16rem;
+  flex-direction: row;
+  gap: 0.75rem;
+  align-items: center;
+  border-right: 0;
+}
+
+.layout-admin__avatar {
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  place-items: center;
+  border: 0;
+  border-radius: 0.35rem;
+  background: linear-gradient(135deg, #e6eefb, #cfe1ff);
+  color: var(--couleur-principale-foncee);
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.layout-admin__avatar .icone-layout {
+  width: 1.15rem;
+  height: 1.15rem;
+  stroke-width: 2.4;
+}

@@ -1,5 +1,23 @@
 /* Definit les variables CSS transversales. */
 :root {
-  --couleur-principale: #0f766e;
-  --couleur-fond: #ffffff;
+  --couleur-principale: #2d5f9f;
+  --couleur-principale-foncee: #18365f;
+  --couleur-accent: #f2b632;
+  --couleur-encre: #1f2937;
+  --couleur-fond: #f2f5fa;
+  --couleur-surface: #ffffff;
+  --couleur-surface-froide: #edf3fb;
+  --couleur-texte: #263244;
+  --couleur-texte-douce: #6b7280;
+  --couleur-bordure: #dfe5ef;
+  --couleur-succes: #2f9d62;
+  --couleur-attention: #f2b632;
+  --couleur-danger: #d9534f;
+  --ombre-carte: 0 8px 22px rgba(31, 41, 55, 0.09);
+  --ombre-flottante: 0 12px 28px rgba(31, 41, 55, 0.12);
+  --rayon-grand: 0.35rem;
+  --rayon-moyen: 0.3rem;
+  --largeur-navigation: 16.45rem;
+  --hauteur-barre-contexte: 4rem;
+  --police-interface: "Segoe UI", "Aptos", sans-serif;
 }

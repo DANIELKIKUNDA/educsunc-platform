@@ -1,4 +1,10 @@
-// Centralise la configuration Vite du frontend.
-const configurationVite = {};
+import vue from '@vitejs/plugin-vue';
+import { defineConfig } from 'vite';
 
-export default configurationVite;
+// Centralise la configuration Vite du frontend.
+export default defineConfig({
+  plugins: [vue()],
+  server: {
+    port: 5173,
+  },
+});

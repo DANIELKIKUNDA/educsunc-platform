@@ -4,9 +4,18 @@
   "private": true,
   "description": "Socle frontend hybride offline-first pour EducSyn.",
   "scripts": {
-    "dev": "node -e \"console.log('Script dev frontend a configurer.')\"",
-    "build": "node -e \"console.log('Script build frontend a configurer.')\"",
-    "preview": "node -e \"console.log('Script preview frontend a configurer.')\"",
-    "test": "node -e \"console.log('Tests frontend a configurer.')\""
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vue-tsc --noEmit"
+  },
+  "dependencies": {
+    "@vitejs/plugin-vue": "^5.2.4",
+    "lucide-vue-next": "^1.0.0",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.1",
+    "vue-tsc": "^2.2.10"
   }
 }
