@@ -3,7 +3,6 @@ import { onMounted, ref } from 'vue';
 import AlerteMetier from '../../commun/composants/AlerteMetier.vue';
 import BadgeStatut from '../../commun/composants/BadgeStatut.vue';
 import {
-  AlertTriangle,
   BookOpen,
   CalendarCheck,
   CalendarDays,
@@ -11,20 +10,18 @@ import {
   Compass,
   FolderCheck,
   School,
-  Users,
   Clock,
-  TrendingUp,
 } from 'lucide-vue-next';
 
-// Ã‰tat de chargement
+// État de chargement
 const isLoading = ref(false);
 const lastSync = ref(new Date());
 
-// DonnÃ©es statiques (seront connectÃ©es au backend plus tard)
+// Données statiques provisoires, en attendant le branchement backend.
 const messages = ref([
   {
-    titre: 'SystÃ¨me opÃ©rationnel',
-    message: 'Tous les services sont en ligne et fonctionnels.',
+    titre: 'Tableau de bord prêt',
+    message: 'Les indicateurs de l’école seront reliés progressivement aux données réelles.',
     type: 'succes' as const,
     timestamp: new Date(Date.now() - 30 * 60 * 1000),
     actions: []
@@ -32,15 +29,15 @@ const messages = ref([
 ]);
 
 const classes = ref([
-  { id: '1', nom: '6Ã¨me A', effectif: 28, statut: 'actif' },
-  { id: '2', nom: '6Ã¨me B', effectif: 26, statut: 'actif' },
-  { id: '3', nom: '5Ã¨me A', effectif: 30, statut: 'actif' }
+  { id: '1', nom: '6ème A', effectif: 28, statut: 'actif' },
+  { id: '2', nom: '6ème B', effectif: 26, statut: 'actif' },
+  { id: '3', nom: '5ème A', effectif: 30, statut: 'actif' }
 ]);
 
 const referentielOfficiel = ref([
   { libelle: 'Programmes nationaux', valeur: '2024-2025', statut: 'actif' },
-  { libelle: 'Calendrier acadÃ©mique', valeur: 'Version 2.1', statut: 'actif' },
-  { libelle: 'RÃ©fÃ©rentiels pÃ©dagogiques', valeur: 'MÃ  jour', statut: 'mise_a_jour' }
+  { libelle: 'Calendrier académique', valeur: 'Version 2.1', statut: 'actif' },
+  { libelle: 'Référentiels pédagogiques', valeur: 'À jour', statut: 'mise_a_jour' }
 ]);
 
 const kpiData = ref({
@@ -54,17 +51,17 @@ const kpiData = ref({
   prochainePeriode: 'Examens fin T2'
 });
 
-// Fonctions de navigation (Ã  connecter au router plus tard)
+// Fonctions de navigation à connecter au routeur métier plus tard.
 const preparerAnneeSuivante = () => {
-  console.log('Navigation vers annÃ©es scolaires');
+  console.log('Navigation vers années scolaires');
 };
 
 const explorerReferentiel = () => {
-  console.log('Navigation vers rÃ©fÃ©rentiel officiel');
+  console.log('Navigation vers référentiel officiel');
 };
 
 const gererClasses = () => {
-  console.log('Navigation vers classes pÃ©dagogiques');
+  console.log('Navigation vers classes pédagogiques');
 };
 
 const verifierProgrammes = () => {
@@ -72,7 +69,7 @@ const verifierProgrammes = () => {
 };
 
 const traiterPriorites = () => {
-  console.log('Traitement des prioritÃ©s du tableau de bord');
+  console.log('Traitement des priorités du tableau de bord');
 };
 
 const formatRelativeTime = (date: Date) => {
@@ -85,7 +82,7 @@ const formatRelativeTime = (date: Date) => {
   if (days > 0) return `il y a ${days} jour${days > 1 ? 's' : ''}`;
   if (hours > 0) return `il y a ${hours} heure${hours > 1 ? 's' : ''}`;
   if (minutes > 0) return `il y a ${minutes} minute${minutes > 1 ? 's' : ''}`;
-  return 'Ã  l\'instant';
+  return 'à l’instant';
 };
 
 // Simuler un chargement au montage
@@ -99,31 +96,31 @@ onMounted(async () => {
 
 <template>
   <section class="dashboard-ecole">
-    <!-- Ã‰tat de chargement -->
+    <!-- État de chargement -->
     <div v-if="isLoading" class="dashboard-loading">
       <div class="loading-spinner"></div>
-      <p>Chargement des donnÃ©es...</p>
+      <p>Chargement des données...</p>
     </div>
 
     <template v-else>
       <header class="dashboard-ecole__entete animate-fade-in">
         <div>
-          <h2>Tableau de bord Ã©cole</h2>
-          <p><strong>Ã‰cole courante</strong> - {{ kpiData.anneeActive }}</p>
+          <h2>Tableau de bord école</h2>
+          <p><strong>École courante</strong> - {{ kpiData.anneeActive }}</p>
           <div class="derniere-synchronisation">
             <Clock class="icone-sync" />
-            <span>DerniÃ¨re synchro: {{ formatRelativeTime(lastSync) }}</span>
+            <span>Dernière synchronisation : {{ formatRelativeTime(lastSync) }}</span>
           </div>
         </div>
 
         <div class="dashboard-ecole__actions">
           <button class="bouton-principal button-lift" type="button" @click="preparerAnneeSuivante">
             <CalendarDays class="icone-bouton" />
-            PrÃ©parer l'annÃ©e suivante
+            Préparer l’année suivante
           </button>
           <button class="bouton-secondaire button-lift" type="button" @click="explorerReferentiel">
             <Compass class="icone-bouton" />
-            Explorer le rÃ©fÃ©rentiel
+            Explorer le référentiel
           </button>
         </div>
       </header>
@@ -134,7 +131,7 @@ onMounted(async () => {
             <CalendarDays class="icone-kpi" />
           </div>
           <div>
-            <span>AnnÃ©e active</span>
+            <span>Année active</span>
             <strong class="kpi-number">{{ kpiData.anneeActive }}</strong>
             <p>{{ kpiData.statutAnnee }}</p>
           </div>
@@ -145,7 +142,7 @@ onMounted(async () => {
             <School class="icone-kpi" />
           </div>
           <div>
-            <span>Classes pÃ©dagogiques</span>
+            <span>Classes pédagogiques</span>
             <strong class="kpi-number">{{ kpiData.classesStatut }}</strong>
             <p>Organisation locale</p>
           </div>
@@ -167,9 +164,9 @@ onMounted(async () => {
             <CalendarCheck class="icone-kpi" />
           </div>
           <div>
-            <span>Calendrier acadÃ©mique</span>
+            <span>Calendrier académique</span>
             <strong class="kpi-number">{{ kpiData.calendrierStatut }}</strong>
-            <p>PÃ©riodes scolaires</p>
+            <p>Périodes scolaires</p>
           </div>
         </article>
       </section>
@@ -178,7 +175,7 @@ onMounted(async () => {
       <article class="bloc-dashboard bloc-dashboard--alertes">
         <div class="bloc-dashboard__entete">
           <div>
-            <BadgeStatut libelle="PrioritÃ©s" />
+            <BadgeStatut libelle="Priorités" />
             <h3>Alertes principales</h3>
           </div>
         </div>
@@ -191,7 +188,7 @@ onMounted(async () => {
         />
 
         <div class="bloc-dashboard__actions">
-          <button class="bouton-secondaire button-lift" type="button" @click="traiterPriorites">Traiter les prioritÃ©s</button>
+          <button class="bouton-secondaire button-lift" type="button" @click="traiterPriorites">Traiter les priorités</button>
           <button class="bouton-minimal" type="button">Masquer</button>
         </div>
       </article>
@@ -200,7 +197,7 @@ onMounted(async () => {
         <div class="bloc-dashboard__entete">
           <div>
             <BadgeStatut libelle="Classes" />
-            <h3>Ã‰tat des classes</h3>
+            <h3>État des classes</h3>
           </div>
           <button class="bouton-minimal" type="button">Voir tout</button>
         </div>
@@ -209,7 +206,7 @@ onMounted(async () => {
           <div class="tableau-mini__ligne tableau-mini__ligne--entete">
             <span>Classe</span>
             <span>Effectif</span>
-            <span>Ã‰tat</span>
+            <span>État</span>
           </div>
           <div
             v-for="classe in classes.slice(0, 3)"
@@ -217,9 +214,9 @@ onMounted(async () => {
             class="tableau-mini__ligne stagger-item"
           >
             <strong>{{ classe.nom }}</strong>
-            <span>{{ classe.effectif }} Ã©lÃ¨ves</span>
+            <span>{{ classe.effectif }} élèves</span>
             <BadgeStatut
-              :libelle="classe.statut === 'actif' ? 'Actif' : classe.statut === 'preparation' ? 'PrÃ©paration' : 'ClÃ´turÃ©'"
+              :libelle="classe.statut === 'actif' ? 'Actif' : classe.statut === 'preparation' ? 'Préparation' : 'Clôturé'"
             />
           </div>
         </div>
@@ -229,16 +226,16 @@ onMounted(async () => {
         <div class="bloc-dashboard__entete">
           <div>
             <BadgeStatut libelle="Actions" />
-            <h3>Prochaines opÃ©rations</h3>
+            <h3>Prochaines opérations</h3>
           </div>
         </div>
 
         <div class="grille-actions-dashboard">
           <button type="button" class="button-lift" @click="preparerAnneeSuivante">
-            <CalendarDays class="icone-action" /> PrÃ©parer annÃ©e suivante
+            <CalendarDays class="icone-action" /> Préparer l’année suivante
           </button>
           <button type="button" class="button-lift" @click="gererClasses">
-            <School class="icone-action" /> GÃ©rer classes
+            <School class="icone-action" /> Gérer les classes
           </button>
           <button type="button" class="button-lift" @click="verifierProgrammes">
             <ClipboardList class="icone-action" /> Initialiser programmes
@@ -250,15 +247,15 @@ onMounted(async () => {
         <div class="bloc-dashboard__entete">
           <div>
             <BadgeStatut libelle="Calendrier" />
-            <h3>Suivi acadÃ©mique</h3>
+            <h3>Suivi académique</h3>
           </div>
           <button class="bouton-minimal" type="button">Ouvrir</button>
         </div>
 
         <div class="calendrier-mini">
-          <p><strong>PÃ©riode en cours</strong><span>Ã€ connecter</span></p>
-          <p><strong>Prochaine pÃ©riode</strong><span>Ã€ connecter</span></p>
-          <p><strong>Statut</strong><span>PrÃ©paration attendue</span></p>
+          <p><strong>Période en cours</strong><span>À connecter</span></p>
+          <p><strong>Prochaine période</strong><span>À connecter</span></p>
+          <p><strong>Statut</strong><span>Préparation attendue</span></p>
         </div>
       </article>
     </section>
@@ -266,8 +263,8 @@ onMounted(async () => {
     <section class="section-referentiel">
       <div class="section-referentiel__entete">
         <div class="section-referentiel__entete-titre">
-          <BadgeStatut libelle="RÃ©fÃ©rentiel officiel" />
-          <h3>Fondation officielle de l'Ã©cole</h3>
+          <BadgeStatut libelle="Référentiel officiel" />
+          <h3>Fondation officielle de l’école</h3>
         </div>
         <button class="bouton-secondaire" type="button">
           <FolderCheck class="icone-bouton" />
@@ -288,7 +285,7 @@ onMounted(async () => {
             </div>
             <div class="ligne-referentiel__droite">
               <BadgeStatut
-                :libelle="item.statut === 'actif' ? 'Actif' : item.statut === 'mise_a_jour' ? 'MÃ  jour' : 'ObsolÃ¨te'"
+                :libelle="item.statut === 'actif' ? 'Actif' : item.statut === 'mise_a_jour' ? 'À jour' : 'Obsolète'"
               />
             </div>
           </div>

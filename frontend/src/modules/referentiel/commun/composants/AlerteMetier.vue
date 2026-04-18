@@ -1,5 +1,4 @@
 ﻿<script setup lang="ts">
-import type { MessageUtilisateur } from '../types/referentiel.types';
 import { AlertTriangle, AlertCircle, CheckCircle, Info } from 'lucide-vue-next';
 import type { MessageAlerte } from '../../ecole/stores/referentiel-ecole-demo.store';
 
@@ -7,7 +6,7 @@ interface Props {
   message: MessageAlerte;
 }
 
-const props = defineProps<Props>();
+defineProps<Props>();
 
 const getIcon = (type: MessageAlerte['type']) => {
   switch (type) {
@@ -41,7 +40,7 @@ const getIconColor = (type: MessageAlerte['type']) => {
 </script>
 
 <template>
-  <!-- Affiche une alerte lisible sans exposer les details techniques. -->
+  <!-- Affiche une alerte lisible sans exposer les détails techniques. -->
   <article class="alerte-metier interactive-card">
     <div
       class="alerte-metier__icone"
