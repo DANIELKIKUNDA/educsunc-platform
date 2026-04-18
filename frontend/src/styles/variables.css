@@ -1,4 +1,4 @@
-/* Definit les variables CSS transversales. */
+﻿/* Definit les variables CSS transversales. */
 :root {
   --couleur-principale: #2d5f9f;
   --couleur-principale-foncee: #18365f;
@@ -20,4 +20,54 @@
   --largeur-navigation: 16.45rem;
   --hauteur-barre-contexte: 4rem;
   --police-interface: "Segoe UI", "Aptos", sans-serif;
+
+  /* Animations */
+  --transition-rapide: 180ms ease;
+  --transition-moyenne: 280ms ease;
+  --transition-lente: 420ms ease;
+  --animation-pulse: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Mode sombre */
+[data-theme="dark"] {
+  --couleur-principale: #4a7ec7;
+  --couleur-principale-foncee: #2d5f9f;
+  --couleur-accent: #f4c430;
+  --couleur-encre: #f9fafb;
+  --couleur-fond: #0f172a;
+  --couleur-surface: #1e293b;
+  --couleur-surface-froide: #334155;
+  --couleur-texte: #e2e8f0;
+  --couleur-texte-douce: #94a3b8;
+  --couleur-bordure: #334155;
+  --couleur-succes: #34d399;
+  --couleur-attention: #fbbf24;
+  --couleur-danger: #f87171;
+  --ombre-carte: 0 8px 22px rgba(0, 0, 0, 0.3);
+  --ombre-flottante: 0 12px 28px rgba(0, 0, 0, 0.4);
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes skeleton {
+  0% { background-position: -200px 0; }
+  100% { background-position: calc(200px + 100%) 0; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-12px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes countUp {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
 }

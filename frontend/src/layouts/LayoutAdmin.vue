@@ -9,6 +9,15 @@ import {
   School,
   UserRound,
 } from 'lucide-vue-next';
+import ThemeToggle from '../modules/referentiel/commun/composants/ThemeToggle.vue';
+import { useTheme } from '../composables/useTheme';
+import { onMounted } from 'vue';
+
+const { initTheme } = useTheme();
+
+onMounted(() => {
+  initTheme();
+});
 </script>
 
 <template>
@@ -47,6 +56,7 @@ import {
           <strong>Active à charger</strong>
         </div>
         <div class="barre-contexte__utilisateur">
+          <ThemeToggle />
           <button class="layout-admin__avatar" type="button" aria-label="Profil utilisateur connecté">
             <UserRound class="icone-layout icone-layout--avatar" />
           </button>

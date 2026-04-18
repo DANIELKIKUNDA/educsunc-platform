@@ -71,10 +71,10 @@
   font-size: 0.96rem;
   font-weight: 700;
   transition:
-    background 180ms ease,
-    border-color 180ms ease,
-    color 180ms ease,
-    transform 160ms ease;
+    background var(--transition-rapide) ease,
+    border-color var(--transition-rapide) ease,
+    color var(--transition-rapide) ease,
+    transform var(--transition-rapide) ease;
 }
 
 .layout-admin__menu .icone-layout {
@@ -83,7 +83,7 @@
   flex: 0 0 auto;
   color: #d6e4f6;
   stroke-width: 2;
-  transition: transform 160ms ease, color 180ms ease;
+  transition: transform var(--transition-rapide) ease, color var(--transition-rapide) ease;
 }
 
 .layout-admin__menu a.router-link-exact-active,
