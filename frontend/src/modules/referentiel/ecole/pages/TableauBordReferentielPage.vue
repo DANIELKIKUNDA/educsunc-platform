@@ -8,6 +8,7 @@ import {
   CalendarDays,
   ClipboardList,
   Compass,
+  Layers3,
   FolderCheck,
   School,
   Clock,
@@ -33,9 +34,9 @@ const classes = ref([
 ]);
 
 const referentielOfficiel = ref([
-  { libelle: 'Programmes nationaux', valeur: '2024-2025', statut: 'actif' },
-  { libelle: 'Calendrier académique', valeur: 'Version 2.1', statut: 'actif' },
-  { libelle: 'Référentiels pédagogiques', valeur: 'À jour', statut: 'mise_a_jour' }
+  { libelle: 'Programmes nationaux', valeur: '2024-2025', famille: 'Programmes', statut: 'actif' },
+  { libelle: 'Calendrier académique', valeur: 'Version 2.1', famille: 'Calendrier', statut: 'actif' },
+  { libelle: 'Référentiels pédagogiques', valeur: 'À jour', famille: 'Structure', statut: 'mise_a_jour' }
 ]);
 
 const kpiData = ref({
@@ -249,34 +250,44 @@ onMounted(() => {
 
     <section class="section-referentiel">
       <div class="section-referentiel__entete">
-        <div class="section-referentiel__entete-titre">
-          <BadgeStatut libelle="Référentiel officiel" />
-          <h3>Fondation officielle de l’école</h3>
+        <div class="section-referentiel__titre">
+          <div class="section-referentiel__icone">
+            <Layers3 :size="22" />
+          </div>
+          <div>
+            <BadgeStatut libelle="Référentiel officiel" />
+            <h3>Fondation officielle de l’école</h3>
+            <p>Éléments nationaux disponibles pour l’exploitation locale.</p>
+          </div>
         </div>
-        <button class="bouton-secondaire" type="button">
+        <button class="bouton-secondaire button-lift" type="button" @click="explorerReferentiel">
           <FolderCheck class="icone-bouton" />
           Voir tout
         </button>
       </div>
 
-      <div class="liste-referentiel">
-        <article
+      <div class="tableau-referentiel">
+        <div class="tableau-referentiel__ligne tableau-referentiel__ligne--entete">
+          <span>Élément</span>
+          <span>Famille</span>
+          <span>Version / état</span>
+          <span>Statut</span>
+        </div>
+
+        <div
           v-for="item in referentielOfficiel"
           :key="item.libelle"
-          class="ligne-referentiel stagger-item"
+          class="tableau-referentiel__ligne stagger-item"
         >
-          <div class="ligne-referentiel__contenu">
-            <div class="ligne-referentiel__gauche">
-              <strong>{{ item.libelle }}</strong>
-              <span>{{ item.valeur }}</span>
-            </div>
-            <div class="ligne-referentiel__droite">
-              <BadgeStatut
-                :libelle="item.statut === 'actif' ? 'Actif' : item.statut === 'mise_a_jour' ? 'À jour' : 'Obsolète'"
-              />
-            </div>
+          <strong>{{ item.libelle }}</strong>
+          <span>{{ item.famille }}</span>
+          <span>{{ item.valeur }}</span>
+          <div>
+            <BadgeStatut
+              :libelle="item.statut === 'actif' ? 'Actif' : item.statut === 'mise_a_jour' ? 'À jour' : 'Obsolète'"
+            />
           </div>
-        </article>
+        </div>
       </div>
     </section>
   </section>
@@ -360,74 +371,85 @@ onMounted(() => {
   box-shadow: 0 2px 4px rgba(45, 95, 159, 0.1);
 }
 
-.ligne-referentiel {
-  padding: 1rem;
+.section-referentiel {
+  overflow: hidden;
   border: 1px solid var(--couleur-bordure);
   border-radius: var(--rayon-moyen);
-  background: var(--couleur-surface);
-  transition: all var(--transition-rapide) ease;
-}
-
-.ligne-referentiel:hover {
-  border-color: var(--couleur-principale);
-  box-shadow: 0 2px 8px rgba(45, 95, 159, 0.1);
+  background:
+    radial-gradient(circle at top right, rgba(45, 95, 159, 0.1), transparent 18rem),
+    var(--couleur-surface);
+  box-shadow: var(--ombre-carte);
 }
 
 .section-referentiel__entete {
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: center;
-}
-
-.section-referentiel__entete-titre {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.ligne-referentiel {
-  padding: 1rem;
-  border: 1px solid var(--couleur-bordure);
-  border-radius: var(--rayon-moyen);
-  background: var(--couleur-surface);
-  transition: all var(--transition-rapide) ease;
-  margin-bottom: 0.75rem;
-}
-
-.ligne-referentiel:hover {
-  border-color: var(--couleur-principale);
-  box-shadow: 0 2px 8px rgba(45, 95, 159, 0.1);
-}
-
-.ligne-referentiel__contenu {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   gap: 1rem;
+  padding: 1rem;
+  border-bottom: 1px solid var(--couleur-bordure);
+  background: rgba(251, 252, 254, 0.82);
 }
 
-.ligne-referentiel__gauche {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  flex: 1;
-  margin-left: 0.5rem;
-}
-
-.ligne-referentiel__gauche strong {
-  font-size: 0.95rem;
-  color: var(--couleur-encre);
-  font-weight: 600;
-}
-
-.ligne-referentiel__gauche span {
-  font-size: 0.875rem;
-  color: var(--couleur-texte-douce);
-}
-
-.ligne-referentiel__droite {
+.section-referentiel__titre {
   display: flex;
   align-items: center;
+  gap: 0.85rem;
+}
+
+.section-referentiel__icone {
+  display: grid;
+  width: 2.85rem;
+  height: 2.85rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 0.75rem;
+  background: var(--couleur-principale);
+  color: #ffffff;
+}
+
+.section-referentiel__entete h3 {
+  margin: 0.42rem 0 0.2rem;
+  color: var(--couleur-encre);
+}
+
+.section-referentiel__entete p {
+  margin: 0;
+  color: var(--couleur-texte-douce);
+  font-size: 0.9rem;
+}
+
+.tableau-referentiel {
+  display: grid;
+  overflow-x: auto;
+}
+
+.tableau-referentiel__ligne {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1fr 0.8fr;
+  min-width: 720px;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid var(--couleur-bordure);
+  color: var(--couleur-texte);
+}
+
+.tableau-referentiel__ligne:last-child {
+  border-bottom: 0;
+}
+
+.tableau-referentiel__ligne--entete {
+  background: #f3f6fa;
+  color: var(--couleur-texte-douce);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.tableau-referentiel__ligne strong {
+  color: var(--couleur-encre);
 }
 
 .derniere-synchronisation {
@@ -456,26 +478,6 @@ onMounted(() => {
 
 .bloc-dashboard {
   animation: fadeIn var(--transition-moyenne) ease-out;
-}
-
-.ligne-referentiel {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.75rem 0;
-  border-bottom: 1px solid var(--couleur-bordure);
-  transition: background-color var(--transition-rapide) ease;
-}
-
-.ligne-referentiel:hover {
-  background-color: var(--couleur-surface-froide);
-  border-radius: var(--rayon-moyen);
-  padding-left: 0.75rem;
-  padding-right: 0.75rem;
-}
-
-.ligne-referentiel:last-child {
-  border-bottom: none;
 }
 
 .tableau-mini__ligne {
