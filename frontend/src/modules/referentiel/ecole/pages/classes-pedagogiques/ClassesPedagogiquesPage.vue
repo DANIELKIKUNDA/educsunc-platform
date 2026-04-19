@@ -47,7 +47,7 @@ const classesAcademiques: ClasseAcademiqueUi[] = [
       </button>
     </header>
 
-    <section class="classes-resume" aria-label="Résumé des classes académiques">
+    <section class="classes-resume" aria-label="Résumé des classes pédagogiques">
       <article class="classes-resume__carte">
         <div class="classes-resume__icone classes-resume__icone--bleu">
           <BookOpen :size="23" />
@@ -55,7 +55,7 @@ const classesAcademiques: ClasseAcademiqueUi[] = [
         <div>
           <strong>20</strong>
           <span>Total classes</span>
-          <small>Du 01 sept 2025 au 03 juil 2026</small>
+          <small>Du 01 sept. 2025 au 03 juil. 2026</small>
         </div>
       </article>
 
@@ -117,7 +117,7 @@ const classesAcademiques: ClasseAcademiqueUi[] = [
       </button>
     </section>
 
-    <section class="classes-tableau" aria-label="Liste des classes académiques">
+    <section class="classes-tableau" aria-label="Liste des classes pédagogiques">
       <div class="classes-tableau__ligne classes-tableau__ligne--entete">
         <span>Classe</span>
         <span>Section <ChevronDown :size="14" /></span>
@@ -141,12 +141,13 @@ const classesAcademiques: ClasseAcademiqueUi[] = [
         <span class="classes-badge" :data-statut="classe.statut">Actif</span>
         <div class="classes-actions">
           <button type="button"><Eye :size="15" /> Gérer</button>
-          <button class="classes-actions__menu" type="button"><MoreHorizontal :size="18" /></button>
+          <button class="classes-actions__menu" type="button" aria-label="Ouvrir les actions">
+            <MoreHorizontal :size="18" />
+          </button>
 
           <div class="classes-menu">
             <span><Edit3 :size="15" /> Modifier</span>
             <span><Trash2 :size="15" /> Supprimer</span>
-            <span><Archive :size="15" /> Archiver</span>
             <span><Archive :size="15" /> Archiver</span>
           </div>
         </div>
@@ -325,7 +326,8 @@ const classesAcademiques: ClasseAcademiqueUi[] = [
 }
 
 .classes-tableau {
-  overflow: visible;
+  overflow-x: auto;
+  overflow-y: visible;
   border: 1px solid #dfe5ef;
   border-radius: 0.35rem;
   background: #ffffff;
@@ -339,6 +341,7 @@ const classesAcademiques: ClasseAcademiqueUi[] = [
   min-height: 2.7rem;
   align-items: center;
   gap: 0.6rem;
+  min-width: 920px;
   padding: 0 0.9rem;
   border-bottom: 1px solid #dfe5ef;
   color: #374151;
@@ -430,6 +433,7 @@ const classesAcademiques: ClasseAcademiqueUi[] = [
   display: flex;
   align-items: center;
   justify-content: space-between;
+  min-width: 920px;
   padding: 0.7rem 0.9rem;
   border-top: 1px solid #dfe5ef;
 }
@@ -456,14 +460,6 @@ const classesAcademiques: ClasseAcademiqueUi[] = [
   .classes-resume,
   .classes-outils {
     grid-template-columns: 1fr 1fr;
-  }
-
-  .classes-tableau {
-    overflow-x: auto;
-  }
-
-  .classes-tableau__ligne {
-    min-width: 920px;
   }
 }
 </style>
