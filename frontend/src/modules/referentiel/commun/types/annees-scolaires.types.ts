@@ -34,3 +34,10 @@ export interface ReponseListeAnneesScolaires {
 export interface ReponseAnneeScolaireOptionnelle {
   donnee: AnneeScolaireResume | null;
 }
+
+export interface ReponsePreparationAnneeScolaire {
+  donnee: AnneeScolaireResume;
+  meta: {
+    dejaExistante: boolean;
+  };
+}

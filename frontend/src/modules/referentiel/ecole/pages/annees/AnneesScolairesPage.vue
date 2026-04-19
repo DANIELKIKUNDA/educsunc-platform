@@ -32,7 +32,10 @@ const pagination = ref<PaginationAnneesScolaires>({
   totalPages: 0,
 });
 const chargement = ref(false);
+const preparationEnCours = ref(false);
+const confirmationPreparationVisible = ref(false);
 const messageUtilisateur = ref<string | null>(null);
+const messageSucces = ref<string | null>(null);
 
 const totalAnnees = computed(() => pagination.value.total || anneesScolaires.value.length);
 const totalPlanifiees = computed(() =>
@@ -45,6 +48,14 @@ const totalClotureesArchivees = computed(() =>
 );
 
 const libelleAnneeActive = computed(() => anneeActive.value?.code ?? anneeActive.value?.libelle ?? 'À charger');
+
+const preparationPossible = computed(() =>
+  contexteEcoleEstConfigure()
+  && contexteEcoleCourant.idEcole !== null
+  && contexteEcoleCourant.idUtilisateur !== null
+  && !chargement.value
+  && !preparationEnCours.value
+);
 
 function obtenirLibelleStatut(statut: StatutAnneeScolaire): string {
   const libelles: Record<StatutAnneeScolaire, string> = {
@@ -130,6 +141,68 @@ async function chargerAnneesScolaires(): Promise<void> {
   }
 }
 
+function creerCleIdempotence(operation: string): string {
+  const composantAleatoire = crypto.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
+
+  return `${operation}-${composantAleatoire}`;
+}
+
+function demanderPreparationSuivante(): void {
+  if (!contexteEcoleEstConfigure() || contexteEcoleCourant.idEcole === null) {
+    messageUtilisateur.value =
+      "Contexte école non configuré : la préparation de l’année suivante est impossible.";
+    return;
+  }
+
+  if (contexteEcoleCourant.idUtilisateur === null) {
+    messageUtilisateur.value =
+      "Utilisateur non configuré : ajoute VITE_REFERENTIEL_UTILISATEUR_ID pour préparer l’année suivante.";
+    return;
+  }
+
+  confirmationPreparationVisible.value = true;
+}
+
+function annulerPreparationSuivante(): void {
+  confirmationPreparationVisible.value = false;
+}
+
+async function confirmerPreparationSuivante(): Promise<void> {
+  if (!preparationPossible.value || contexteEcoleCourant.idEcole === null || contexteEcoleCourant.idUtilisateur === null) {
+    demanderPreparationSuivante();
+    return;
+  }
+
+  preparationEnCours.value = true;
+  messageUtilisateur.value = null;
+  messageSucces.value = null;
+
+  try {
+    const reponse = await anneesScolairesApi.preparerSuivante(
+      {
+        idEcole: contexteEcoleCourant.idEcole,
+        creePar: contexteEcoleCourant.idUtilisateur,
+      },
+      {
+        tenantId: contexteEcoleCourant.tenantId ?? contexteEcoleCourant.idEcole,
+        idempotencyKey: creerCleIdempotence('preparer-annee-suivante'),
+      },
+    );
+
+    confirmationPreparationVisible.value = false;
+    messageSucces.value = reponse.meta.dejaExistante
+      ? "L’année suivante était déjà préparée. La liste a été actualisée."
+      : "L’année suivante a été préparée avec succès.";
+
+    await chargerAnneesScolaires();
+  } catch {
+    messageUtilisateur.value =
+      "La préparation de l’année suivante n’a pas pu être terminée. Aucune donnée locale n’a été modifiée côté interface.";
+  } finally {
+    preparationEnCours.value = false;
+  }
+}
+
 onMounted(() => {
   void chargerAnneesScolaires();
 });
@@ -158,9 +231,14 @@ onMounted(() => {
           <Plus :size="17" />
           Créer une année
         </button>
-        <button class="bouton-annee" type="button" disabled>
+        <button
+          class="bouton-annee"
+          type="button"
+          :disabled="preparationEnCours"
+          @click="demanderPreparationSuivante"
+        >
           <RefreshCw :size="17" />
-          Préparer suivante
+          {{ preparationEnCours ? 'Préparation...' : 'Préparer suivante' }}
         </button>
         <button class="bouton-annee bouton-annee--accent" type="button" disabled>
           <Zap :size="17" />
@@ -222,6 +300,10 @@ onMounted(() => {
         </div>
 
         <div class="liste-alertes-annees">
+          <p v-if="messageSucces !== null" class="alerte-succes-annee">
+            <CheckCircle :size="18" />
+            {{ messageSucces }}
+          </p>
           <p v-if="obtenirLibelleAlerteContexte() !== null">
             <AlertTriangle :size="18" />
             {{ obtenirLibelleAlerteContexte() }}
@@ -298,6 +380,40 @@ onMounted(() => {
         </div>
       </article>
     </section>
+
+    <div
+      v-if="confirmationPreparationVisible"
+      class="dialogue-confirmation"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="titre-confirmation-preparation"
+    >
+      <article class="dialogue-confirmation__carte">
+        <div class="dialogue-confirmation__icone">
+          <RefreshCw :size="24" />
+        </div>
+        <div>
+          <h3 id="titre-confirmation-preparation">Préparer l’année suivante ?</h3>
+          <p>
+            Le backend créera l’année scolaire suivante si elle n’existe pas encore.
+            L’opération est protégée par une clé d’idempotence.
+          </p>
+        </div>
+        <div class="dialogue-confirmation__actions">
+          <button class="bouton-annee" type="button" @click="annulerPreparationSuivante">
+            Annuler
+          </button>
+          <button
+            class="bouton-annee bouton-annee--principal"
+            type="button"
+            :disabled="preparationEnCours"
+            @click="confirmerPreparationSuivante"
+          >
+            Confirmer
+          </button>
+        </div>
+      </article>
+    </div>
   </section>
 </template>
 
@@ -527,6 +643,10 @@ onMounted(() => {
   color: #d9534f;
 }
 
+.alerte-succes-annee svg {
+  color: #23784a;
+}
+
 .tableau-annees {
   display: grid;
   overflow-x: auto;
@@ -635,6 +755,55 @@ onMounted(() => {
 
 .menu-ligne span:hover {
   background: #f3f6fa;
+}
+
+.dialogue-confirmation {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  background: rgba(15, 23, 42, 0.35);
+  backdrop-filter: blur(8px);
+}
+
+.dialogue-confirmation__carte {
+  display: grid;
+  width: min(100%, 30rem);
+  gap: 1rem;
+  padding: 1.2rem;
+  border: 1px solid var(--couleur-bordure);
+  border-radius: var(--rayon-grand);
+  background: var(--couleur-surface);
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.24);
+}
+
+.dialogue-confirmation__icone {
+  display: grid;
+  width: 3rem;
+  height: 3rem;
+  place-items: center;
+  border-radius: 0.85rem;
+  background: rgba(45, 95, 159, 0.12);
+  color: var(--couleur-principale);
+}
+
+.dialogue-confirmation h3 {
+  margin: 0 0 0.4rem;
+  color: var(--couleur-encre);
+}
+
+.dialogue-confirmation p {
+  margin: 0;
+  color: var(--couleur-texte-douce);
+  line-height: 1.55;
+}
+
+.dialogue-confirmation__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
 }
 
 @media (max-width: 1100px) {

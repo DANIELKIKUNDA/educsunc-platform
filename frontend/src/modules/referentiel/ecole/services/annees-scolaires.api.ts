@@ -2,6 +2,7 @@ import { referentielApi, type OptionsRequeteReferentiel } from '../../commun/ser
 import type {
   ReponseAnneeScolaireOptionnelle,
   ReponseListeAnneesScolaires,
+  ReponsePreparationAnneeScolaire,
 } from '../../commun/types/annees-scolaires.types';
 
 export interface ParametresListeAnneesScolaires {
@@ -12,6 +13,13 @@ export interface ParametresListeAnneesScolaires {
 
 export interface ParametresConsultationAnneeActive {
   idEcole: string;
+}
+
+export interface ParametresPreparationAnneeScolaireSuivante {
+  idEcole: string;
+  creePar: string;
+  dateDebut?: string;
+  dateFin?: string;
 }
 
 function construireCheminAnneesScolaires(parametres: ParametresListeAnneesScolaires): string {
@@ -49,6 +57,20 @@ export const anneesScolairesApi = {
   ): Promise<ReponseAnneeScolaireOptionnelle> {
     return referentielApi.obtenir<ReponseAnneeScolaireOptionnelle>(
       construireCheminAnneeActive(parametres),
+      options,
+    );
+  },
+
+  preparerSuivante(
+    parametres: ParametresPreparationAnneeScolaireSuivante,
+    options?: OptionsRequeteReferentiel,
+  ): Promise<ReponsePreparationAnneeScolaire> {
+    return referentielApi.envoyer<
+      ParametresPreparationAnneeScolaireSuivante,
+      ReponsePreparationAnneeScolaire
+    >(
+      '/api/annees-scolaires/preparer-suivante',
+      parametres,
       options,
     );
   },

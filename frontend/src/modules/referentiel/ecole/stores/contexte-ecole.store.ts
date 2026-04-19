@@ -1,6 +1,7 @@
 export interface ContexteEcoleCourant {
   idEcole: string | null;
   tenantId: string | null;
+  idUtilisateur: string | null;
   nomOrganisation: string;
   nomEcole: string;
 }
@@ -18,6 +19,7 @@ function lireVariableEnvironnement(nom: string): string | null {
 }
 
 const idEcole = lireVariableEnvironnement('VITE_REFERENTIEL_ECOLE_ID');
+const idUtilisateur = lireVariableEnvironnement('VITE_REFERENTIEL_UTILISATEUR_ID');
 const nomOrganisation = lireVariableEnvironnement('VITE_REFERENTIEL_ORGANISATION_NOM')
   ?? 'Organisation à connecter';
 const nomEcole = lireVariableEnvironnement('VITE_REFERENTIEL_ECOLE_NOM')
@@ -26,6 +28,7 @@ const nomEcole = lireVariableEnvironnement('VITE_REFERENTIEL_ECOLE_NOM')
 export const contexteEcoleCourant: ContexteEcoleCourant = {
   idEcole,
   tenantId: idEcole,
+  idUtilisateur,
   nomOrganisation,
   nomEcole,
 };
