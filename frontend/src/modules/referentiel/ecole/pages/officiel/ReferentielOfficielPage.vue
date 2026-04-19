@@ -1,258 +1,274 @@
 <script setup lang="ts">
 import {
-  ArrowUpRight,
   BookOpen,
   CheckCircle2,
   Eye,
-  FileText,
+  FileSearch,
   GraduationCap,
   Layers3,
   LibraryBig,
   School,
   Search,
   ShieldCheck,
-  Sparkles,
 } from 'lucide-vue-next';
 
 const sections = [
-  { code: 'MAT', libelle: 'Maternelle', description: 'Cycle initial de l’école.' },
-  { code: 'PRI', libelle: 'Primaire', description: 'Cycle primaire officiel.' },
-  { code: 'SEC', libelle: 'Secondaire', description: 'Éducation de base et humanités.' },
+  { code: 'MAT', libelle: 'Maternelle', description: 'Cycle initial', statut: 'Officiel' },
+  { code: 'PRI', libelle: 'Primaire', description: 'Cycle primaire', statut: 'Officiel' },
+  { code: 'SEC', libelle: 'Secondaire', description: 'Éducation de base et humanités', statut: 'Officiel' },
 ];
 
 const options = [
-  { code: 'SC', abreviation: 'SC', libelle: 'Scientifique' },
-  { code: 'CG', abreviation: 'CG', libelle: 'Commerciale et gestion' },
-  { code: 'MG', abreviation: 'MG', libelle: 'Mécanique générale' },
-  { code: 'HP', abreviation: 'HP', libelle: 'Pédagogie générale' },
+  { code: '1.01', abreviation: 'LP', libelle: 'Latin-philosophie', section: 'Secondaire', statut: 'Active' },
+  { code: '2.01', abreviation: 'SC', libelle: 'Scientifique', section: 'Secondaire', statut: 'Active' },
+  { code: '3.02', abreviation: 'CG', libelle: 'Commerciale et gestion', section: 'Secondaire', statut: 'Active' },
+  { code: '9.01', abreviation: 'MG', libelle: 'Mécanique générale', section: 'Secondaire', statut: 'Active' },
 ];
 
 const classesAcademiques = [
-  { code: '1PR', libelle: '1ère primaire', section: 'Primaire', option: '-' },
-  { code: '6PR', libelle: '6ème primaire', section: 'Primaire', option: '-' },
-  { code: '7EB', libelle: '7ème éducation de base', section: 'Secondaire', option: '-' },
-  { code: '1SC', libelle: '1ère scientifique', section: 'Secondaire', option: 'Scientifique' },
-  { code: '2CG', libelle: '2ème commerciale et gestion', section: 'Secondaire', option: 'Commerciale et gestion' },
+  { code: '1MAT', libelle: '1ère maternelle', section: 'Maternelle', option: '-', evaluation: 'Trimestriel' },
+  { code: '1PR', libelle: '1ère primaire', section: 'Primaire', option: '-', evaluation: 'Trimestriel' },
+  { code: '7EB', libelle: '7ème éducation de base', section: 'Secondaire', option: '-', evaluation: 'Semestriel' },
+  { code: '1SC', libelle: '1ère scientifique', section: 'Secondaire', option: 'Scientifique', evaluation: 'Semestriel' },
+  { code: '2CG', libelle: '2ème commerciale et gestion', section: 'Secondaire', option: 'Commerciale et gestion', evaluation: 'Semestriel' },
 ];
 
 const programmes = [
-  { classe: '1PR', option: '-', version: 'Officielle active', statut: 'Publié' },
-  { classe: '7EB', option: '-', version: 'Officielle active', statut: 'Publié' },
-  { classe: '1SC', option: 'Scientifique', version: 'Officielle active', statut: 'Publié' },
-  { classe: '2CG', option: 'Commerciale et gestion', version: 'À vérifier', statut: 'Préparation' },
+  { classe: '1PR', option: '-', version: 'Version officielle active', cours: 'Cours publiés', statut: 'Publié' },
+  { classe: '7EB', option: '-', version: 'Version officielle active', cours: 'Cours publiés', statut: 'Publié' },
+  { classe: '1SC', option: 'Scientifique', version: 'Version officielle active', cours: 'Cours publiés', statut: 'Publié' },
+  { classe: '2CG', option: 'Commerciale et gestion', version: 'À vérifier', cours: 'Alignement requis', statut: 'Préparation' },
 ];
 </script>
 
 <template>
-  <section class="officiel-premium">
-    <header class="officiel-hero">
-      <div class="officiel-hero__contenu">
-        <span class="officiel-eyebrow">Référentiel national</span>
+  <section class="referentiel-officiel-page">
+    <header class="page-hero">
+      <div>
+        <span class="page-hero__eyebrow">Référentiel national</span>
         <h2>Référentiel officiel</h2>
-        <p>
-          Une lecture claire des données officielles utilisées par l’école : sections, options,
-          classes académiques et programmes publiés.
-        </p>
+        <p>Consultation structurée des données officielles utilisées par l’école.</p>
       </div>
 
-      <div class="officiel-hero__actions">
-        <button class="officiel-bouton officiel-bouton--principal" type="button">
+      <div class="page-hero__actions">
+        <button class="bouton bouton--principal" type="button">
           <ShieldCheck :size="18" />
           Version active
         </button>
-        <button class="officiel-bouton" type="button">
+        <button class="bouton" type="button">
           <Eye :size="18" />
-          Mode lecture
+          Lecture seule
         </button>
       </div>
     </header>
 
-    <section class="officiel-scoreboard" aria-label="Synthèse du référentiel officiel">
-      <article class="officiel-score officiel-score--principal">
-        <div class="officiel-score__icone">
-          <LibraryBig :size="25" />
+    <section class="indicateurs" aria-label="Synthèse du référentiel officiel">
+      <article class="indicateur indicateur--bleu">
+        <div class="indicateur__icone">
+          <LibraryBig :size="24" />
         </div>
         <div>
-          <span>Référentiel actif</span>
+          <span>Statut</span>
           <strong>Officiel</strong>
-          <p>Données prêtes pour la consultation école.</p>
+          <p>Données prêtes pour l’exploitation école</p>
         </div>
       </article>
 
-      <article class="officiel-score">
-        <span>Sections</span>
-        <strong>3</strong>
-        <p>Maternelle, primaire, secondaire</p>
+      <article class="indicateur">
+        <div class="indicateur__icone indicateur__icone--cyan">
+          <Layers3 :size="22" />
+        </div>
+        <div>
+          <span>Sections</span>
+          <strong>3</strong>
+          <p>Maternelle, primaire, secondaire</p>
+        </div>
       </article>
 
-      <article class="officiel-score">
-        <span>Options</span>
-        <strong>Secondaire</strong>
-        <p>Humanités et filières techniques</p>
+      <article class="indicateur">
+        <div class="indicateur__icone indicateur__icone--vert">
+          <GraduationCap :size="22" />
+        </div>
+        <div>
+          <span>Options</span>
+          <strong>Secondaire</strong>
+          <p>Humanités et filières techniques</p>
+        </div>
       </article>
 
-      <article class="officiel-score">
-        <span>Programmes</span>
-        <strong>Publiés</strong>
-        <p>Versions officielles disponibles</p>
+      <article class="indicateur">
+        <div class="indicateur__icone indicateur__icone--or">
+          <BookOpen :size="22" />
+        </div>
+        <div>
+          <span>Programmes</span>
+          <strong>Publiés</strong>
+          <p>Versions consultables par classe</p>
+        </div>
       </article>
     </section>
 
-    <section class="officiel-command-center">
-      <article class="officiel-version-card">
-        <div class="officiel-card-header">
-          <div>
-            <span class="officiel-pill">État</span>
-            <h3>Version officielle prête</h3>
-          </div>
-          <CheckCircle2 :size="24" />
-        </div>
-        <p>
-          Cette zone est consultative côté école. Les imports, publications et migrations restent dans la
-          maintenance du référentiel.
-        </p>
-        <div class="officiel-meta">
-          <span>Source officielle</span>
-          <span>Lecture seule</span>
-          <span>Compatible école</span>
-        </div>
-      </article>
+    <section class="barre-controle" aria-label="Recherche dans le référentiel officiel">
+      <label class="champ-recherche">
+        <Search :size="18" />
+        <input type="search" placeholder="Rechercher une section, option, classe ou programme..." />
+      </label>
 
-      <article class="officiel-search-card">
-        <div class="officiel-card-header">
-          <div>
-            <span class="officiel-pill">Recherche</span>
-            <h3>Trouver rapidement une donnée</h3>
-          </div>
-          <Search :size="24" />
-        </div>
-        <label class="officiel-search">
-          <Search :size="18" />
-          <input type="search" placeholder="Rechercher une section, option, classe ou programme..." />
-        </label>
-      </article>
+      <div class="badge-validation">
+        <CheckCircle2 :size="18" />
+        Données officielles synchronisées
+      </div>
     </section>
 
-    <section class="officiel-familles-premium">
-      <article class="famille-card famille-card--sections">
-        <div class="famille-card__header">
-          <div class="famille-card__icone"><Layers3 :size="22" /></div>
+    <section class="grille-tableaux">
+      <article class="tableau-carte">
+        <div class="tableau-carte__entete">
           <div>
             <span>Famille 01</span>
             <h3>Sections scolaires</h3>
           </div>
+          <Layers3 :size="22" />
         </div>
 
-        <div class="famille-list famille-list--compacte">
-          <div v-for="section in sections" :key="section.code" class="famille-row">
+        <div class="tableau-reference tableau-reference--sections">
+          <div class="tableau-reference__ligne tableau-reference__ligne--entete">
+            <span>Code</span>
+            <span>Libellé</span>
+            <span>Description</span>
+            <span>Statut</span>
+            <span>Action</span>
+          </div>
+
+          <div v-for="section in sections" :key="section.code" class="tableau-reference__ligne">
             <strong>{{ section.code }}</strong>
-            <div>
-              <span>{{ section.libelle }}</span>
-              <small>{{ section.description }}</small>
-            </div>
+            <span>{{ section.libelle }}</span>
+            <span>{{ section.description }}</span>
+            <span><span class="badge badge--vert">{{ section.statut }}</span></span>
+            <button class="bouton-icone" type="button" aria-label="Consulter la section">
+              <Eye :size="16" />
+            </button>
           </div>
         </div>
       </article>
 
-      <article class="famille-card famille-card--options">
-        <div class="famille-card__header">
-          <div class="famille-card__icone"><GraduationCap :size="22" /></div>
+      <article class="tableau-carte">
+        <div class="tableau-carte__entete">
           <div>
             <span>Famille 02</span>
             <h3>Options d’études</h3>
           </div>
+          <GraduationCap :size="22" />
         </div>
 
-        <div class="option-grid">
-          <div v-for="option in options" :key="option.code" class="option-chip">
-            <strong>{{ option.abreviation }}</strong>
+        <div class="tableau-reference tableau-reference--options">
+          <div class="tableau-reference__ligne tableau-reference__ligne--entete">
+            <span>Code</span>
+            <span>Abréviation</span>
+            <span>Libellé</span>
+            <span>Section</span>
+            <span>Action</span>
+          </div>
+
+          <div v-for="option in options" :key="option.code" class="tableau-reference__ligne">
+            <strong>{{ option.code }}</strong>
+            <span class="abreviation">{{ option.abreviation }}</span>
             <span>{{ option.libelle }}</span>
+            <span>{{ option.section }}</span>
+            <button class="bouton-icone" type="button" aria-label="Consulter l’option">
+              <Eye :size="16" />
+            </button>
           </div>
         </div>
       </article>
 
-      <article class="famille-card famille-card--classes">
-        <div class="famille-card__header">
-          <div class="famille-card__icone"><School :size="22" /></div>
+      <article class="tableau-carte tableau-carte--large">
+        <div class="tableau-carte__entete">
           <div>
             <span>Famille 03</span>
             <h3>Classes académiques</h3>
           </div>
+          <School :size="22" />
         </div>
 
-        <div class="famille-table">
-          <div class="famille-table__header">
+        <div class="tableau-reference tableau-reference--classes">
+          <div class="tableau-reference__ligne tableau-reference__ligne--entete">
             <span>Code</span>
             <span>Libellé</span>
             <span>Section</span>
             <span>Option</span>
+            <span>Évaluation</span>
+            <span>Action</span>
           </div>
-          <div v-for="classe in classesAcademiques" :key="classe.code" class="famille-table__row">
+
+          <div v-for="classe in classesAcademiques" :key="classe.code" class="tableau-reference__ligne">
             <strong>{{ classe.code }}</strong>
             <span>{{ classe.libelle }}</span>
             <span>{{ classe.section }}</span>
             <span>{{ classe.option }}</span>
+            <span><span class="badge badge--bleu">{{ classe.evaluation }}</span></span>
+            <button class="bouton-icone" type="button" aria-label="Consulter la classe académique">
+              <Eye :size="16" />
+            </button>
           </div>
         </div>
       </article>
 
-      <article class="famille-card famille-card--programmes">
-        <div class="famille-card__header">
-          <div class="famille-card__icone"><BookOpen :size="22" /></div>
+      <article class="tableau-carte tableau-carte--large">
+        <div class="tableau-carte__entete">
           <div>
             <span>Famille 04</span>
             <h3>Programmes officiels</h3>
           </div>
+          <BookOpen :size="22" />
         </div>
 
-        <div class="programme-list">
-          <div v-for="programme in programmes" :key="`${programme.classe}-${programme.option}`" class="programme-row">
-            <div>
-              <strong>{{ programme.classe }}</strong>
-              <span>{{ programme.option }}</span>
-            </div>
-            <div>
-              <small>{{ programme.version }}</small>
-              <span class="programme-status">{{ programme.statut }}</span>
-            </div>
-            <button type="button" aria-label="Consulter le programme">
-              <ArrowUpRight :size="17" />
+        <div class="tableau-reference tableau-reference--programmes">
+          <div class="tableau-reference__ligne tableau-reference__ligne--entete">
+            <span>Classe</span>
+            <span>Option</span>
+            <span>Version</span>
+            <span>Contenu</span>
+            <span>Statut</span>
+            <span>Action</span>
+          </div>
+
+          <div v-for="programme in programmes" :key="`${programme.classe}-${programme.option}`" class="tableau-reference__ligne">
+            <strong>{{ programme.classe }}</strong>
+            <span>{{ programme.option }}</span>
+            <span>{{ programme.version }}</span>
+            <span>{{ programme.cours }}</span>
+            <span>
+              <span class="badge" :class="programme.statut === 'Publié' ? 'badge--vert' : 'badge--orange'">
+                {{ programme.statut }}
+              </span>
+            </span>
+            <button class="bouton-icone" type="button" aria-label="Consulter le programme officiel">
+              <FileSearch :size="16" />
             </button>
           </div>
         </div>
       </article>
     </section>
-
-    <section class="officiel-bottom-note">
-      <FileText :size="20" />
-      <p>
-        Les données affichées ici servent de référence. La gestion locale se fait ensuite dans les classes
-        pédagogiques et les programmes niveau.
-      </p>
-      <Sparkles :size="20" />
-    </section>
   </section>
 </template>
 
 <style scoped>
-.officiel-premium {
+.referentiel-officiel-page {
   display: grid;
   max-width: 1080px;
   gap: 1rem;
 }
 
-.officiel-hero,
-.officiel-score,
-.officiel-version-card,
-.officiel-search-card,
-.famille-card,
-.officiel-bottom-note {
+.page-hero,
+.indicateur,
+.barre-controle,
+.tableau-carte {
   border: 1px solid #dfe5ef;
   background: #ffffff;
   box-shadow: 0 10px 24px rgba(31, 41, 55, 0.08);
 }
 
-.officiel-hero {
+.page-hero {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -260,13 +276,13 @@ const programmes = [
   padding: 1.2rem;
   border-radius: 1rem;
   background:
-    radial-gradient(circle at top right, rgba(45, 95, 159, 0.14), transparent 22rem),
+    radial-gradient(circle at top right, rgba(45, 95, 159, 0.15), transparent 22rem),
     linear-gradient(135deg, #ffffff 0%, #f7faff 100%);
 }
 
-.officiel-eyebrow,
-.famille-card__header span,
-.officiel-score span {
+.page-hero__eyebrow,
+.indicateur span,
+.tableau-carte__entete span {
   color: #5f6b7a;
   font-size: 0.72rem;
   font-weight: 900;
@@ -274,27 +290,26 @@ const programmes = [
   text-transform: uppercase;
 }
 
-.officiel-hero h2 {
-  margin: 0.25rem 0 0.45rem;
+.page-hero h2 {
+  margin: 0.25rem 0 0.35rem;
   color: #172033;
   font-size: 1.75rem;
   letter-spacing: -0.03em;
 }
 
-.officiel-hero p {
-  max-width: 44rem;
+.page-hero p {
   margin: 0;
   color: #5f6b7a;
   line-height: 1.55;
 }
 
-.officiel-hero__actions {
+.page-hero__actions {
   display: flex;
   flex-wrap: wrap;
   gap: 0.55rem;
 }
 
-.officiel-bouton {
+.bouton {
   display: inline-flex;
   min-height: 2.55rem;
   align-items: center;
@@ -309,295 +324,245 @@ const programmes = [
   font-weight: 850;
 }
 
-.officiel-bouton--principal {
+.bouton--principal {
   border-color: #2d5f9f;
   background: #2d5f9f;
   color: #ffffff;
   box-shadow: 0 10px 18px rgba(45, 95, 159, 0.2);
 }
 
-.officiel-scoreboard {
+.indicateurs {
   display: grid;
-  grid-template-columns: 1.45fr repeat(3, minmax(0, 1fr));
+  grid-template-columns: 1.35fr repeat(3, minmax(0, 1fr));
   gap: 0.75rem;
 }
 
-.officiel-score {
+.indicateur {
+  display: flex;
   min-height: 7rem;
+  gap: 0.85rem;
+  align-items: flex-start;
   padding: 1rem;
   border-radius: 0.85rem;
 }
 
-.officiel-score--principal {
-  display: flex;
-  gap: 0.9rem;
-  align-items: flex-start;
+.indicateur--bleu {
   background: linear-gradient(135deg, #1f4d85 0%, #2d5f9f 100%);
   color: #ffffff;
 }
 
-.officiel-score--principal span,
-.officiel-score--principal p,
-.officiel-score--principal strong {
+.indicateur--bleu span,
+.indicateur--bleu strong,
+.indicateur--bleu p {
   color: #ffffff;
 }
 
-.officiel-score__icone {
+.indicateur__icone {
   display: grid;
-  width: 3rem;
-  height: 3rem;
+  width: 2.85rem;
+  height: 2.85rem;
   flex: 0 0 auto;
   place-items: center;
   border-radius: 0.7rem;
   background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
 }
 
-.officiel-score strong {
+.indicateur__icone--cyan {
+  background: #2f99c9;
+}
+
+.indicateur__icone--vert {
+  background: #2f9d62;
+}
+
+.indicateur__icone--or {
+  background: #e5a324;
+}
+
+.indicateur strong {
   display: block;
-  margin: 0.3rem 0;
+  margin: 0.28rem 0;
   color: #172033;
-  font-size: 1.2rem;
+  font-size: 1.15rem;
 }
 
-.officiel-score p {
+.indicateur p {
   margin: 0;
   color: #667085;
   line-height: 1.45;
 }
 
-.officiel-command-center {
+.barre-controle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem;
+  border-radius: 0.9rem;
+}
+
+.champ-recherche {
+  display: flex;
+  min-height: 2.8rem;
+  flex: 1;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0 0.85rem;
+  border: 1px solid #dfe5ef;
+  border-radius: 0.65rem;
+  background: #fbfcfe;
+  color: #667085;
+}
+
+.champ-recherche input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #172033;
+}
+
+.badge-validation {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.72rem 0.85rem;
+  border-radius: 999px;
+  background: rgba(47, 157, 98, 0.12);
+  color: #23784a;
+  font-size: 0.85rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.grille-tableaux {
   display: grid;
-  grid-template-columns: 1fr 1.1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 0.85rem;
 }
 
-.officiel-version-card,
-.officiel-search-card,
-.famille-card {
+.tableau-carte {
   overflow: hidden;
   border-radius: 1rem;
 }
 
-.officiel-card-header,
-.famille-card__header {
+.tableau-carte--large {
+  grid-column: span 2;
+}
+
+.tableau-carte__entete {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
   padding: 1rem;
   border-bottom: 1px solid #dfe5ef;
-  background: #fbfcfe;
+  background: linear-gradient(180deg, #fbfcfe 0%, #f3f6fa 100%);
 }
 
-.officiel-card-header h3,
-.famille-card__header h3 {
-  margin: 0.45rem 0 0;
+.tableau-carte__entete h3 {
+  margin: 0.35rem 0 0;
   color: #172033;
   font-size: 1.05rem;
 }
 
-.officiel-card-header > svg {
+.tableau-carte__entete svg {
   color: #2d5f9f;
 }
 
-.officiel-pill {
-  width: fit-content;
-  padding: 0.28rem 0.6rem;
-  border-radius: 999px;
-  background: #edf3fb;
-  color: #18365f;
-  font-size: 0.72rem;
-  font-weight: 900;
-  text-transform: uppercase;
+.tableau-reference {
+  display: grid;
+  overflow-x: auto;
 }
 
-.officiel-version-card p {
-  margin: 0;
-  padding: 1rem 1rem 0.85rem;
-  color: #5f6b7a;
-  line-height: 1.55;
-}
-
-.officiel-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.45rem;
-  padding: 0 1rem 1rem;
-}
-
-.officiel-meta span {
-  padding: 0.45rem 0.6rem;
-  border-radius: 999px;
-  background: #f2f5fa;
+.tableau-reference__ligne {
+  display: grid;
+  min-width: 680px;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.78rem 1rem;
+  border-bottom: 1px solid #e7ecf3;
   color: #374151;
-  font-size: 0.8rem;
-  font-weight: 800;
 }
 
-.officiel-search {
-  display: flex;
-  min-height: 3rem;
-  align-items: center;
-  gap: 0.65rem;
-  margin: 1rem;
-  padding: 0 0.85rem;
-  border: 1px solid #dfe5ef;
-  border-radius: 0.65rem;
-  background: #ffffff;
-  color: #667085;
-}
-
-.officiel-search input {
-  width: 100%;
-  border: 0;
-  outline: 0;
-  color: #172033;
-}
-
-.officiel-familles-premium {
-  display: grid;
-  grid-template-columns: 0.9fr 1.1fr;
-  gap: 0.85rem;
-}
-
-.famille-card__icone {
-  display: grid;
-  width: 2.65rem;
-  height: 2.65rem;
-  place-items: center;
-  border-radius: 0.7rem;
-  color: #ffffff;
-}
-
-.famille-card--sections .famille-card__icone {
-  background: #2f99c9;
-}
-
-.famille-card--options .famille-card__icone {
-  background: #2f9d62;
-}
-
-.famille-card--classes .famille-card__icone {
-  background: #e5a324;
-}
-
-.famille-card--programmes .famille-card__icone {
-  background: #6f56d9;
-}
-
-.famille-list,
-.programme-list {
-  display: grid;
-}
-
-.famille-row,
-.programme-row {
-  display: grid;
-  gap: 0.75rem;
-  align-items: center;
-  padding: 0.85rem 1rem;
-  border-bottom: 1px solid #dfe5ef;
-}
-
-.famille-row {
-  grid-template-columns: 4rem 1fr;
-}
-
-.famille-row:last-child,
-.programme-row:last-child {
+.tableau-reference__ligne:last-child {
   border-bottom: 0;
 }
 
-.famille-row strong,
-.programme-row strong {
-  color: #172033;
-}
-
-.famille-row small,
-.programme-row small {
-  display: block;
-  margin-top: 0.18rem;
-  color: #667085;
-}
-
-.option-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.65rem;
-  padding: 1rem;
-}
-
-.option-chip {
-  padding: 0.8rem;
-  border: 1px solid #dfe5ef;
-  border-radius: 0.75rem;
-  background: #fbfcfe;
-}
-
-.option-chip strong {
-  display: block;
-  color: #23784a;
-  font-size: 1.05rem;
-}
-
-.option-chip span {
-  display: block;
-  margin-top: 0.25rem;
-  color: #374151;
-}
-
-.famille-card--classes,
-.famille-card--programmes {
-  grid-column: span 2;
-}
-
-.famille-table {
-  display: grid;
-}
-
-.famille-table__header,
-.famille-table__row {
-  display: grid;
-  grid-template-columns: 0.75fr 1.5fr 1fr 1.2fr;
-  gap: 0.8rem;
-  align-items: center;
-  padding: 0.8rem 1rem;
-  border-bottom: 1px solid #dfe5ef;
-}
-
-.famille-table__header {
+.tableau-reference__ligne--entete {
   background: #f3f6fa;
   color: #667085;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 900;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
-.famille-table__row:last-child {
-  border-bottom: 0;
+.tableau-reference__ligne strong {
+  color: #172033;
 }
 
-.programme-row {
-  grid-template-columns: 1fr 1.2fr auto;
+.tableau-reference--sections .tableau-reference__ligne {
+  grid-template-columns: 0.65fr 1.1fr 1.7fr 0.85fr 0.45fr;
 }
 
-.programme-status {
+.tableau-reference--options .tableau-reference__ligne {
+  grid-template-columns: 0.7fr 0.85fr 1.65fr 1fr 0.45fr;
+}
+
+.tableau-reference--classes .tableau-reference__ligne {
+  min-width: 860px;
+  grid-template-columns: 0.65fr 1.45fr 1fr 1.4fr 1fr 0.45fr;
+}
+
+.tableau-reference--programmes .tableau-reference__ligne {
+  min-width: 900px;
+  grid-template-columns: 0.65fr 1.35fr 1.55fr 1.25fr 0.9fr 0.45fr;
+}
+
+.abreviation {
   display: inline-flex;
   width: fit-content;
-  margin-top: 0.28rem;
-  padding: 0.3rem 0.55rem;
-  border-radius: 999px;
-  background: rgba(47, 157, 98, 0.12);
-  color: #23784a;
-  font-size: 0.75rem;
+  min-width: 2.25rem;
+  justify-content: center;
+  padding: 0.32rem 0.5rem;
+  border-radius: 0.55rem;
+  background: #edf3fb;
+  color: #18365f;
   font-weight: 900;
 }
 
-.programme-row button {
+.badge {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  justify-content: center;
+  padding: 0.32rem 0.58rem;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 900;
+}
+
+.badge--vert {
+  background: rgba(47, 157, 98, 0.13);
+  color: #23784a;
+}
+
+.badge--bleu {
+  background: rgba(45, 95, 159, 0.12);
+  color: #1f4d85;
+}
+
+.badge--orange {
+  background: rgba(229, 163, 36, 0.18);
+  color: #9a5e00;
+}
+
+.bouton-icone {
   display: grid;
-  width: 2.15rem;
-  height: 2.15rem;
+  width: 2.1rem;
+  height: 2.1rem;
   place-items: center;
   border: 1px solid #dfe5ef;
   border-radius: 0.6rem;
@@ -606,43 +571,40 @@ const programmes = [
   cursor: pointer;
 }
 
-.officiel-bottom-note {
-  display: flex;
-  align-items: center;
-  gap: 0.85rem;
-  padding: 0.95rem 1rem;
-  border-radius: 1rem;
-  color: #5f6b7a;
+.bouton-icone:hover {
+  border-color: #2d5f9f;
+  background: #edf3fb;
 }
 
-.officiel-bottom-note p {
-  flex: 1;
-  margin: 0;
-}
-
-.officiel-bottom-note svg {
-  color: #2d5f9f;
-}
-
-@media (max-width: 1100px) {
-  .officiel-scoreboard,
-  .officiel-command-center,
-  .officiel-familles-premium {
+@media (max-width: 1180px) {
+  .indicateurs,
+  .grille-tableaux {
     grid-template-columns: 1fr;
   }
 
-  .famille-card--classes,
-  .famille-card--programmes {
+  .tableau-carte--large {
     grid-column: span 1;
   }
+}
 
-  .famille-table {
-    overflow-x: auto;
+@media (max-width: 760px) {
+  .page-hero,
+  .barre-controle {
+    align-items: stretch;
+    flex-direction: column;
   }
 
-  .famille-table__header,
-  .famille-table__row {
-    min-width: 760px;
+  .page-hero__actions {
+    width: 100%;
+  }
+
+  .bouton {
+    flex: 1;
+  }
+
+  .badge-validation {
+    justify-content: center;
+    white-space: normal;
   }
 }
 </style>
