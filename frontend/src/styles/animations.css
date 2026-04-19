@@ -90,6 +90,7 @@
   .maintenance-page,
   .referentiel-officiel-page,
   .classes-page,
+  .annees-page,
   .page-referentiel
 ) {
   animation: apparitionPage var(--animation-longue) var(--animation-ease-premium) both !important;
@@ -104,6 +105,10 @@
   .maintenance-hero,
   .page-hero,
   .classes-resume__carte,
+  .carte-resume,
+  .bloc-annees,
+  .annees-page__header,
+  .annees-page__titre,
   .tableau-carte,
   .carte-tableau,
   .carte-focus,
@@ -126,6 +131,10 @@
   .bloc-dashboard,
   .indicateur,
   .classes-resume__carte,
+  .carte-resume,
+  .bloc-annees,
+  .annees-page__header,
+  .annees-page__titre,
   .tableau-carte,
   .carte-tableau,
   .carte-focus,
@@ -142,7 +151,8 @@
   .tableau-calendrier__ligne,
   .tableau-maintenance__ligne,
   .tableau-reference__ligne,
-  .classes-tableau__ligne
+  .classes-tableau__ligne,
+  .tableau-annees__ligne
 ) {
   animation: apparitionLigne var(--animation-standard) var(--animation-ease-sortie) both !important;
   transition:
@@ -159,7 +169,8 @@
   .tableau-calendrier__ligne:not(.tableau-calendrier__ligne--entete),
   .tableau-maintenance__ligne:not(.tableau-maintenance__ligne--entete),
   .tableau-reference__ligne:not(.tableau-reference__ligne--entete),
-  .classes-tableau__ligne:not(.classes-tableau__ligne--entete)
+  .classes-tableau__ligne:not(.classes-tableau__ligne--entete),
+  .tableau-annees__ligne:not(.tableau-annees__ligne--entete)
 ):hover {
   background: rgba(45, 95, 159, 0.075) !important;
   transform: translateX(4px) !important;
@@ -178,6 +189,8 @@
   .bouton-icone,
   .classes-actions button,
   .classes-pagination button,
+  .bouton-annee,
+  .actions-ligne > button,
   .grille-actions-dashboard button
 ) {
   transition:
@@ -194,6 +207,8 @@
   .bouton-secondaire,
   .bouton-filtre,
   .classes-bouton,
+  .bouton-annee,
+  .actions-ligne > button,
   .bouton-icone,
   .grille-actions-dashboard button
 ):hover {
@@ -213,6 +228,8 @@
   .bouton-icone,
   .classes-actions button,
   .classes-pagination button,
+  .bouton-annee,
+  .actions-ligne > button,
   .grille-actions-dashboard button
 ):active {
   transform: translateY(0) scale(0.985);
