@@ -192,13 +192,7 @@ export const referentielEcoleDemoStore = () => {
   demoData.messages[1].actions![0].action = verifierProgrammes;
   demoData.messages[2].actions![0].action = verrouillerPeriode;
 
-  // Simuler un chargement
   const chargerDonnees = async () => {
-    isLoading.value = true;
-    
-    // Simuler un délai de chargement
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
     isLoading.value = false;
     lastSync.value = new Date();
   };

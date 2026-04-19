@@ -13,8 +13,6 @@ import {
   Clock,
 } from 'lucide-vue-next';
 
-// État de chargement
-const isLoading = ref(false);
 const lastSync = ref(new Date());
 
 // Données statiques provisoires, en attendant le branchement backend.
@@ -85,24 +83,13 @@ const formatRelativeTime = (date: Date) => {
   return 'à l’instant';
 };
 
-// Simuler un chargement au montage
-onMounted(async () => {
-  isLoading.value = true;
-  await new Promise(resolve => setTimeout(resolve, 1500));
-  isLoading.value = false;
+onMounted(() => {
   lastSync.value = new Date();
 });
 </script>
 
 <template>
   <section class="dashboard-ecole">
-    <!-- État de chargement -->
-    <div v-if="isLoading" class="dashboard-loading">
-      <div class="loading-spinner"></div>
-      <p>Chargement des données...</p>
-    </div>
-
-    <template v-else>
       <header class="dashboard-ecole__entete animate-fade-in">
         <div>
           <h2>Tableau de bord école</h2>
@@ -292,7 +279,6 @@ onMounted(async () => {
         </article>
       </div>
     </section>
-  </template>
   </section>
 </template>
 
@@ -315,11 +301,6 @@ onMounted(async () => {
 @keyframes countUp {
   from { opacity: 0; transform: scale(0.8); }
   to { opacity: 1; transform: scale(1); }
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
 }
 
 .animate-fade-in {
@@ -377,30 +358,6 @@ onMounted(async () => {
 .button-lift:active {
   transform: translateY(0);
   box-shadow: 0 2px 4px rgba(45, 95, 159, 0.1);
-}
-
-.loading-spinner {
-  width: 1.5rem;
-  height: 1.5rem;
-  border: 2px solid var(--couleur-bordure);
-  border-top: 2px solid var(--couleur-principale);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-.dashboard-loading {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 60vh;
-  gap: 1rem;
-  color: var(--couleur-texte-douce);
-}
-
-.dashboard-loading .loading-spinner {
-  width: 3rem;
-  height: 3rem;
 }
 
 .ligne-referentiel {
