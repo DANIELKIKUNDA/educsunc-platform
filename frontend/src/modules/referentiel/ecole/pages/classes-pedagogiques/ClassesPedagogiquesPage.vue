@@ -141,7 +141,6 @@ const classesAcademiques: ClasseAcademiqueUi[] = [
         <span class="classes-badge" :data-statut="classe.statut">Actif</span>
         <div class="classes-actions">
           <button type="button"><Eye :size="15" /> Gérer</button>
-          <button type="button"><Edit3 :size="15" /> Gérer</button>
           <button class="classes-actions__menu" type="button"><MoreHorizontal :size="18" /></button>
 
           <div class="classes-menu">
