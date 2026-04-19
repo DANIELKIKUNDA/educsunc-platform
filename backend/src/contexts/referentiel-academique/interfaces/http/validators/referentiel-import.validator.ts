@@ -26,6 +26,7 @@ import { ActiverVersionReferentielEntree } from '../../../application/dto/input/
 import { ComparerDeuxVersionsReferentielEntree } from '../../../application/dto/input/ComparerDeuxVersionsReferentielEntree';
 import { ConsulterReferentielProgrammeEntree } from '../../../application/dto/input/ConsulterReferentielProgrammeEntree';
 import { ListerReferentielsParClasseAcademiqueEntree } from '../../../application/dto/input/ListerReferentielsParClasseAcademiqueEntree';
+import { ListerReferentielsCoursEntree } from '../../../application/dto/input/ListerReferentielsCoursEntree';
 import { PublierVersionReferentielEntree } from '../../../application/dto/input/PublierVersionReferentielEntree';
 import type { ProprietesPonderationEvaluation } from '../../../domain/value-objects/PonderationEvaluation';
 import { SourceLigneProgramme } from '../../../domain/value-objects/SourceLigneProgramme';
@@ -284,6 +285,18 @@ export class ValidateurReferentielImportHttp {
         donnees,
         'idClasseAcademique',
       ),
+      page: pagination.page,
+      taillePage: pagination.taillePage,
+    };
+  }
+
+  // Cette methode valide la requete HTTP de liste des cours officiels.
+  public static validerListeReferentielsCours(
+    query: unknown,
+  ): ListerReferentielsCoursEntree {
+    const pagination = OutilsValidationHttpReferentielAcademique.lirePagination(query);
+
+    return {
       page: pagination.page,
       taillePage: pagination.taillePage,
     };

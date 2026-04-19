@@ -7,6 +7,7 @@ import { ConsulterAnneeScolaireEntree } from '../../../application/dto/input/Con
 import { CreerAnneeScolaireEntree } from '../../../application/dto/input/CreerAnneeScolaireEntree';
 import { GarantirAnneeScolaireActiveParEcoleEntree } from '../../../application/dto/input/GarantirAnneeScolaireActiveParEcoleEntree';
 import { ListerAnneesScolairesParEcoleEntree } from '../../../application/dto/input/ListerAnneesScolairesParEcoleEntree';
+import { ModifierAnneeScolaireEntree } from '../../../application/dto/input/ModifierAnneeScolaireEntree';
 import { PreparerAnneeScolaireSuivanteEntree } from '../../../application/dto/input/PreparerAnneeScolaireSuivanteEntree';
 import { OutilsValidationHttpReferentielAcademique } from './OutilsValidationHttpReferentielAcademique';
 
@@ -187,6 +188,57 @@ export class ValidateurAnneeScolaireHttp {
       idAnneeScolaire: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
         donnees,
         'id',
+      ),
+    };
+  }
+
+  // Cette methode valide la requete HTTP de modification d'une annee scolaire.
+  public static validerModification(
+    parametres: unknown,
+    corps: unknown,
+  ): ModifierAnneeScolaireEntree {
+    const donneesParametres = OutilsValidationHttpReferentielAcademique.obtenirObjet(
+      parametres,
+      'parametres',
+    );
+    const donneesCorps = OutilsValidationHttpReferentielAcademique.obtenirObjet(corps, 'corps');
+
+    OutilsValidationHttpReferentielAcademique.validerChampsRequis(
+      donneesCorps,
+      {
+        code: true,
+        libelle: true,
+        dateDebut: true,
+        dateFin: true,
+        modifiePar: true,
+      },
+      'modification-annee-scolaire',
+    );
+
+    return {
+      idAnneeScolaire: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
+        donneesParametres,
+        'id',
+      ),
+      code: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
+        donneesCorps,
+        'code',
+      ),
+      libelle: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
+        donneesCorps,
+        'libelle',
+      ),
+      dateDebut: OutilsValidationHttpReferentielAcademique.lireDateRequise(
+        donneesCorps,
+        'dateDebut',
+      ),
+      dateFin: OutilsValidationHttpReferentielAcademique.lireDateRequise(
+        donneesCorps,
+        'dateFin',
+      ),
+      modifiePar: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
+        donneesCorps,
+        'modifiePar',
       ),
     };
   }

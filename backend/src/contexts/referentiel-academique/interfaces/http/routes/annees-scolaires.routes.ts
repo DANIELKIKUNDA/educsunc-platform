@@ -134,6 +134,20 @@ export const creerRoutesAnneesScolaires = (
     return reponse.code(200).send(resultat);
   });
 
+  serveur.patch('/api/annees-scolaires/:id', async (requete, reponse) => {
+    const resultat = await dependances.executerRouteTenant(
+      requete,
+      () => dependances.controleurAnneesScolaires.modifierAnneeScolaire(
+        requete.params,
+        requete.body,
+      ),
+      {
+        mode: 'tenant_requis',
+      },
+    );
+    return reponse.code(200).send(resultat);
+  });
+
   serveur.post('/api/annees-scolaires/:id/activer', async (requete, reponse) => {
     const resultat = await dependances.executerRouteTenant(
       requete,

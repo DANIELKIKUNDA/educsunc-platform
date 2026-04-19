@@ -8,6 +8,7 @@ import {
   CreerAnneeScolaire,
   GarantirAnneeScolaireActiveParEcole,
   ListerAnneesScolairesParEcole,
+  ModifierAnneeScolaire,
   PreparerAnneeScolaireSuivante,
 } from '../../../application/use-cases/annees';
 import {
@@ -24,6 +25,7 @@ import { ValidateurAnneeScolaireHttp } from '../validators/annee-scolaire.valida
 // Ce controleur orchestre les entrees et sorties HTTP des annees scolaires.
 export class ControleurAnneesScolaires {
   private readonly casUsageCreerAnneeScolaire: CreerAnneeScolaire;
+  private readonly casUsageModifierAnneeScolaire: ModifierAnneeScolaire;
   private readonly casUsageConsulterAnneeScolaire: ConsulterAnneeScolaire;
   private readonly casUsageListerAnneesScolairesParEcole: ListerAnneesScolairesParEcole;
   private readonly casUsageActiverAnneeScolaire: ActiverAnneeScolaire;
@@ -37,6 +39,7 @@ export class ControleurAnneesScolaires {
   // Ce constructeur injecte les cas d'usage exposes par les routes des annees scolaires.
   constructor(
     casUsageCreerAnneeScolaire: CreerAnneeScolaire,
+    casUsageModifierAnneeScolaire: ModifierAnneeScolaire,
     casUsageConsulterAnneeScolaire: ConsulterAnneeScolaire,
     casUsageListerAnneesScolairesParEcole: ListerAnneesScolairesParEcole,
     casUsageActiverAnneeScolaire: ActiverAnneeScolaire,
@@ -48,6 +51,7 @@ export class ControleurAnneesScolaires {
     casUsageBasculerAnneeScolaire: BasculerAnneeScolaire,
   ) {
     this.casUsageCreerAnneeScolaire = casUsageCreerAnneeScolaire;
+    this.casUsageModifierAnneeScolaire = casUsageModifierAnneeScolaire;
     this.casUsageConsulterAnneeScolaire = casUsageConsulterAnneeScolaire;
     this.casUsageListerAnneesScolairesParEcole = casUsageListerAnneesScolairesParEcole;
     this.casUsageActiverAnneeScolaire = casUsageActiverAnneeScolaire;
@@ -64,6 +68,17 @@ export class ControleurAnneesScolaires {
   public async creerAnneeScolaire(corps: unknown): Promise<ReponseAnneeScolaireHttp> {
     const entree = ValidateurAnneeScolaireHttp.validerCreation(corps);
     const sortie = await this.casUsageCreerAnneeScolaire.executer(entree);
+
+    return AnneeScolairePresenter.presenterAnneeScolaire(sortie.anneeScolaire);
+  }
+
+  // Cette methode traite la modification HTTP d'une annee scolaire.
+  public async modifierAnneeScolaire(
+    parametres: unknown,
+    corps: unknown,
+  ): Promise<ReponseAnneeScolaireHttp> {
+    const entree = ValidateurAnneeScolaireHttp.validerModification(parametres, corps);
+    const sortie = await this.casUsageModifierAnneeScolaire.executer(entree);
 
     return AnneeScolairePresenter.presenterAnneeScolaire(sortie.anneeScolaire);
   }

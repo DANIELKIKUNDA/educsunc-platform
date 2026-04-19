@@ -10,6 +10,7 @@ import {
   CreerAnneeScolaire,
   GarantirAnneeScolaireActiveParEcole,
   ListerAnneesScolairesParEcole,
+  ModifierAnneeScolaire,
   PreparerAnneeScolaireSuivante,
 } from '../../contexts/referentiel-academique/application/use-cases/annees';
 import {
@@ -62,6 +63,7 @@ import {
   ImporterOptionsDepuisJson,
   ImporterProgrammesAcademiquesDepuisJson,
   ImporterSectionsDepuisJson,
+  ListerReferentielsCours,
   ListerReferentielsParClasseAcademique,
   PublierVersionReferentiel,
 } from '../../contexts/referentiel-academique/application/use-cases/referentiels';
@@ -256,6 +258,12 @@ function composerRoutesReferentielAcademique(): CompositionRoutesReferentielAcad
       serviceTransactionApplication,
       serviceJournalAudit,
     ),
+    new ModifierAnneeScolaire(
+      depots.depotAnneeScolaire,
+      undefined,
+      serviceTransactionApplication,
+      serviceJournalAudit,
+    ),
     new ConsulterAnneeScolaire(depots.depotAnneeScolaire),
     new ListerAnneesScolairesParEcole(depots.depotAnneeScolaire, depots.depotEcole),
     new ActiverAnneeScolaire(depots.depotAnneeScolaire, undefined, serviceJournalAudit),
@@ -362,6 +370,7 @@ function composerRoutesReferentielAcademique(): CompositionRoutesReferentielAcad
       depots.depotReferentielProgramme,
       depots.depotClasseAcademique,
     ),
+    new ListerReferentielsCours(depots.depotReferentielCours),
   );
 
   const controleurProgrammesNiveau = new ControleurProgrammesNiveau(

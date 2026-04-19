@@ -44,4 +44,17 @@ export const referentielApi = {
       entetes: construireEntetes(options),
     });
   },
+
+  async modifier<TEntree, TSortie>(
+    chemin: string,
+    corps: TEntree,
+    options?: OptionsRequeteReferentiel,
+  ): Promise<TSortie> {
+    return clientApi.envoyer<TSortie>({
+      chemin,
+      methode: 'PATCH',
+      corps,
+      entetes: construireEntetes(options),
+    });
+  },
 };

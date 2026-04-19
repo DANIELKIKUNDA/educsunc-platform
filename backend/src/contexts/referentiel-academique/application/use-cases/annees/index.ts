@@ -1,4 +1,5 @@
 export * from './CreerAnneeScolaire';
+export * from './ModifierAnneeScolaire';
 export * from './ActiverAnneeScolaire';
 export * from './CloturerAnneeScolaire';
 export * from './ArchiverAnneeScolaire';

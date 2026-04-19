@@ -9,3 +9,4 @@ export * from './ActiverVersionReferentiel';
 export * from './ComparerDeuxVersionsReferentiel';
 export * from './ConsulterReferentielProgramme';
 export * from './ListerReferentielsParClasseAcademique';
+export * from './ListerReferentielsCours';

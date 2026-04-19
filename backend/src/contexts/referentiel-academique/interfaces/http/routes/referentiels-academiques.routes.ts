@@ -150,6 +150,15 @@ export const creerRoutesReferentielsAcademiques = (
     return reponse.code(200).send(resultat);
   });
 
+  serveur.get('/api/referentiels/cours', async (requete, reponse) => {
+    const resultat = await dependances.executerRouteTenant(
+      requete,
+      () => dependances.controleurReferentielsAcademiques
+        .listerReferentielsCours(requete.query),
+    );
+    return reponse.code(200).send(resultat);
+  });
+
   serveur.get('/api/referentiels/programmes/:id', async (requete, reponse) => {
     const resultat = await dependances.executerRouteTenant(
       requete,

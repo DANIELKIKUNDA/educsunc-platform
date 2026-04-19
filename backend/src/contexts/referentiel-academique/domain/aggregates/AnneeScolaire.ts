@@ -176,6 +176,35 @@ export class AnneeScolaire extends RacineAgregat<AnneeScolaireId> {
     this.marquerModification(acteur);
   }
 
+  // Cette methode modifie les informations administratives d'une annee encore planifiee.
+  public modifierInformations(
+    code: string,
+    libelle: string,
+    dateDebut: Date,
+    dateFin: Date,
+    acteur?: string,
+  ): void {
+    if (this.statut !== StatutAnneeScolaire.PLANIFIEE) {
+      throw new ValidationError(
+        "Seule une annee scolaire planifiee peut etre modifiee.",
+        'ANNEE_SCOLAIRE_MODIFICATION_INTERDITE',
+      );
+    }
+
+    const codeValide = this.validerTexteObligatoire(code, 'code');
+    const libelleValide = this.validerTexteObligatoire(libelle, 'libelle');
+    const dateDebutValidee = this.validerDate(dateDebut, 'dateDebut');
+    const dateFinValidee = this.validerDate(dateFin, 'dateFin');
+
+    this.validerChronologie(dateDebutValidee, dateFinValidee);
+
+    this.code = codeValide;
+    this.libelle = libelleValide;
+    this.dateDebut = dateDebutValidee;
+    this.dateFin = dateFinValidee;
+    this.marquerModification(acteur);
+  }
+
   // Cette methode indique si une date appartient a l'intervalle de l'annee scolaire.
   public contientDate(date: Date): boolean {
     const dateValidee = this.validerDate(date, 'date');

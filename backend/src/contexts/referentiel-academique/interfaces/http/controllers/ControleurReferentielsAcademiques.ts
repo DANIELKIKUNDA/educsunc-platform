@@ -1,10 +1,12 @@
 import { ReferentielProgrammeSortie } from '../../../application/dto/output/ReferentielProgrammeSortie';
+import { ReferentielCoursSortie } from '../../../application/dto/output/ReferentielCoursSortie';
 import { VersionReferentielProgrammeSortie } from '../../../application/dto/output/VersionReferentielProgrammeSortie';
 import { OrchestrateurImportReferentiel } from '../../../application/services/OrchestrateurImportReferentiel';
 import {
   ActiverVersionReferentiel,
   ComparerDeuxVersionsReferentiel,
   ConsulterReferentielProgramme,
+  ListerReferentielsCours,
   ListerReferentielsParClasseAcademique,
   PublierVersionReferentiel,
   SortieComparerDeuxVersionsReferentiel,
@@ -35,6 +37,12 @@ export interface ReponseListeReferentielsProgrammesHttp {
   pagination: PaginationHttp;
 }
 
+// Cette interface represente une reponse HTTP paginee de cours officiels.
+export interface ReponseListeReferentielsCoursHttp {
+  donnees: ReferentielCoursSortie[];
+  pagination: PaginationHttp;
+}
+
 // Ce controleur orchestre les entrees et sorties HTTP des referentiels academiques.
 export class ControleurReferentielsAcademiques {
   private readonly orchestrateurImportReferentiel: OrchestrateurImportReferentiel;
@@ -44,6 +52,7 @@ export class ControleurReferentielsAcademiques {
   private readonly casUsageConsulterReferentielProgramme: ConsulterReferentielProgramme;
   private readonly casUsageListerReferentielsParClasseAcademique:
     ListerReferentielsParClasseAcademique;
+  private readonly casUsageListerReferentielsCours: ListerReferentielsCours;
 
   // Ce constructeur injecte les services et cas d'usage exposes par les routes referentielles.
   constructor(
@@ -53,6 +62,7 @@ export class ControleurReferentielsAcademiques {
     casUsageComparerDeuxVersionsReferentiel: ComparerDeuxVersionsReferentiel,
     casUsageConsulterReferentielProgramme: ConsulterReferentielProgramme,
     casUsageListerReferentielsParClasseAcademique: ListerReferentielsParClasseAcademique,
+    casUsageListerReferentielsCours: ListerReferentielsCours,
   ) {
     this.orchestrateurImportReferentiel = orchestrateurImportReferentiel;
     this.casUsagePublierVersionReferentiel = casUsagePublierVersionReferentiel;
@@ -61,6 +71,7 @@ export class ControleurReferentielsAcademiques {
     this.casUsageConsulterReferentielProgramme = casUsageConsulterReferentielProgramme;
     this.casUsageListerReferentielsParClasseAcademique =
       casUsageListerReferentielsParClasseAcademique;
+    this.casUsageListerReferentielsCours = casUsageListerReferentielsCours;
   }
 
   // Cette methode traite l'import HTTP des sections scolaires.
@@ -182,6 +193,19 @@ export class ControleurReferentielsAcademiques {
             })),
           },
       })),
+      pagination: this.creerPagination(sortie.total, sortie.page, sortie.taillePage),
+    };
+  }
+
+  // Cette methode traite la liste HTTP paginee des cours officiels.
+  public async listerReferentielsCours(
+    query: unknown,
+  ): Promise<ReponseListeReferentielsCoursHttp> {
+    const entree = ValidateurReferentielImportHttp.validerListeReferentielsCours(query);
+    const sortie = await this.casUsageListerReferentielsCours.executer(entree);
+
+    return {
+      donnees: sortie.referentielsCours,
       pagination: this.creerPagination(sortie.total, sortie.page, sortie.taillePage),
     };
   }
