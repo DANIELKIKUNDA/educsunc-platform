@@ -1,6 +1,9 @@
 import { referentielApi, type OptionsRequeteReferentiel } from '../../commun/services/referentiel.api';
 import type {
+  ReponseAnneeScolaire,
   ReponseAnneeScolaireOptionnelle,
+  ReponseBasculeAnneeScolaire,
+  ReponseGarantieAnneeActive,
   ReponseListeAnneesScolaires,
   ReponsePreparationAnneeScolaire,
 } from '../../commun/types/annees-scolaires.types';
@@ -20,6 +23,27 @@ export interface ParametresPreparationAnneeScolaireSuivante {
   creePar: string;
   dateDebut?: string;
   dateFin?: string;
+}
+
+export interface ParametresGarantieAnneeActive {
+  idEcole: string;
+  modifiePar: string;
+  dateReference?: string;
+  dateDebut?: string;
+  dateFin?: string;
+}
+
+export interface ParametresBasculeAnneeScolaire {
+  idEcole: string;
+  modifiePar: string;
+  creerSuivanteSiAbsente?: boolean;
+  dateDebutSuivante?: string;
+  dateFinSuivante?: string;
+}
+
+export interface ParametresMutationAnneeScolaire {
+  idAnneeScolaire: string;
+  modifiePar: string;
 }
 
 function construireCheminAnneesScolaires(parametres: ParametresListeAnneesScolaires): string {
@@ -71,6 +95,62 @@ export const anneesScolairesApi = {
     >(
       '/api/annees-scolaires/preparer-suivante',
       parametres,
+      options,
+    );
+  },
+
+  garantirActive(
+    parametres: ParametresGarantieAnneeActive,
+    options?: OptionsRequeteReferentiel,
+  ): Promise<ReponseGarantieAnneeActive> {
+    return referentielApi.envoyer<
+      ParametresGarantieAnneeActive,
+      ReponseGarantieAnneeActive
+    >(
+      '/api/annees-scolaires/garantir-active',
+      parametres,
+      options,
+    );
+  },
+
+  basculer(
+    parametres: ParametresBasculeAnneeScolaire,
+    options?: OptionsRequeteReferentiel,
+  ): Promise<ReponseBasculeAnneeScolaire> {
+    return referentielApi.envoyer<
+      ParametresBasculeAnneeScolaire,
+      ReponseBasculeAnneeScolaire
+    >(
+      '/api/annees-scolaires/basculer',
+      parametres,
+      options,
+    );
+  },
+
+  cloturer(
+    parametres: ParametresMutationAnneeScolaire,
+    options?: OptionsRequeteReferentiel,
+  ): Promise<ReponseAnneeScolaire> {
+    return referentielApi.envoyer<
+      Pick<ParametresMutationAnneeScolaire, 'modifiePar'>,
+      ReponseAnneeScolaire
+    >(
+      `/api/annees-scolaires/${parametres.idAnneeScolaire}/cloturer`,
+      { modifiePar: parametres.modifiePar },
+      options,
+    );
+  },
+
+  archiver(
+    parametres: ParametresMutationAnneeScolaire,
+    options?: OptionsRequeteReferentiel,
+  ): Promise<ReponseAnneeScolaire> {
+    return referentielApi.envoyer<
+      Pick<ParametresMutationAnneeScolaire, 'modifiePar'>,
+      ReponseAnneeScolaire
+    >(
+      `/api/annees-scolaires/${parametres.idAnneeScolaire}/archiver`,
+      { modifiePar: parametres.modifiePar },
       options,
     );
   },

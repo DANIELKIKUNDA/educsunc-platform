@@ -35,9 +35,35 @@ export interface ReponseAnneeScolaireOptionnelle {
   donnee: AnneeScolaireResume | null;
 }
 
+export interface ReponseAnneeScolaire {
+  donnee: AnneeScolaireResume;
+}
+
+export type ActionGarantieAnneeActive =
+  | 'EXISTANTE'
+  | 'CREEE_ET_ACTIVEE'
+  | 'PLANIFIEE_ACTIVEE';
+
+export interface ReponseGarantieAnneeActive {
+  donnee: AnneeScolaireResume;
+  meta: {
+    action: ActionGarantieAnneeActive;
+  };
+}
+
 export interface ReponsePreparationAnneeScolaire {
   donnee: AnneeScolaireResume;
   meta: {
     dejaExistante: boolean;
+  };
+}
+
+export interface ReponseBasculeAnneeScolaire {
+  donnee: {
+    anneeCloturee: AnneeScolaireResume;
+    anneeActive: AnneeScolaireResume;
+  };
+  meta: {
+    anneeSuivanteCreee: boolean;
   };
 }
