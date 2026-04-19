@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed, onMounted, ref } from 'vue';
 import {
   AlertTriangle,
   Archive,
@@ -11,50 +12,127 @@ import {
   RefreshCw,
   Zap,
 } from 'lucide-vue-next';
+import type {
+  AnneeScolaireResume,
+  PaginationAnneesScolaires,
+  StatutAnneeScolaire,
+} from '../../../commun/types/annees-scolaires.types';
+import { anneesScolairesApi } from '../../services/annees-scolaires.api';
+import {
+  contexteEcoleCourant,
+  contexteEcoleEstConfigure,
+} from '../../stores/contexte-ecole.store';
 
-type StatutAnneeScolaire = 'ACTIVE' | 'PLANIFIEE' | 'CLOTUREE';
+const anneesScolaires = ref<AnneeScolaireResume[]>([]);
+const anneeActive = ref<AnneeScolaireResume | null>(null);
+const pagination = ref<PaginationAnneesScolaires>({
+  total: 0,
+  page: 1,
+  taillePage: 20,
+  totalPages: 0,
+});
+const chargement = ref(false);
+const messageUtilisateur = ref<string | null>(null);
 
-interface AnneeScolaireUi {
-  libelle: string;
-  dateDebut: string;
-  dateFin: string;
-  statut: StatutAnneeScolaire;
-  dateActivation: string;
-}
+const totalAnnees = computed(() => pagination.value.total || anneesScolaires.value.length);
+const totalPlanifiees = computed(() =>
+  anneesScolaires.value.filter((annee) => annee.statut === 'PLANIFIEE').length,
+);
+const totalClotureesArchivees = computed(() =>
+  anneesScolaires.value.filter((annee) =>
+    annee.statut === 'CLOTUREE' || annee.statut === 'ARCHIVEE'
+  ).length,
+);
 
-const anneesScolaires: AnneeScolaireUi[] = [
-  {
-    libelle: '2025-2026',
-    dateDebut: '01/09/2025',
-    dateFin: '31/07/2026',
-    statut: 'ACTIVE',
-    dateActivation: '01/09/2025',
-  },
-  {
-    libelle: '2026-2027',
-    dateDebut: '01/09/2026',
-    dateFin: '31/07/2027',
-    statut: 'PLANIFIEE',
-    dateActivation: 'Non activée',
-  },
-  {
-    libelle: '2024-2025',
-    dateDebut: '01/09/2024',
-    dateFin: '31/07/2025',
-    statut: 'CLOTUREE',
-    dateActivation: '01/09/2024',
-  },
-];
+const libelleAnneeActive = computed(() => anneeActive.value?.code ?? anneeActive.value?.libelle ?? 'À charger');
 
 function obtenirLibelleStatut(statut: StatutAnneeScolaire): string {
   const libelles: Record<StatutAnneeScolaire, string> = {
     ACTIVE: 'Active',
     PLANIFIEE: 'Planifiée',
     CLOTUREE: 'Clôturée',
+    ARCHIVEE: 'Archivée',
   };
 
   return libelles[statut];
 }
+
+function formaterDate(dateIso?: string): string {
+  if (dateIso === undefined || dateIso.trim().length === 0) {
+    return 'Non renseignée';
+  }
+
+  const date = new Date(dateIso);
+
+  if (Number.isNaN(date.getTime())) {
+    return dateIso;
+  }
+
+  return new Intl.DateTimeFormat('fr-FR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  }).format(date);
+}
+
+function obtenirDateActivation(annee: AnneeScolaireResume): string {
+  return annee.dateActivation === undefined
+    ? 'Non activée'
+    : formaterDate(annee.dateActivation);
+}
+
+function obtenirLibelleAlerteContexte(): string | null {
+  if (!contexteEcoleEstConfigure()) {
+    return "Contexte école non configuré : ajoute VITE_REFERENTIEL_ECOLE_ID pour charger les années réelles.";
+  }
+
+  if (messageUtilisateur.value !== null) {
+    return messageUtilisateur.value;
+  }
+
+  return null;
+}
+
+async function chargerAnneesScolaires(): Promise<void> {
+  if (!contexteEcoleEstConfigure() || contexteEcoleCourant.idEcole === null) {
+    messageUtilisateur.value = obtenirLibelleAlerteContexte();
+    return;
+  }
+
+  chargement.value = true;
+  messageUtilisateur.value = null;
+
+  try {
+    const options = { tenantId: contexteEcoleCourant.tenantId ?? contexteEcoleCourant.idEcole };
+    const [reponseListe, reponseActive] = await Promise.all([
+      anneesScolairesApi.lister(
+        {
+          idEcole: contexteEcoleCourant.idEcole,
+          page: pagination.value.page,
+          taillePage: pagination.value.taillePage,
+        },
+        options,
+      ),
+      anneesScolairesApi.consulterActive(
+        { idEcole: contexteEcoleCourant.idEcole },
+        options,
+      ),
+    ]);
+
+    anneesScolaires.value = reponseListe.donnees;
+    pagination.value = reponseListe.pagination;
+    anneeActive.value = reponseActive.donnee;
+  } catch {
+    messageUtilisateur.value =
+      "Les années scolaires n'ont pas pu être chargées. Vérifie que le backend est démarré et que le contexte école est correct.";
+  } finally {
+    chargement.value = false;
+  }
+}
+
+onMounted(() => {
+  void chargerAnneesScolaires();
+});
 </script>
 
 <template>
@@ -63,28 +141,28 @@ function obtenirLibelleStatut(statut: StatutAnneeScolaire): string {
       <div class="annees-page__contexte">
         <div>
           <span>Organisation</span>
-          <strong>À connecter</strong>
+          <strong>{{ contexteEcoleCourant.nomOrganisation }}</strong>
         </div>
         <div>
           <span>École</span>
-          <strong>École courante</strong>
+          <strong>{{ contexteEcoleCourant.nomEcole }}</strong>
         </div>
         <div>
           <span>Année active</span>
-          <strong>À charger</strong>
+          <strong>{{ libelleAnneeActive }}</strong>
         </div>
       </div>
 
       <div class="annees-page__actions">
-        <button class="bouton-annee bouton-annee--principal" type="button">
+        <button class="bouton-annee bouton-annee--principal" type="button" disabled>
           <Plus :size="17" />
           Créer une année
         </button>
-        <button class="bouton-annee" type="button">
+        <button class="bouton-annee" type="button" disabled>
           <RefreshCw :size="17" />
           Préparer suivante
         </button>
-        <button class="bouton-annee bouton-annee--accent" type="button">
+        <button class="bouton-annee bouton-annee--accent" type="button" disabled>
           <Zap :size="17" />
           Basculer année
         </button>
@@ -94,7 +172,7 @@ function obtenirLibelleStatut(statut: StatutAnneeScolaire): string {
     <section class="annees-page__titre">
       <div>
         <h2>Années scolaires</h2>
-        <p>Suivi administratif des années scolaires de l’école, sans action backend pour l’instant.</p>
+        <p>Suivi administratif des années scolaires de l’école, connecté en lecture au backend.</p>
       </div>
     </section>
 
@@ -103,8 +181,8 @@ function obtenirLibelleStatut(statut: StatutAnneeScolaire): string {
         <div class="carte-resume__icone"><Calendar :size="24" /></div>
         <div>
           <span>Année active</span>
-          <strong>2025-2026</strong>
-          <p>Ouverte pour l’exploitation locale.</p>
+          <strong>{{ libelleAnneeActive }}</strong>
+          <p>{{ anneeActive === null ? 'Aucune année active confirmée.' : 'Ouverte pour l’exploitation locale.' }}</p>
         </div>
       </article>
 
@@ -112,7 +190,7 @@ function obtenirLibelleStatut(statut: StatutAnneeScolaire): string {
         <div class="carte-resume__icone carte-resume__icone--neutre"><Calendar :size="24" /></div>
         <div>
           <span>Total années</span>
-          <strong>3</strong>
+          <strong>{{ totalAnnees }}</strong>
           <p>Historique et planification.</p>
         </div>
       </article>
@@ -121,8 +199,8 @@ function obtenirLibelleStatut(statut: StatutAnneeScolaire): string {
         <div class="carte-resume__icone carte-resume__icone--orange"><RefreshCw :size="24" /></div>
         <div>
           <span>Planifiées</span>
-          <strong>1</strong>
-          <p>Année suivante préparée.</p>
+          <strong>{{ totalPlanifiees }}</strong>
+          <p>Années suivantes préparées.</p>
         </div>
       </article>
 
@@ -130,7 +208,7 @@ function obtenirLibelleStatut(statut: StatutAnneeScolaire): string {
         <div class="carte-resume__icone carte-resume__icone--gris"><Archive :size="24" /></div>
         <div>
           <span>Clôturées / archivées</span>
-          <strong>1</strong>
+          <strong>{{ totalClotureesArchivees }}</strong>
           <p>Années passées consultables.</p>
         </div>
       </article>
@@ -144,17 +222,21 @@ function obtenirLibelleStatut(statut: StatutAnneeScolaire): string {
         </div>
 
         <div class="liste-alertes-annees">
-          <p>
+          <p v-if="obtenirLibelleAlerteContexte() !== null">
+            <AlertTriangle :size="18" />
+            {{ obtenirLibelleAlerteContexte() }}
+          </p>
+          <p v-if="!chargement && anneeActive === null">
             <AlertTriangle :size="18" />
             Aucune année active détectée dans le contexte courant.
           </p>
-          <p>
+          <p v-if="totalPlanifiees === 0">
             <AlertTriangle :size="18" />
-            Année suivante non préparée pour certaines écoles.
+            Année suivante non préparée ou non disponible dans la liste chargée.
           </p>
           <p>
             <AlertTriangle :size="18" />
-            Clôture administrative proche : vérifier les données locales.
+            Les actions sensibles restent désactivées jusqu’au branchement des confirmations.
           </p>
         </div>
       </article>
@@ -162,7 +244,7 @@ function obtenirLibelleStatut(statut: StatutAnneeScolaire): string {
       <article class="bloc-annees">
         <div class="bloc-annees__header">
           <h3>Liste des années scolaires</h3>
-          <span class="badge-info">Mock UI</span>
+          <span class="badge-info">{{ chargement ? 'Chargement' : 'Backend' }}</span>
         </div>
 
         <div class="tableau-annees">
@@ -175,28 +257,43 @@ function obtenirLibelleStatut(statut: StatutAnneeScolaire): string {
             <span>Actions</span>
           </div>
 
-          <div v-for="annee in anneesScolaires" :key="annee.libelle" class="tableau-annees__ligne">
-            <strong>{{ annee.libelle }}</strong>
-            <span>{{ annee.dateDebut }}</span>
-            <span>{{ annee.dateFin }}</span>
+          <div v-if="chargement" class="tableau-annees__ligne tableau-annees__ligne--etat">
+            <span>Chargement des années scolaires...</span>
+          </div>
+
+          <div
+            v-for="annee in anneesScolaires"
+            :key="annee.id"
+            class="tableau-annees__ligne"
+          >
+            <strong>{{ annee.code || annee.libelle }}</strong>
+            <span>{{ formaterDate(annee.dateDebut) }}</span>
+            <span>{{ formaterDate(annee.dateFin) }}</span>
             <span class="badge-statut-annee" :data-statut="annee.statut">
               <CheckCircle v-if="annee.statut === 'ACTIVE'" :size="15" />
-              <Archive v-else-if="annee.statut === 'CLOTUREE'" :size="15" />
+              <Archive v-else-if="annee.statut === 'CLOTUREE' || annee.statut === 'ARCHIVEE'" :size="15" />
               <RefreshCw v-else :size="15" />
               {{ obtenirLibelleStatut(annee.statut) }}
             </span>
-            <span>{{ annee.dateActivation }}</span>
+            <span>{{ obtenirDateActivation(annee) }}</span>
             <div class="actions-ligne">
               <button type="button" aria-label="Plus d’actions">
                 <MoreHorizontal :size="18" />
               </button>
               <div class="menu-ligne">
-                <span><Pencil :size="15" /> Modifier</span>
                 <span><Eye :size="15" /> Voir</span>
-                <span v-if="annee.statut === 'ACTIVE'"><CheckCircle :size="15" /> Clôturer</span>
-                <span v-if="annee.statut === 'CLOTUREE'"><Archive :size="15" /> Archiver</span>
+                <span><Pencil :size="15" /> Modifier après confirmation</span>
+                <span v-if="annee.statut === 'ACTIVE'"><CheckCircle :size="15" /> Clôturer après confirmation</span>
+                <span v-if="annee.statut === 'CLOTUREE'"><Archive :size="15" /> Archiver après confirmation</span>
               </div>
             </div>
+          </div>
+
+          <div
+            v-if="!chargement && anneesScolaires.length === 0"
+            class="tableau-annees__ligne tableau-annees__ligne--etat"
+          >
+            <span>Aucune année scolaire disponible pour ce contexte école.</span>
           </div>
         </div>
       </article>
@@ -280,6 +377,11 @@ function obtenirLibelleStatut(statut: StatutAnneeScolaire): string {
   cursor: pointer;
   font-weight: 800;
   transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
+}
+
+.bouton-annee:disabled {
+  cursor: not-allowed;
+  opacity: 0.72;
 }
 
 .bouton-annee--principal {
@@ -453,6 +555,12 @@ function obtenirLibelleStatut(statut: StatutAnneeScolaire): string {
   text-transform: uppercase;
 }
 
+.tableau-annees__ligne--etat {
+  grid-template-columns: 1fr;
+  color: var(--couleur-texte-douce);
+  font-weight: 800;
+}
+
 .badge-statut-annee {
   display: inline-flex;
   width: fit-content;
@@ -474,7 +582,8 @@ function obtenirLibelleStatut(statut: StatutAnneeScolaire): string {
   color: #a15d00;
 }
 
-.badge-statut-annee[data-statut='CLOTUREE'] {
+.badge-statut-annee[data-statut='CLOTUREE'],
+.badge-statut-annee[data-statut='ARCHIVEE'] {
   background: rgba(123, 132, 148, 0.15);
   color: #4b5563;
 }
@@ -501,7 +610,7 @@ function obtenirLibelleStatut(statut: StatutAnneeScolaire): string {
   right: 0;
   z-index: 5;
   display: none;
-  min-width: 9rem;
+  min-width: 12rem;
   padding: 0.35rem;
   border: 1px solid var(--couleur-bordure);
   border-radius: var(--rayon-moyen);
