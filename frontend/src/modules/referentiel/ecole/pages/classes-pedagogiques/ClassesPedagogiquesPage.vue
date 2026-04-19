@@ -37,13 +37,13 @@ const classesAcademiques: ClasseAcademiqueUi[] = [
   <section class="classes-page">
     <header class="classes-page__entete">
       <div>
-        <h2>Classes académiques</h2>
-        <p>Gestion des classes ouvertes pour l’année active</p>
+        <h2>Classes pédagogiques</h2>
+        <p>Gestion des classes pédagogiques ouvertes pour l’année active</p>
       </div>
 
       <button class="classes-bouton classes-bouton--principal" type="button">
         <Plus :size="18" />
-        Créer une classe
+        Créer une classe pédagogique
       </button>
     </header>
 
