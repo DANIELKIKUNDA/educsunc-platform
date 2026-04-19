@@ -2,8 +2,8 @@
 
 :root {
   --animation-courte: 160ms;
-  --animation-standard: 260ms;
-  --animation-longue: 420ms;
+  --animation-standard: 340ms;
+  --animation-longue: 560ms;
   --animation-ease-premium: cubic-bezier(0.22, 1, 0.36, 1);
   --animation-ease-sortie: cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -11,8 +11,8 @@
 @keyframes apparitionPage {
   from {
     opacity: 0;
-    transform: translateY(10px) scale(0.992);
-    filter: blur(4px);
+    transform: translateY(18px) scale(0.985);
+    filter: blur(8px);
   }
 
   to {
@@ -25,7 +25,7 @@
 @keyframes apparitionElement {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(18px) scale(0.985);
   }
 
   to {
@@ -37,7 +37,7 @@
 @keyframes apparitionLigne {
   from {
     opacity: 0;
-    transform: translateX(-8px);
+    transform: translateX(-16px);
   }
 
   to {
@@ -92,7 +92,7 @@
   .classes-page,
   .page-referentiel
 ) {
-  animation: apparitionPage var(--animation-longue) var(--animation-ease-premium) both;
+  animation: apparitionPage var(--animation-longue) var(--animation-ease-premium) both !important;
 }
 
 :where(
@@ -113,12 +113,12 @@
   .classes-outils,
   .classes-tableau
 ) {
-  animation: apparitionElement var(--animation-standard) var(--animation-ease-sortie) both;
+  animation: apparitionElement var(--animation-standard) var(--animation-ease-sortie) both !important;
   transition:
-    transform var(--animation-courte) var(--animation-ease-premium),
-    box-shadow var(--animation-courte) var(--animation-ease-premium),
+    transform 220ms var(--animation-ease-premium),
+    box-shadow 220ms var(--animation-ease-premium),
     border-color var(--animation-courte) var(--animation-ease-premium),
-    background-color var(--animation-standard) ease;
+    background-color var(--animation-standard) ease !important;
 }
 
 :where(
@@ -131,8 +131,8 @@
   .carte-focus,
   .section-referentiel
 ):hover {
-  transform: translateY(-2px);
-  box-shadow: var(--ombre-flottante);
+  transform: translateY(-6px) scale(1.006) !important;
+  box-shadow: 0 18px 42px rgba(31, 41, 55, 0.16) !important;
 }
 
 :where(
@@ -144,11 +144,12 @@
   .tableau-reference__ligne,
   .classes-tableau__ligne
 ) {
-  animation: apparitionLigne var(--animation-standard) var(--animation-ease-sortie) both;
+  animation: apparitionLigne var(--animation-standard) var(--animation-ease-sortie) both !important;
   transition:
     background-color var(--animation-courte) ease,
     color var(--animation-courte) ease,
-    transform var(--animation-courte) var(--animation-ease-premium);
+    transform var(--animation-courte) var(--animation-ease-premium),
+    box-shadow var(--animation-courte) var(--animation-ease-premium) !important;
 }
 
 :where(
@@ -160,7 +161,9 @@
   .tableau-reference__ligne:not(.tableau-reference__ligne--entete),
   .classes-tableau__ligne:not(.classes-tableau__ligne--entete)
 ):hover {
-  background: rgba(45, 95, 159, 0.045);
+  background: rgba(45, 95, 159, 0.075) !important;
+  transform: translateX(4px) !important;
+  box-shadow: inset 3px 0 0 rgba(45, 95, 159, 0.55);
 }
 
 :where(
@@ -182,7 +185,7 @@
     box-shadow var(--animation-courte) var(--animation-ease-premium),
     border-color var(--animation-courte) ease,
     background-color var(--animation-courte) ease,
-    color var(--animation-courte) ease;
+    color var(--animation-courte) ease !important;
 }
 
 :where(
@@ -194,7 +197,8 @@
   .bouton-icone,
   .grille-actions-dashboard button
 ):hover {
-  transform: translateY(-1px);
+  transform: translateY(-3px) scale(1.015) !important;
+  box-shadow: 0 10px 24px rgba(45, 95, 159, 0.22) !important;
 }
 
 :where(
@@ -248,20 +252,20 @@
 }
 
 .animate-fade-in {
-  animation: apparitionPage var(--animation-standard) var(--animation-ease-premium) both;
+  animation: apparitionPage var(--animation-standard) var(--animation-ease-premium) both !important;
 }
 
 .animate-slide-in {
-  animation: apparitionLigne var(--animation-standard) var(--animation-ease-sortie) both;
+  animation: apparitionLigne var(--animation-standard) var(--animation-ease-sortie) both !important;
 }
 
 .animate-count-up {
-  animation: apparitionElement var(--animation-longue) var(--animation-ease-sortie) both;
+  animation: apparitionElement var(--animation-longue) var(--animation-ease-sortie) both !important;
 }
 
 .stagger-item {
   opacity: 0;
-  animation: apparitionElement var(--animation-standard) var(--animation-ease-sortie) forwards;
+  animation: apparitionElement var(--animation-standard) var(--animation-ease-sortie) forwards !important;
 }
 
 .stagger-item:nth-child(1) { animation-delay: 0ms; }
@@ -279,13 +283,13 @@
 }
 
 .interactive-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--ombre-flottante);
+  transform: translateY(-6px) scale(1.006) !important;
+  box-shadow: 0 18px 42px rgba(31, 41, 55, 0.16) !important;
 }
 
 .button-lift:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(45, 95, 159, 0.2);
+  transform: translateY(-3px) scale(1.015) !important;
+  box-shadow: 0 10px 24px rgba(45, 95, 159, 0.22) !important;
 }
 
 .kpi-number {
@@ -294,7 +298,7 @@
 }
 
 .kpi-number:hover {
-  transform: scale(1.035);
+  transform: scale(1.08);
 }
 
 .skeleton {
