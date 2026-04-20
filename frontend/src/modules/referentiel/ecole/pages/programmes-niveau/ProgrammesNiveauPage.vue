@@ -471,8 +471,8 @@ function obtenirTitreAction(): string {
 
 function obtenirMessageAction(): string {
   return actionSelectionnee.value === 'archiver'
-    ? 'Le backend archivera ce programme niveau. Il restera consultable dans l’historique.'
-    : 'Le backend validera ce programme niveau pour l’exploitation locale de l’école.';
+    ? 'Ce programme niveau sera archivé et restera consultable dans l’historique.'
+    : 'Ce programme niveau sera validé pour l’exploitation locale de l’école.';
 }
 
 async function confirmerAction(): Promise<void> {
@@ -519,7 +519,7 @@ async function confirmerAction(): Promise<void> {
     await chargerProgrammesNiveau();
   } catch {
     messageAction.value =
-      'L’action n’a pas pu être terminée. Le backend a conservé les règles métier.';
+      'L’action n’a pas pu être terminée. Les règles métier ont été conservées.';
   } finally {
     actionSensibleEnCours.value = false;
   }
@@ -746,7 +746,7 @@ onMounted(() => {
       <article class="dialogue-programme__carte">
         <div>
           <h3 id="titre-initialisation-programme">Initialiser un programme niveau</h3>
-          <p>Le backend copiera les lignes de la version officielle publiée vers le programme local de l’école.</p>
+          <p>Les lignes de la version officielle publiée seront copiées vers le programme local de l’école.</p>
         </div>
         <p v-if="messageFormulaire !== null" class="message-page message-page--erreur">
           <AlertTriangle :size="18" />

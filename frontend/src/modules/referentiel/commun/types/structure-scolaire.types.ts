@@ -15,6 +15,17 @@ export interface ClasseAcademiqueResume {
   modifieLe?: string;
 }
 
+export interface SectionScolaireResume {
+  id: string;
+  code: string;
+  libelle: string;
+  ordreAffichage: number;
+  active: boolean;
+  creeLe: string;
+  version: number;
+  modifieLe?: string;
+}
+
 export interface OptionEtudeResume {
   id: string;
   code: string;
@@ -56,6 +67,11 @@ export interface ReponseClassePedagogique {
 
 export interface ReponseListeClassesAcademiques {
   donnees: ClasseAcademiqueResume[];
+  pagination: PaginationStructureScolaire;
+}
+
+export interface ReponseListeSectionsScolaires {
+  donnees: SectionScolaireResume[];
   pagination: PaginationStructureScolaire;
 }
 

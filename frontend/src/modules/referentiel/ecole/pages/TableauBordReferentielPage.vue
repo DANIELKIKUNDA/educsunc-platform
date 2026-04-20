@@ -1,5 +1,6 @@
 ﻿<script setup lang="ts">
 import { onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
 import AlerteMetier from '../../commun/composants/AlerteMetier.vue';
 import BadgeStatut from '../../commun/composants/BadgeStatut.vue';
 import {
@@ -15,12 +16,12 @@ import {
 } from 'lucide-vue-next';
 
 const lastSync = ref(new Date());
+const router = useRouter();
 
-// Données statiques provisoires, en attendant le branchement backend.
 const messages = ref([
   {
-    titre: 'Tableau de bord prêt',
-    message: 'Les indicateurs de l’école seront reliés progressivement aux données réelles.',
+    titre: 'Tableau de bord opérationnel',
+    message: 'Les pages principales du référentiel école sont disponibles depuis les actions rapides.',
     type: 'succes' as const,
     timestamp: new Date(Date.now() - 30 * 60 * 1000),
     actions: []
@@ -28,47 +29,50 @@ const messages = ref([
 ]);
 
 const classes = ref([
-  { id: '1', nom: '6ème A', effectif: 28, statut: 'actif' },
-  { id: '2', nom: '6ème B', effectif: 26, statut: 'actif' },
-  { id: '3', nom: '5ème A', effectif: 30, statut: 'actif' }
+  { id: 'classes', nom: 'Classes pédagogiques', effectif: 0, statut: 'preparation' },
+  { id: 'programmes', nom: 'Programmes niveau', effectif: 0, statut: 'preparation' },
+  { id: 'calendrier', nom: 'Calendrier académique', effectif: 0, statut: 'preparation' }
 ]);
 
 const referentielOfficiel = ref([
-  { libelle: 'Programmes nationaux', valeur: '2024-2025', famille: 'Programmes', statut: 'actif' },
-  { libelle: 'Calendrier académique', valeur: 'Version 2.1', famille: 'Calendrier', statut: 'actif' },
-  { libelle: 'Référentiels pédagogiques', valeur: 'À jour', famille: 'Structure', statut: 'mise_a_jour' }
+  { libelle: 'Sections, options et classes', valeur: 'Consultable', famille: 'Structure', statut: 'actif' },
+  { libelle: 'Cours officiels', valeur: 'Consultable', famille: 'Cours', statut: 'actif' },
+  { libelle: 'Programmes académiques', valeur: 'Consultable', famille: 'Programmes', statut: 'mise_a_jour' }
 ]);
 
 const kpiData = ref({
-  anneeActive: '2024-2025',
-  statutAnnee: 'Active',
-  classesCount: 12,
-  classesStatut: 'actives' as const,
-  programmesStatut: 'actifs' as const,
-  calendrierStatut: 'actif' as const,
-  periodeEnCours: 'Trimestre 2',
-  prochainePeriode: 'Examens fin T2'
+  anneeActive: 'À consulter',
+  statutAnnee: 'Années scolaires',
+  classesCount: 0,
+  classesStatut: 'à gérer' as const,
+  programmesStatut: 'à vérifier' as const,
+  calendrierStatut: 'à ouvrir' as const,
+  periodeEnCours: 'À consulter',
+  prochainePeriode: 'À consulter'
 });
 
-// Fonctions de navigation à connecter au routeur métier plus tard.
 const preparerAnneeSuivante = () => {
-  console.log('Navigation vers années scolaires');
+  void router.push('/referentiel/ecole/annees');
 };
 
 const explorerReferentiel = () => {
-  console.log('Navigation vers référentiel officiel');
+  void router.push('/referentiel/ecole/officiel');
 };
 
 const gererClasses = () => {
-  console.log('Navigation vers classes pédagogiques');
+  void router.push('/referentiel/ecole/classes-pedagogiques');
 };
 
 const verifierProgrammes = () => {
-  console.log('Navigation vers programmes niveau');
+  void router.push('/referentiel/ecole/programmes-niveau');
 };
 
 const traiterPriorites = () => {
-  console.log('Traitement des priorités du tableau de bord');
+  void router.push('/referentiel/ecole/annees');
+};
+
+const ouvrirCalendrier = () => {
+  void router.push('/referentiel/ecole/calendriers');
 };
 
 const formatRelativeTime = (date: Date) => {
@@ -177,7 +181,7 @@ onMounted(() => {
 
         <div class="bloc-dashboard__actions">
           <button class="bouton-secondaire button-lift" type="button" @click="traiterPriorites">Traiter les priorités</button>
-          <button class="bouton-minimal" type="button">Masquer</button>
+          <button class="bouton-minimal" type="button" @click="explorerReferentiel">Explorer</button>
         </div>
       </article>
 
@@ -187,7 +191,7 @@ onMounted(() => {
             <BadgeStatut libelle="Classes" />
             <h3>État des classes</h3>
           </div>
-          <button class="bouton-minimal" type="button">Voir tout</button>
+          <button class="bouton-minimal" type="button" @click="gererClasses">Voir tout</button>
         </div>
 
         <div class="tableau-mini">
@@ -202,7 +206,7 @@ onMounted(() => {
             class="tableau-mini__ligne stagger-item"
           >
             <strong>{{ classe.nom }}</strong>
-            <span>{{ classe.effectif }} élèves</span>
+            <span>Ouvrir la page</span>
             <BadgeStatut
               :libelle="classe.statut === 'actif' ? 'Actif' : classe.statut === 'preparation' ? 'Préparation' : 'Clôturé'"
             />
@@ -237,12 +241,12 @@ onMounted(() => {
             <BadgeStatut libelle="Calendrier" />
             <h3>Suivi académique</h3>
           </div>
-          <button class="bouton-minimal" type="button">Ouvrir</button>
+          <button class="bouton-minimal" type="button" @click="ouvrirCalendrier">Ouvrir</button>
         </div>
 
         <div class="calendrier-mini">
-          <p><strong>Période en cours</strong><span>À connecter</span></p>
-          <p><strong>Prochaine période</strong><span>À connecter</span></p>
+          <p><strong>Période en cours</strong><span>À consulter</span></p>
+          <p><strong>Prochaine période</strong><span>À consulter</span></p>
           <p><strong>Statut</strong><span>Préparation attendue</span></p>
         </div>
       </article>

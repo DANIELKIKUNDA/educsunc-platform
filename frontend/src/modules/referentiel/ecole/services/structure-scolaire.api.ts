@@ -6,6 +6,8 @@ import type {
   ReponseListeClassesAcademiques,
   ReponseListeClassesPedagogiques,
   ReponseListeOptionsEtudes,
+  ReponseListeSectionsScolaires,
+  SectionScolaireResume,
 } from '../../commun/types/structure-scolaire.types';
 
 export interface ParametresListeClassesPedagogiques {
@@ -68,6 +70,18 @@ function construireCheminPagine(
 }
 
 export const structureScolaireApi = {
+  async listerSectionsScolaires(
+    parametres?: ParametresPaginationStructure,
+    options?: OptionsRequeteReferentiel,
+  ): Promise<SectionScolaireResume[]> {
+    const reponse = await referentielApi.obtenir<ReponseListeSectionsScolaires>(
+      construireCheminPagine('/api/sections-scolaires', parametres),
+      options,
+    );
+
+    return reponse.donnees;
+  },
+
   async listerClassesAcademiques(
     parametres?: ParametresPaginationStructure,
     options?: OptionsRequeteReferentiel,

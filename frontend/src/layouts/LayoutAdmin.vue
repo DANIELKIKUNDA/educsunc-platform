@@ -9,9 +9,9 @@ import {
   School,
   UserRound,
 } from 'lucide-vue-next';
-import ThemeToggle from '../modules/referentiel/commun/composants/ThemeToggle.vue';
-import { useTheme } from '../composables/useTheme';
 import { onMounted } from 'vue';
+import { useTheme } from '../composables/useTheme';
+import ThemeToggle from '../modules/referentiel/commun/composants/ThemeToggle.vue';
 
 const { initTheme } = useTheme();
 
@@ -37,7 +37,7 @@ onMounted(() => {
         <RouterLink to="/referentiel/ecole/programmes-niveau"><BookOpen class="icone-layout" /> Programmes niveau</RouterLink>
         <RouterLink to="/referentiel/ecole/calendriers"><ClipboardList class="icone-layout" /> Calendriers</RouterLink>
         <p class="layout-admin__menu-section">Maintenance</p>
-        <RouterLink to="/referentiel/ecole/maintenance"><RefreshCw class="icone-layout" /> Migrations</RouterLink>
+        <RouterLink to="/referentiel/ecole/maintenance"><RefreshCw class="icone-layout" /> Mises à jour</RouterLink>
       </nav>
     </aside>
 

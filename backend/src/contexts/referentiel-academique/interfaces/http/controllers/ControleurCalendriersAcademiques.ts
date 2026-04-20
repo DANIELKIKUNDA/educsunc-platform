@@ -1,6 +1,7 @@
 import { ErreurCalendrierInvalide } from '../../../domain/exceptions/ErreurCalendrierInvalide';
 import {
   ConsulterCalendrierAcademique,
+  ConsulterCalendrierParEcoleEtAnnee,
   CreerCalendrierAcademique,
   ModifierPeriodeCalendrier,
   ValiderCalendrierAcademique,
@@ -22,6 +23,8 @@ export class ControleurCalendriersAcademiques {
   private readonly casUsageValiderCalendrierAcademique: ValiderCalendrierAcademique;
   private readonly casUsageVerrouillerCalendrierAcademique: VerrouillerCalendrierAcademique;
   private readonly casUsageConsulterCalendrierAcademique: ConsulterCalendrierAcademique;
+  private readonly casUsageConsulterCalendrierParEcoleEtAnnee:
+    ConsulterCalendrierParEcoleEtAnnee;
 
   // Ce constructeur injecte les cas d'usage exposes par les routes calendaires.
   constructor(
@@ -30,12 +33,15 @@ export class ControleurCalendriersAcademiques {
     casUsageValiderCalendrierAcademique: ValiderCalendrierAcademique,
     casUsageVerrouillerCalendrierAcademique: VerrouillerCalendrierAcademique,
     casUsageConsulterCalendrierAcademique: ConsulterCalendrierAcademique,
+    casUsageConsulterCalendrierParEcoleEtAnnee: ConsulterCalendrierParEcoleEtAnnee,
   ) {
     this.casUsageCreerCalendrierAcademique = casUsageCreerCalendrierAcademique;
     this.casUsageModifierPeriodeCalendrier = casUsageModifierPeriodeCalendrier;
     this.casUsageValiderCalendrierAcademique = casUsageValiderCalendrierAcademique;
     this.casUsageVerrouillerCalendrierAcademique = casUsageVerrouillerCalendrierAcademique;
     this.casUsageConsulterCalendrierAcademique = casUsageConsulterCalendrierAcademique;
+    this.casUsageConsulterCalendrierParEcoleEtAnnee =
+      casUsageConsulterCalendrierParEcoleEtAnnee;
   }
 
   // Cette methode traite la creation HTTP d'un calendrier academique.
@@ -108,6 +114,22 @@ export class ControleurCalendriersAcademiques {
     return CalendrierAcademiquePresenter.presenterCalendrierAcademique(
       sortie.calendrierAcademique,
     );
+  }
+
+  // Cette methode traite la consultation HTTP du calendrier d'une ecole pour une annee.
+  public async consulterCalendrierParEcoleEtAnnee(
+    query: unknown,
+  ): Promise<{ donnee: ReponseCalendrierAcademiqueHttp['donnee'] | null }> {
+    const entree = ValidateurCalendrierAcademiqueHttp.validerConsultationParEcoleEtAnnee(query);
+    const sortie = await this.casUsageConsulterCalendrierParEcoleEtAnnee.executer(entree);
+
+    return {
+      donnee: sortie.calendrierAcademique === null
+        ? null
+        : CalendrierAcademiquePresenter.presenterCalendrierAcademique(
+          sortie.calendrierAcademique,
+        ).donnee,
+    };
   }
 
   // Cette methode traduit le code HTTP d'une periode vers son identifiant applicatif.

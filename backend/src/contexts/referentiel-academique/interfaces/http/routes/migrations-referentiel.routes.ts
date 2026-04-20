@@ -14,6 +14,18 @@ export interface DependancesRoutesMigrationsReferentiel {
 export const creerRoutesMigrationsReferentiel = (
   dependances: DependancesRoutesMigrationsReferentiel,
 ): FastifyPluginAsync => async (serveur) => {
+  serveur.get('/api/migrations-referentiel', async (requete, reponse) => {
+    const resultat = await dependances.executerRouteTenant(
+      requete,
+      () => dependances.controleurMigrationsReferentiel
+        .listerMigrationsReferentielParProgrammeNiveau(requete.query),
+      {
+        mode: 'lecture_organisationnelle_ou_tenant',
+      },
+    );
+    return reponse.code(200).send(resultat);
+  });
+
   serveur.post('/api/migrations-referentiel/analyser', async (requete, reponse) => {
     const resultat = await dependances.executerRouteIdempotente(
       requete,

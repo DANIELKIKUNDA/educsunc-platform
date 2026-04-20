@@ -8,3 +8,4 @@ export * from './ArchiverClassePedagogique';
 export * from './ListerClassesAcademiques';
 export * from './ListerClassesPedagogiquesParEcoleEtAnnee';
 export * from './ListerOptionsEtudes';
+export * from './ListerSectionsScolaires';

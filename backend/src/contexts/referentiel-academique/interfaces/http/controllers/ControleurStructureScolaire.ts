@@ -11,6 +11,7 @@ import {
   ListerClassesAcademiques,
   ListerClassesPedagogiquesParEcoleEtAnnee,
   ListerOptionsEtudes,
+  ListerSectionsScolaires,
   RenommerClassePedagogique,
 } from '../../../application/use-cases/structure';
 import {
@@ -45,6 +46,12 @@ export interface ReponseListeClassesAcademiquesHttp {
   pagination: PaginationHttp;
 }
 
+// Cette interface represente la reponse HTTP paginee des sections scolaires.
+export interface ReponseListeSectionsScolairesHttp {
+  donnees: SectionScolaireSortie[];
+  pagination: PaginationHttp;
+}
+
 // Cette interface represente la reponse HTTP de detail d'une option d'etude.
 export interface ReponseOptionEtudeHttp {
   donnee: OptionEtudeSortie;
@@ -62,6 +69,7 @@ export class ControleurStructureScolaire {
   private readonly casUsageCreerClasseAcademique: CreerClasseAcademique;
   private readonly casUsageCreerOptionEtude: CreerOptionEtude;
   private readonly casUsageCreerClassePedagogique: CreerClassePedagogique;
+  private readonly casUsageListerSectionsScolaires: ListerSectionsScolaires;
   private readonly casUsageListerClassesAcademiques: ListerClassesAcademiques;
   private readonly casUsageListerClassesPedagogiquesParEcoleEtAnnee:
     ListerClassesPedagogiquesParEcoleEtAnnee;
@@ -76,6 +84,7 @@ export class ControleurStructureScolaire {
     casUsageCreerClasseAcademique: CreerClasseAcademique,
     casUsageCreerOptionEtude: CreerOptionEtude,
     casUsageCreerClassePedagogique: CreerClassePedagogique,
+    casUsageListerSectionsScolaires: ListerSectionsScolaires,
     casUsageListerClassesAcademiques: ListerClassesAcademiques,
     casUsageListerClassesPedagogiquesParEcoleEtAnnee: ListerClassesPedagogiquesParEcoleEtAnnee,
     casUsageListerOptionsEtudes: ListerOptionsEtudes,
@@ -87,6 +96,7 @@ export class ControleurStructureScolaire {
     this.casUsageCreerClasseAcademique = casUsageCreerClasseAcademique;
     this.casUsageCreerOptionEtude = casUsageCreerOptionEtude;
     this.casUsageCreerClassePedagogique = casUsageCreerClassePedagogique;
+    this.casUsageListerSectionsScolaires = casUsageListerSectionsScolaires;
     this.casUsageListerClassesAcademiques = casUsageListerClassesAcademiques;
     this.casUsageListerClassesPedagogiquesParEcoleEtAnnee =
       casUsageListerClassesPedagogiquesParEcoleEtAnnee;
@@ -152,6 +162,21 @@ export class ControleurStructureScolaire {
     return {
       donnees: sortie.classesAcademiques.map((classeAcademique) => ({
         ...classeAcademique,
+      })),
+      pagination: this.creerPagination(sortie.total, sortie.page, sortie.taillePage),
+    };
+  }
+
+  // Cette methode traite la liste HTTP paginee des sections scolaires.
+  public async listerSectionsScolaires(
+    query: unknown,
+  ): Promise<ReponseListeSectionsScolairesHttp> {
+    const entree = ValidateurClasseAcademiqueHttp.validerListe(query);
+    const sortie = await this.casUsageListerSectionsScolaires.executer(entree);
+
+    return {
+      donnees: sortie.sectionsScolaires.map((sectionScolaire) => ({
+        ...sectionScolaire,
       })),
       pagination: this.creerPagination(sortie.total, sortie.page, sortie.taillePage),
     };

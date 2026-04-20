@@ -33,6 +33,19 @@ export const creerRoutesCalendriersAcademiques = (
     return reponse.code(200).send(resultat);
   });
 
+  serveur.get('/api/calendriers-academiques', async (requete, reponse) => {
+    const resultat = await dependances.executerRouteTenant(
+      requete,
+      () => dependances.controleurCalendriersAcademiques
+        .consulterCalendrierParEcoleEtAnnee(requete.query),
+      {
+        mode: 'tenant_requis',
+        clesTenant: ['idEcole'],
+      },
+    );
+    return reponse.code(200).send(resultat);
+  });
+
   serveur.patch('/api/calendriers-academiques/:id/periodes/:code', async (requete, reponse) => {
     const resultat = await dependances.executerRouteTenant(
       requete,

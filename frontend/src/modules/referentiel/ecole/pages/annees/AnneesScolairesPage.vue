@@ -122,14 +122,14 @@ const contexteOperationnel = computed(() =>
 
 const statutConnexionBackend = computed(() => {
   if (!contexteEcoleEstConfigure()) {
-    return 'Contexte école manquant';
+    return 'École à connecter';
   }
 
   if (contexteEcoleCourant.idUtilisateur === null) {
-    return 'Utilisateur non configuré';
+    return 'Utilisateur à connecter';
   }
 
-  return 'Connecté';
+  return 'Données synchronisées';
 });
 
 const pagePrecedenteDisponible = computed(() => pagination.value.page > 1);
@@ -145,8 +145,8 @@ const titreFormulaireAnnee = computed(() =>
 
 const descriptionFormulaireAnnee = computed(() =>
   modeFormulaireAnnee.value === 'modification'
-    ? "La modification est limitée aux années planifiées et respecte les règles métier backend."
-    : "Cette action utilise le cas d’usage backend de création. Pour une école neuve, le bouton recommandé reste “Garantir année active”.",
+    ? "La modification est limitée aux années planifiées et respecte les règles métier."
+    : "Cette action crée une année scolaire manuellement. Pour une école neuve, le bouton recommandé reste “Garantir année active”.",
 );
 
 const plagePagination = computed(() => {
@@ -200,7 +200,7 @@ function obtenirDateActivation(annee: AnneeScolaireResume): string {
 
 function obtenirLibelleAlerteContexte(): string | null {
   if (!contexteEcoleEstConfigure()) {
-    return "Contexte école non configuré : ajoute VITE_REFERENTIEL_ECOLE_ID pour charger les années réelles.";
+    return "Aucune école n’est sélectionnée pour charger les années scolaires.";
   }
 
   if (messageUtilisateur.value !== null) {
@@ -241,7 +241,7 @@ async function chargerAnneesScolaires(): Promise<void> {
     anneeActive.value = reponseActive.donnee;
   } catch {
     messageUtilisateur.value =
-      "Les années scolaires n'ont pas pu être chargées. Vérifie que le backend est démarré et que le contexte école est correct.";
+      "Les années scolaires n’ont pas pu être chargées. Vérifie que l’école est bien sélectionnée puis réessaie.";
   } finally {
     chargement.value = false;
   }
@@ -291,13 +291,13 @@ function proposerFormulaireCreation(): FormulaireCreationAnnee {
 function demanderCreationAnnee(): void {
   if (!contexteEcoleEstConfigure() || contexteEcoleCourant.idEcole === null) {
     messageUtilisateur.value =
-      "Contexte école non configuré : la création manuelle est impossible.";
+      "Aucune école n’est sélectionnée : la création manuelle est impossible.";
     return;
   }
 
   if (contexteEcoleCourant.idUtilisateur === null) {
     messageUtilisateur.value =
-      "Utilisateur non configuré : ajoute VITE_REFERENTIEL_UTILISATEUR_ID pour créer une année.";
+      "Aucun utilisateur connecté ne permet de créer une année.";
     return;
   }
 
@@ -416,14 +416,14 @@ function obtenirMessageGarantie(action: string): string {
 function demanderGarantieAnneeActive(): void {
   if (!contexteEcoleEstConfigure() || contexteEcoleCourant.idEcole === null) {
     messageGarantieAnnee.value =
-      "Contexte école non configuré : l’initialisation de l’année active est impossible.";
+      "Aucune école n’est sélectionnée : l’initialisation de l’année active est impossible.";
     confirmationGarantieVisible.value = true;
     return;
   }
 
   if (contexteEcoleCourant.idUtilisateur === null) {
     messageGarantieAnnee.value =
-      "Utilisateur non configuré : ajoute VITE_REFERENTIEL_UTILISATEUR_ID pour garantir l’année active.";
+      "Aucun utilisateur connecté ne permet de garantir l’année active.";
     confirmationGarantieVisible.value = true;
     return;
   }
@@ -467,7 +467,7 @@ async function confirmerGarantieAnneeActive(): Promise<void> {
     await chargerAnneesScolaires();
   } catch {
     messageGarantieAnnee.value =
-      "L’année active n’a pas pu être garantie. Vérifie que le backend est démarré et que le contexte école est correct.";
+      "L’année active n’a pas pu être garantie. Vérifie que l’école est bien sélectionnée puis réessaie.";
   } finally {
     garantieEnCours.value = false;
   }
@@ -476,13 +476,13 @@ async function confirmerGarantieAnneeActive(): Promise<void> {
 function demanderPreparationSuivante(): void {
   if (!contexteEcoleEstConfigure() || contexteEcoleCourant.idEcole === null) {
     messageUtilisateur.value =
-      "Contexte école non configuré : la préparation de l’année suivante est impossible.";
+      "Aucune école n’est sélectionnée : la préparation de l’année suivante est impossible.";
     return;
   }
 
   if (contexteEcoleCourant.idUtilisateur === null) {
     messageUtilisateur.value =
-      "Utilisateur non configuré : ajoute VITE_REFERENTIEL_UTILISATEUR_ID pour préparer l’année suivante.";
+      "Aucun utilisateur connecté ne permet de préparer l’année suivante.";
     return;
   }
 
@@ -538,13 +538,13 @@ async function confirmerPreparationSuivante(): Promise<void> {
 function demanderBasculeAnneeScolaire(): void {
   if (!contexteEcoleEstConfigure() || contexteEcoleCourant.idEcole === null) {
     messageUtilisateur.value =
-      "Contexte école non configuré : la bascule annuelle est impossible.";
+      "Aucune école n’est sélectionnée : la bascule annuelle est impossible.";
     return;
   }
 
   if (contexteEcoleCourant.idUtilisateur === null) {
     messageUtilisateur.value =
-      "Utilisateur non configuré : ajoute VITE_REFERENTIEL_UTILISATEUR_ID pour basculer l’année.";
+      "Aucun utilisateur connecté ne permet de basculer l’année.";
     return;
   }
 
@@ -612,14 +612,14 @@ function obtenirTitreActionSensible(): string {
 
 function obtenirMessageActionSensible(): string {
   if (actionSensibleSelectionnee.value === 'activer') {
-    return "Le backend activera l’année planifiée sélectionnée en respectant la règle d’une seule année active par école.";
+    return "L’année planifiée sélectionnée sera activée en respectant la règle d’une seule année active par école.";
   }
 
   if (actionSensibleSelectionnee.value === 'archiver') {
-    return "Le backend archivera l’année clôturée sélectionnée. Elle restera consultable dans l’historique.";
+    return "L’année clôturée sélectionnée sera archivée et restera consultable dans l’historique.";
   }
 
-  return "Le backend clôturera l’année active sélectionnée. Cette action doit rester volontaire et confirmée.";
+  return "L’année active sélectionnée sera clôturée. Cette action doit rester volontaire et confirmée.";
 }
 
 function demanderActionSensible(
@@ -628,7 +628,7 @@ function demanderActionSensible(
 ): void {
   if (contexteEcoleCourant.idUtilisateur === null) {
     messageUtilisateur.value =
-      "Utilisateur non configuré : ajoute VITE_REFERENTIEL_UTILISATEUR_ID pour exécuter cette action.";
+      "Aucun utilisateur connecté ne permet d’exécuter cette action.";
     return;
   }
 
@@ -670,7 +670,7 @@ async function afficherDetailAnnee(annee: AnneeScolaireResume): Promise<void> {
 function demanderModificationAnnee(annee: AnneeScolaireResume): void {
   if (contexteEcoleCourant.idUtilisateur === null) {
     messageUtilisateur.value =
-      "Utilisateur non configuré : ajoute VITE_REFERENTIEL_UTILISATEUR_ID pour modifier une année.";
+      "Aucun utilisateur connecté ne permet de modifier une année.";
     return;
   }
 
@@ -731,7 +731,7 @@ async function confirmerActionSensible(): Promise<void> {
     await chargerAnneesScolaires();
   } catch {
     messageUtilisateur.value =
-      "L’action demandée n’a pas pu être terminée. Le backend a conservé les règles métier.";
+      "L’action demandée n’a pas pu être terminée. Les règles métier ont été conservées.";
   } finally {
     actionSensibleEnCours.value = false;
   }
@@ -782,7 +782,7 @@ onMounted(() => {
           class="bouton-annee bouton-annee--principal"
           type="button"
           :disabled="!garantiePossible"
-          :title="!contexteOperationnel ? 'Configure VITE_REFERENTIEL_ECOLE_ID et VITE_REFERENTIEL_UTILISATEUR_ID.' : ''"
+          :title="!contexteOperationnel ? 'Sélectionne une école et un utilisateur avant de continuer.' : ''"
           @click="demanderGarantieAnneeActive"
         >
           <Plus :size="17" />
@@ -792,7 +792,7 @@ onMounted(() => {
           class="bouton-annee"
           type="button"
           :disabled="!preparationPossible"
-          :title="!contexteOperationnel ? 'Configure VITE_REFERENTIEL_ECOLE_ID et VITE_REFERENTIEL_UTILISATEUR_ID.' : ''"
+          :title="!contexteOperationnel ? 'Sélectionne une école et un utilisateur avant de continuer.' : ''"
           @click="demanderPreparationSuivante"
         >
           <RefreshCw :size="17" />
@@ -802,7 +802,7 @@ onMounted(() => {
           class="bouton-annee bouton-annee--accent"
           type="button"
           :disabled="!basculePossible"
-          :title="!contexteOperationnel ? 'Configure VITE_REFERENTIEL_ECOLE_ID et VITE_REFERENTIEL_UTILISATEUR_ID.' : anneeActive === null ? 'Aucune année active disponible pour basculer.' : ''"
+          :title="!contexteOperationnel ? 'Sélectionne une école et un utilisateur avant de continuer.' : anneeActive === null ? 'Aucune année active disponible pour basculer.' : ''"
           @click="demanderBasculeAnneeScolaire"
         >
           <Zap :size="17" />
@@ -814,7 +814,7 @@ onMounted(() => {
     <section class="annees-page__titre">
       <div>
         <h2>Années scolaires</h2>
-        <p>Suivi administratif des années scolaires de l’école, connecté en lecture au backend.</p>
+        <p>Suivi administratif des années scolaires de l’école, avec données synchronisées.</p>
       </div>
       <div class="annees-page__titre-actions">
         <span class="badge-info" :data-etat="statutConnexionBackend">{{ statutConnexionBackend }}</span>
@@ -822,7 +822,7 @@ onMounted(() => {
           class="bouton-annee"
           type="button"
           :disabled="!creationPossible"
-          :title="!contexteOperationnel ? 'Configure VITE_REFERENTIEL_ECOLE_ID et VITE_REFERENTIEL_UTILISATEUR_ID.' : ''"
+          :title="!contexteOperationnel ? 'Sélectionne une école et un utilisateur avant de continuer.' : ''"
           @click="demanderCreationAnnee"
         >
           <Calendar :size="17" />
@@ -895,7 +895,7 @@ onMounted(() => {
           </p>
           <p>
             <AlertTriangle :size="18" />
-            Les actions sont confirmées via un dialogue avant tout appel backend.
+            Les actions sensibles sont confirmées avant exécution.
           </p>
         </div>
       </article>
@@ -903,7 +903,7 @@ onMounted(() => {
       <article class="bloc-annees">
         <div class="bloc-annees__header">
           <h3>Liste des années scolaires</h3>
-          <span class="badge-info">{{ chargement ? 'Chargement' : 'Backend' }}</span>
+          <span class="badge-info">{{ chargement ? 'Chargement' : 'Données à jour' }}</span>
         </div>
 
         <div class="tableau-annees">
@@ -1078,7 +1078,7 @@ onMounted(() => {
         <div>
           <h3 id="titre-confirmation-garantie">Garantir l’année active ?</h3>
           <p>
-            Le backend vérifiera l’école courante. Si aucune année n’existe encore,
+            Le système vérifiera l’école courante. Si aucune année n’existe encore,
             il proposera automatiquement l’année scolaire RDC courante puis l’activera.
           </p>
         </div>
@@ -1116,7 +1116,7 @@ onMounted(() => {
         <div>
           <h3 id="titre-confirmation-preparation">Préparer l’année suivante ?</h3>
           <p>
-            Le backend créera l’année scolaire suivante si elle n’existe pas encore.
+            Le système créera l’année scolaire suivante si elle n’existe pas encore.
             L’opération est protégée par une clé d’idempotence.
           </p>
         </div>
@@ -1150,7 +1150,7 @@ onMounted(() => {
         <div>
           <h3 id="titre-confirmation-bascule">Basculer l’année scolaire ?</h3>
           <p>
-            Le backend clôturera l’année active et activera l’année suivante.
+            Le système clôturera l’année active et activera l’année suivante.
             Si la suivante n’existe pas encore, elle sera créée par le cas d’usage prévu.
           </p>
         </div>
@@ -1219,10 +1219,10 @@ onMounted(() => {
         <div>
           <h3 id="titre-detail-annee">Détail de l’année scolaire</h3>
           <p v-if="consultationDetailEnCours">
-            Chargement du détail depuis le backend...
+            Chargement du détail...
           </p>
           <p v-else-if="anneeDetail !== null">
-            Données relues depuis le backend pour éviter d’afficher un état local dépassé.
+            Données relues pour éviter d’afficher un état local dépassé.
           </p>
         </div>
         <dl v-if="anneeDetail !== null" class="detail-annee">

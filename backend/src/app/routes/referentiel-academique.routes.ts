@@ -15,6 +15,7 @@ import {
 } from '../../contexts/referentiel-academique/application/use-cases/annees';
 import {
   ConsulterCalendrierAcademique,
+  ConsulterCalendrierParEcoleEtAnnee,
   CreerCalendrierAcademique,
   ModifierPeriodeCalendrier,
   ValiderCalendrierAcademique,
@@ -35,6 +36,7 @@ import {
   AnnulerMigrationReferentiel,
   AppliquerMigrationReferentiel,
   ConsulterRapportMigration,
+  ListerMigrationsReferentielParProgrammeNiveau,
   RelancerRecalculApresMigration,
 } from '../../contexts/referentiel-academique/application/use-cases/migrations';
 import {
@@ -77,6 +79,7 @@ import {
   ListerClassesAcademiques,
   ListerClassesPedagogiquesParEcoleEtAnnee,
   ListerOptionsEtudes,
+  ListerSectionsScolaires,
   RenommerClassePedagogique,
 } from '../../contexts/referentiel-academique/application/use-cases/structure';
 import {
@@ -313,6 +316,7 @@ function composerRoutesReferentielAcademique(): CompositionRoutesReferentielAcad
       serviceTransactionApplication,
       serviceJournalAudit,
     ),
+    new ListerSectionsScolaires(depots.depotSectionScolaire),
     new ListerClassesAcademiques(depots.depotClasseAcademique),
     new ListerClassesPedagogiquesParEcoleEtAnnee(
       depots.depotClassePedagogique,
@@ -435,6 +439,7 @@ function composerRoutesReferentielAcademique(): CompositionRoutesReferentielAcad
       serviceJournalAudit,
     ),
     new ConsulterCalendrierAcademique(depots.depotCalendrierAcademique),
+    new ConsulterCalendrierParEcoleEtAnnee(depots.depotCalendrierAcademique),
   );
 
   const controleurMigrationsReferentiel = new ControleurMigrationsReferentiel(
@@ -465,6 +470,9 @@ function composerRoutesReferentielAcademique(): CompositionRoutesReferentielAcad
       serviceJournalAudit,
     ),
     new ConsulterRapportMigration(depots.depotMigrationReferentielProgramme),
+    new ListerMigrationsReferentielParProgrammeNiveau(
+      depots.depotMigrationReferentielProgramme,
+    ),
     new RelancerRecalculApresMigration(depots.depotMigrationReferentielProgramme),
   );
 

@@ -1,4 +1,5 @@
 import { ConsulterCalendrierAcademiqueEntree } from '../../../application/dto/input/ConsulterCalendrierAcademiqueEntree';
+import { ConsulterCalendrierParEcoleEtAnneeEntree } from '../../../application/dto/input/ConsulterCalendrierParEcoleEtAnneeEntree';
 import { CreerCalendrierAcademiqueEntree } from '../../../application/dto/input/CreerCalendrierAcademiqueEntree';
 import { PeriodeCalendrierEntree } from '../../../application/dto/input/PeriodeCalendrierEntree';
 import { ValiderCalendrierAcademiqueEntree } from '../../../application/dto/input/ValiderCalendrierAcademiqueEntree';
@@ -188,6 +189,21 @@ export class ValidateurCalendrierAcademiqueHttp {
       idCalendrierAcademique: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
         donnees,
         'id',
+      ),
+    };
+  }
+
+  // Cette methode valide la consultation du calendrier d'une ecole pour une annee scolaire.
+  public static validerConsultationParEcoleEtAnnee(
+    query: unknown,
+  ): ConsulterCalendrierParEcoleEtAnneeEntree {
+    const donnees = OutilsValidationHttpReferentielAcademique.obtenirObjet(query, 'query');
+
+    return {
+      idEcole: OutilsValidationHttpReferentielAcademique.lireChaineRequise(donnees, 'idEcole'),
+      idAnneeScolaire: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
+        donnees,
+        'idAnneeScolaire',
       ),
     };
   }

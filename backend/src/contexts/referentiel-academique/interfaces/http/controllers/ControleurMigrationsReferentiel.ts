@@ -4,10 +4,12 @@ import {
   AnnulerMigrationReferentiel,
   AppliquerMigrationReferentiel,
   ConsulterRapportMigration,
+  ListerMigrationsReferentielParProgrammeNiveau,
   RelancerRecalculApresMigration,
 } from '../../../application/use-cases/migrations';
 import {
   MigrationReferentielPresenter,
+  ReponseListeMigrationsReferentielHttp,
   ReponseMigrationReferentielHttp,
   ReponseRapportMigrationHttp,
 } from '../presenters/MigrationReferentielPresenter';
@@ -28,6 +30,8 @@ export class ControleurMigrationsReferentiel {
   private readonly casUsageAppliquerMigrationReferentiel: AppliquerMigrationReferentiel;
   private readonly casUsageAnnulerMigrationReferentiel: AnnulerMigrationReferentiel;
   private readonly casUsageConsulterRapportMigration: ConsulterRapportMigration;
+  private readonly casUsageListerMigrationsReferentielParProgrammeNiveau:
+    ListerMigrationsReferentielParProgrammeNiveau;
   private readonly casUsageRelancerRecalculApresMigration: RelancerRecalculApresMigration;
 
   // Ce constructeur injecte les cas d'usage exposes par les routes de migration.
@@ -36,13 +40,28 @@ export class ControleurMigrationsReferentiel {
     casUsageAppliquerMigrationReferentiel: AppliquerMigrationReferentiel,
     casUsageAnnulerMigrationReferentiel: AnnulerMigrationReferentiel,
     casUsageConsulterRapportMigration: ConsulterRapportMigration,
+    casUsageListerMigrationsReferentielParProgrammeNiveau:
+      ListerMigrationsReferentielParProgrammeNiveau,
     casUsageRelancerRecalculApresMigration: RelancerRecalculApresMigration,
   ) {
     this.casUsageAnalyserMigrationReferentiel = casUsageAnalyserMigrationReferentiel;
     this.casUsageAppliquerMigrationReferentiel = casUsageAppliquerMigrationReferentiel;
     this.casUsageAnnulerMigrationReferentiel = casUsageAnnulerMigrationReferentiel;
     this.casUsageConsulterRapportMigration = casUsageConsulterRapportMigration;
+    this.casUsageListerMigrationsReferentielParProgrammeNiveau =
+      casUsageListerMigrationsReferentielParProgrammeNiveau;
     this.casUsageRelancerRecalculApresMigration = casUsageRelancerRecalculApresMigration;
+  }
+
+  // Cette methode traite le listage HTTP des migrations d'un programme niveau.
+  public async listerMigrationsReferentielParProgrammeNiveau(
+    query: unknown,
+  ): Promise<ReponseListeMigrationsReferentielHttp> {
+    const entree = ValidateurMigrationReferentielHttp.validerListe(query);
+    const sortie = await this.casUsageListerMigrationsReferentielParProgrammeNiveau
+      .executer(entree);
+
+    return MigrationReferentielPresenter.presenterListeMigrationsReferentiel(sortie);
   }
 
   // Cette methode traite l'analyse HTTP d'une migration de referentiel.

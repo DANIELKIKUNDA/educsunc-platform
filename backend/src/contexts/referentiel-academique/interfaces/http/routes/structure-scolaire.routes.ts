@@ -74,6 +74,16 @@ export const creerRoutesStructureScolaire = (
     return reponse.code(200).send(resultat);
   });
 
+  serveur.get('/api/sections-scolaires', async (requete, reponse) => {
+    const resultat = await dependances.executerRouteTenant(
+      requete,
+      () => dependances.controleurStructureScolaire.listerSectionsScolaires(
+        requete.query,
+      ),
+    );
+    return reponse.code(200).send(resultat);
+  });
+
   serveur.get('/api/classes-pedagogiques', async (requete, reponse) => {
     const resultat = await dependances.executerRouteTenant(
       requete,

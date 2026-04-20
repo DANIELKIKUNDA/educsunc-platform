@@ -3,11 +3,29 @@ import { AnnulerMigrationReferentielEntree } from '../../../application/dto/inpu
 import { AppliquerMigrationReferentielEntree } from '../../../application/dto/input/AppliquerMigrationReferentielEntree';
 import { ConsulterRapportMigrationEntree } from '../../../application/dto/input/ConsulterRapportMigrationEntree';
 import { DemandeTransformationNoteEntree } from '../../../application/dto/input/DemandeTransformationNoteEntree';
+import { ListerMigrationsReferentielParProgrammeNiveauEntree } from '../../../application/dto/input/ListerMigrationsReferentielParProgrammeNiveauEntree';
 import { RelancerRecalculApresMigrationEntree } from '../../../application/dto/input/RelancerRecalculApresMigrationEntree';
 import { OutilsValidationHttpReferentielAcademique } from './OutilsValidationHttpReferentielAcademique';
 
 // Ce validateur gere la validation HTTP des routes de migrations de referentiel.
 export class ValidateurMigrationReferentielHttp {
+  // Cette methode valide la requete HTTP de listage des migrations par programme niveau.
+  public static validerListe(
+    query: unknown,
+  ): ListerMigrationsReferentielParProgrammeNiveauEntree {
+    const donnees = OutilsValidationHttpReferentielAcademique.obtenirObjet(query, 'query');
+    const pagination = OutilsValidationHttpReferentielAcademique.lirePagination(query);
+
+    return {
+      idProgrammeNiveau: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
+        donnees,
+        'idProgrammeNiveau',
+      ),
+      page: pagination.page,
+      taillePage: pagination.taillePage,
+    };
+  }
+
   // Cette methode valide la requete HTTP d'analyse d'une migration.
   public static validerAnalyse(
     corps: unknown,

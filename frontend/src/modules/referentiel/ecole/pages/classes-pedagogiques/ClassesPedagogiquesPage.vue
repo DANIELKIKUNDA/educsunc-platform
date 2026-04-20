@@ -147,7 +147,7 @@ const titreFormulaire = computed(() =>
 
 const descriptionFormulaire = computed(() =>
   modeFormulaire.value === 'renommage'
-    ? 'Le backend modifiera uniquement le libellé de la classe pédagogique sélectionnée.'
+    ? 'Seul le libellé de la classe pédagogique sélectionnée sera modifié.'
     : 'La classe sera créée dans l’année active de l’école courante.',
 );
 
@@ -463,8 +463,8 @@ function obtenirTitreActionSensible(): string {
 
 function obtenirMessageActionSensible(): string {
   return actionSelectionnee.value === 'archiver'
-    ? 'Le backend archivera la classe pédagogique sélectionnée. Elle restera traçable dans l’historique.'
-    : 'Le backend désactivera la classe pédagogique sélectionnée sans la supprimer.';
+    ? 'La classe pédagogique sélectionnée sera archivée et restera traçable dans l’historique.'
+    : 'La classe pédagogique sélectionnée sera désactivée sans être supprimée.';
 }
 
 async function confirmerActionSensible(): Promise<void> {
@@ -502,7 +502,7 @@ async function confirmerActionSensible(): Promise<void> {
     await chargerClassesPedagogiques();
   } catch {
     messageAction.value =
-      'L’action n’a pas pu être terminée. Le backend a conservé les règles métier.';
+      'L’action n’a pas pu être terminée. Les règles métier ont été conservées.';
   } finally {
     actionSensibleEnCours.value = false;
   }
@@ -599,7 +599,7 @@ onMounted(() => {
         <input v-model="recherche" type="search" placeholder="Rechercher..." />
       </label>
       <span class="classes-selecteur">Année : {{ obtenirLibelleAnneeActive() }}</span>
-      <span class="classes-selecteur">Backend : {{ chargement ? 'Chargement' : 'Connecté' }}</span>
+      <span class="classes-selecteur">{{ chargement ? 'Chargement' : 'Données à jour' }}</span>
     </section>
 
     <p v-if="messageSucces !== null" class="message-page message-page--succes">
@@ -786,7 +786,7 @@ onMounted(() => {
       <article class="classes-dialogue__carte">
         <div>
           <h3 id="titre-detail-classe">Détail de la classe pédagogique</h3>
-          <p>Données retournées par le backend pour l’année active.</p>
+          <p>Données de l’année active.</p>
         </div>
         <dl class="classes-detail">
           <div>
