@@ -19,7 +19,7 @@ export interface EnregistrementIdempotence {
   readonly creeLe: Date;
 }
 
-// Ce contrat abstrait le stockage technique des cles d'idempotence du BC.
+// Ce contrat abstrait le stockage technique des cles d'idempotence partagees.
 export interface IdempotencyStore {
   // Cette methode indique si une cle non expiree existe deja.
   existe(cle: string, dateReference?: Date): Promise<boolean>;

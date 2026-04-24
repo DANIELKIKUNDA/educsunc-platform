@@ -1,12 +1,12 @@
 import { randomUUID } from 'node:crypto';
-import type { ClientPostgresReferentielAcademique } from '../persistence/postgres/depots/ClientPostgresReferentielAcademique';
-import { InfrastructureError } from '../../../../shared/exceptions/InfrastructureError';
-import { ValidationError } from '../../../../shared/exceptions/ValidationError';
+import type { ClientPostgresReferentielAcademique } from 'contexts/referentiel-academique/infrastructure/persistence/postgres/depots/ClientPostgresReferentielAcademique';
+import { InfrastructureError } from 'shared/exceptions/InfrastructureError';
+import { ValidationError } from 'shared/exceptions/ValidationError';
 import type {
   CommandeEnregistrementIdempotence,
   EnregistrementIdempotence,
   IdempotencyStore,
-} from './IdempotencyStore';
+} from 'shared/infrastructure/idempotency/IdempotencyStore';
 
 interface LigneIdempotencePostgres {
   cle: string;

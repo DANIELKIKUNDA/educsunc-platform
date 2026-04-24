@@ -31,7 +31,7 @@ import type {
   CommandeEnregistrementIdempotence,
   EnregistrementIdempotence,
   IdempotencyStore,
-} from '../infrastructure/idempotency/IdempotencyStore';
+} from 'shared/infrastructure/idempotency/IdempotencyStore';
 import { creerExecuteurRouteIdempotenteReferentielAcademique } from '../interfaces/http/routes/ExecutionRouteIdempotenteReferentielAcademique';
 import { creerExecuteurRouteTenantReferentielAcademique } from '../interfaces/http/routes/ExecutionRouteTenantReferentielAcademique';
 

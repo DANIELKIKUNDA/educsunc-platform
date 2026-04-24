@@ -102,7 +102,7 @@ import {
   creerExecuteurRouteTenantReferentielAcademique,
   creerRoutesReferentielAcademique,
 } from '../../contexts/referentiel-academique/interfaces/http/routes';
-import { PostgresIdempotencyStore } from '../../contexts/referentiel-academique/infrastructure/idempotency/PostgresIdempotencyStore';
+import { PostgresIdempotencyStore } from 'shared/infrastructure/idempotency/PostgresIdempotencyStore';
 import {
   DepotAnneeScolairePostgres,
   DepotCalendrierAcademiquePostgres,

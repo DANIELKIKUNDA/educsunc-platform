@@ -6,7 +6,7 @@ import type {
   CommandeEnregistrementIdempotence,
   EnregistrementIdempotence,
   IdempotencyStore,
-} from '../infrastructure/idempotency/IdempotencyStore';
+} from 'shared/infrastructure/idempotency/IdempotencyStore';
 import { ContexteExecutionTenantReferentielAcademique } from '../infrastructure/tenancy/ContexteExecutionTenantReferentielAcademique';
 import {
   creerExecuteurRouteIdempotenteReferentielAcademique,

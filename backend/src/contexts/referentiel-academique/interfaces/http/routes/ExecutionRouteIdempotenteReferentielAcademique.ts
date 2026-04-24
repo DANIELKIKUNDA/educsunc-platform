@@ -1,6 +1,6 @@
 import type { FastifyRequest } from 'fastify';
 import { ValidationError } from '../../../../../shared/exceptions/ValidationError';
-import { IdempotencyStore } from '../../../infrastructure/idempotency/IdempotencyStore';
+import { IdempotencyStore } from 'shared/infrastructure/idempotency/IdempotencyStore';
 
 const STATUT_IDEMPOTENCE_EN_COURS = 'EN_COURS';
 const STATUT_IDEMPOTENCE_TERMINEE = 'TERMINEE';
