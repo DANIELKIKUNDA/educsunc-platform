@@ -6,10 +6,9 @@ import { routePaiementsFacturation } from './paiements-facturation.routes';
 import { routeReferentielAcademique } from './referentiel-academique.routes';
 import { routeScolariteEleves } from './scolarite-eleves.routes';
 
-const routesActives = [routeReferentielAcademique];
+const routesActives = [routeReferentielAcademique, routeScolariteEleves];
 
 const routesPrevues = [
-  routeScolariteEleves,
   routePaiementsFacturation,
   routeBulletinsEvaluations,
 ];
@@ -18,6 +17,7 @@ const routesPrevues = [
 export const registerGlobalRoutes: FastifyPluginAsync = async (serveur) => {
   await serveur.register(routeHealth);
   await serveur.register(routeReferentielAcademique);
+  await serveur.register(routeScolariteEleves);
 
   serveur.log.debug(
     {
