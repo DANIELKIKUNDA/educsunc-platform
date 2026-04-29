@@ -1,6 +1,7 @@
 import { Paiement } from '../aggregates/Paiement';
 import { RecuPaiement } from '../aggregates/RecuPaiement';
 import { ObligationFinanciereEleve } from '../aggregates/ObligationFinanciereEleve';
+import { convertirMontantEnLettres } from 'shared/utils/montantEnLettres';
 
 export class MoteurRecu {
   public generer(paiement: Paiement, obligations: Map<string, ObligationFinanciereEleve>, idCaissier: string): RecuPaiement[] {
@@ -22,7 +23,13 @@ export class MoteurRecu {
         referenceFrais: obligation.obtenirReferenceFrais(),
         libelle: obligation.obtenirLibelle(),
         montant: repartition.obtenirMontantAffecte(),
-        montantEnLettres: `${repartition.obtenirMontantAffecte().obtenirMontant()} ${repartition.obtenirMontantAffecte().obtenirDevise()}`,
+        montantEnLettres: convertirMontantEnLettres(
+          repartition.obtenirMontantAffecte().obtenirMontant(),
+          {
+            devise: repartition.obtenirMontantAffecte().obtenirDevise(),
+            majusculeInitiale: true,
+          },
+        ),
         modePaiement: paiement.obtenirModePaiement(),
         idCaissier,
         dateEmission: new Date(),
