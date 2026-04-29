@@ -1,0 +1,8 @@
+// Ce value object enumere les categories de frais Etat.
+export enum CategorieFraisEtat {
+  MATERNELLE = 'MATERNELLE',
+  PRIMAIRE = 'PRIMAIRE',
+  SECONDAIRE_EB = 'SECONDAIRE_EB',
+  SECONDAIRE_GENERALE = 'SECONDAIRE_GENERALE',
+  SECONDAIRE_TECHNIQUE = 'SECONDAIRE_TECHNIQUE',
+}

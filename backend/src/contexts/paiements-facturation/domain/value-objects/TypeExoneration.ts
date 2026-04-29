@@ -1,0 +1,9 @@
+// Ce value object enumere les types d'exoneration supportes.
+export enum TypeExoneration {
+  ENFANT_PROMOTEUR = 'ENFANT_PROMOTEUR',
+  FAMILLE_NOMBREUSE = 'FAMILLE_NOMBREUSE',
+  CAS_SOCIAL = 'CAS_SOCIAL',
+  PRISE_EN_CHARGE = 'PRISE_EN_CHARGE',
+  DECISION_ADMINISTRATIVE = 'DECISION_ADMINISTRATIVE',
+  AUTRE = 'AUTRE',
+}

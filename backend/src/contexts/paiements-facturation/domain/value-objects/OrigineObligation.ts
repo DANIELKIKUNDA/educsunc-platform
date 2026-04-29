@@ -1,0 +1,7 @@
+// Ce value object enumere l'origine de creation d'une obligation.
+export enum OrigineObligation {
+  GENERATION_INITIALE = 'GENERATION_INITIALE',
+  GENERATION_ARRIERE = 'GENERATION_ARRIERE',
+  GENERATION_ANTICIPEE = 'GENERATION_ANTICIPEE',
+  AJUSTEMENT_ADMINISTRATIF = 'AJUSTEMENT_ADMINISTRATIF',
+}
