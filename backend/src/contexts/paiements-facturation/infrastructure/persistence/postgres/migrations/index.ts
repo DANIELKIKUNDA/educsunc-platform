@@ -1,0 +1,15 @@
+// Ce fichier regroupe les migrations PostgreSQL du BC Paiements & Facturation.
+export * from './MigrationPostgresPaiementsFacturation';
+export * from './Migration_001_CreateParametresPaiementEcole';
+export * from './Migration_002_CreateGrillesTarification';
+export * from './Migration_003_CreateObligationsFinancieres';
+export * from './Migration_004_CreatePaiements';
+export * from './Migration_005_CreateRepartitionsPaiement';
+export * from './Migration_006_CreateRecusPaiement';
+export * from './Migration_007_CreateCaisseJour';
+export * from './Migration_008_CreateOperationsCaisse';
+export * from './Migration_009_CreateExonerations';
+export * from './Migration_010_CreatePlansAnticipationFrais';
+export * from './Migration_011_CreateRestitutions';
+export * from './Migration_012_CreateAnnulationsPaiement';
+export * from './MigrateurPostgresPaiementsFacturation';
