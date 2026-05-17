@@ -1,0 +1,65 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import type { ConsulterBulletinEleveUseCase } from 'contexts/bulletins-evaluations/application/use-cases/ConsulterBulletinEleve/ConsulterBulletinEleveUseCase';
+import type { ConsulterHistoriqueBulletinUseCase } from 'contexts/bulletins-evaluations/application/use-cases/ConsulterHistoriqueBulletin/ConsulterHistoriqueBulletinUseCase';
+import type { GenererBulletinEleveUseCase } from 'contexts/bulletins-evaluations/application/use-cases/GenererBulletinEleve/GenererBulletinEleveUseCase';
+import { BulletinsController } from 'contexts/bulletins-evaluations/interfaces/http/controllers/BulletinsController';
+import { EtatBulletin } from 'contexts/bulletins-evaluations/domain/value-objects/EtatBulletin';
+import { PdfPortMemoire } from '../../mocks/BulletinsEvaluationsMocks';
+
+// Ce fichier couvre les controllers HTTP principaux du BC.
+test('le controller bulletins valide, appelle les cas d usage et presente les sorties', async () => {
+  const controller = new BulletinsController(
+    {
+      async executer() {
+        return {
+          idBulletinEleve: 'bulletin-1',
+          idEleve: 'eleve-1',
+          idInscriptionScolaire: 'inscription-1',
+          idClassePedagogique: 'classe-1',
+          idAnneeScolaire: 'annee-1',
+          etatBulletin: EtatBulletin.GENERE,
+          versionBulletin: 1,
+          lignes: [],
+          blocsApplicationConduite: [],
+        };
+      },
+    } as unknown as GenererBulletinEleveUseCase,
+    {
+      async executer() {
+        return {
+          idBulletinEleve: 'bulletin-1',
+          idEleve: 'eleve-1',
+          idInscriptionScolaire: 'inscription-1',
+          idClassePedagogique: 'classe-1',
+          idAnneeScolaire: 'annee-1',
+          etatBulletin: EtatBulletin.GENERE,
+          versionBulletin: 1,
+          lignes: [],
+          blocsApplicationConduite: [],
+        };
+      },
+    } as unknown as ConsulterBulletinEleveUseCase,
+    {
+      async executer() {
+        return [{ versionBulletin: 1 }];
+      },
+    } as unknown as ConsulterHistoriqueBulletinUseCase,
+    new PdfPortMemoire(),
+  );
+
+  const generation = await controller.generer({
+    idEleve: 'eleve-1',
+    idInscriptionScolaire: 'inscription-1',
+    idAnneeScolaire: 'annee-1',
+    idUtilisateur: 'user-1',
+    typeGeneration: 'PROGRESSIF',
+  }, {});
+  assert.equal((generation.donnee as { idEleve: string }).idEleve, 'eleve-1');
+
+  const consultation = await controller.consulter({ idEleve: 'eleve-1', idAnneeScolaire: 'annee-1' });
+  assert.equal((consultation.donnee as { idBulletinEleve: string }).idBulletinEleve, 'bulletin-1');
+
+  const historique = await controller.consulterHistorique({ idBulletinEleve: 'bulletin-1' });
+  assert.equal((historique.donnee as Array<{ versionBulletin: number }>)[0].versionBulletin, 1);
+});
