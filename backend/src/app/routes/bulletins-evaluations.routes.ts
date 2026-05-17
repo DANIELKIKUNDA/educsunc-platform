@@ -187,6 +187,7 @@ function composerRoutesBulletinsEvaluations(): CompositionRoutesBulletinsEvaluat
   );
   const corrigerCoteUseCase = new CorrigerCoteUseCase(modifierCoteUseCase, viderCoteUseCase);
   const consulterFicheCotationUseCase = new ConsulterFicheCotationUseCase(new PostgresFicheCotationQuery());
+  void corrigerCoteUseCase;
 
   const recalculerResultatEleveUseCase = new RecalculerResultatEleveUseCase(
     depotResultat,
@@ -205,6 +206,7 @@ function composerRoutesBulletinsEvaluations(): CompositionRoutesBulletinsEvaluat
     scolariteAdapter,
     eventBus,
   );
+  void recalculerResultatEleveUseCase;
   const encoderConduiteUseCase = new EncoderConduiteUseCase(
     depotResultat,
     infrastructureBulletins.uniteDeTravail,

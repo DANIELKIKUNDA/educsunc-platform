@@ -30,7 +30,6 @@ import { MotifNonClasse } from 'contexts/bulletins-evaluations/domain/value-obje
 import { SexeEleve } from 'contexts/bulletins-evaluations/domain/value-objects/SexeEleve';
 import { StatutMigrationBulletin } from 'contexts/bulletins-evaluations/domain/value-objects/StatutMigrationBulletin';
 import { StatutProclamationEleve } from 'contexts/bulletins-evaluations/domain/value-objects/StatutProclamationEleve';
-import { StyleAffichageCote } from 'contexts/bulletins-evaluations/domain/value-objects/StyleAffichageCote';
 import { TypeDiffBulletin } from 'contexts/bulletins-evaluations/domain/value-objects/TypeDiffBulletin';
 import { TypeProclamation } from 'contexts/bulletins-evaluations/domain/value-objects/TypeProclamation';
 import { TypeStructureEvaluation } from 'contexts/bulletins-evaluations/domain/value-objects/TypeStructureEvaluation';

@@ -3,7 +3,7 @@ import { EleveAbandonProclamation } from '../entities/EleveAbandonProclamation';
 import { EleveNonClasseProclamation } from '../entities/EleveNonClasseProclamation';
 import { HistoriqueGenerationProclamation } from '../entities/HistoriqueGenerationProclamation';
 import { LigneProclamationClasse } from '../entities/LigneProclamationClasse';
-import { StatistiquesProclamationClasse, StatistiquesProclamationClasseProps } from '../entities/StatistiquesProclamationClasse';
+import { StatistiquesProclamationClasse } from '../entities/StatistiquesProclamationClasse';
 import { AbandonsProclamationDetectes } from '../events/AbandonsProclamationDetectes';
 import { NonClassesProclamationDetectes } from '../events/NonClassesProclamationDetectes';
 import { ProclamationClasseGeneree } from '../events/ProclamationClasseGeneree';
@@ -69,6 +69,41 @@ export class ProclamationClasse extends RacineAgregat<string> {
   // Cette methode expose les lignes classees de la proclamation.
   public obtenirLignesProclamation(): LigneProclamationClasse[] {
     return [...this.lignesProclamation];
+  }
+
+  // Cette methode expose l'ecole rattachee a la proclamation.
+  public obtenirIdEcole(): string {
+    return this.idEcole;
+  }
+
+  // Cette methode expose l'annee scolaire rattachee a la proclamation.
+  public obtenirIdAnneeScolaire(): string {
+    return this.idAnneeScolaire;
+  }
+
+  // Cette methode expose la colonne de bulletin utilisee pour la proclamation.
+  public obtenirCodeColonne(): CodeColonneBulletin {
+    return this.codeColonne;
+  }
+
+  // Cette methode expose le type metier de proclamation.
+  public obtenirTypeProclamation(): TypeProclamation {
+    return this.typeProclamation;
+  }
+
+  // Cette methode expose la date de generation courante.
+  public obtenirDateGeneration(): Date {
+    return this.dateGeneration;
+  }
+
+  // Cette methode expose l'utilisateur ayant genere la proclamation.
+  public obtenirGenereePar(): string {
+    return this.genereePar;
+  }
+
+  // Cette methode expose la version du programme de reference.
+  public obtenirVersionReferentielProgramme(): string {
+    return this.versionReferentielProgramme;
   }
 
   // Cette methode expose les eleves declares non classes.

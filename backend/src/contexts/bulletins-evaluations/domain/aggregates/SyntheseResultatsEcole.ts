@@ -2,7 +2,6 @@ import { RacineAgregat } from '../../../../shared/domain/AggregateRoot';
 import { LigneSyntheseResultatsClasse } from '../entities/LigneSyntheseResultatsClasse';
 import { StatistiquesProclamationClasseProps } from '../entities/StatistiquesProclamationClasse';
 import { TotauxSyntheseEcole } from '../entities/TotauxSyntheseEcole';
-import { ProclamationClasse } from './ProclamationClasse';
 import { SyntheseResultatsEcoleGeneree } from '../events/SyntheseResultatsEcoleGeneree';
 import { TotauxSyntheseEcoleCalcules } from '../events/TotauxSyntheseEcoleCalcules';
 import { ErreurSyntheseResultatsIncoherente } from '../exceptions/ErreurSyntheseResultatsIncoherente';
@@ -49,6 +48,31 @@ export class SyntheseResultatsEcole extends RacineAgregat<string> {
   // Cette methode expose les lignes consolidees par classe.
   public obtenirLignesSyntheseResultatsClasse(): LigneSyntheseResultatsClasse[] {
     return [...this.lignesSyntheseResultatsClasse];
+  }
+
+  // Cette methode expose l'annee scolaire rattachee a la synthese.
+  public obtenirIdAnneeScolaire(): string {
+    return this.idAnneeScolaire;
+  }
+
+  // Cette methode expose la colonne de bulletin retenue pour la synthese.
+  public obtenirCodeColonne(): CodeColonneBulletin {
+    return this.codeColonne;
+  }
+
+  // Cette methode expose le type de synthese calcule.
+  public obtenirTypeSynthese(): TypeSyntheseResultats {
+    return this.typeSynthese;
+  }
+
+  // Cette methode expose la date de generation de la synthese.
+  public obtenirDateGeneration(): Date {
+    return this.dateGeneration;
+  }
+
+  // Cette methode expose l'utilisateur qui a genere la synthese.
+  public obtenirGenereePar(): string {
+    return this.genereePar;
   }
 
   // Cette methode expose les totaux agreges de l'ecole.

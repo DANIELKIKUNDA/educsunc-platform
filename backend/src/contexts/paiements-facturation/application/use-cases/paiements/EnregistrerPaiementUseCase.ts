@@ -27,7 +27,7 @@ export class EnregistrerPaiementUseCase {
     private readonly depotParametresPaiementEcole: DepotParametresPaiementEcole,
     private readonly depotRecuPaiement: DepotRecuPaiement,
     private readonly depotCaisseJour: DepotCaisseJour,
-    private readonly depotRestitution: DepotRestitution,
+    _depotRestitution: DepotRestitution,
     private readonly serviceIdempotencePaiement: ServiceIdempotencePaiement<PaiementEnregistreOutput>,
     private readonly serviceTransactionPaiement: ServiceTransactionPaiement,
     private readonly moteurRepartitionPaiement = new MoteurRepartitionPaiement(),

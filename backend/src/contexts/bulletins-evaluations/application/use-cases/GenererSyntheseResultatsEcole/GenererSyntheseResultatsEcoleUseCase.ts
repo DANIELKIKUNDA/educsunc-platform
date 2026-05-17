@@ -17,7 +17,7 @@ export class GenererSyntheseResultatsEcoleUseCase {
     private readonly transactionManagerPort: TransactionManagerPort,
     private readonly serviceProjectionSynthese = new ServiceProjectionSynthese(),
     private readonly serviceStatistiques = new ServiceStatistiques(),
-    private readonly scolariteElevesPort?: ScolariteElevesPort,
+    _scolariteElevesPort?: ScolariteElevesPort,
   ) {}
 
   // Cette methode genere la synthese puis renvoie sa projection.

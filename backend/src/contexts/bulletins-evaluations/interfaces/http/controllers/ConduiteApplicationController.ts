@@ -8,8 +8,8 @@ export class ConduiteApplicationController {
   // Ce constructeur injecte les cas d'usage de conduite et les actions associees sur l'application.
   constructor(
     private readonly encoderConduiteUseCase: EncoderConduiteUseCase,
-    private readonly declarerNonClasseUseCase: DeclarerNonClasseUseCase,
-    private readonly declarerAbandonUseCase: DeclarerAbandonUseCase,
+    _declarerNonClasseUseCase: DeclarerNonClasseUseCase,
+    _declarerAbandonUseCase: DeclarerAbandonUseCase,
   ) {}
 
   // Cette methode encode la conduite d'une periode.

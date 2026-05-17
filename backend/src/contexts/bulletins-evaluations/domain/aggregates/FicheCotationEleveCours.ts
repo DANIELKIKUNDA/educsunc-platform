@@ -139,9 +139,34 @@ export class FicheCotationEleveCours extends RacineAgregat<string> {
     return this.versionReferentielProgramme;
   }
 
+  // Cette methode expose l'auteur de creation de la fiche.
+  public obtenirCreePar(): string {
+    return this.creePar;
+  }
+
+  // Cette methode expose la date de creation de la fiche.
+  public obtenirCreeLe(): Date {
+    return this.creeLe;
+  }
+
+  // Cette methode expose le dernier auteur de modification lorsqu'il existe.
+  public obtenirModifiePar(): string | undefined {
+    return this.modifiePar;
+  }
+
+  // Cette methode expose la date de derniere modification lorsqu'elle existe.
+  public obtenirModifieLe(): Date | undefined {
+    return this.modifieLe;
+  }
+
   // Cette methode expose la version de concurrence de la fiche.
   public obtenirVersion(): number {
     return this.version;
+  }
+
+  // Cette methode indique si la fiche a ete supprimee logiquement.
+  public obtenirSupprimeLogiquement(): boolean {
+    return this.supprimeLogiquement;
   }
 
   // Cette methode expose la collection complete des cotes de colonne.

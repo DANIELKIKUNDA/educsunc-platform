@@ -50,6 +50,26 @@ export class ClassementColonneClasse extends RacineAgregat<string> {
     return this.idClassePedagogique;
   }
 
+  // Cette methode expose l'identifiant de l'ecole du classement.
+  public obtenirIdEcole(): string {
+    return this.idEcole;
+  }
+
+  // Cette methode expose l'annee scolaire du classement.
+  public obtenirIdAnneeScolaire(): string {
+    return this.idAnneeScolaire;
+  }
+
+  // Cette methode expose la structure d'evaluation calculee.
+  public obtenirTypeStructureEvaluation(): TypeStructureEvaluation {
+    return this.typeStructureEvaluation;
+  }
+
+  // Cette methode expose la date du dernier calcul de classement.
+  public obtenirDateCalcul(): Date {
+    return this.dateCalcul;
+  }
+
   // Cette methode recalcule et ordonne toutes les lignes classees.
   public recalculerClassement(lignes: LigneClassementEleve[]): void {
     this.lignesClassement = this.exclureNonClasses(lignes);

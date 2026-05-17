@@ -1,4 +1,3 @@
-import type { DepotFicheCotationEleveCours } from '../../../domain/repositories/DepotFicheCotationEleveCours';
 import type { CorrigerCoteInput } from '../../dto/input/CorrigerCoteInput';
 import type { FicheCotationOutput } from '../../dto/output/FicheCotationOutput';
 import { ModifierCoteUseCase } from '../ModifierCote/ModifierCoteUseCase';

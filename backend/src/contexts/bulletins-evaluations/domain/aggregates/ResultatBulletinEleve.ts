@@ -74,6 +74,11 @@ export class ResultatBulletinEleve extends RacineAgregat<string> {
     return this.idEleve;
   }
 
+  // Cette methode expose l'ecole rattachee au resultat.
+  public obtenirIdEcole(): string {
+    return this.idEcole;
+  }
+
   // Cette methode expose l'inscription rattachee.
   public obtenirIdInscriptionScolaire(): string {
     return this.idInscriptionScolaire;
@@ -92,6 +97,21 @@ export class ResultatBulletinEleve extends RacineAgregat<string> {
   // Cette methode expose la structure d'evaluation.
   public obtenirTypeStructureEvaluation(): TypeStructureEvaluation {
     return this.typeStructureEvaluation;
+  }
+
+  // Cette methode expose la version du programme de reference.
+  public obtenirVersionReferentielProgramme(): string {
+    return this.versionReferentielProgramme;
+  }
+
+  // Cette methode expose la date du dernier recalcul si elle existe.
+  public obtenirDernierRecalculLe(): Date | undefined {
+    return this.dernierRecalculLe;
+  }
+
+  // Cette methode indique si le resultat est supprime logiquement.
+  public obtenirSupprimeLogiquement(): boolean {
+    return this.supprimeLogiquement;
   }
 
   // Cette methode expose les resultats consolides par colonne.

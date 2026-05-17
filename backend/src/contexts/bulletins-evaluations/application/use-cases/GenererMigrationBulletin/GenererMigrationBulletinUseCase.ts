@@ -1,4 +1,3 @@
-import { DiffColonneBulletin } from '../../../domain/entities/DiffColonneBulletin';
 import type { DepotMigrationBulletin } from '../../../domain/repositories/DepotMigrationBulletin';
 import type { GenererMigrationBulletinInput } from '../../dto/input/GenererMigrationBulletinInput';
 import type { MigrationBulletinOutput } from '../../dto/output/MigrationBulletinOutput';

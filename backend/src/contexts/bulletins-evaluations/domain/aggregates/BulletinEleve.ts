@@ -74,6 +74,26 @@ export class BulletinEleve extends RacineAgregat<string> {
     return [...this.lignesBulletin];
   }
 
+  // Cette methode expose l'identifiant de l'ecole porteuse du bulletin.
+  public obtenirIdEcole(): string {
+    return this.idEcole;
+  }
+
+  // Cette methode expose l'inscription scolaire rattachee.
+  public obtenirIdInscriptionScolaire(): string {
+    return this.idInscriptionScolaire;
+  }
+
+  // Cette methode expose la classe pedagogique rattachee.
+  public obtenirIdClassePedagogique(): string {
+    return this.idClassePedagogique;
+  }
+
+  // Cette methode expose l'annee scolaire rattachee.
+  public obtenirIdAnneeScolaire(): string {
+    return this.idAnneeScolaire;
+  }
+
   // Cette methode expose les blocs application/conduite.
   public obtenirBlocsApplicationConduite(): BlocApplicationConduite[] {
     return [...this.blocsApplicationConduite];
@@ -92,6 +112,21 @@ export class BulletinEleve extends RacineAgregat<string> {
   // Cette methode expose la version metier du bulletin.
   public obtenirVersionBulletin(): number {
     return this.versionBulletin;
+  }
+
+  // Cette methode expose la structure d'evaluation du bulletin.
+  public obtenirTypeStructureEvaluation(): TypeStructureEvaluation {
+    return this.typeStructureEvaluation;
+  }
+
+  // Cette methode expose le dernier generateur connu du bulletin.
+  public obtenirGenerePar(): string | undefined {
+    return this.generePar;
+  }
+
+  // Cette methode indique si le bulletin a ete supprime logiquement.
+  public obtenirSupprimeLogiquement(): boolean {
+    return this.supprimeLogiquement;
   }
 
   // Cette methode genere ou met a jour la representation metier du bulletin.

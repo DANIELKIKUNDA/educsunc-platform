@@ -58,6 +58,31 @@ export class MigrationBulletin extends RacineAgregat<string> {
     return this.statutMigration;
   }
 
+  // Cette methode expose l'ecole concernee par la migration.
+  public obtenirIdEcole(): string {
+    return this.idEcole;
+  }
+
+  // Cette methode expose la classe pedagogique concernee.
+  public obtenirIdClassePedagogique(): string {
+    return this.idClassePedagogique;
+  }
+
+  // Cette methode expose l'annee scolaire concernee.
+  public obtenirIdAnneeScolaire(): string {
+    return this.idAnneeScolaire;
+  }
+
+  // Cette methode expose la date de declenchement de la migration.
+  public obtenirDateMigration(): Date {
+    return this.dateMigration;
+  }
+
+  // Cette methode expose l'utilisateur qui a declenche la migration.
+  public obtenirDeclenchePar(): string {
+    return this.declenchePar;
+  }
+
   // Cette methode expose les transformations de cotes deja journalisees.
   public obtenirTransformationsCoteBulletin(): TransformationCoteBulletin[] {
     return [...this.transformationsCoteBulletin];

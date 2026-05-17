@@ -26,6 +26,7 @@ export class FichesCotationController {
     query?: unknown,
   ): Promise<{ donnee: unknown[]; meta: { page: number; limit: number; total: number; totalPages: number } }> {
     const pagination = QueryFilterValidator.valider(query);
+    void pagination;
     return PaginationPresenter.presenter([], 1, 20, 0);
   }
 
@@ -36,6 +37,8 @@ export class FichesCotationController {
   ): Promise<{ donnee: unknown[]; meta: { page: number; limit: number; total: number; totalPages: number } }> {
     const pagination = QueryFilterValidator.valider(query);
     const classe = ValidationHttpBulletinsEvaluations.obtenirObjet(params, 'params');
+    void pagination;
+    void classe;
     return PaginationPresenter.presenter([], 1, 20, 0);
   }
 }
