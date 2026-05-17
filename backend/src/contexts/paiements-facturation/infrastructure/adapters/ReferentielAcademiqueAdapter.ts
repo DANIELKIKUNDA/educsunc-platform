@@ -2,7 +2,26 @@ import type {
   ClasseReglesFraisDTO as ClasseReglesFraisPaiementDTO,
   ReferentielAcademiquePort,
 } from '../../application/ports/ReferentielAcademiquePort';
-import type { ReglesFraisClasseRepository } from '../../../referentiel-academique/application/use-cases/structure/ConsulterReglesFraisClasse';
+
+// Ce contrat local de lecture evite de coupler le BC Paiements a un use case interne du referentiel.
+interface ReglesFraisClasseLecture {
+  section: string | null;
+  option?: {
+    estTechnique: boolean;
+    categorieTechnique?: string;
+  } | null;
+  estClasseTENASOSP: boolean;
+  estClasseEXETAT: boolean;
+  estClasseFinaliste: boolean;
+  categorieFraisEtat?: string;
+}
+
+// Ce contrat represente le minimum attendu d'un repository de lecture du referentiel.
+export interface ReglesFraisClasseRepository {
+  consulterParClassePedagogique(
+    idClassePedagogique: string,
+  ): Promise<ReglesFraisClasseLecture | null>;
+}
 
 // Ce fichier adapte les faits du referentiel academique au contrat applicatif du BC Paiements.
 export class ReferentielAcademiqueAdapter implements ReferentielAcademiquePort {
@@ -27,13 +46,13 @@ export class ReferentielAcademiqueAdapter implements ReferentielAcademiquePort {
 
     return {
       idClassePedagogique,
-      section: regles.section,
+      section: regles.section ?? undefined,
       optionEstTechnique: regles.option?.estTechnique ?? false,
       optionCategorieTechnique: regles.option?.categorieTechnique ?? undefined,
       estClasseTENASOSP: regles.estClasseTENASOSP,
       estClasseEXETAT: regles.estClasseEXETAT,
       estClasseFinaliste: regles.estClasseFinaliste,
-      categorieFraisEtat: regles.categorieFraisEtat,
+      categorieFraisEtat: regles.categorieFraisEtat ?? undefined,
     };
   }
 }
