@@ -1,8 +1,10 @@
 import { RacineAgregat } from '../../../../shared/domain/AggregateRoot';
 import { ApplicationPeriode } from '../entities/ApplicationPeriode';
 import { ConduitePeriode } from '../entities/ConduitePeriode';
+import { DiagnosticTechniqueAcademique } from '../entities/DiagnosticTechniqueAcademique';
 import { DiagnosticEchec } from '../entities/DiagnosticEchec';
 import { ResultatColonneBulletin } from '../entities/ResultatColonneBulletin';
+import { SnapshotResultatBulletin } from '../entities/SnapshotResultatBulletin';
 import { FicheCotationEleveCours } from './FicheCotationEleveCours';
 import { ApplicationPeriodeCalculee } from '../events/ApplicationPeriodeCalculee';
 import { ConduitePeriodeEncodee } from '../events/ConduitePeriodeEncodee';
@@ -31,6 +33,8 @@ export class ResultatBulletinEleve extends RacineAgregat<string> {
   private applicationsPeriodes: ApplicationPeriode[];
   private conduitesPeriodes: ConduitePeriode[];
   private diagnosticsEchec: DiagnosticEchec[];
+  private snapshotsResultats: SnapshotResultatBulletin[];
+  private diagnosticsTechniques: DiagnosticTechniqueAcademique[];
 
   // Ce constructeur reconstitue ou initialise un resultat consolide.
   constructor(params: {
@@ -50,6 +54,8 @@ export class ResultatBulletinEleve extends RacineAgregat<string> {
     applicationsPeriodes?: ApplicationPeriode[];
     conduitesPeriodes?: ConduitePeriode[];
     diagnosticsEchec?: DiagnosticEchec[];
+    snapshotsResultats?: SnapshotResultatBulletin[];
+    diagnosticsTechniques?: DiagnosticTechniqueAcademique[];
   }) {
     super(params.idResultatBulletinEleve);
     this.idEcole = params.idEcole;
@@ -67,6 +73,8 @@ export class ResultatBulletinEleve extends RacineAgregat<string> {
     this.applicationsPeriodes = [...(params.applicationsPeriodes ?? [])];
     this.conduitesPeriodes = [...(params.conduitesPeriodes ?? [])];
     this.diagnosticsEchec = [...(params.diagnosticsEchec ?? [])];
+    this.snapshotsResultats = [...(params.snapshotsResultats ?? [])];
+    this.diagnosticsTechniques = [...(params.diagnosticsTechniques ?? [])];
   }
 
   // Cette methode expose l'identifiant de l'eleve.
@@ -132,6 +140,16 @@ export class ResultatBulletinEleve extends RacineAgregat<string> {
   // Cette methode expose les diagnostics pedagogiques calcules.
   public obtenirDiagnosticsEchec(): DiagnosticEchec[] {
     return [...this.diagnosticsEchec];
+  }
+
+  // Cette methode expose les snapshots de resultats de l'eleve.
+  public obtenirSnapshotsResultats(): SnapshotResultatBulletin[] {
+    return [...this.snapshotsResultats];
+  }
+
+  // Cette methode expose les diagnostics techniques du resultat.
+  public obtenirDiagnosticsTechniques(): DiagnosticTechniqueAcademique[] {
+    return [...this.diagnosticsTechniques];
   }
 
   // Cette methode recalcule l'ensemble des resultats a partir des fiches de cotation.
@@ -220,6 +238,16 @@ export class ResultatBulletinEleve extends RacineAgregat<string> {
     }
 
     this.ajouterEvenement(new DiagnosticEchecMisAJour(this.obtenirId(), diagnostic.obtenirCodeColonne()));
+  }
+
+  // Cette methode ajoute un snapshot de resultat apres recalcul ou figement.
+  public ajouterSnapshotResultat(snapshot: SnapshotResultatBulletin): void {
+    this.snapshotsResultats.push(snapshot);
+  }
+
+  // Cette methode ajoute un diagnostic technique academique.
+  public ajouterDiagnosticTechnique(diagnostic: DiagnosticTechniqueAcademique): void {
+    this.diagnosticsTechniques.push(diagnostic);
   }
 
   // Cette methode recalcule proprement une seule colonne a partir des fiches.

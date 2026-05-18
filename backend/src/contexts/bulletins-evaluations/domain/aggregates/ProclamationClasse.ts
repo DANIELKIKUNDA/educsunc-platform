@@ -3,13 +3,16 @@ import { EleveAbandonProclamation } from '../entities/EleveAbandonProclamation';
 import { EleveNonClasseProclamation } from '../entities/EleveNonClasseProclamation';
 import { HistoriqueGenerationProclamation } from '../entities/HistoriqueGenerationProclamation';
 import { LigneProclamationClasse } from '../entities/LigneProclamationClasse';
+import { SnapshotResultatBulletin } from '../entities/SnapshotResultatBulletin';
 import { StatistiquesProclamationClasse } from '../entities/StatistiquesProclamationClasse';
 import { AbandonsProclamationDetectes } from '../events/AbandonsProclamationDetectes';
+import { ColonneProclameeVerrouillee } from '../events/ColonneProclameeVerrouillee';
 import { NonClassesProclamationDetectes } from '../events/NonClassesProclamationDetectes';
 import { ProclamationClasseGeneree } from '../events/ProclamationClasseGeneree';
 import { StatistiquesProclamationCalculees } from '../events/StatistiquesProclamationCalculees';
 import { ErreurProclamationIncoherente } from '../exceptions/ErreurProclamationIncoherente';
 import { CodeColonneBulletin } from '../value-objects/CodeColonneBulletin';
+import { EtatProclamation } from '../value-objects/EtatProclamation';
 import { SexeEleve } from '../value-objects/SexeEleve';
 import { StatutProclamationEleve } from '../value-objects/StatutProclamationEleve';
 import { TypeProclamation } from '../value-objects/TypeProclamation';
@@ -30,6 +33,8 @@ export class ProclamationClasse extends RacineAgregat<string> {
   private elevesNonClasses: EleveNonClasseProclamation[];
   private elevesAbandon: EleveAbandonProclamation[];
   private historiqueGeneration: HistoriqueGenerationProclamation[];
+  private etatProclamation: EtatProclamation;
+  private snapshotsResultats: SnapshotResultatBulletin[];
 
   // Ce constructeur initialise ou reconstitue une proclamation de classe.
   constructor(params: {
@@ -48,6 +53,8 @@ export class ProclamationClasse extends RacineAgregat<string> {
     elevesNonClasses?: EleveNonClasseProclamation[];
     elevesAbandon?: EleveAbandonProclamation[];
     historiqueGeneration?: HistoriqueGenerationProclamation[];
+    etatProclamation?: EtatProclamation;
+    snapshotsResultats?: SnapshotResultatBulletin[];
   }) {
     super(params.idProclamationClasse);
     this.idEcole = params.idEcole;
@@ -64,6 +71,8 @@ export class ProclamationClasse extends RacineAgregat<string> {
     this.elevesNonClasses = [...(params.elevesNonClasses ?? [])];
     this.elevesAbandon = [...(params.elevesAbandon ?? [])];
     this.historiqueGeneration = [...(params.historiqueGeneration ?? [])];
+    this.etatProclamation = params.etatProclamation ?? EtatProclamation.BROUILLON;
+    this.snapshotsResultats = [...(params.snapshotsResultats ?? [])];
   }
 
   // Cette methode expose les lignes classees de la proclamation.
@@ -106,6 +115,16 @@ export class ProclamationClasse extends RacineAgregat<string> {
     return this.versionReferentielProgramme;
   }
 
+  // Cette methode expose l'etat de cycle de vie de la proclamation.
+  public obtenirEtatProclamation(): EtatProclamation {
+    return this.etatProclamation;
+  }
+
+  // Cette methode expose les snapshots attaches a la proclamation.
+  public obtenirSnapshotsResultats(): SnapshotResultatBulletin[] {
+    return [...this.snapshotsResultats];
+  }
+
   // Cette methode expose les eleves declares non classes.
   public obtenirElevesNonClasses(): EleveNonClasseProclamation[] {
     return [...this.elevesNonClasses];
@@ -134,6 +153,7 @@ export class ProclamationClasse extends RacineAgregat<string> {
     this.historiqueGeneration.push(params.historiqueGeneration);
     this.dateGeneration = params.historiqueGeneration.obtenirDateGeneration();
     this.genereePar = params.historiqueGeneration.obtenirGenereePar();
+    this.etatProclamation = EtatProclamation.GENEREE;
     this.version += 1;
     this.verifierCoherenceTotaux();
     this.ajouterEvenement(new ProclamationClasseGeneree(this.obtenirId(), this.idClassePedagogique));
@@ -221,6 +241,47 @@ export class ProclamationClasse extends RacineAgregat<string> {
   // Cette methode ajoute explicitement une generation supplementaire a l'historique.
   public ajouterHistoriqueGeneration(historique: HistoriqueGenerationProclamation): void {
     this.historiqueGeneration.push(historique);
+  }
+
+  // Cette methode valide officiellement la proclamation.
+  public valider(): void {
+    this.etatProclamation = EtatProclamation.VALIDEE;
+    this.version += 1;
+  }
+
+  // Cette methode verrouille la proclamation pour bloquer les modifications normales.
+  public verrouiller(verrouillePar: string): void {
+    this.etatProclamation = EtatProclamation.VERROUILLEE;
+    this.version += 1;
+    this.ajouterEvenement(
+      new ColonneProclameeVerrouillee(
+        this.idClassePedagogique,
+        this.idAnneeScolaire,
+        this.codeColonne,
+        new Date(),
+        verrouillePar,
+      ),
+    );
+  }
+
+  // Cette methode annule la proclamation avec justification.
+  public annuler(justification?: string): void {
+    if (
+      this.etatProclamation === EtatProclamation.VALIDEE
+      && (justification ?? '').trim().length === 0
+    ) {
+      throw new ErreurProclamationIncoherente(
+        "Une proclamation validee exige une justification pour etre annulee.",
+      );
+    }
+
+    this.etatProclamation = EtatProclamation.ANNULEE;
+    this.version += 1;
+  }
+
+  // Cette methode ajoute un snapshot produit lors d'une validation ou d'un archivage.
+  public ajouterSnapshot(snapshot: SnapshotResultatBulletin): void {
+    this.snapshotsResultats.push(snapshot);
   }
 
   // Cette methode s'assure que les effectifs ventiles restent coherents.

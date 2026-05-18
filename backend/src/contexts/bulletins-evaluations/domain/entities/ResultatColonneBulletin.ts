@@ -82,7 +82,7 @@ export class ResultatColonneBulletin extends Entite<string> {
     this.rang = undefined;
     this.pourcentage = maximumGeneral === 0
       ? new PourcentageBulletin(0)
-      : new PourcentageBulletin(Number(((totalObtenu / maximumGeneral) * 100).toFixed(2)));
+      : new PourcentageBulletin((totalObtenu / maximumGeneral) * 100);
   }
 
   // Cette methode marque explicitement la colonne comme non classee.

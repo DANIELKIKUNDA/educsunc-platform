@@ -14,6 +14,11 @@ export class PourcentageBulletin {
     return this.valeur;
   }
 
+  // Cette methode retourne l'affichage officiel avec une decimale et le symbole pourcentage.
+  public obtenirAffichageOfficiel(): string {
+    return `${this.valeur.toFixed(1).replace('.', ',')} %`;
+  }
+
   // Cette methode compare deux pourcentages.
   public estEgal(autre: PourcentageBulletin): boolean {
     return this.valeur === autre.obtenirValeur();
@@ -25,6 +30,6 @@ export class PourcentageBulletin {
       throw new ErreurPourcentageInvalide();
     }
 
-    return valeur;
+    return Number(valeur.toFixed(1));
   }
 }

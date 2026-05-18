@@ -1,11 +1,13 @@
 import type { DepotFicheCotationEleveCours } from 'contexts/bulletins-evaluations/domain/repositories/DepotFicheCotationEleveCours';
 import { FicheCotationEleveCours } from 'contexts/bulletins-evaluations/domain/aggregates/FicheCotationEleveCours';
+import { HistoriqueModificationCote } from 'contexts/bulletins-evaluations/domain/entities/HistoriqueModificationCote';
 import { FicheCotationPostgresMapper } from '../mappers';
 import { lireTexte, obtenirMemoireTechniqueBulletins } from './outilsDepotBulletin';
 
 // Ce fichier fournit un depot PostgreSQL simplifie pour les fiches de cotation.
 export class PostgresDepotFicheCotationEleveCours implements DepotFicheCotationEleveCours {
   private static readonly stockage = new Map<string, FicheCotationEleveCours>();
+  private static readonly historiques = new Map<string, HistoriqueModificationCote[]>();
 
   public async sauvegarder(ficheCotationEleveCours: FicheCotationEleveCours): Promise<void> {
     PostgresDepotFicheCotationEleveCours.stockage.set(ficheCotationEleveCours.obtenirId(), ficheCotationEleveCours);
@@ -67,5 +69,28 @@ export class PostgresDepotFicheCotationEleveCours implements DepotFicheCotationE
     idAnneeScolaire: string,
   ): Promise<boolean> {
     return (await this.trouverParEleveCoursEtAnnee(idEleve, idReferentielCours, idAnneeScolaire)) !== null;
+  }
+
+  // Cette methode rattache explicitement un historique de modification a une fiche.
+  public async ajouterHistoriqueModificationCote(
+    historiqueModificationCote: HistoriqueModificationCote,
+  ): Promise<void> {
+    const historiques = PostgresDepotFicheCotationEleveCours.historiques.get(
+      historiqueModificationCote.obtenirIdFicheCotationEleveCours(),
+    ) ?? [];
+    historiques.push(historiqueModificationCote);
+    PostgresDepotFicheCotationEleveCours.historiques.set(
+      historiqueModificationCote.obtenirIdFicheCotationEleveCours(),
+      historiques,
+    );
+  }
+
+  // Cette methode relit l'historique complet des modifications d'une fiche.
+  public async listerHistoriqueModifications(
+    idFicheCotationEleveCours: string,
+  ): Promise<HistoriqueModificationCote[]> {
+    return [
+      ...(PostgresDepotFicheCotationEleveCours.historiques.get(idFicheCotationEleveCours) ?? []),
+    ];
   }
 }

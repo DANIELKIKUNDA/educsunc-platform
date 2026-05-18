@@ -1,13 +1,18 @@
 import { RacineAgregat } from '../../../../shared/domain/AggregateRoot';
 import { BlocApplicationConduite } from '../entities/BlocApplicationConduite';
+import { DiagnosticTechniqueAcademique } from '../entities/DiagnosticTechniqueAcademique';
 import { HistoriqueGenerationBulletin } from '../entities/HistoriqueGenerationBulletin';
 import { LigneBulletinEleve } from '../entities/LigneBulletinEleve';
+import { SnapshotResultatBulletin } from '../entities/SnapshotResultatBulletin';
+import { ValidationBulletinOfficielle } from '../entities/ValidationBulletinOfficielle';
 import { BulletinGenere } from '../events/BulletinGenere';
 import { BulletinMisAJour } from '../events/BulletinMisAJour';
+import { BulletinValideOfficiellement } from '../events/BulletinValideOfficiellement';
 import { BulletinVersionFigee } from '../events/BulletinVersionFigee';
 import { LigneBulletinEchecMarquee } from '../events/LigneBulletinEchecMarquee';
 import { ErreurBulletinFinaliseNonModifiable } from '../exceptions/ErreurBulletinFinaliseNonModifiable';
 import { EtatBulletin } from '../value-objects/EtatBulletin';
+import { EtatValidationBulletin } from '../value-objects/EtatValidationBulletin';
 import { StyleAffichageCote } from '../value-objects/StyleAffichageCote';
 import { TypeStructureEvaluation } from '../value-objects/TypeStructureEvaluation';
 
@@ -29,6 +34,9 @@ export class BulletinEleve extends RacineAgregat<string> {
   private lignesBulletin: LigneBulletinEleve[];
   private blocsApplicationConduite: BlocApplicationConduite[];
   private historiqueGeneration: HistoriqueGenerationBulletin[];
+  private validationsOfficielles: ValidationBulletinOfficielle[];
+  private snapshotsResultats: SnapshotResultatBulletin[];
+  private diagnosticsTechniques: DiagnosticTechniqueAcademique[];
 
   // Ce constructeur initialise ou reconstitue un bulletin metier.
   constructor(params: {
@@ -49,6 +57,9 @@ export class BulletinEleve extends RacineAgregat<string> {
     lignesBulletin?: LigneBulletinEleve[];
     blocsApplicationConduite?: BlocApplicationConduite[];
     historiqueGeneration?: HistoriqueGenerationBulletin[];
+    validationsOfficielles?: ValidationBulletinOfficielle[];
+    snapshotsResultats?: SnapshotResultatBulletin[];
+    diagnosticsTechniques?: DiagnosticTechniqueAcademique[];
   }) {
     super(params.idBulletinEleve);
     this.idEcole = params.idEcole;
@@ -67,6 +78,9 @@ export class BulletinEleve extends RacineAgregat<string> {
     this.lignesBulletin = [...(params.lignesBulletin ?? [])];
     this.blocsApplicationConduite = [...(params.blocsApplicationConduite ?? [])];
     this.historiqueGeneration = [...(params.historiqueGeneration ?? [])];
+    this.validationsOfficielles = [...(params.validationsOfficielles ?? [])];
+    this.snapshotsResultats = [...(params.snapshotsResultats ?? [])];
+    this.diagnosticsTechniques = [...(params.diagnosticsTechniques ?? [])];
   }
 
   // Cette methode expose les lignes actuellement porte es par le bulletin.
@@ -104,6 +118,21 @@ export class BulletinEleve extends RacineAgregat<string> {
     return [...this.historiqueGeneration];
   }
 
+  // Cette methode expose les validations officielles deja rattachees au bulletin.
+  public obtenirValidationsOfficielles(): ValidationBulletinOfficielle[] {
+    return [...this.validationsOfficielles];
+  }
+
+  // Cette methode expose les snapshots académiques du bulletin.
+  public obtenirSnapshotsResultats(): SnapshotResultatBulletin[] {
+    return [...this.snapshotsResultats];
+  }
+
+  // Cette methode expose les diagnostics techniques lies au bulletin.
+  public obtenirDiagnosticsTechniques(): DiagnosticTechniqueAcademique[] {
+    return [...this.diagnosticsTechniques];
+  }
+
   // Cette methode expose l'etat de cycle de vie du bulletin.
   public obtenirEtatBulletin(): EtatBulletin {
     return this.etatBulletin;
@@ -112,6 +141,11 @@ export class BulletinEleve extends RacineAgregat<string> {
   // Cette methode expose la version metier du bulletin.
   public obtenirVersionBulletin(): number {
     return this.versionBulletin;
+  }
+
+  // Cette methode expose la version du referentiel programme utilisee.
+  public obtenirVersionReferentielProgramme(): string {
+    return this.versionReferentielProgramme;
   }
 
   // Cette methode expose la structure d'evaluation du bulletin.
@@ -183,6 +217,37 @@ export class BulletinEleve extends RacineAgregat<string> {
   // Cette methode ajoute explicitement une entree d'historique.
   public ajouterHistoriqueGeneration(historique: HistoriqueGenerationBulletin): void {
     this.historiqueGeneration.push(historique);
+  }
+
+  // Cette methode ajoute un snapshot academique au bulletin.
+  public ajouterSnapshot(snapshot: SnapshotResultatBulletin): void {
+    this.snapshotsResultats.push(snapshot);
+  }
+
+  // Cette methode ajoute un diagnostic academique au bulletin.
+  public ajouterDiagnosticTechnique(diagnostic: DiagnosticTechniqueAcademique): void {
+    this.diagnosticsTechniques.push(diagnostic);
+  }
+
+  // Cette methode enregistre une validation officielle et fige le bulletin si elle est acceptee.
+  public ajouterValidationOfficielle(
+    validation: ValidationBulletinOfficielle,
+  ): void {
+    this.validationsOfficielles.push(validation);
+
+    if (validation.obtenirEtatValidation() === EtatValidationBulletin.VALIDEE) {
+      this.etatBulletin = EtatBulletin.FINALISE;
+      this.version += 1;
+      this.ajouterEvenement(
+        new BulletinValideOfficiellement(
+          this.obtenirId(),
+          validation.obtenirVersionBulletin(),
+          validation.obtenirValidePar(),
+          validation.obtenirRoleValidateur(),
+          validation.obtenirDateValidation(),
+        ),
+      );
+    }
   }
 
   // Cette methode produit une representation simple du bulletin pour l'affichage ou le PDF.

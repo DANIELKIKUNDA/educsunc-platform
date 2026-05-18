@@ -3,11 +3,14 @@ import assert from 'node:assert/strict';
 import { EncoderCoteUseCase } from 'contexts/bulletins-evaluations/application/use-cases/EncoderCote/EncoderCoteUseCase';
 import { GenererBulletinEleveUseCase } from 'contexts/bulletins-evaluations/application/use-cases/GenererBulletinEleve/GenererBulletinEleveUseCase';
 import { SynchroniserOperationsOfflineUseCase } from 'contexts/bulletins-evaluations/application/use-cases/SynchroniserOperationsOffline/SynchroniserOperationsOfflineUseCase';
+import { SnapshotResultatBulletin } from 'contexts/bulletins-evaluations/domain/entities/SnapshotResultatBulletin';
+import { ValidationBulletinOfficielle } from 'contexts/bulletins-evaluations/domain/entities/ValidationBulletinOfficielle';
 import type { DepotBulletinEleve } from 'contexts/bulletins-evaluations/domain/repositories/DepotBulletinEleve';
 import type { DepotFicheCotationEleveCours } from 'contexts/bulletins-evaluations/domain/repositories/DepotFicheCotationEleveCours';
 import type { DepotResultatBulletinEleve } from 'contexts/bulletins-evaluations/domain/repositories/DepotResultatBulletinEleve';
 import { CodeColonneBulletin } from 'contexts/bulletins-evaluations/domain/value-objects/CodeColonneBulletin';
 import { CodePeriodeSimple } from 'contexts/bulletins-evaluations/domain/value-objects/CodePeriodeSimple';
+import { HistoriqueModificationCote } from 'contexts/bulletins-evaluations/domain/entities/HistoriqueModificationCote';
 import { CacheMemoire, EventBusMemoire, PdfPortMemoire, ReferentielAcademiquePortMemoire, TransactionManagerMemoire } from '../../mocks/BulletinsEvaluationsMocks';
 import { creerBulletin, creerFicheCotation, creerResultatBulletin } from '../../factories/BulletinsEvaluationsFactories';
 
@@ -22,6 +25,8 @@ test('les use cases orchestrent transaction, projection et workflow offline', as
     async listerParClasseEtCours() { return [fiche]; },
     async listerParClasseEtColonne() { return [fiche]; },
     async existeFichePourEleveCoursAnnee() { return true; },
+    async ajouterHistoriqueModificationCote(_historiqueModificationCote: HistoriqueModificationCote) {},
+    async listerHistoriqueModifications() { return fiche.obtenirHistoriquesModificationCote(); },
   };
 
   const transaction = new TransactionManagerMemoire();
@@ -47,6 +52,10 @@ test('les use cases orchestrent transaction, projection et workflow offline', as
     async trouverVersionActive() { return bulletin; },
     async listerParClasse() { return [bulletin]; },
     async listerHistoriqueGenerations() { return bulletin.obtenirHistoriqueGeneration(); },
+    async ajouterValidationOfficielle(_validation: ValidationBulletinOfficielle) {},
+    async listerValidations() { return bulletin.obtenirValidationsOfficielles(); },
+    async ajouterSnapshot(_snapshot: SnapshotResultatBulletin) {},
+    async listerSnapshots() { return bulletin.obtenirSnapshotsResultats(); },
   };
   const depotResultat: DepotResultatBulletinEleve = {
     async sauvegarder() {},
@@ -54,6 +63,8 @@ test('les use cases orchestrent transaction, projection et workflow offline', as
     async trouverParEleveInscription() { return resultat; },
     async listerParClasse() { return [resultat]; },
     async listerNonClassesParClasseEtColonne() { return []; },
+    async ajouterSnapshotResultat(_snapshot: SnapshotResultatBulletin) {},
+    async listerSnapshotsResultats() { return resultat.obtenirSnapshotsResultats(); },
   };
   const generationUseCase = new GenererBulletinEleveUseCase(
     depotBulletin,

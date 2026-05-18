@@ -6,12 +6,16 @@ import { CoteModifiee } from '../events/CoteModifiee';
 import { CoteVidee } from '../events/CoteVidee';
 import { EchecCoteDetecte } from '../events/EchecCoteDetecte';
 import { FicheCotationCreee } from '../events/FicheCotationCreee';
+import { HistoriqueModificationCoteCree } from '../events/HistoriqueModificationCoteCree';
 import { TotalColonneRecalcule } from '../events/TotalColonneRecalcule';
+import { HistoriqueModificationCote } from '../entities/HistoriqueModificationCote';
 import { ErreurFicheCotationIncoherente } from '../exceptions/ErreurFicheCotationIncoherente';
 import { PolicyColonneInterdite } from '../policies/PolicyColonneInterdite';
+import { PolicyColonneProclameeVerrouillee } from '../policies/PolicyColonneProclameeVerrouillee';
 import { PolicyColonneTotalCalculee } from '../policies/PolicyColonneTotalCalculee';
 import { PolicyCoursSansExamen } from '../policies/PolicyCoursSansExamen';
 import { CodeColonneBulletin, estColonneTotalBulletin } from '../value-objects/CodeColonneBulletin';
+import { EtatProclamation } from '../value-objects/EtatProclamation';
 import { TypeStructureEvaluation } from '../value-objects/TypeStructureEvaluation';
 
 // Cet agregat porte toutes les cotes finales d'un eleve pour un cours dans une annee donnee.
@@ -34,6 +38,8 @@ export class FicheCotationEleveCours extends RacineAgregat<string> {
   private version: number;
   private supprimeLogiquement: boolean;
   private cotesColonnes: CoteColonneBulletin[];
+  private historiquesModificationCote: HistoriqueModificationCote[];
+  private etatsProclamationColonnes: Partial<Record<CodeColonneBulletin, EtatProclamation>>;
 
   // Ce constructeur reconstitue ou cree une fiche complete de cotation.
   constructor(params: {
@@ -56,6 +62,8 @@ export class FicheCotationEleveCours extends RacineAgregat<string> {
     version?: number;
     supprimeLogiquement?: boolean;
     cotesColonnes?: CoteColonneBulletin[];
+    historiquesModificationCote?: HistoriqueModificationCote[];
+    etatsProclamationColonnes?: Partial<Record<CodeColonneBulletin, EtatProclamation>>;
     creerEvenement?: boolean;
   }) {
     super(params.idFicheCotationEleveCours);
@@ -77,6 +85,8 @@ export class FicheCotationEleveCours extends RacineAgregat<string> {
     this.version = params.version ?? 1;
     this.supprimeLogiquement = params.supprimeLogiquement ?? false;
     this.cotesColonnes = [...(params.cotesColonnes ?? [])];
+    this.historiquesModificationCote = [...(params.historiquesModificationCote ?? [])];
+    this.etatsProclamationColonnes = { ...(params.etatsProclamationColonnes ?? {}) };
     this.verifierCoherence();
 
     if (params.creerEvenement ?? true) {
@@ -174,6 +184,18 @@ export class FicheCotationEleveCours extends RacineAgregat<string> {
     return [...this.cotesColonnes];
   }
 
+  // Cette methode expose l'historique complet des modifications de cote.
+  public obtenirHistoriquesModificationCote(): HistoriqueModificationCote[] {
+    return [...this.historiquesModificationCote];
+  }
+
+  // Cette methode expose l'etat de proclamation connu pour une colonne.
+  public obtenirEtatProclamationColonne(
+    codeColonne: CodeColonneBulletin,
+  ): EtatProclamation | undefined {
+    return this.etatsProclamationColonnes[codeColonne];
+  }
+
   // Cette methode retrouve une colonne precise par son code.
   public obtenirCoteParColonne(codeColonne: CodeColonneBulletin): CoteColonneBulletin | undefined {
     return this.cotesColonnes.find((coteColonne) => coteColonne.obtenirCodeColonne() === codeColonne);
@@ -185,38 +207,135 @@ export class FicheCotationEleveCours extends RacineAgregat<string> {
     this.verifierColonneAutorisee(codeColonne);
     this.verifierExamenAutorise(codeColonne);
     const cote = this.recupererColonneObligatoire(codeColonne);
+    const ancienneCote = cote.obtenirCoteObtenue();
+    const ancienMaximum = cote.obtenirMaximumColonne();
     cote.encoder(valeur, auteur);
     this.modifiePar = auteur;
     this.modifieLe = new Date();
     this.incrementerVersion();
+    this.ajouterHistoriqueModification(
+      codeColonne,
+      ancienneCote,
+      cote.obtenirCoteObtenue(),
+      ancienMaximum,
+      cote.obtenirMaximumColonne(),
+      auteur,
+      undefined,
+      this.version - 1,
+      this.version,
+    );
     this.ajouterEvenement(new CoteEncodee(this.obtenirId(), codeColonne));
     this.marquerEchecSiNecessaire(codeColonne);
   }
 
   // Cette methode modifie une cote deja existante.
   public modifierCote(codeColonne: CodeColonneBulletin, valeur: number, auteur: string, versionAttendue?: number): void {
+    this.modifierCoteControlee(
+      codeColonne,
+      valeur,
+      auteur,
+      undefined,
+      false,
+      versionAttendue,
+    );
+  }
+
+  // Cette methode autorise une modification controlee apres proclamation avec motif explicite.
+  public modifierCoteControlee(
+    codeColonne: CodeColonneBulletin,
+    valeur: number,
+    auteur: string,
+    motifModification?: string,
+    modificationControlee = true,
+    versionAttendue?: number,
+  ): void {
     this.verifierVersion(versionAttendue);
     this.verifierColonneAutorisee(codeColonne);
     this.verifierExamenAutorise(codeColonne);
     const cote = this.recupererColonneObligatoire(codeColonne);
+    this.verifierModificationColonneProclamee(
+      cote,
+      codeColonne,
+      motifModification,
+      modificationControlee,
+    );
+    const ancienneCote = cote.obtenirCoteObtenue();
+    const ancienMaximum = cote.obtenirMaximumColonne();
     cote.modifier(valeur, auteur);
     this.modifiePar = auteur;
     this.modifieLe = new Date();
     this.incrementerVersion();
+    this.ajouterHistoriqueModification(
+      codeColonne,
+      ancienneCote,
+      cote.obtenirCoteObtenue(),
+      ancienMaximum,
+      cote.obtenirMaximumColonne(),
+      auteur,
+      motifModification,
+      this.version - 1,
+      this.version,
+    );
     this.ajouterEvenement(new CoteModifiee(this.obtenirId(), codeColonne));
     this.marquerEchecSiNecessaire(codeColonne);
   }
 
   // Cette methode vide une cote lorsqu'elle doit devenir absente.
   public viderCote(codeColonne: CodeColonneBulletin, auteur: string, versionAttendue?: number): void {
+    this.viderCoteControlee(
+      codeColonne,
+      auteur,
+      undefined,
+      false,
+      versionAttendue,
+    );
+  }
+
+  // Cette methode autorise un vidage controle apres proclamation avec motif explicite.
+  public viderCoteControlee(
+    codeColonne: CodeColonneBulletin,
+    auteur: string,
+    motifModification?: string,
+    modificationControlee = true,
+    versionAttendue?: number,
+  ): void {
     this.verifierVersion(versionAttendue);
     this.verifierColonneAutorisee(codeColonne);
     this.verifierExamenAutorise(codeColonne);
-    this.recupererColonneObligatoire(codeColonne).vider();
+    const cote = this.recupererColonneObligatoire(codeColonne);
+    this.verifierModificationColonneProclamee(
+      cote,
+      codeColonne,
+      motifModification,
+      modificationControlee,
+    );
+    const ancienneCote = cote.obtenirCoteObtenue();
+    const ancienMaximum = cote.obtenirMaximumColonne();
+    cote.vider();
     this.modifiePar = auteur;
     this.modifieLe = new Date();
     this.incrementerVersion();
+    this.ajouterHistoriqueModification(
+      codeColonne,
+      ancienneCote,
+      null,
+      ancienMaximum,
+      cote.obtenirMaximumColonne(),
+      auteur,
+      motifModification,
+      this.version - 1,
+      this.version,
+    );
     this.ajouterEvenement(new CoteVidee(this.obtenirId(), codeColonne));
+  }
+
+  // Cette methode enregistre qu'une colonne a ete proclamee avec un etat donne.
+  public definirEtatProclamationColonne(
+    codeColonne: CodeColonneBulletin,
+    etatProclamation: EtatProclamation,
+  ): void {
+    this.etatsProclamationColonnes[codeColonne] = etatProclamation;
+    this.recupererColonneObligatoire(codeColonne).marquerCommeProclamee();
   }
 
   // Cette methode recalcule les colonnes total conformement a la structure officielle.
@@ -319,5 +438,64 @@ export class FicheCotationEleveCours extends RacineAgregat<string> {
   // Cette methode incremente la version de concurrence de l'agregat.
   private incrementerVersion(): void {
     this.version += 1;
+  }
+
+  // Cette methode verifie qu'une colonne proclamee reste modifiable selon son etat.
+  private verifierModificationColonneProclamee(
+    cote: CoteColonneBulletin,
+    codeColonne: CodeColonneBulletin,
+    motifModification: string | undefined,
+    modificationControlee: boolean,
+  ): void {
+    new PolicyColonneProclameeVerrouillee().verifier(
+      cote.estDejaProclamee(),
+      this.etatsProclamationColonnes[codeColonne],
+      motifModification,
+      modificationControlee,
+    );
+  }
+
+  // Cette methode ajoute un historique de modification et l'evenement associe.
+  private ajouterHistoriqueModification(
+    codeColonne: CodeColonneBulletin,
+    ancienneCote: number | null,
+    nouvelleCote: number | null,
+    ancienMaximum: number | null,
+    nouveauMaximum: number | null,
+    modifiePar: string,
+    motifModification: string | undefined,
+    versionAvant: number,
+    versionApres: number,
+  ): void {
+    const historique = new HistoriqueModificationCote({
+      idHistoriqueModificationCote: `${this.obtenirId()}-${codeColonne}-${versionApres}`,
+      idFicheCotationEleveCours: this.obtenirId(),
+      idEleve: this.idEleve,
+      idReferentielCours: this.idReferentielCours,
+      codeColonne,
+      ancienneCote,
+      nouvelleCote,
+      ancienMaximum,
+      nouveauMaximum,
+      modifiePar,
+      dateModification: this.modifieLe ?? new Date(),
+      motifModification,
+      versionAvant,
+      versionApres,
+    });
+    this.historiquesModificationCote.push(historique);
+    this.ajouterEvenement(
+      new HistoriqueModificationCoteCree({
+        idHistoriqueModificationCote: historique.obtenirId(),
+        idFicheCotationEleveCours: this.obtenirId(),
+        idEleve: this.idEleve,
+        idReferentielCours: this.idReferentielCours,
+        codeColonne,
+        ancienneCote,
+        nouvelleCote,
+        modifiePar,
+        dateModification: historique.obtenirDateModification(),
+      }),
+    );
   }
 }

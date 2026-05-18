@@ -1,11 +1,15 @@
 import { RacineAgregat } from '../../../../shared/domain/AggregateRoot';
 import { DiffColonneBulletin } from '../entities/DiffColonneBulletin';
+import { DiagnosticTechniqueAcademique } from '../entities/DiagnosticTechniqueAcademique';
+import { SnapshotResultatBulletin } from '../entities/SnapshotResultatBulletin';
 import { TransformationCoteBulletin } from '../entities/TransformationCoteBulletin';
 import { MigrationBulletinAnalysee } from '../events/MigrationBulletinAnalysee';
 import { MigrationBulletinAnnulee } from '../events/MigrationBulletinAnnulee';
 import { MigrationBulletinAppliquee } from '../events/MigrationBulletinAppliquee';
+import { SnapshotAcademiqueGenere } from '../events/SnapshotAcademiqueGenere';
 import { TransformationCoteBulletinEnregistree } from '../events/TransformationCoteBulletinEnregistree';
 import { ErreurMigrationDejaAppliquee } from '../exceptions/ErreurMigrationDejaAppliquee';
+import { PolicyCompatibiliteVersionReferentiel } from '../policies/PolicyCompatibiliteVersionReferentiel';
 import { PolicyMigrationBulletin } from '../policies/PolicyMigrationBulletin';
 import { StatutMigrationBulletin } from '../value-objects/StatutMigrationBulletin';
 
@@ -22,6 +26,8 @@ export class MigrationBulletin extends RacineAgregat<string> {
   private version: number;
   private transformationsCoteBulletin: TransformationCoteBulletin[];
   private diffsColonnesBulletin: DiffColonneBulletin[];
+  private diagnosticsTechniques: DiagnosticTechniqueAcademique[];
+  private snapshotsAcademiques: SnapshotResultatBulletin[];
 
   // Ce constructeur initialise ou reconstitue une migration de bulletin.
   constructor(params: {
@@ -37,6 +43,8 @@ export class MigrationBulletin extends RacineAgregat<string> {
     version?: number;
     transformationsCoteBulletin?: TransformationCoteBulletin[];
     diffsColonnesBulletin?: DiffColonneBulletin[];
+    diagnosticsTechniques?: DiagnosticTechniqueAcademique[];
+    snapshotsAcademiques?: SnapshotResultatBulletin[];
   }) {
     super(params.idMigrationBulletin);
     this.idEcole = params.idEcole;
@@ -50,6 +58,8 @@ export class MigrationBulletin extends RacineAgregat<string> {
     this.version = params.version ?? 1;
     this.transformationsCoteBulletin = [...(params.transformationsCoteBulletin ?? [])];
     this.diffsColonnesBulletin = [...(params.diffsColonnesBulletin ?? [])];
+    this.diagnosticsTechniques = [...(params.diagnosticsTechniques ?? [])];
+    this.snapshotsAcademiques = [...(params.snapshotsAcademiques ?? [])];
     new PolicyMigrationBulletin().verifier(this.ancienneVersionReferentiel, this.nouvelleVersionReferentiel);
   }
 
@@ -93,8 +103,23 @@ export class MigrationBulletin extends RacineAgregat<string> {
     return [...this.diffsColonnesBulletin];
   }
 
+  // Cette methode expose les diagnostics techniques accumules.
+  public obtenirDiagnosticsTechniques(): DiagnosticTechniqueAcademique[] {
+    return [...this.diagnosticsTechniques];
+  }
+
+  // Cette methode expose les snapshots produits autour de la migration.
+  public obtenirSnapshotsAcademiques(): SnapshotResultatBulletin[] {
+    return [...this.snapshotsAcademiques];
+  }
+
   // Cette methode marque la migration comme analysee apres detection des ecarts.
   public analyser(diffs: DiffColonneBulletin[]): void {
+    new PolicyCompatibiliteVersionReferentiel().verifier(
+      this.ancienneVersionReferentiel,
+      this.nouvelleVersionReferentiel,
+      'Migration explicite',
+    );
     this.diffsColonnesBulletin = [...diffs];
     this.statutMigration = StatutMigrationBulletin.ANALYSEE;
     this.version += 1;
@@ -140,5 +165,27 @@ export class MigrationBulletin extends RacineAgregat<string> {
   public journaliserTransformation(transformation: TransformationCoteBulletin): void {
     this.transformationsCoteBulletin.push(transformation);
     this.ajouterEvenement(new TransformationCoteBulletinEnregistree(this.obtenirId(), transformation.obtenirId()));
+  }
+
+  // Cette methode ajoute un diagnostic technique a la migration.
+  public ajouterDiagnosticTechnique(diagnostic: DiagnosticTechniqueAcademique): void {
+    this.diagnosticsTechniques.push(diagnostic);
+  }
+
+  // Cette methode ajoute un snapshot avant ou apres migration.
+  public ajouterSnapshotAcademique(snapshot: SnapshotResultatBulletin): void {
+    this.snapshotsAcademiques.push(snapshot);
+    this.ajouterEvenement(
+      new SnapshotAcademiqueGenere({
+        idSnapshotResultatBulletin: snapshot.obtenirId(),
+        idEleve: snapshot.obtenirIdEleve(),
+        idClassePedagogique: snapshot.obtenirIdClassePedagogique(),
+        idAnneeScolaire: snapshot.obtenirIdAnneeScolaire(),
+        codeColonne: snapshot.obtenirCodeColonne(),
+        versionReferentielProgramme: snapshot.obtenirVersionReferentielProgramme(),
+        dateSnapshot: snapshot.obtenirDateSnapshot(),
+        motifSnapshot: snapshot.obtenirMotifSnapshot(),
+      }),
+    );
   }
 }
