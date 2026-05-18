@@ -1,5 +1,4 @@
 import { randomUUID } from 'node:crypto';
-import type { ClientPostgresReferentielAcademique } from 'contexts/referentiel-academique/infrastructure/persistence/postgres/depots/ClientPostgresReferentielAcademique';
 import { InfrastructureError } from 'shared/exceptions/InfrastructureError';
 import { ValidationError } from 'shared/exceptions/ValidationError';
 import type {
@@ -7,6 +6,7 @@ import type {
   EnregistrementIdempotence,
   IdempotencyStore,
 } from 'shared/infrastructure/idempotency/IdempotencyStore';
+import type { SqlQueryClient } from 'shared/infrastructure/persistence/SqlQueryClient';
 
 interface LigneIdempotencePostgres {
   cle: string;
@@ -22,11 +22,11 @@ const STATUT_ENREGISTREMENT_PAR_DEFAUT = 'ENREGISTREE';
 
 // Cette implementation persiste les cles d'idempotence dans PostgreSQL.
 export class PostgresIdempotencyStore implements IdempotencyStore {
-  private readonly clientPostgres: ClientPostgresReferentielAcademique;
+  private readonly clientPostgres: SqlQueryClient;
   private readonly nomTable = 'idempotency_keys';
 
   // Ce constructeur injecte le client PostgreSQL reutilisable du BC.
-  constructor(clientPostgres: ClientPostgresReferentielAcademique) {
+  constructor(clientPostgres: SqlQueryClient) {
     this.clientPostgres = clientPostgres;
   }
 

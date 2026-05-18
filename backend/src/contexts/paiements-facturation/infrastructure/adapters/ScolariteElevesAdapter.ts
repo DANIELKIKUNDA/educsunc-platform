@@ -6,7 +6,7 @@ import type {
   ScolariteElevesPort,
   StatutScolaireDTO,
 } from '../../application/ports/ScolariteElevesPort';
-import type { ClientPostgresScolariteEleves } from '../../../scolarite-eleves/infrastructure/persistence/postgres/depots/ClientPostgresScolariteEleves';
+import type { SqlQueryClient } from '../../../../shared/infrastructure/persistence/SqlQueryClient';
 
 interface LigneElevePaiement {
   id: string;
@@ -43,7 +43,7 @@ interface LigneStatutPaiement {
 export class ScolariteElevesAdapter implements ScolariteElevesPort {
   // Ce constructeur injecte le client PostgreSQL du BC Scolarite afin de lire les donnees sans couplage HTTP.
   constructor(
-    private readonly clientPostgresScolarite: ClientPostgresScolariteEleves,
+    private readonly clientPostgresScolarite: SqlQueryClient,
   ) {}
 
   // Cette methode retrouve l'eleve exploitable par le BC Paiements.

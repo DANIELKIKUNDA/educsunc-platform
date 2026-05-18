@@ -2,7 +2,7 @@ import { Ecole } from '../aggregates/Ecole';
 import { ErreurAccesTenant } from '../exceptions/ErreurAccesTenant';
 import { ErreurIsolationDonnees } from '../exceptions/ErreurIsolationDonnees';
 import { EcoleId } from '../value-objects/EcoleId';
-import { ContexteTenant } from '../../../../shared/tenancy/TenantContext';
+import { ContexteIsolationTenant } from './ContexteIsolationTenant';
 
 // Cette interface decrit le resultat d'un controle d'isolation multi-tenant.
 export interface ResumeIsolationTenant {
@@ -14,7 +14,7 @@ export interface ResumeIsolationTenant {
 // Ce moteur garantit l'isolation stricte des ecoles et des lectures organisationnelles.
 export class MoteurMultiTenant {
   // Cette methode verifie que le tenant courant correspond bien a l'ecole manipulee.
-  public validerRattachementEcole(ecole: Ecole, contexteTenant: ContexteTenant): void {
+  public validerRattachementEcole(ecole: Ecole, contexteTenant: ContexteIsolationTenant): void {
     const idTenantCourant = contexteTenant.obtenirTenant();
     const idEcole = ecole.obtenirId().obtenirValeur();
 
@@ -26,7 +26,7 @@ export class MoteurMultiTenant {
   }
 
   // Cette methode controle l'acces a une donnee en fonction du tenant courant.
-  public controlerAccesDonnees(idEcoleCible: EcoleId, contexteTenant: ContexteTenant): void {
+  public controlerAccesDonnees(idEcoleCible: EcoleId, contexteTenant: ContexteIsolationTenant): void {
     const idTenantCourant = contexteTenant.obtenirTenant();
 
     if (idTenantCourant !== idEcoleCible.obtenirValeur()) {
@@ -39,7 +39,7 @@ export class MoteurMultiTenant {
   // Cette methode garantit l'isolation complete, y compris en lecture organisationnelle.
   public garantirIsolation(
     ecole: Ecole,
-    contexteTenant: ContexteTenant,
+    contexteTenant: ContexteIsolationTenant,
     estLectureSeule = true,
   ): ResumeIsolationTenant {
     const idTenantCourant = contexteTenant.obtenirTenant();
@@ -79,7 +79,7 @@ export class MoteurMultiTenant {
 
   // Cette methode interdit toute ecriture sous couverture d'une lecture organisationnelle.
   public autoriserOperationOrganisationnelle(
-    contexteTenant: ContexteTenant,
+    contexteTenant: ContexteIsolationTenant,
     estLectureSeule: boolean,
   ): void {
     if (contexteTenant.estEnLectureOrganisationnelle() && !estLectureSeule) {

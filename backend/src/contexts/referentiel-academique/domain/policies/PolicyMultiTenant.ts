@@ -1,12 +1,12 @@
-import { ContexteTenant } from '../../../../shared/tenancy/TenantContext';
 import { Ecole } from '../aggregates/Ecole';
 import { ErreurAccesTenant } from '../exceptions/ErreurAccesTenant';
 import { ErreurIsolationDonnees } from '../exceptions/ErreurIsolationDonnees';
+import { ContexteIsolationTenant } from '../services/ContexteIsolationTenant';
 
 // Cette policy porte les regles globales d'isolation stricte entre tenants et organisations.
 export class PolicyMultiTenant {
   // Cette methode verifie qu'une ecole reste strictement accessible dans son tenant attendu.
-  public verifierIsolationStricte(contexteTenant: ContexteTenant, ecole: Ecole): void {
+  public verifierIsolationStricte(contexteTenant: ContexteIsolationTenant, ecole: Ecole): void {
     const tenantCourant = contexteTenant.obtenirTenant();
     const tenantEcole = ecole.obtenirId().obtenirValeur();
 
@@ -32,7 +32,7 @@ export class PolicyMultiTenant {
 
   // Cette methode verifie qu'aucune lecture ou ecriture ne fuit vers une autre ecole.
   public verifierAbsenceFuiteDonnees(
-    contexteTenant: ContexteTenant,
+    contexteTenant: ContexteIsolationTenant,
     identifiantEcoleCible: string,
   ): void {
     const identifiantNettoye = identifiantEcoleCible.trim();

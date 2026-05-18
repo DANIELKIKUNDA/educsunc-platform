@@ -1,5 +1,3 @@
+// Ce barrel expose seulement les composants de tenancy propres au BC.
 export * from './ScolariteTenantContext';
 export * from './ScolariteTenantValidator';
-export * from './TenantContext';
-export * from './TenantResolver';
-export * from './TenantMiddleware';
