@@ -1,9 +1,11 @@
 import Fastify from 'fastify';
 
-import { authentificationPlugin } from './plugins/authentification.plugin';
+import { authenticationPlugin } from './plugins/authentication.plugin';
 import { baseDonneesPlugin } from './plugins/base-donnees.plugin';
 import { journalisationPlugin } from './plugins/journalisation.plugin';
 import { registerGlobalRoutes } from './routes';
+import { requestContextPlugin } from './plugins/request-context.plugin';
+import { securityPlugin } from './plugins/security.plugin';
 import { tenancyPlugin } from './plugins/tenancy.plugin';
 import { validationPlugin } from './plugins/validation.plugin';
 import { configurationApplication } from '../config/app.config';
@@ -11,8 +13,10 @@ import { PinoLogger } from '../shared/infrastructure/logger/PinoLogger';
 
 const pluginsGlobaux = [
   baseDonneesPlugin,
-  authentificationPlugin,
   validationPlugin,
+  requestContextPlugin,
+  authenticationPlugin,
+  securityPlugin,
   tenancyPlugin,
   journalisationPlugin,
 ];
@@ -52,14 +56,20 @@ export const createServer = () => {
     reponse.header('Access-Control-Allow-Methods', 'GET,POST,PATCH,DELETE,OPTIONS');
     reponse.header(
       'Access-Control-Allow-Headers',
-      'Accept,Content-Type,x-tenant-id,x-organisation-id,Idempotency-Key',
+      'Accept,Content-Type,Authorization,x-session-id,x-device-id,x-tenant-id,x-organisation-id,Idempotency-Key',
     );
 
     if (requete.method === 'OPTIONS') {
       await reponse.code(204).send();
     }
   });
-  serveur.register(registerGlobalRoutes);
+  serveur.register(async (instance) => {
+    for (const plugin of pluginsGlobaux) {
+      await plugin(instance, {});
+    }
+
+    await instance.register(registerGlobalRoutes);
+  });
 
   logger.info('Instance Fastify creee.', {
     environnement: configurationApplication.environnement,

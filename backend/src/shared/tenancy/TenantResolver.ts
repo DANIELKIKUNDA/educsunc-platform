@@ -23,6 +23,22 @@ export class ResolveurTenant {
 
   // Cette methode lit une valeur d'entete en prenant en charge les formes usuelles de requete HTTP.
   private lireEntete(requete: any, nomEntete: string): string | null {
+    const contexte = requete?.context;
+
+    if (contexte && nomEntete === 'x-tenant-id') {
+      const valeurContexte = this.normaliserValeurTexte(contexte.ecoleActiveId);
+      if (valeurContexte !== null) {
+        return valeurContexte;
+      }
+    }
+
+    if (contexte && nomEntete === 'x-organisation-id') {
+      const valeurContexte = this.normaliserValeurTexte(contexte.organisationActiveId);
+      if (valeurContexte !== null) {
+        return valeurContexte;
+      }
+    }
+
     const entetes = requete?.headers;
 
     if (entetes?.get && typeof entetes.get === 'function') {
