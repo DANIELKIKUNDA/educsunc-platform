@@ -38,7 +38,15 @@ export class JwtTokenAdapter implements JwtTokenPort {
       throw new Error('Signature JWT invalide');
     }
 
-    return JSON.parse(Buffer.from(corps, 'base64url').toString('utf8')) as TPayload;
+    const payload = JSON.parse(Buffer.from(corps, 'base64url').toString('utf8')) as TPayload & {
+      exp?: number | string;
+    };
+    const expiration = this.extraireExpiration(payload.exp);
+    if (expiration && expiration.getTime() <= Date.now()) {
+      throw new Error('Token expire');
+    }
+
+    return payload as TPayload;
   }
 
   public async creerRefreshTokenOpaque(): Promise<string> {
@@ -47,5 +55,19 @@ export class JwtTokenAdapter implements JwtTokenPort {
 
   public async hacherRefreshToken(refreshToken: string): Promise<string> {
     return createHmac('sha256', this.secret).update(String(refreshToken || '')).digest('hex');
+  }
+
+  private extraireExpiration(exp?: number | string): Date | null {
+    if (typeof exp !== 'number' && typeof exp !== 'string') {
+      return null;
+    }
+
+    const valeur = Number(exp);
+    if (!Number.isFinite(valeur) || valeur <= 0) {
+      return null;
+    }
+
+    const millisecondes = valeur < 1_000_000_000_000 ? valeur * 1000 : valeur;
+    return new Date(millisecondes);
   }
 }

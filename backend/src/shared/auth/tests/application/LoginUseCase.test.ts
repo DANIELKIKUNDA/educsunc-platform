@@ -21,6 +21,8 @@ function creerLoginUseCase(autorisation = new SecurityAuthorizationPortMemoire()
   const saga = new LoginSaga(
     transactionManager,
     repositories.depotUtilisateurAuth,
+    repositories.depotSessionUtilisateur,
+    repositories.depotRefreshToken,
     repositories.depotContexteActifAuth,
     repositories.depotTentativeConnexion,
     autorisation,

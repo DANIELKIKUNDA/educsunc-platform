@@ -1,5 +1,6 @@
 import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
 import { RequestContextFactory, REQUEST_CONTEXT_HEADER_ORGANISATION, REQUEST_CONTEXT_HEADER_SESSION, REQUEST_CONTEXT_HEADER_TENANT } from 'shared/context';
+import { PolicyTokenVersion } from 'shared/auth/domain';
 import { AuthenticationMiddleware, JwtTokenAdapter, PostgresContexteActifAuthRepository, PostgresRefreshTokenRepository, PostgresSessionUtilisateurRepository, PostgresUtilisateurAuthRepository, SessionCacheService } from 'shared/auth/infrastructure';
 import { SessionApplicationService } from 'shared/auth/application/services/SessionApplicationService';
 
@@ -39,6 +40,13 @@ export const authenticationPlugin: PluginGlobal = Object.assign(
         }
 
         utilisateur.verifierConnexionAutorisee();
+        const tokenVersion = lireValeurNombre(payload.tokenVersion);
+        if (typeof tokenVersion === 'number') {
+          PolicyTokenVersion.verifier(
+            utilisateur.obtenirTokenVersion().obtenirValeur(),
+            tokenVersion,
+          );
+        }
 
         const sessionId = lireHeaderChaine(requete.headers, REQUEST_CONTEXT_HEADER_SESSION);
         const session = sessionId
@@ -117,6 +125,10 @@ function lireValeurChaine(valeur: unknown): string | undefined {
 
 function lireValeurBooleenne(valeur: unknown): boolean | undefined {
   return typeof valeur === 'boolean' ? valeur : undefined;
+}
+
+function lireValeurNombre(valeur: unknown): number | undefined {
+  return typeof valeur === 'number' && Number.isFinite(valeur) ? valeur : undefined;
 }
 
 function propagerHeaderContexte(

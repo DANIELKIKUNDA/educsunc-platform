@@ -1,6 +1,8 @@
 import {
   ContexteActifAuth,
   DepotContexteActifAuth,
+  DepotRefreshToken,
+  DepotSessionUtilisateur,
   DepotTentativeConnexion,
   DepotUtilisateurAuth,
   MoteurAuthentification,
@@ -19,6 +21,8 @@ export class LoginSaga {
   constructor(
     private readonly transactionManagerPort: TransactionManagerPort,
     private readonly depotUtilisateurAuth: DepotUtilisateurAuth,
+    private readonly depotSessionUtilisateur: DepotSessionUtilisateur,
+    private readonly depotRefreshToken: DepotRefreshToken,
     private readonly depotContexteActifAuth: DepotContexteActifAuth,
     private readonly depotTentativeConnexion: DepotTentativeConnexion,
     private readonly securityAuthorizationPort: SecurityAuthorizationPort,
@@ -66,6 +70,8 @@ export class LoginSaga {
       });
 
       await this.depotUtilisateurAuth.sauvegarder(utilisateur);
+      await this.depotRefreshToken.sauvegarder(resultat.refreshToken);
+      await this.depotSessionUtilisateur.sauvegarder(resultat.sessionUtilisateur);
       await this.depotTentativeConnexion.sauvegarder(resultat.tentativeConnexion);
 
       const contexteActif = (await this.depotContexteActifAuth.trouverContexteUtilisateur(utilisateur.obtenirId()))

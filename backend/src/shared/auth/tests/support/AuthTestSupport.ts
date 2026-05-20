@@ -13,6 +13,7 @@ import { PostgresRefreshTokenRepository } from 'shared/auth/infrastructure/persi
 import { PostgresSessionUtilisateurRepository } from 'shared/auth/infrastructure/persistence/postgres/repositories/PostgresSessionUtilisateurRepository';
 import { PostgresTentativeConnexionRepository } from 'shared/auth/infrastructure/persistence/postgres/repositories/PostgresTentativeConnexionRepository';
 import { PostgresUtilisateurAuthRepository } from 'shared/auth/infrastructure/persistence/postgres/repositories/PostgresUtilisateurAuthRepository';
+import { SessionCacheService } from 'shared/auth/infrastructure/services/SessionCacheService';
 import { obtenirMemoireAuthStore } from 'shared/auth/infrastructure/persistence/postgres/repositories/_memoireAuthStore';
 
 // Ce fichier regroupe les fabriques et doublures simples des tests AUTH.
@@ -26,6 +27,7 @@ export function reinitialiserMemoireAuth(): void {
   store.refreshTokensParHash.clear();
   store.contextes.clear();
   store.tentatives.length = 0;
+  new SessionCacheService().vider();
 }
 
 export function creerUtilisateurAuth(params?: Partial<{

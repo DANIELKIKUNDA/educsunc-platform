@@ -20,6 +20,8 @@ test('orchestration login complete avec audit, session et jetons', async () => {
   const saga = new LoginSaga(
     new TransactionManagerMemoire(),
     repositories.depotUtilisateurAuth,
+    repositories.depotSessionUtilisateur,
+    repositories.depotRefreshToken,
     repositories.depotContexteActifAuth,
     repositories.depotTentativeConnexion,
     new SecurityAuthorizationPortMemoire(['org-1'], ['ecole-1']),

@@ -45,6 +45,9 @@ jobs:
       - name: Construire le backend
         run: npm run build
 
+      - name: Executer les tests globaux backend
+        run: npm run test:global
+
       - name: Executer les tests backend
         run: npm run test:ci
 
