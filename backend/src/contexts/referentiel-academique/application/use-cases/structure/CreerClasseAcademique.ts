@@ -102,6 +102,13 @@ export class CreerClasseAcademique
       entreeValidee.optionObligatoire,
       entreeValidee.typeStructureEvaluation,
       optionEtude?.obtenirId(),
+      true,
+      horodatageCreation,
+      undefined,
+      1,
+      entreeValidee.estClasseTENASOSP ?? false,
+      entreeValidee.estClasseEXETAT ?? false,
+      entreeValidee.estClasseFinaliste ?? false,
     );
 
     this.moteurStructureScolaire.validerStructurePedagogique(
@@ -126,6 +133,12 @@ export class CreerClasseAcademique
       );
     }
 
+    const classeEXETAT = this.validerBooleenOptionnel(entree.estClasseEXETAT, 'estClasseEXETAT') ?? false;
+    const classeFinaliste = this.validerBooleenOptionnel(
+      entree.estClasseFinaliste,
+      'estClasseFinaliste',
+    ) ?? classeEXETAT;
+
     return {
       idSectionScolaire: this.validerTexteObligatoire(entree.idSectionScolaire, 'idSectionScolaire'),
       code: this.validerTexteObligatoire(entree.code, 'code'),
@@ -136,6 +149,9 @@ export class CreerClasseAcademique
       optionObligatoire: this.validerBooleen(entree.optionObligatoire, 'optionObligatoire'),
       typeStructureEvaluation: this.validerTypeStructureEvaluation(entree.typeStructureEvaluation),
       idOptionEtude: this.validerTexteOptionnel(entree.idOptionEtude),
+      estClasseTENASOSP: this.validerBooleenOptionnel(entree.estClasseTENASOSP, 'estClasseTENASOSP') ?? false,
+      estClasseEXETAT: classeEXETAT,
+      estClasseFinaliste: classeFinaliste,
       creePar: this.validerTexteObligatoire(entree.creePar, 'creePar'),
     };
   }
@@ -204,5 +220,13 @@ export class CreerClasseAcademique
     }
 
     return valeur;
+  }
+
+  private validerBooleenOptionnel(valeur: boolean | undefined, nomChamp: string): boolean | undefined {
+    if (valeur === undefined) {
+      return undefined;
+    }
+
+    return this.validerBooleen(valeur, nomChamp);
   }
 }

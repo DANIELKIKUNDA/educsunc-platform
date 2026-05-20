@@ -32,5 +32,7 @@ test('les migrations sont ordonnees jusqu aux ajouts additifs du referentiel', (
     '006_rls_tables_locales_referentiel_academique',
     '007_ajout_abreviation_options_etudes',
     '008_ajout_classification_lignes_programme',
+    '009_regles_frais_classes',
+    '010_categorie_technique_options',
   ]);
 });

@@ -79,6 +79,8 @@ export class DepotOptionEtudePostgres
       'code',
       'libelle',
       'type_option',
+      'est_technique',
+      'categorie_technique',
       'abreviation',
       'ordre_affichage',
       'active',

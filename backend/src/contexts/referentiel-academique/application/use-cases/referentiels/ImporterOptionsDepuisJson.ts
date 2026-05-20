@@ -66,6 +66,12 @@ export class ImporterOptionsDepuisJson
         undefined,
         enregistrement.ordreAffichage,
         enregistrement.abreviation,
+        true,
+        horodatageImport,
+        undefined,
+        1,
+        enregistrement.estTechnique,
+        enregistrement.categorieTechnique ?? null,
       );
 
       await this.depotOptionEtude.sauvegarder(optionEtude);
@@ -109,9 +115,19 @@ export class ImporterOptionsDepuisJson
       );
     }
 
+    const code = this.validerEntierPositif(option.code, 'code');
+    const libelle = this.validerTexteObligatoire(option.libelle, 'libelle');
+
+    const technique = this.validerBooleen(option.estTechnique, 'estTechnique');
+
     return {
-      code: this.validerEntierPositif(option.code, 'code'),
-      libelle: this.validerTexteObligatoire(option.libelle, 'libelle'),
+      code,
+      libelle,
+      estTechnique: technique,
+      categorieTechnique: this.validerCoherenceCategorieTechnique(
+        technique,
+        this.validerCategorieTechniqueOptionnelle(option.categorieTechnique),
+      ),
       abreviation: this.validerTexteOptionnel(option.abreviation),
       ordreAffichage: this.validerEntierPositifOptionnel(option.ordreAffichage, 'ordreAffichage'),
     };
@@ -123,6 +139,8 @@ export class ImporterOptionsDepuisJson
   ): void {
     if (
       optionExistante.obtenirLibelle() !== enregistrement.libelle
+      || optionExistante.estTechnique() !== enregistrement.estTechnique
+      || optionExistante.obtenirCategorieTechnique() !== (enregistrement.categorieTechnique ?? null)
       || optionExistante.obtenirAbreviation() !== enregistrement.abreviation
       || optionExistante.obtenirOrdreAffichage() !== enregistrement.ordreAffichage
     ) {
@@ -182,5 +200,54 @@ export class ImporterOptionsDepuisJson
     }
 
     return this.validerEntierPositif(valeur, nomChamp);
+  }
+
+  private validerBooleen(valeur: boolean, nomChamp: string): boolean {
+    if (typeof valeur !== 'boolean') {
+      throw new ErreurOptionEtudeInvalide(
+        `Le champ "${nomChamp}" doit etre un booleen.`,
+      );
+    }
+
+    return valeur;
+  }
+
+  private validerCategorieTechniqueOptionnelle(
+    valeur: EnregistrementOptionEtudeJson['categorieTechnique'],
+  ): 'GROUPE_1' | 'GROUPE_2' | null | undefined {
+    if (valeur === undefined) {
+      return undefined;
+    }
+
+    if (valeur === null || valeur === 'GROUPE_1' || valeur === 'GROUPE_2') {
+      return valeur;
+    }
+
+    throw new ErreurOptionEtudeInvalide(
+      'Le champ "categorieTechnique" doit etre GROUPE_1, GROUPE_2 ou null.',
+    );
+  }
+
+  private validerCoherenceCategorieTechnique(
+    technique: boolean,
+    valeurDeclaree: 'GROUPE_1' | 'GROUPE_2' | null | undefined,
+  ): 'GROUPE_1' | 'GROUPE_2' | null {
+    if (!technique) {
+      if (valeurDeclaree !== undefined && valeurDeclaree !== null) {
+        throw new ErreurOptionEtudeInvalide(
+          'Une option non technique ne doit pas avoir de categorie technique.',
+        );
+      }
+
+      return null;
+    }
+
+    if (valeurDeclaree === undefined || valeurDeclaree === null) {
+      throw new ErreurOptionEtudeInvalide(
+        'Une option technique doit avoir une categorie technique.',
+      );
+    }
+
+    return valeurDeclaree;
   }
 }

@@ -95,6 +95,18 @@ export class ValidateurClasseAcademiqueHttp {
         donnees,
         'idOptionEtude',
       ),
+      estClasseTENASOSP: OutilsValidationHttpReferentielAcademique.lireBooleenOptionnel(
+        donnees,
+        'estClasseTENASOSP',
+      ),
+      estClasseEXETAT: OutilsValidationHttpReferentielAcademique.lireBooleenOptionnel(
+        donnees,
+        'estClasseEXETAT',
+      ),
+      estClasseFinaliste: OutilsValidationHttpReferentielAcademique.lireBooleenOptionnel(
+        donnees,
+        'estClasseFinaliste',
+      ),
       creePar: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
         donnees,
         'creePar',

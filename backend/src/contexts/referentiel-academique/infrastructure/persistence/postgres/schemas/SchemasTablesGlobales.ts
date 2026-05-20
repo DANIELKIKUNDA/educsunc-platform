@@ -343,6 +343,20 @@ export const schemaTableOptionsEtudes: SchemaTablePostgres = creerSchemaTablePos
       commentaire: "Type ou famille descriptive de l'option.",
     },
     {
+      nom: 'est_technique',
+      type: 'boolean',
+      obligatoire: true,
+      valeurParDefautSql: 'false',
+      commentaire: "Indique si l'option d'etude correspond a une filiere technique.",
+    },
+    {
+      nom: 'categorie_technique',
+      type: 'varchar',
+      taille: 20,
+      obligatoire: false,
+      commentaire: "Categorie technique tarifaire descriptive de l'option.",
+    },
+    {
       nom: 'abreviation',
       type: 'varchar',
       taille: 40,
@@ -457,6 +471,27 @@ export const schemaTableClassesAcademiques: SchemaTablePostgres = creerSchemaTab
       taille: 40,
       obligatoire: true,
       commentaire: "Structure logique d'evaluation de la classe.",
+    },
+    {
+      nom: 'est_classe_tenasosp',
+      type: 'boolean',
+      obligatoire: true,
+      valeurParDefautSql: 'false',
+      commentaire: 'Indique si la classe est concernee par le TENASOSP.',
+    },
+    {
+      nom: 'est_classe_exetat',
+      type: 'boolean',
+      obligatoire: true,
+      valeurParDefautSql: 'false',
+      commentaire: "Indique si la classe est concernee par l'EXETAT.",
+    },
+    {
+      nom: 'est_classe_finaliste',
+      type: 'boolean',
+      obligatoire: true,
+      valeurParDefautSql: 'false',
+      commentaire: 'Indique si la classe est finaliste.',
     },
     {
       nom: 'active',

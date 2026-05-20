@@ -11,6 +11,9 @@ export interface EnregistrementClasseAcademiqueJson {
   accepteOptions: boolean;
   optionObligatoire: boolean;
   typeStructureEvaluation: TypeStructureEvaluation;
+  estClasseTENASOSP?: boolean;
+  estClasseEXETAT?: boolean;
+  estClasseFinaliste?: boolean;
 }
 
 // Ce DTO represente les donnees attendues pour importer les classes academiques depuis un JSON.

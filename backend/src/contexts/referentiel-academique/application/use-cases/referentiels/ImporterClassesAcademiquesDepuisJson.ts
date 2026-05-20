@@ -96,6 +96,13 @@ export class ImporterClassesAcademiquesDepuisJson
         enregistrement.optionObligatoire,
         enregistrement.typeStructureEvaluation,
         optionEtude?.obtenirId(),
+        true,
+        horodatageImport,
+        undefined,
+        1,
+        enregistrement.estClasseTENASOSP ?? false,
+        enregistrement.estClasseEXETAT ?? false,
+        enregistrement.estClasseFinaliste ?? false,
       );
 
       this.moteurStructureScolaire.validerStructurePedagogique(
@@ -147,6 +154,15 @@ export class ImporterClassesAcademiquesDepuisJson
       );
     }
 
+    const classeEXETAT = this.validerBooleenOptionnel(
+      classeAcademique.estClasseEXETAT,
+      'estClasseEXETAT',
+    ) ?? false;
+    const classeFinaliste = this.validerBooleenOptionnel(
+      classeAcademique.estClasseFinaliste,
+      'estClasseFinaliste',
+    ) ?? classeEXETAT;
+
     return {
       idSectionScolaire: this.validerTexteObligatoire(classeAcademique.idSectionScolaire, 'idSectionScolaire'),
       idOptionEtude: this.validerTexteOptionnel(classeAcademique.idOptionEtude),
@@ -159,6 +175,12 @@ export class ImporterClassesAcademiquesDepuisJson
       typeStructureEvaluation: this.validerTypeStructureEvaluation(
         classeAcademique.typeStructureEvaluation,
       ),
+      estClasseTENASOSP: this.validerBooleenOptionnel(
+        classeAcademique.estClasseTENASOSP,
+        'estClasseTENASOSP',
+      ) ?? false,
+      estClasseEXETAT: classeEXETAT,
+      estClasseFinaliste: classeFinaliste,
     };
   }
 
@@ -205,6 +227,9 @@ export class ImporterClassesAcademiquesDepuisJson
       || classeExistante.accepteOptionsEtude() !== enregistrement.accepteOptions
       || classeExistante.estOptionObligatoire() !== enregistrement.optionObligatoire
       || classeExistante.obtenirTypeStructureEvaluation() !== enregistrement.typeStructureEvaluation
+      || classeExistante.estClasseTENASOSP() !== (enregistrement.estClasseTENASOSP ?? false)
+      || classeExistante.estClasseEXETAT() !== (enregistrement.estClasseEXETAT ?? false)
+      || classeExistante.estClasseFinaliste() !== (enregistrement.estClasseFinaliste ?? false)
     ) {
       throw new ErreurClasseAcademiqueDupliquee(
         'Une classe academique avec ce code existe deja avec une definition differente.',
@@ -276,5 +301,13 @@ export class ImporterClassesAcademiquesDepuisJson
     }
 
     return valeur;
+  }
+
+  private validerBooleenOptionnel(valeur: boolean | undefined, nomChamp: string): boolean | undefined {
+    if (valeur === undefined) {
+      return undefined;
+    }
+
+    return this.validerBooleen(valeur, nomChamp);
   }
 }

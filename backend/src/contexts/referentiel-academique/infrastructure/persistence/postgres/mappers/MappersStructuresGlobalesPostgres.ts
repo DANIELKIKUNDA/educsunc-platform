@@ -198,6 +198,8 @@ export interface PersistanceOptionEtudePostgres {
   code: number;
   libelle: string;
   type_option?: string | null;
+  est_technique: boolean;
+  categorie_technique?: 'GROUPE_1' | 'GROUPE_2' | null;
   abreviation?: string | null;
   ordre_affichage?: number | null;
   active: boolean;
@@ -221,6 +223,8 @@ export class MapperOptionEtudePostgres extends BaseMapperPostgresReferentielAcad
       this.versDate(ligne.cree_le, 'cree_le'),
       this.versDateOptionnelle(ligne.modifie_le, 'modifie_le'),
       ligne.version,
+      ligne.est_technique ?? false,
+      ligne.categorie_technique ?? null,
     );
   }
 
@@ -231,6 +235,8 @@ export class MapperOptionEtudePostgres extends BaseMapperPostgresReferentielAcad
       code: optionEtude.obtenirCodeNumerique(),
       libelle: optionEtude.obtenirLibelle(),
       type_option: optionEtude.obtenirTypeOption() ?? null,
+      est_technique: optionEtude.estTechnique(),
+      categorie_technique: optionEtude.obtenirCategorieTechnique(),
       abreviation: optionEtude.obtenirAbreviation() ?? null,
       ordre_affichage: optionEtude.obtenirOrdreAffichage() ?? null,
       active: optionEtude.estActive(),
@@ -253,6 +259,9 @@ export interface PersistanceClasseAcademiquePostgres {
   accepte_options: boolean;
   option_obligatoire: boolean;
   type_structure_evaluation: TypeStructureEvaluation;
+  est_classe_tenasosp: boolean;
+  est_classe_exetat: boolean;
+  est_classe_finaliste: boolean;
   active: boolean;
   cree_le: ValeurDatePostgres;
   modifie_le?: ValeurDatePostgres | null;
@@ -282,6 +291,9 @@ export class MapperClasseAcademiquePostgres extends BaseMapperPostgresReferentie
       this.versDate(ligne.cree_le, 'cree_le'),
       this.versDateOptionnelle(ligne.modifie_le, 'modifie_le'),
       ligne.version,
+      ligne.est_classe_tenasosp ?? false,
+      ligne.est_classe_exetat ?? false,
+      ligne.est_classe_finaliste ?? false,
     );
   }
 
@@ -300,6 +312,9 @@ export class MapperClasseAcademiquePostgres extends BaseMapperPostgresReferentie
       accepte_options: classeAcademique.accepteOptionsEtude(),
       option_obligatoire: classeAcademique.estOptionObligatoire(),
       type_structure_evaluation: classeAcademique.obtenirTypeStructureEvaluation(),
+      est_classe_tenasosp: classeAcademique.estClasseTENASOSP(),
+      est_classe_exetat: classeAcademique.estClasseEXETAT(),
+      est_classe_finaliste: classeAcademique.estClasseFinaliste(),
       active: classeAcademique.estActive(),
       cree_le: this.versDatePersistance(classeAcademique.obtenirCreeLe()),
       modifie_le:

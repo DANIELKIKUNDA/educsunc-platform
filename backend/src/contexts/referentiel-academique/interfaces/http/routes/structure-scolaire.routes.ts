@@ -98,6 +98,19 @@ export const creerRoutesStructureScolaire = (
     return reponse.code(200).send(resultat);
   });
 
+  serveur.get('/api/classes-pedagogiques/:id/regles-frais', async (requete, reponse) => {
+    const resultat = await dependances.executerRouteTenant(
+      requete,
+      () => dependances.controleurStructureScolaire.consulterReglesFraisClasse(
+        requete.params,
+      ),
+      {
+        mode: 'tenant_requis',
+      },
+    );
+    return reponse.code(200).send(resultat);
+  });
+
   serveur.patch('/api/classes-pedagogiques/:id/renommer', async (requete, reponse) => {
     const resultat = await dependances.executerRouteTenant(
       requete,

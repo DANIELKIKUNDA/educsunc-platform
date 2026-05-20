@@ -1,311 +1,413 @@
-{
-  "options": [
-    {
-      "code": 101,
-      "libelle": "Latin Philosophie",
-      "abreviation": "LP",
-      "ordreAffichage": 1
-    },
-    {
-      "code": 102,
-      "libelle": "Sciences",
-      "abreviation": "SC",
-      "ordreAffichage": 2
-    },
-    {
-      "code": 103,
-      "libelle": "Latin-Grec",
-      "abreviation": "LG",
-      "ordreAffichage": 3
-    },
-    {
-      "code": 104,
-      "libelle": "Latin Mathématique",
-      "abreviation": "LM",
-      "ordreAffichage": 4
-    },
-    {
-      "code": 201,
-      "libelle": "Pédagogie Générale",
-      "abreviation": "HP",
-      "ordreAffichage": 5
-    },
-    {
-      "code": 202,
-      "libelle": "Éducation Physique et Sportive",
-      "abreviation": "EPS",
-      "ordreAffichage": 6
-    },
-    {
-      "code": 203,
-      "libelle": "Normale",
-      "abreviation": "NOR",
-      "ordreAffichage": 7
-    },
-    {
-      "code": 204,
-      "libelle": "Pédagogie Maternelle",
-      "abreviation": "PM",
-      "ordreAffichage": 8
-    },
-    {
-      "code": 205,
-      "libelle": "Pédagogie Pré-scolaire",
-      "abreviation": "PPS",
-      "ordreAffichage": 9
-    },
-    {
-      "code": 301,
-      "libelle": "Commerciale et Gestion",
-      "abreviation": "CG",
-      "ordreAffichage": 10
-    },
-    {
-      "code": 302,
-      "libelle": "Secrétariat-Administration",
-      "abreviation": "SA",
-      "ordreAffichage": 11
-    },
-    {
-      "code": 401,
-      "libelle": "Sociale",
-      "abreviation": "SOC",
-      "ordreAffichage": 12
-    },
-    {
-      "code": 501,
-      "libelle": "Arts Plastiques",
-      "abreviation": "AP",
-      "ordreAffichage": 13
-    },
-    {
-      "code": 502,
-      "libelle": "Arts Dramatiques",
-      "abreviation": "AD",
-      "ordreAffichage": 14
-    },
-    {
-      "code": 503,
-      "libelle": "Musique",
-      "abreviation": "MUS",
-      "ordreAffichage": 15
-    },
-    {
-      "code": 504,
-      "libelle": "Esthétique & Coiffure",
-      "abreviation": "EC",
-      "ordreAffichage": 16
-    },
-    {
-      "code": 505,
-      "libelle": "Coiffure",
-      "abreviation": "COIF",
-      "ordreAffichage": 17
-    },
-    {
-      "code": 601,
-      "libelle": "Coupe et Couture",
-      "abreviation": "TCC",
-      "ordreAffichage": 18
-    },
-    {
-      "code": 701,
-      "libelle": "Hôtesse d'Accueil",
-      "abreviation": "HA",
-      "ordreAffichage": 19
-    },
-    {
-      "code": 702,
-      "libelle": "Hôtellerie et Restauration",
-      "abreviation": "HR",
-      "ordreAffichage": 20
-    },
-    {
-      "code": 703,
-      "libelle": "Hébergement",
-      "abreviation": "HEB",
-      "ordreAffichage": 21
-    },
-    {
-      "code": 704,
-      "libelle": "Tourisme",
-      "abreviation": "TOUR",
-      "ordreAffichage": 22
-    },
-    {
-      "code": 801,
-      "libelle": "Agriculture Générale",
-      "abreviation": "AG",
-      "ordreAffichage": 23
-    },
-    {
-      "code": 802,
-      "libelle": "Pêche et Navigation",
-      "abreviation": "PN",
-      "ordreAffichage": 24
-    },
-    {
-      "code": 803,
-      "libelle": "Vétérinaire",
-      "abreviation": "VET",
-      "ordreAffichage": 25
-    },
-    {
-      "code": 804,
-      "libelle": "Industries Agricoles",
-      "abreviation": "IA",
-      "ordreAffichage": 26
-    },
-    {
-      "code": 805,
-      "libelle": "Nutrition",
-      "abreviation": "NUT",
-      "ordreAffichage": 27
-    },
-    {
-      "code": 806,
-      "libelle": "Foresterie",
-      "abreviation": "FOR",
-      "ordreAffichage": 28
-    },
-    {
-      "code": 901,
-      "libelle": "Mécanique Générale",
-      "abreviation": "MG",
-      "ordreAffichage": 29
-    },
-    {
-      "code": 902,
-      "libelle": "Mécanique Machines-Outils",
-      "abreviation": "MMO",
-      "ordreAffichage": 30
-    },
-    {
-      "code": 903,
-      "libelle": "Électricité Générale",
-      "abreviation": "ELEC",
-      "ordreAffichage": 31
-    },
-    {
-      "code": 904,
-      "libelle": "Construction",
-      "abreviation": "CONS",
-      "ordreAffichage": 32
-    },
-    {
-      "code": 905,
-      "libelle": "Chimie Industrielle",
-      "abreviation": "CHI",
-      "ordreAffichage": 33
-    },
-    {
-      "code": 906,
-      "libelle": "Électronique Industrielle",
-      "abreviation": "EI",
-      "ordreAffichage": 34
-    },
-    {
-      "code": 907,
-      "libelle": "Imprimerie",
-      "abreviation": "IMP",
-      "ordreAffichage": 35
-    },
-    {
-      "code": 908,
-      "libelle": "Commutation",
-      "abreviation": "COM",
-      "ordreAffichage": 36
-    },
-    {
-      "code": 909,
-      "libelle": "Radio Transmission",
-      "abreviation": "RT",
-      "ordreAffichage": 37
-    },
-    {
-      "code": 910,
-      "libelle": "Météorologie",
-      "abreviation": "METEO",
-      "ordreAffichage": 38
-    },
-    {
-      "code": 911,
-      "libelle": "Aviation Civile",
-      "abreviation": "AC",
-      "ordreAffichage": 39
-    },
-    {
-      "code": 912,
-      "libelle": "Mécanique Dessin",
-      "abreviation": "MD",
-      "ordreAffichage": 40
-    },
-    {
-      "code": 913,
-      "libelle": "Hydro-Pneumatique",
-      "abreviation": "HYDRO",
-      "ordreAffichage": 41
-    },
-    {
-      "code": 914,
-      "libelle": "Pétrochimie",
-      "abreviation": "PETRO",
-      "ordreAffichage": 42
-    },
-    {
-      "code": 915,
-      "libelle": "Mécanique Automobile",
-      "abreviation": "MA",
-      "ordreAffichage": 43
-    },
-    {
-      "code": 916,
-      "libelle": "Construction Métallique",
-      "abreviation": "CM",
-      "ordreAffichage": 44
-    },
-    {
-      "code": 917,
-      "libelle": "Menuiserie",
-      "abreviation": "MEN",
-      "ordreAffichage": 45
-    },
-    {
-      "code": 918,
-      "libelle": "Mine et Géologie",
-      "abreviation": "MINGEO",
-      "ordreAffichage": 46
-    },
-    {
-      "code": 919,
-      "libelle": "Métallurgie",
-      "abreviation": "METAL",
-      "ordreAffichage": 47
-    },
-    {
-      "code": 920,
-      "libelle": "Dessin de Bâtiment",
-      "abreviation": "DB",
-      "ordreAffichage": 48
-    },
-    {
-      "code": 921,
-      "libelle": "Plomberie (Installation Sanitaire)",
-      "abreviation": "PIS",
-      "ordreAffichage": 49
-    },
-    {
-      "code": 922,
-      "libelle": "Mines et Carrières",
-      "abreviation": "MC",
-      "ordreAffichage": 50
-    },
-    {
-      "code": 923,
-      "libelle": "Géologie",
-      "abreviation": "GEO",
-      "ordreAffichage": 51
-    }
-  ],
-  "importePar": "seed-referentiel-academique"
+﻿{
+    "options":  [
+                    {
+                        "code":  101,
+                        "libelle":  "Latin Philosophie",
+                        "abreviation":  "LP",
+                        "ordreAffichage":  1,
+                        "estTechnique":  false,
+                        "categorieTechnique":  null
+                    },
+                    {
+                        "code":  102,
+                        "libelle":  "Sciences",
+                        "abreviation":  "SC",
+                        "ordreAffichage":  2,
+                        "estTechnique":  false,
+                        "categorieTechnique":  null
+                    },
+                    {
+                        "code":  103,
+                        "libelle":  "Latin-Grec",
+                        "abreviation":  "LG",
+                        "ordreAffichage":  3,
+                        "estTechnique":  false,
+                        "categorieTechnique":  null
+                    },
+                    {
+                        "code":  104,
+                        "libelle":  "Latin MathÃ©matique",
+                        "abreviation":  "LM",
+                        "ordreAffichage":  4,
+                        "estTechnique":  false,
+                        "categorieTechnique":  null
+                    },
+                    {
+                        "code":  201,
+                        "libelle":  "PÃ©dagogie GÃ©nÃ©rale",
+                        "abreviation":  "HP",
+                        "ordreAffichage":  5,
+                        "estTechnique":  false,
+                        "categorieTechnique":  null
+                    },
+                    {
+                        "code":  202,
+                        "libelle":  "Ã‰ducation Physique et Sportive",
+                        "abreviation":  "EPS",
+                        "ordreAffichage":  6,
+                        "estTechnique":  false,
+                        "categorieTechnique":  null
+                    },
+                    {
+                        "code":  203,
+                        "libelle":  "Normale",
+                        "abreviation":  "NOR",
+                        "ordreAffichage":  7,
+                        "estTechnique":  false,
+                        "categorieTechnique":  null
+                    },
+                    {
+                        "code":  204,
+                        "libelle":  "PÃ©dagogie Maternelle",
+                        "abreviation":  "PM",
+                        "ordreAffichage":  8,
+                        "estTechnique":  false,
+                        "categorieTechnique":  null
+                    },
+                    {
+                        "code":  205,
+                        "libelle":  "PÃ©dagogie PrÃ©-scolaire",
+                        "abreviation":  "PPS",
+                        "ordreAffichage":  9,
+                        "estTechnique":  false,
+                        "categorieTechnique":  null
+                    },
+                    {
+                        "code":  301,
+                        "libelle":  "Commerciale et Gestion",
+                        "abreviation":  "CG",
+                        "ordreAffichage":  10,
+                        "estTechnique":  true,
+                        "categorieTechnique":  "GROUPE_1"
+                    },
+                    {
+                        "code":  302,
+                        "libelle":  "SecrÃ©tariat-Administration",
+                        "abreviation":  "SA",
+                        "ordreAffichage":  11,
+                        "estTechnique":  true,
+                        "categorieTechnique":  "GROUPE_1"
+                    },
+                    {
+                        "code":  401,
+                        "libelle":  "Sociale",
+                        "abreviation":  "SOC",
+                        "ordreAffichage":  12,
+                        "estTechnique":  true,
+                        "categorieTechnique":  "GROUPE_1"
+                    },
+                    {
+                        "code":  501,
+                        "libelle":  "Arts Plastiques",
+                        "abreviation":  "AP",
+                        "ordreAffichage":  13,
+                        "estTechnique":  true,
+                        "categorieTechnique":  "GROUPE_1"
+                    },
+                    {
+                        "code":  502,
+                        "libelle":  "Arts Dramatiques",
+                        "abreviation":  "AD",
+                        "ordreAffichage":  14,
+                        "estTechnique":  true,
+                        "categorieTechnique":  "GROUPE_1"
+                    },
+                    {
+                        "code":  503,
+                        "libelle":  "Musique",
+                        "abreviation":  "MUS",
+                        "ordreAffichage":  15,
+                        "estTechnique":  true,
+                        "categorieTechnique":  "GROUPE_1"
+                    },
+                    {
+                        "code":  504,
+                        "libelle":  "EsthÃ©tique \u0026 Coiffure",
+                        "abreviation":  "EC",
+                        "ordreAffichage":  16,
+                        "estTechnique":  true,
+                        "categorieTechnique":  "GROUPE_1"
+                    },
+                    {
+                        "code":  505,
+                        "libelle":  "Coiffure",
+                        "abreviation":  "COIF",
+                        "ordreAffichage":  17,
+                        "estTechnique":  true,
+                        "categorieTechnique":  "GROUPE_1"
+                    },
+                    {
+                        "code":  601,
+                        "libelle":  "Coupe et Couture",
+                        "abreviation":  "TCC",
+                        "ordreAffichage":  18,
+                        "estTechnique":  true,
+                        "categorieTechnique":  "GROUPE_1"
+                    },
+                    {
+                        "code":  701,
+                        "libelle":  "HÃ´tesse d\u0027Accueil",
+                        "abreviation":  "HA",
+                        "ordreAffichage":  19,
+                        "estTechnique":  true,
+                        "categorieTechnique":  "GROUPE_1"
+                    },
+                    {
+                        "code":  702,
+                        "libelle":  "HÃ´tellerie et Restauration",
+                        "abreviation":  "HR",
+                        "ordreAffichage":  20,
+                        "estTechnique":  true,
+                        "categorieTechnique":  "GROUPE_1"
+                    },
+                    {
+                        "code":  703,
+                        "libelle":  "HÃ©bergement",
+                        "abreviation":  "HEB",
+                        "ordreAffichage":  21,
+                        "estTechnique":  true,
+                        "categorieTechnique":  "GROUPE_1"
+                    },
+                    {
+                        "code":  704,
+                        "libelle":  "Tourisme",
+                        "abreviation":  "TOUR",
+                        "ordreAffichage":  22,
+                        "estTechnique":  true,
+                        "categorieTechnique":  "GROUPE_1"
+                    },
+                    {
+                        "code":  801,
+                        "libelle":  "Agriculture GÃ©nÃ©rale",
+                        "abreviation":  "AG",
+                        "ordreAffichage":  23,
+                        "estTechnique":  true,
+                        "categorieTechnique":  "GROUPE_2"
+                    },
+                    {
+                        "code":  802,
+                        "libelle":  "PÃªche et Navigation",
+                        "abreviation":  "PN",
+                        "ordreAffichage":  24,
+                        "estTechnique":  true,
+                        "categorieTechnique":  "GROUPE_2"
+                    },
+                    {
+                        "code":  803,
+                        "libelle":  "VÃ©tÃ©rinaire",
+                        "abreviation":  "VET",
+                        "ordreAffichage":  25,
+                        "estTechnique":  true,
+                        "categorieTechnique":  "GROUPE_2"
+                    },
+                    {
+                        "code":  804,
+                        "libelle":  "Industries Agricoles",
+                        "abreviation":  "IA",
+                        "ordreAffichage":  26,
+                        "estTechnique":  true,
+                        "categorieTechnique":  "GROUPE_2"
+                    },
+                    {
+                        "code":  805,
+                        "libelle":  "Nutrition",
+                        "abreviation":  "NUT",
+                        "ordreAffichage":  27,
+                        "estTechnique":  true,
+                        "categorieTechnique":  "GROUPE_2"
+                    },
+                    {
+                        "code":  806,
+                        "libelle":  "Foresterie",
+                        "abreviation":  "FOR",
+                        "ordreAffichage":  28,
+                        "estTechnique":  true,
+                        "categorieTechnique":  "GROUPE_2"
+                    },
+                    {
+                        "code":  901,
+                        "libelle":  "MÃ©canique GÃ©nÃ©rale",
+                        "abreviation":  "MG",
+                        "ordreAffichage":  29,
+                        "estTechnique":  true,
+                        "categorieTechnique":  "GROUPE_2"
+                    },
+                    {
+                        "code":  902,
+                        "libelle":  "MÃ©canique Machines-Outils",
+                        "abreviation":  "MMO",
+                        "ordreAffichage":  30,
+                        "estTechnique":  true,
+                        "categorieTechnique":  "GROUPE_2"
+                    },
+                    {
+                        "code":  903,
+                        "libelle":  "Ã‰lectricitÃ© GÃ©nÃ©rale",
+                        "abreviation":  "ELEC",
+                        "ordreAffichage":  31,
+                        "estTechnique":  true,
+                        "categorieTechnique":  "GROUPE_2"
+                    },
+                    {
+                        "code":  904,
+                        "libelle":  "Construction",
+                        "abreviation":  "CONS",
+                        "ordreAffichage":  32,
+                        "estTechnique":  true,
+                        "categorieTechnique":  "GROUPE_2"
+                    },
+                    {
+                        "code":  905,
+                        "libelle":  "Chimie Industrielle",
+                        "abreviation":  "CHI",
+                        "ordreAffichage":  33,
+                        "estTechnique":  true,
+                        "categorieTechnique":  "GROUPE_2"
+                    },
+                    {
+                        "code":  906,
+                        "libelle":  "Ã‰lectronique Industrielle",
+                        "abreviation":  "EI",
+                        "ordreAffichage":  34,
+                        "estTechnique":  true,
+                        "categorieTechnique":  "GROUPE_2"
+                    },
+                    {
+                        "code":  907,
+                        "libelle":  "Imprimerie",
+                        "abreviation":  "IMP",
+                        "ordreAffichage":  35,
+                        "estTechnique":  true,
+                        "categorieTechnique":  "GROUPE_2"
+                    },
+                    {
+                        "code":  908,
+                        "libelle":  "Commutation",
+                        "abreviation":  "COM",
+                        "ordreAffichage":  36,
+                        "estTechnique":  true,
+                        "categorieTechnique":  "GROUPE_2"
+                    },
+                    {
+                        "code":  909,
+                        "libelle":  "Radio Transmission",
+                        "abreviation":  "RT",
+                        "ordreAffichage":  37,
+                        "estTechnique":  true,
+                        "categorieTechnique":  "GROUPE_2"
+                    },
+                    {
+                        "code":  910,
+                        "libelle":  "MÃ©tÃ©orologie",
+                        "abreviation":  "METEO",
+                        "ordreAffichage":  38,
+                        "estTechnique":  true,
+                        "categorieTechnique":  "GROUPE_2"
+                    },
+                    {
+                        "code":  911,
+                        "libelle":  "Aviation Civile",
+                        "abreviation":  "AC",
+                        "ordreAffichage":  39,
+                        "estTechnique":  true,
+                        "categorieTechnique":  "GROUPE_2"
+                    },
+                    {
+                        "code":  912,
+                        "libelle":  "MÃ©canique Dessin",
+                        "abreviation":  "MD",
+                        "ordreAffichage":  40,
+                        "estTechnique":  true,
+                        "categorieTechnique":  "GROUPE_2"
+                    },
+                    {
+                        "code":  913,
+                        "libelle":  "Hydro-Pneumatique",
+                        "abreviation":  "HYDRO",
+                        "ordreAffichage":  41,
+                        "estTechnique":  true,
+                        "categorieTechnique":  "GROUPE_2"
+                    },
+                    {
+                        "code":  914,
+                        "libelle":  "PÃ©trochimie",
+                        "abreviation":  "PETRO",
+                        "ordreAffichage":  42,
+                        "estTechnique":  true,
+                        "categorieTechnique":  "GROUPE_2"
+                    },
+                    {
+                        "code":  915,
+                        "libelle":  "MÃ©canique Automobile",
+                        "abreviation":  "MA",
+                        "ordreAffichage":  43,
+                        "estTechnique":  true,
+                        "categorieTechnique":  "GROUPE_2"
+                    },
+                    {
+                        "code":  916,
+                        "libelle":  "Construction MÃ©tallique",
+                        "abreviation":  "CM",
+                        "ordreAffichage":  44,
+                        "estTechnique":  true,
+                        "categorieTechnique":  "GROUPE_2"
+                    },
+                    {
+                        "code":  917,
+                        "libelle":  "Menuiserie",
+                        "abreviation":  "MEN",
+                        "ordreAffichage":  45,
+                        "estTechnique":  true,
+                        "categorieTechnique":  "GROUPE_2"
+                    },
+                    {
+                        "code":  918,
+                        "libelle":  "Mine et GÃ©ologie",
+                        "abreviation":  "MINGEO",
+                        "ordreAffichage":  46,
+                        "estTechnique":  true,
+                        "categorieTechnique":  "GROUPE_2"
+                    },
+                    {
+                        "code":  919,
+                        "libelle":  "MÃ©tallurgie",
+                        "abreviation":  "METAL",
+                        "ordreAffichage":  47,
+                        "estTechnique":  true,
+                        "categorieTechnique":  "GROUPE_2"
+                    },
+                    {
+                        "code":  920,
+                        "libelle":  "Dessin de BÃ¢timent",
+                        "abreviation":  "DB",
+                        "ordreAffichage":  48,
+                        "estTechnique":  true,
+                        "categorieTechnique":  "GROUPE_2"
+                    },
+                    {
+                        "code":  921,
+                        "libelle":  "Plomberie (Installation Sanitaire)",
+                        "abreviation":  "PIS",
+                        "ordreAffichage":  49,
+                        "estTechnique":  true,
+                        "categorieTechnique":  "GROUPE_2"
+                    },
+                    {
+                        "code":  922,
+                        "libelle":  "Mines et CarriÃ¨res",
+                        "abreviation":  "MC",
+                        "ordreAffichage":  50,
+                        "estTechnique":  true,
+                        "categorieTechnique":  "GROUPE_2"
+                    },
+                    {
+                        "code":  923,
+                        "libelle":  "GÃ©ologie",
+                        "abreviation":  "GEO",
+                        "ordreAffichage":  51,
+                        "estTechnique":  true,
+                        "categorieTechnique":  "GROUPE_2"
+                    }
+                ],
+    "importePar":  "seed-referentiel-academique"
 }

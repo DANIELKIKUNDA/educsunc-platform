@@ -75,6 +75,7 @@ import {
   CreerClassePedagogique,
   CreerOptionEtude,
   CreerSectionScolaire,
+  ConsulterReglesFraisClasse,
   DesactiverClassePedagogique,
   ListerClassesAcademiques,
   ListerClassesPedagogiquesParEcoleEtAnnee,
@@ -115,6 +116,7 @@ import {
   DepotProgrammeNiveauPostgres,
   DepotReferentielCoursPostgres,
   DepotReferentielProgrammePostgres,
+  ReglesFraisClasseQueryRepository,
   DepotSectionScolairePostgres,
   type InfrastructurePostgresReferentielAcademique,
   creerInfrastructurePostgresReferentielAcademique,
@@ -136,6 +138,7 @@ interface DepotsReferentielAcademique {
   depotProgrammeNiveau: DepotProgrammeNiveauPostgres;
   depotCalendrierAcademique: DepotCalendrierAcademiquePostgres;
   depotMigrationReferentielProgramme: DepotMigrationReferentielProgrammePostgres;
+  reglesFraisClasseQueryRepository: ReglesFraisClasseQueryRepository;
 }
 
 // Cette interface regroupe l'infrastructure et les controleurs a brancher dans Fastify.
@@ -204,6 +207,11 @@ function creerDepotsReferentielAcademique(
       contexteExecutionTenant,
     ),
     depotMigrationReferentielProgramme: new DepotMigrationReferentielProgrammePostgres(
+      clientLecture,
+      uniteDeTravail,
+      contexteExecutionTenant,
+    ),
+    reglesFraisClasseQueryRepository: new ReglesFraisClasseQueryRepository(
       clientLecture,
       uniteDeTravail,
       contexteExecutionTenant,
@@ -327,6 +335,7 @@ function composerRoutesReferentielAcademique(): CompositionRoutesReferentielAcad
     new RenommerClassePedagogique(depots.depotClassePedagogique),
     new DesactiverClassePedagogique(depots.depotClassePedagogique),
     new ArchiverClassePedagogique(depots.depotClassePedagogique),
+    new ConsulterReglesFraisClasse(depots.reglesFraisClasseQueryRepository),
   );
 
   const casUsageImporterSectionsDepuisJson = new ImporterSectionsDepuisJson(

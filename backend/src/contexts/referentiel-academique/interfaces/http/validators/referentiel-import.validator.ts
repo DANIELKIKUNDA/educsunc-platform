@@ -356,6 +356,11 @@ export class ValidateurReferentielImportHttp {
         donnees,
         'libelle',
       ),
+      estTechnique: OutilsValidationHttpReferentielAcademique.lireBooleenRequis(
+        donnees,
+        'estTechnique',
+      ),
+      categorieTechnique: this.lireCategorieTechniqueOptionnelle(donnees),
       abreviation: OutilsValidationHttpReferentielAcademique.lireChaineOptionnelle(
         donnees,
         'abreviation',
@@ -408,7 +413,35 @@ export class ValidateurReferentielImportHttp {
         'typeStructureEvaluation',
         TypeStructureEvaluation,
       ),
+      estClasseTENASOSP: OutilsValidationHttpReferentielAcademique.lireBooleenOptionnel(
+        donnees,
+        'estClasseTENASOSP',
+      ),
+      estClasseEXETAT: OutilsValidationHttpReferentielAcademique.lireBooleenOptionnel(
+        donnees,
+        'estClasseEXETAT',
+      ),
+      estClasseFinaliste: OutilsValidationHttpReferentielAcademique.lireBooleenOptionnel(
+        donnees,
+        'estClasseFinaliste',
+      ),
     };
+  }
+
+  private static lireCategorieTechniqueOptionnelle(
+    donnees: Record<string, unknown>,
+  ): EnregistrementOptionEtudeJson['categorieTechnique'] {
+    const valeur = donnees.categorieTechnique;
+
+    if (valeur === undefined) {
+      return undefined;
+    }
+
+    if (valeur === null || valeur === 'GROUPE_1' || valeur === 'GROUPE_2') {
+      return valeur;
+    }
+
+    throw new Error('Le champ categorieTechnique doit etre GROUPE_1, GROUPE_2 ou null.');
   }
 
   private static validerCours(

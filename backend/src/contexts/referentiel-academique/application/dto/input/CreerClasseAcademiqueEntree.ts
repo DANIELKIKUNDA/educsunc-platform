@@ -11,5 +11,8 @@ export interface CreerClasseAcademiqueEntree {
   optionObligatoire: boolean;
   typeStructureEvaluation: TypeStructureEvaluation;
   idOptionEtude?: string;
+  estClasseTENASOSP?: boolean;
+  estClasseEXETAT?: boolean;
+  estClasseFinaliste?: boolean;
   creePar: string;
 }

@@ -5,6 +5,7 @@ export * from './CreerClassePedagogique';
 export * from './RenommerClassePedagogique';
 export * from './DesactiverClassePedagogique';
 export * from './ArchiverClassePedagogique';
+export * from './ConsulterReglesFraisClasse';
 export * from './ListerClassesAcademiques';
 export * from './ListerClassesPedagogiquesParEcoleEtAnnee';
 export * from './ListerOptionsEtudes';

@@ -1,4 +1,5 @@
 import { ClasseAcademiqueSortie } from '../../../application/dto/output/ClasseAcademiqueSortie';
+import { ClasseReglesFraisDTO } from '../../../application/dto/output/ClasseReglesFraisDTO';
 import { OptionEtudeSortie } from '../../../application/dto/output/OptionEtudeSortie';
 import { SectionScolaireSortie } from '../../../application/dto/output/SectionScolaireSortie';
 import {
@@ -7,6 +8,7 @@ import {
   CreerClassePedagogique,
   CreerOptionEtude,
   CreerSectionScolaire,
+  ConsulterReglesFraisClasse,
   DesactiverClassePedagogique,
   ListerClassesAcademiques,
   ListerClassesPedagogiquesParEcoleEtAnnee,
@@ -63,6 +65,11 @@ export interface ReponseListeOptionsEtudesHttp {
   pagination: PaginationHttp;
 }
 
+// Cette interface represente la reponse HTTP des faits de frais d'une classe pedagogique.
+export interface ReponseReglesFraisClasseHttp {
+  donnee: ClasseReglesFraisDTO;
+}
+
 // Ce controleur orchestre les entrees et sorties HTTP de la structure scolaire.
 export class ControleurStructureScolaire {
   private readonly casUsageCreerSectionScolaire: CreerSectionScolaire;
@@ -77,6 +84,7 @@ export class ControleurStructureScolaire {
   private readonly casUsageRenommerClassePedagogique: RenommerClassePedagogique;
   private readonly casUsageDesactiverClassePedagogique: DesactiverClassePedagogique;
   private readonly casUsageArchiverClassePedagogique: ArchiverClassePedagogique;
+  private readonly casUsageConsulterReglesFraisClasse: ConsulterReglesFraisClasse;
 
   // Ce constructeur injecte les cas d'usage exposes par les routes de structure scolaire.
   constructor(
@@ -91,6 +99,7 @@ export class ControleurStructureScolaire {
     casUsageRenommerClassePedagogique: RenommerClassePedagogique,
     casUsageDesactiverClassePedagogique: DesactiverClassePedagogique,
     casUsageArchiverClassePedagogique: ArchiverClassePedagogique,
+    casUsageConsulterReglesFraisClasse: ConsulterReglesFraisClasse,
   ) {
     this.casUsageCreerSectionScolaire = casUsageCreerSectionScolaire;
     this.casUsageCreerClasseAcademique = casUsageCreerClasseAcademique;
@@ -104,6 +113,7 @@ export class ControleurStructureScolaire {
     this.casUsageRenommerClassePedagogique = casUsageRenommerClassePedagogique;
     this.casUsageDesactiverClassePedagogique = casUsageDesactiverClassePedagogique;
     this.casUsageArchiverClassePedagogique = casUsageArchiverClassePedagogique;
+    this.casUsageConsulterReglesFraisClasse = casUsageConsulterReglesFraisClasse;
   }
 
   // Cette methode traite la creation HTTP d'une section scolaire.
@@ -190,6 +200,18 @@ export class ControleurStructureScolaire {
     const sortie = await this.casUsageListerClassesPedagogiquesParEcoleEtAnnee.executer(entree);
 
     return ClassePedagogiquePresenter.presenterListeClassesPedagogiques(sortie);
+  }
+
+  // Cette methode traite la consultation HTTP des faits de frais d'une classe pedagogique.
+  public async consulterReglesFraisClasse(
+    parametres: unknown,
+  ): Promise<ReponseReglesFraisClasseHttp> {
+    const entree = ValidateurClassePedagogiqueHttp.validerConsultationReglesFrais(parametres);
+    const sortie = await this.casUsageConsulterReglesFraisClasse.executer(entree);
+
+    return {
+      donnee: sortie,
+    };
   }
 
   // Cette methode traite la liste HTTP paginee des options d'etude.

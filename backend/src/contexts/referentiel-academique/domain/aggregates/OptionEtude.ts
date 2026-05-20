@@ -3,6 +3,8 @@ import { ValidationError } from '../../../../shared/exceptions/ValidationError';
 import { OptionEtudeId } from '../value-objects/OptionEtudeId';
 import { CodeOption } from '../value-objects/CodeOption';
 
+export type CategorieTechniqueOption = 'GROUPE_1' | 'GROUPE_2';
+
 // Cet agregat represente une filiere ou orientation academique exploitable dans le referentiel.
 export class OptionEtude extends RacineAgregat<OptionEtudeId> {
   private code: CodeOption;
@@ -10,6 +12,8 @@ export class OptionEtude extends RacineAgregat<OptionEtudeId> {
   private typeOption?: string;
   private abreviation?: string;
   private active: boolean;
+  private technique: boolean;
+  private categorieTechnique: CategorieTechniqueOption | null;
   private ordreAffichage?: number;
   private creeLe: Date;
   private modifieLe?: Date;
@@ -27,6 +31,8 @@ export class OptionEtude extends RacineAgregat<OptionEtudeId> {
     creeLe: Date = new Date(),
     modifieLe?: Date,
     version = 1,
+    technique = false,
+    categorieTechnique: CategorieTechniqueOption | null = null,
   ) {
     super(id);
 
@@ -36,9 +42,12 @@ export class OptionEtude extends RacineAgregat<OptionEtudeId> {
     this.abreviation = this.validerTexteOptionnel(abreviation);
     this.ordreAffichage = this.validerOrdreOptionnel(ordreAffichage);
     this.active = this.validerBooleen(active, 'active');
+    this.technique = this.validerBooleen(technique, 'technique');
+    this.categorieTechnique = this.validerCategorieTechnique(categorieTechnique);
     this.creeLe = this.validerDate(creeLe, 'creeLe');
     this.modifieLe = this.validerDateOptionnelle(modifieLe, 'modifieLe');
     this.version = this.validerVersion(version);
+    this.verifierCoherenceTechnique();
   }
 
   // Cette methode retourne le code officiel encapsule de l'option.
@@ -74,6 +83,16 @@ export class OptionEtude extends RacineAgregat<OptionEtudeId> {
   // Cette methode indique si l'option est active.
   public estActive(): boolean {
     return this.active;
+  }
+
+  // Cette methode indique si l'option correspond a une filiere technique.
+  public estTechnique(): boolean {
+    return this.technique;
+  }
+
+  // Cette methode retourne la categorie technique de l'option si elle est technique.
+  public obtenirCategorieTechnique(): CategorieTechniqueOption | null {
+    return this.categorieTechnique;
   }
 
   // Cette methode retourne la date de creation de l'option.
@@ -167,6 +186,39 @@ export class OptionEtude extends RacineAgregat<OptionEtudeId> {
     }
 
     return valeur;
+  }
+
+  private validerCategorieTechnique(
+    valeur: CategorieTechniqueOption | null,
+  ): CategorieTechniqueOption | null {
+    if (valeur === null) {
+      return null;
+    }
+
+    if (valeur !== 'GROUPE_1' && valeur !== 'GROUPE_2') {
+      throw new ValidationError(
+        'La categorie technique doit etre GROUPE_1 ou GROUPE_2.',
+        'OPTION_ETUDE_CATEGORIE_TECHNIQUE_INVALIDE',
+      );
+    }
+
+    return valeur;
+  }
+
+  private verifierCoherenceTechnique(): void {
+    if (!this.technique && this.categorieTechnique !== null) {
+      throw new ValidationError(
+        'Une option non technique ne doit pas avoir de categorie technique.',
+        'OPTION_ETUDE_CATEGORIE_TECHNIQUE_INTERDITE',
+      );
+    }
+
+    if (this.technique && this.categorieTechnique === null) {
+      throw new ValidationError(
+        'Une option technique doit avoir une categorie technique.',
+        'OPTION_ETUDE_CATEGORIE_TECHNIQUE_OBLIGATOIRE',
+      );
+    }
   }
 
   private validerDate(valeur: Date, nomChamp: string): Date {

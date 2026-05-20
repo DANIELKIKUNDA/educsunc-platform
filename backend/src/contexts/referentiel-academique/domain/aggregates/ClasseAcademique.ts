@@ -17,6 +17,9 @@ export class ClasseAcademique extends RacineAgregat<ClasseAcademiqueId> {
   private accepteOptions: boolean;
   private optionObligatoire: boolean;
   private typeStructureEvaluation: TypeStructureEvaluation;
+  private classeTENASOSP: boolean;
+  private classeEXETAT: boolean;
+  private classeFinaliste: boolean;
   private active: boolean;
   private creeLe: Date;
   private modifieLe?: Date;
@@ -38,6 +41,9 @@ export class ClasseAcademique extends RacineAgregat<ClasseAcademiqueId> {
     creeLe: Date = new Date(),
     modifieLe?: Date,
     version = 1,
+    classeTENASOSP = false,
+    classeEXETAT = false,
+    classeFinaliste = false,
   ) {
     super(id);
 
@@ -50,12 +56,16 @@ export class ClasseAcademique extends RacineAgregat<ClasseAcademiqueId> {
     this.accepteOptions = this.validerBooleen(accepteOptions, 'accepteOptions');
     this.optionObligatoire = this.validerBooleen(optionObligatoire, 'optionObligatoire');
     this.typeStructureEvaluation = this.validerTypeStructureEvaluation(typeStructureEvaluation);
+    this.classeTENASOSP = this.validerBooleen(classeTENASOSP, 'classeTENASOSP');
+    this.classeEXETAT = this.validerBooleen(classeEXETAT, 'classeEXETAT');
+    this.classeFinaliste = this.validerBooleen(classeFinaliste, 'classeFinaliste');
     this.active = this.validerBooleen(active, 'active');
     this.creeLe = this.validerDate(creeLe, 'creeLe');
     this.modifieLe = this.validerDateOptionnelle(modifieLe, 'modifieLe');
     this.version = this.validerVersion(version);
     this.verifierCoherenceAvecOption();
     this.verifierCoherenceAvecStructureEvaluation();
+    this.verifierCoherenceExetatFinaliste();
   }
 
   // Cette methode retourne l'identifiant de la section scolaire de rattachement.
@@ -106,6 +116,21 @@ export class ClasseAcademique extends RacineAgregat<ClasseAcademiqueId> {
   // Cette methode retourne la structure d'evaluation attendue.
   public obtenirTypeStructureEvaluation(): TypeStructureEvaluation {
     return this.typeStructureEvaluation;
+  }
+
+  // Cette methode indique si la classe est concernee par le TENASOSP.
+  public estClasseTENASOSP(): boolean {
+    return this.classeTENASOSP;
+  }
+
+  // Cette methode indique si la classe est concernee par l'EXETAT.
+  public estClasseEXETAT(): boolean {
+    return this.classeEXETAT;
+  }
+
+  // Cette methode indique si la classe est une classe finaliste.
+  public estClasseFinaliste(): boolean {
+    return this.classeFinaliste;
   }
 
   // Cette methode indique si la classe academique est active.
@@ -178,6 +203,16 @@ export class ClasseAcademique extends RacineAgregat<ClasseAcademiqueId> {
       throw new ValidationError(
         'Une classe secondaire doit etre semestrielle.',
         'CLASSE_ACADEMIQUE_STRUCTURE_INVALIDE',
+      );
+    }
+  }
+
+  // Cette methode garantit qu'une classe EXETAT est toujours une classe finaliste.
+  public verifierCoherenceExetatFinaliste(): void {
+    if (this.classeEXETAT && !this.classeFinaliste) {
+      throw new ValidationError(
+        'Une classe EXETAT doit aussi etre marquee comme classe finaliste.',
+        'CLASSE_ACADEMIQUE_EXETAT_FINALISTE_INCOHERENT',
       );
     }
   }

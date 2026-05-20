@@ -13,6 +13,7 @@ export class ValidateurOptionEtudeHttp {
       {
         code: true,
         libelle: true,
+        estTechnique: true,
         creePar: true,
       },
       'creation-option-etude',
@@ -28,6 +29,11 @@ export class ValidateurOptionEtudeHttp {
         donnees,
         'typeOption',
       ),
+      estTechnique: OutilsValidationHttpReferentielAcademique.lireBooleenRequis(
+        donnees,
+        'estTechnique',
+      ),
+      categorieTechnique: this.lireCategorieTechniqueOptionnelle(donnees),
       abreviation: OutilsValidationHttpReferentielAcademique.lireChaineOptionnelle(
         donnees,
         'abreviation',
@@ -46,5 +52,21 @@ export class ValidateurOptionEtudeHttp {
   // Cette methode valide la requete HTTP de liste des options d'etude.
   public static validerListe(query: unknown): Pagination {
     return OutilsValidationHttpReferentielAcademique.lirePagination(query);
+  }
+
+  private static lireCategorieTechniqueOptionnelle(
+    donnees: Record<string, unknown>,
+  ): CreerOptionEtudeEntree['categorieTechnique'] {
+    const valeur = donnees.categorieTechnique;
+
+    if (valeur === undefined) {
+      return undefined;
+    }
+
+    if (valeur === null || valeur === 'GROUPE_1' || valeur === 'GROUPE_2') {
+      return valeur;
+    }
+
+    throw new Error('Le champ categorieTechnique doit etre GROUPE_1, GROUPE_2 ou null.');
   }
 }

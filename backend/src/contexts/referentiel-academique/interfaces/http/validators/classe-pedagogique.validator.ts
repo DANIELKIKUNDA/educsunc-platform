@@ -2,6 +2,7 @@ import { ArchiverClassePedagogiqueEntree } from '../../../application/dto/input/
 import { CreerClassePedagogiqueEntree } from '../../../application/dto/input/CreerClassePedagogiqueEntree';
 import { DesactiverClassePedagogiqueEntree } from '../../../application/dto/input/DesactiverClassePedagogiqueEntree';
 import { ListerClassesPedagogiquesParEcoleEtAnneeEntree } from '../../../application/dto/input/ListerClassesPedagogiquesParEcoleEtAnneeEntree';
+import { ConsulterReglesFraisClasseEntree } from '../../../application/use-cases/structure/ConsulterReglesFraisClasse';
 import { RenommerClassePedagogiqueEntree } from '../../../application/dto/input/RenommerClassePedagogiqueEntree';
 import { OutilsValidationHttpReferentielAcademique } from './OutilsValidationHttpReferentielAcademique';
 
@@ -71,6 +72,23 @@ export class ValidateurClassePedagogiqueHttp {
       ),
       page: pagination.page,
       taillePage: pagination.taillePage,
+    };
+  }
+
+  // Cette methode valide la consultation des faits de frais d'une classe pedagogique.
+  public static validerConsultationReglesFrais(
+    parametres: unknown,
+  ): ConsulterReglesFraisClasseEntree {
+    const donneesParametres = OutilsValidationHttpReferentielAcademique.obtenirObjet(
+      parametres,
+      'parametres',
+    );
+
+    return {
+      idClassePedagogique: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
+        donneesParametres,
+        'id',
+      ),
     };
   }
 

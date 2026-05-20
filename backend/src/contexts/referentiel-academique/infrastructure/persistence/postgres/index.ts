@@ -4,6 +4,7 @@ export * from './MigrateurPostgresReferentielAcademique';
 export * from './depots';
 export * from './mappers';
 export * from './migrations';
+export * from './queries';
 export * from './schemas';
 export * from './transaction/AdaptateurClientTransactionPoolPostgresReferentielAcademique';
 export * from './transaction/PostgresUnitOfWork';

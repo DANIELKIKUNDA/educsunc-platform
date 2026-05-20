@@ -12,6 +12,8 @@ import { DepotOptionEtudePostgres } from '../../backend/src/contexts/referentiel
 interface EnregistrementOptionEtudeSeed {
   code: number;
   libelle: string;
+  estTechnique: boolean;
+  categorieTechnique: 'GROUPE_1' | 'GROUPE_2' | null;
   abreviation: string;
   ordreAffichage: number;
 }
@@ -77,6 +79,12 @@ async function sauvegarderOptionEtude(
       undefined,
       optionSeed.ordreAffichage,
       optionSeed.abreviation,
+      true,
+      new Date(),
+      undefined,
+      1,
+      optionSeed.estTechnique,
+      optionSeed.categorieTechnique,
     );
 
     await depotOptionEtude.sauvegarder(nouvelleOption);
@@ -98,6 +106,8 @@ async function sauvegarderOptionEtude(
     optionExistante.obtenirCreeLe(),
     optionExistante.obtenirModifieLe(),
     optionExistante.obtenirVersion(),
+    optionSeed.estTechnique,
+    optionSeed.categorieTechnique,
   );
 
   await depotOptionEtude.sauvegarder(optionAlignee);
@@ -110,6 +120,8 @@ function estOptionDejaAlignee(
 ): boolean {
   return optionExistante.obtenirLibelle() === optionSeed.libelle
     && optionExistante.obtenirTypeOption() === undefined
+    && optionExistante.estTechnique() === optionSeed.estTechnique
+    && optionExistante.obtenirCategorieTechnique() === optionSeed.categorieTechnique
     && optionExistante.obtenirAbreviation() === optionSeed.abreviation
     && optionExistante.obtenirOrdreAffichage() === optionSeed.ordreAffichage;
 }
@@ -152,6 +164,11 @@ function validerOptionEtudeSeed(
   return {
     code: lireEntierPositif(objet.code, `options[${index}].code`),
     libelle: lireTexte(objet.libelle, `options[${index}].libelle`),
+    estTechnique: lireBooleen(objet.estTechnique, `options[${index}].estTechnique`),
+    categorieTechnique: lireCategorieTechnique(
+      objet.categorieTechnique,
+      `options[${index}].categorieTechnique`,
+    ),
     abreviation: lireTexte(objet.abreviation, `options[${index}].abreviation`),
     ordreAffichage: lireEntierPositif(
       objet.ordreAffichage,
@@ -198,6 +215,25 @@ function lireEntierPositif(valeur: unknown, nomChamp: string): number {
   }
 
   return valeur;
+}
+
+function lireBooleen(valeur: unknown, nomChamp: string): boolean {
+  if (typeof valeur !== 'boolean') {
+    throw new Error(`Le champ ${nomChamp} doit etre un booleen.`);
+  }
+
+  return valeur;
+}
+
+function lireCategorieTechnique(
+  valeur: unknown,
+  nomChamp: string,
+): 'GROUPE_1' | 'GROUPE_2' | null {
+  if (valeur === null || valeur === 'GROUPE_1' || valeur === 'GROUPE_2') {
+    return valeur;
+  }
+
+  throw new Error(`Le champ ${nomChamp} doit etre GROUPE_1, GROUPE_2 ou null.`);
 }
 
 if (process.argv[1] !== undefined && resolve(process.argv[1]) === cheminScript) {

@@ -2,6 +2,8 @@
 export interface EnregistrementOptionEtudeJson {
   code: number;
   libelle: string;
+  estTechnique: boolean;
+  categorieTechnique?: 'GROUPE_1' | 'GROUPE_2' | null;
   abreviation?: string;
   ordreAffichage?: number;
 }

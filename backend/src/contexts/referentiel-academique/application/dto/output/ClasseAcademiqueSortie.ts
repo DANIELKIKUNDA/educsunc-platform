@@ -12,6 +12,9 @@ export interface ClasseAcademiqueSortie {
   accepteOptions: boolean;
   optionObligatoire: boolean;
   typeStructureEvaluation: TypeStructureEvaluation;
+  estClasseTENASOSP: boolean;
+  estClasseEXETAT: boolean;
+  estClasseFinaliste: boolean;
   active: boolean;
   creeLe: string;
   version: number;
