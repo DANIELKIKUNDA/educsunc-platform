@@ -1,0 +1,31 @@
+import type { FastifyPluginAsync } from 'fastify';
+import type { DependancesRoutesAudit } from './DependancesRoutesAudit';
+import { creerAdminRoutes } from './admin.routes';
+import { creerAnalyticsRoutes } from './analytics.routes';
+import { creerAuditRoutes } from './audit.routes';
+import { creerExportsRoutes } from './exports.routes';
+import { creerForensicRoutes } from './forensic.routes';
+import { creerHealthRoutes } from './health.routes';
+import { creerInternalRoutes } from './internal.routes';
+import { creerMonitoringRoutes } from './monitoring.routes';
+import { creerReplayRoutes } from './replay.routes';
+import { creerRetentionRoutes } from './retention.routes';
+import { creerRetryRoutes } from './retry.routes';
+import { creerSecurityRoutes } from './security.routes';
+import { creerSynchronizationRoutes } from './synchronization.routes';
+
+export const creerRoutesHttpAudit = (dependances: DependancesRoutesAudit): FastifyPluginAsync => async (serveur) => {
+  await serveur.register(creerAuditRoutes(dependances));
+  await serveur.register(creerForensicRoutes(dependances));
+  await serveur.register(creerExportsRoutes(dependances));
+  await serveur.register(creerReplayRoutes(dependances));
+  await serveur.register(creerRetryRoutes(dependances));
+  await serveur.register(creerSynchronizationRoutes(dependances));
+  await serveur.register(creerMonitoringRoutes(dependances));
+  await serveur.register(creerAnalyticsRoutes(dependances));
+  await serveur.register(creerRetentionRoutes(dependances));
+  await serveur.register(creerSecurityRoutes(dependances));
+  await serveur.register(creerHealthRoutes(dependances));
+  await serveur.register(creerInternalRoutes(dependances));
+  await serveur.register(creerAdminRoutes(dependances));
+};

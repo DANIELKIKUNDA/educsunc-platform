@@ -1,8 +1,11 @@
 import type { AuditSecurityPort } from '../../application';
+import { SecurityAuditIntegrationOrchestrator } from '../../integration';
 import { obtenirMemoireSecurityStore } from '../persistence/postgres/repositories/_memoireSecurityStore';
 
 // Ce service journalise les actions critiques de SECURITY dans un stockage technique simple.
 export class SecurityAuditInfrastructureService implements AuditSecurityPort {
+  private static orchestrateur: SecurityAuditIntegrationOrchestrator | null = null;
+
   public async journaliser(params: {
     action: string;
     idUtilisateur?: string;
@@ -20,6 +23,7 @@ export class SecurityAuditInfrastructureService implements AuditSecurityPort {
     };
 
     store.securityAccessLogs.push(entree);
+    await SecurityAuditInfrastructureService.obtenirOrchestrateur().publier(params);
 
     if (!params.succes) {
       store.securityPermissionDeniedLogs.push({
@@ -30,5 +34,13 @@ export class SecurityAuditInfrastructureService implements AuditSecurityPort {
         cree_le: entree.cree_le,
       });
     }
+  }
+
+  private static obtenirOrchestrateur(): SecurityAuditIntegrationOrchestrator {
+    if (!this.orchestrateur) {
+      this.orchestrateur = new SecurityAuditIntegrationOrchestrator();
+    }
+
+    return this.orchestrateur;
   }
 }

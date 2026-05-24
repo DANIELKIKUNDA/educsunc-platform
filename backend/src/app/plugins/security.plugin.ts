@@ -1,7 +1,12 @@
 import type { FastifyPluginAsync, FastifyRequest } from 'fastify';
 import { CONTEXT_ROLE_PAR_DEFAUT, RequestContextFactory } from 'shared/context';
 import { AffectationTitulariat, MoteurAutorisation, MoteurRestrictionsMetier, MoteurScope, ScopeAcces, TypeScope } from 'shared/security/domain';
-import { PermissionCacheService, PostgresAffectationUtilisateurRepository, PostgresRoleRepository } from 'shared/security/infrastructure';
+import {
+  PermissionCacheService,
+  PostgresAffectationUtilisateurRepository,
+  PostgresRoleRepository,
+  SecurityAuditInfrastructureService,
+} from 'shared/security/infrastructure';
 import { SecurityFacade } from 'shared/security/application/services/SecurityFacade';
 import { obtenirMemoireSecurityStore } from 'shared/security/infrastructure/persistence/postgres/repositories/_memoireSecurityStore';
 import { TitulariatPersistenceMapper } from 'shared/security/infrastructure/persistence/postgres/mappers/TitulariatPersistenceMapper';
@@ -18,6 +23,7 @@ const securityFacade = new SecurityFacade(
   new MoteurAutorisation(),
   new MoteurScope(),
   new MoteurRestrictionsMetier(),
+  new SecurityAuditInfrastructureService(),
 );
 
 // Ce plugin enrichit le RequestContext avec les permissions et portees SECURITY.

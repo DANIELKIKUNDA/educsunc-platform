@@ -12,10 +12,19 @@ export interface SecurityAuditPort {
     organisationActiveId?: string;
     ecoleActiveId?: string;
     estOffline: boolean;
+    deviceId?: string;
+    adresseIp?: string;
+    userAgent?: string;
   }): Promise<void>;
   journaliserEchec(params: {
     email?: string;
     utilisateurId?: string;
     raison: string;
+    sessionId?: string;
+    organisationActiveId?: string;
+    ecoleActiveId?: string;
+    deviceId?: string;
+    adresseIp?: string;
+    userAgent?: string;
   }): Promise<void>;
 }

@@ -38,7 +38,15 @@ export class LoginSaga {
       const commande = LoginMapper.versCommande(input);
       const utilisateur = await this.depotUtilisateurAuth.trouverParEmail(commande.email);
       if (!utilisateur) {
-        await this.auditAuthApplicationService.journaliserEchec({ email: commande.email, raison: 'Utilisateur introuvable' });
+        await this.auditAuthApplicationService.journaliserEchec({
+          email: commande.email,
+          raison: 'Utilisateur introuvable',
+          organisationActiveId: commande.organisationActiveId,
+          ecoleActiveId: commande.ecoleActiveId,
+          deviceId: commande.deviceId,
+          adresseIp: commande.adresseIp,
+          userAgent: commande.userAgent,
+        });
         throw new Error('Utilisateur auth introuvable');
       }
 
@@ -47,6 +55,16 @@ export class LoginSaga {
       if (commande.organisationActiveId) {
         const accesOrganisation = await this.securityAuthorizationPort.verifierAccesOrganisation(utilisateur.obtenirId(), commande.organisationActiveId);
         if (!accesOrganisation) {
+          await this.auditAuthApplicationService.journaliserEchec({
+            email: commande.email,
+            utilisateurId: utilisateur.obtenirId(),
+            raison: 'Organisation active refusee',
+            organisationActiveId: commande.organisationActiveId,
+            ecoleActiveId: commande.ecoleActiveId,
+            deviceId: commande.deviceId,
+            adresseIp: commande.adresseIp,
+            userAgent: commande.userAgent,
+          });
           throw new Error('Organisation active refusee');
         }
       }
@@ -54,6 +72,16 @@ export class LoginSaga {
       if (commande.ecoleActiveId) {
         const accesEcole = await this.securityAuthorizationPort.verifierAccesEcole(utilisateur.obtenirId(), commande.ecoleActiveId);
         if (!accesEcole) {
+          await this.auditAuthApplicationService.journaliserEchec({
+            email: commande.email,
+            utilisateurId: utilisateur.obtenirId(),
+            raison: 'Ecole active refusee',
+            organisationActiveId: commande.organisationActiveId,
+            ecoleActiveId: commande.ecoleActiveId,
+            deviceId: commande.deviceId,
+            adresseIp: commande.adresseIp,
+            userAgent: commande.userAgent,
+          });
           throw new Error('Ecole active refusee');
         }
       }
@@ -90,6 +118,9 @@ export class LoginSaga {
         organisationActiveId: commande.organisationActiveId,
         ecoleActiveId: commande.ecoleActiveId,
         estOffline: Boolean(commande.modeOffline),
+        deviceId: commande.deviceId,
+        adresseIp: commande.adresseIp,
+        userAgent: commande.userAgent,
       });
 
       const sessionSortie = SessionMapper.depuisDomaine(resultat.sessionUtilisateur);

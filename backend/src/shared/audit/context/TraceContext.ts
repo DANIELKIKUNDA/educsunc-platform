@@ -1,0 +1,8 @@
+export interface TraceContext {
+  readonly traceId: string;
+  readonly spanId: string;
+  readonly parentSpanId?: string;
+  readonly requestId: string;
+  readonly correlationId: string;
+}
+

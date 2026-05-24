@@ -2,7 +2,12 @@ import { ContexteActifUtilisateur, MoteurScope, PolicyIsolationTenant } from '..
 import { ContexteActifMapper } from '../mappers';
 import type { ChangerEcoleActiveInput, ChangerOrganisationActiveInput } from '../dto/input';
 import type { ContexteActifOutput } from '../dto/output';
-import type { ContexteActifRepositoryPort, SessionContextPort, TenantValidationPort } from '../ports';
+import type {
+  AuditSecurityPort,
+  ContexteActifRepositoryPort,
+  SessionContextPort,
+  TenantValidationPort,
+} from '../ports';
 import { ErreurChangementContexteActif, ErreurContexteInvalide } from '../exceptions';
 
 // Ce service gere le contexte actif exploite par les decisions de securite.
@@ -12,6 +17,7 @@ export class SecurityContextService {
     private readonly tenantValidationPort: TenantValidationPort,
     private readonly sessionContextPort: SessionContextPort,
     private readonly moteurScope: MoteurScope,
+    private readonly auditSecurityPort?: AuditSecurityPort,
   ) {}
 
   public async obtenirContexteActif(idUtilisateur: string): Promise<ContexteActifOutput> {
@@ -22,18 +28,36 @@ export class SecurityContextService {
     return ContexteActifMapper.depuisDomaine(contexte);
   }
 
-  public async changerOrganisationActive(input: ChangerOrganisationActiveInput): Promise<ContexteActifOutput> {
+  public async changerOrganisationActive(
+    input: ChangerOrganisationActiveInput,
+  ): Promise<ContexteActifOutput> {
     try {
       const contexte = await this.obtenirOuCreerContexte(input.idUtilisateur);
       if (input.idOrganisationActive) {
-        const organisationValide = await this.tenantValidationPort.verifierOrganisation(input.idOrganisationActive);
-        this.moteurScope.verifierOrganisation(organisationValide ? [input.idOrganisationActive] : [], input.idOrganisationActive);
+        const organisationValide = await this.tenantValidationPort.verifierOrganisation(
+          input.idOrganisationActive,
+        );
+        this.moteurScope.verifierOrganisation(
+          organisationValide ? [input.idOrganisationActive] : [],
+          input.idOrganisationActive,
+        );
       }
       contexte.changerOrganisation(input.idOrganisationActive);
       await this.contexteActifRepositoryPort.sauvegarder(contexte);
+      await this.auditSecurityPort?.journaliser({
+        action: 'SECURITY_SCOPE_CHANGED',
+        idUtilisateur: input.idUtilisateur,
+        succes: true,
+        details: {
+          organisationActiveId: input.idOrganisationActive,
+          ecoleActiveId: contexte.obtenirIdEcoleActive(),
+        },
+      });
       return ContexteActifMapper.depuisDomaine(contexte);
     } catch (error) {
-      throw new ErreurChangementContexteActif(error instanceof Error ? error.message : undefined);
+      throw new ErreurChangementContexteActif(
+        error instanceof Error ? error.message : undefined,
+      );
     }
   }
 
@@ -41,14 +65,21 @@ export class SecurityContextService {
     try {
       const contexte = await this.obtenirOuCreerContexte(input.idUtilisateur);
       const contexteSession = await this.sessionContextPort.obtenirUtilisateurAuthentifie();
-      const idOrganisationActive = contexte.obtenirIdOrganisationActive() ?? contexteSession?.organisationActiveId;
+      const idOrganisationActive =
+        contexte.obtenirIdOrganisationActive() ?? contexteSession?.organisationActiveId;
 
       if (input.idEcoleActive) {
         const ecoleValide = await this.tenantValidationPort.verifierEcole(input.idEcoleActive);
         const coherence = idOrganisationActive
-          ? await this.tenantValidationPort.verifierAppartenanceEcoleOrganisation(input.idEcoleActive, idOrganisationActive)
+          ? await this.tenantValidationPort.verifierAppartenanceEcoleOrganisation(
+              input.idEcoleActive,
+              idOrganisationActive,
+            )
           : false;
-        this.moteurScope.verifierEcole(ecoleValide ? [input.idEcoleActive] : [], input.idEcoleActive);
+        this.moteurScope.verifierEcole(
+          ecoleValide ? [input.idEcoleActive] : [],
+          input.idEcoleActive,
+        );
         PolicyIsolationTenant.verifier(idOrganisationActive, input.idEcoleActive, coherence);
       }
 
@@ -58,9 +89,20 @@ export class SecurityContextService {
 
       contexte.changerEcole(input.idEcoleActive, true);
       await this.contexteActifRepositoryPort.sauvegarder(contexte);
+      await this.auditSecurityPort?.journaliser({
+        action: 'SECURITY_SCOPE_CHANGED',
+        idUtilisateur: input.idUtilisateur,
+        succes: true,
+        details: {
+          organisationActiveId: contexte.obtenirIdOrganisationActive(),
+          ecoleActiveId: input.idEcoleActive,
+        },
+      });
       return ContexteActifMapper.depuisDomaine(contexte);
     } catch (error) {
-      throw new ErreurChangementContexteActif(error instanceof Error ? error.message : undefined);
+      throw new ErreurChangementContexteActif(
+        error instanceof Error ? error.message : undefined,
+      );
     }
   }
 

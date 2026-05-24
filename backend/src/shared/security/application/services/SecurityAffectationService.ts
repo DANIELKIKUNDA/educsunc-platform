@@ -8,14 +8,25 @@ import type {
   RetirerScopeAffectationInput,
   RetirerTitulariatInput,
 } from '../dto/input';
-import type { AffectationUtilisateurOutput, ScopeUtilisateurOutput, TitulariatOutput } from '../dto/output';
+import type {
+  AffectationUtilisateurOutput,
+  ScopeUtilisateurOutput,
+  TitulariatOutput,
+} from '../dto/output';
 import type {
   AffectationTitulariatRepositoryPort,
   AffectationUtilisateurRepositoryPort,
+  AuditSecurityPort,
   SecurityNotificationPort,
 } from '../ports';
 import type { VerifierTitulariatClasseQuery } from '../queries';
-import { ErreurActivationAffectation, ErreurAttributionTitulariat, ErreurCreationAffectation, ErreurRetraitTitulariat, ErreurScopeAffectation } from '../exceptions';
+import {
+  ErreurActivationAffectation,
+  ErreurAttributionTitulariat,
+  ErreurCreationAffectation,
+  ErreurRetraitTitulariat,
+  ErreurScopeAffectation,
+} from '../exceptions';
 import { AffectationUtilisateurMapper, ScopeMapper, TitulariatMapper } from '../mappers';
 
 // Ce service gere les affectations utilisateur, les scopes et le titulariat.
@@ -26,9 +37,12 @@ export class SecurityAffectationService {
     private readonly verifierTitulariatClasseQuery: VerifierTitulariatClasseQuery,
     private readonly securityNotificationPort: SecurityNotificationPort,
     private readonly moteurTitulariat: MoteurTitulariat,
+    private readonly auditSecurityPort?: AuditSecurityPort,
   ) {}
 
-  public async creerAffectation(input: CreerAffectationUtilisateurInput): Promise<AffectationUtilisateurOutput> {
+  public async creerAffectation(
+    input: CreerAffectationUtilisateurInput,
+  ): Promise<AffectationUtilisateurOutput> {
     try {
       const affectation = AffectationUtilisateur.creer(input);
       await this.affectationUtilisateurRepositoryPort.sauvegarder(affectation);
@@ -38,7 +52,9 @@ export class SecurityAffectationService {
     }
   }
 
-  public async activerAffectation(input: ActiverAffectationInput): Promise<AffectationUtilisateurOutput> {
+  public async activerAffectation(
+    input: ActiverAffectationInput,
+  ): Promise<AffectationUtilisateurOutput> {
     const affectation = await this.obtenirAffectation(input.idAffectationUtilisateur);
     try {
       affectation.activer();
@@ -49,7 +65,9 @@ export class SecurityAffectationService {
     }
   }
 
-  public async desactiverAffectation(input: DesactiverAffectationInput): Promise<AffectationUtilisateurOutput> {
+  public async desactiverAffectation(
+    input: DesactiverAffectationInput,
+  ): Promise<AffectationUtilisateurOutput> {
     const affectation = await this.obtenirAffectation(input.idAffectationUtilisateur);
     try {
       affectation.desactiver();
@@ -60,23 +78,35 @@ export class SecurityAffectationService {
     }
   }
 
-  public async ajouterScope(input: AjouterScopeAffectationInput): Promise<readonly ScopeUtilisateurOutput[]> {
+  public async ajouterScope(
+    input: AjouterScopeAffectationInput,
+  ): Promise<readonly ScopeUtilisateurOutput[]> {
     const affectation = await this.obtenirAffectation(input.idAffectationUtilisateur);
     try {
-      affectation.ajouterScope(input.typeScope, input.valeurScope, input.estLectureSeule ?? false);
+      affectation.ajouterScope(
+        input.typeScope,
+        input.valeurScope,
+        input.estLectureSeule ?? false,
+      );
       await this.affectationUtilisateurRepositoryPort.sauvegarder(affectation);
-      return affectation.obtenirScopes().map((scope) => ScopeMapper.depuisDomaine(scope));
+      return affectation
+        .obtenirScopes()
+        .map((scope) => ScopeMapper.depuisDomaine(scope));
     } catch (error) {
       throw new ErreurScopeAffectation(error instanceof Error ? error.message : undefined);
     }
   }
 
-  public async retirerScope(input: RetirerScopeAffectationInput): Promise<readonly ScopeUtilisateurOutput[]> {
+  public async retirerScope(
+    input: RetirerScopeAffectationInput,
+  ): Promise<readonly ScopeUtilisateurOutput[]> {
     const affectation = await this.obtenirAffectation(input.idAffectationUtilisateur);
     try {
       affectation.retirerScope(input.typeScope, input.valeurScope);
       await this.affectationUtilisateurRepositoryPort.sauvegarder(affectation);
-      return affectation.obtenirScopes().map((scope) => ScopeMapper.depuisDomaine(scope));
+      return affectation
+        .obtenirScopes()
+        .map((scope) => ScopeMapper.depuisDomaine(scope));
     } catch (error) {
       throw new ErreurScopeAffectation(error instanceof Error ? error.message : undefined);
     }
@@ -84,9 +114,25 @@ export class SecurityAffectationService {
 
   public async attribuerTitulariat(input: AttribuerTitulariatInput): Promise<TitulariatOutput> {
     try {
-      const classePossedeDejaTitulaire = await this.verifierTitulariatClasseQuery.executer(input.idClasse, input.idAnneeScolaire);
-      const titulariat = this.moteurTitulariat.attribuerTitulariat({ ...input, classePossedeDejaTitulaire });
+      const classePossedeDejaTitulaire = await this.verifierTitulariatClasseQuery.executer(
+        input.idClasse,
+        input.idAnneeScolaire,
+      );
+      const titulariat = this.moteurTitulariat.attribuerTitulariat({
+        ...input,
+        classePossedeDejaTitulaire,
+      });
       await this.affectationTitulariatRepositoryPort.sauvegarder(titulariat);
+      await this.auditSecurityPort?.journaliser({
+        action: 'SECURITY_TITULARIAT_CHANGED',
+        idUtilisateur: input.idUtilisateur,
+        succes: true,
+        details: {
+          changement: 'ATTRIBUER',
+          idClasse: input.idClasse,
+          idAnneeScolaire: input.idAnneeScolaire,
+        },
+      });
       await this.securityNotificationPort.notifierAccesSensible({
         idUtilisateur: input.idUtilisateur,
         action: 'SECURITY_TITULARIAT_ATTRIBUE',
@@ -99,13 +145,26 @@ export class SecurityAffectationService {
   }
 
   public async retirerTitulariat(input: RetirerTitulariatInput): Promise<TitulariatOutput> {
-    const titulariat = await this.affectationTitulariatRepositoryPort.trouverActifParClasse(input.idClasse, input.idAnneeScolaire);
+    const titulariat = await this.affectationTitulariatRepositoryPort.trouverActifParClasse(
+      input.idClasse,
+      input.idAnneeScolaire,
+    );
     if (!titulariat) {
       throw new ErreurRetraitTitulariat('Titulariat actif introuvable');
     }
 
     titulariat.retirer();
     await this.affectationTitulariatRepositoryPort.sauvegarder(titulariat);
+    await this.auditSecurityPort?.journaliser({
+      action: 'SECURITY_TITULARIAT_CHANGED',
+      idUtilisateur: titulariat.obtenirIdUtilisateur(),
+      succes: true,
+      details: {
+        changement: 'RETIRER',
+        idClasse: input.idClasse,
+        idAnneeScolaire: input.idAnneeScolaire,
+      },
+    });
     return TitulariatMapper.depuisDomaine(titulariat);
   }
 
@@ -114,9 +173,11 @@ export class SecurityAffectationService {
   }
 
   private async obtenirAffectation(idAffectationUtilisateur: string): Promise<AffectationUtilisateur> {
-    const affectation = await this.affectationUtilisateurRepositoryPort.trouverParId(idAffectationUtilisateur);
+    const affectation = await this.affectationUtilisateurRepositoryPort.trouverParId(
+      idAffectationUtilisateur,
+    );
     if (!affectation) {
-      throw new ErreurCreationAffectation("Affectation introuvable");
+      throw new ErreurCreationAffectation('Affectation introuvable');
     }
     return affectation;
   }

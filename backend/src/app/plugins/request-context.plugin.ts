@@ -1,5 +1,8 @@
 import type { FastifyPluginAsync, FastifyRequest } from 'fastify';
-import { RequestContextFactory } from 'shared/context';
+import {
+  REQUEST_CONTEXT_HEADER_CORRELATION,
+  RequestContextFactory,
+} from 'shared/context';
 
 type PluginGlobal = FastifyPluginAsync & { nom: string };
 
@@ -14,6 +17,10 @@ export const requestContextPlugin: PluginGlobal = Object.assign(
     serveur.addHook('onRequest', async (requete: FastifyRequest) => {
       requete.context = RequestContextFactory.creerContexteInitial({
         requestId: String(requete.id),
+        correlationId:
+          typeof requete.headers[REQUEST_CONTEXT_HEADER_CORRELATION] === 'string'
+            ? requete.headers[REQUEST_CONTEXT_HEADER_CORRELATION]
+            : undefined,
         adresseIp: requete.ip,
         userAgent:
           typeof requete.headers['user-agent'] === 'string'

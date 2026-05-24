@@ -8,20 +8,29 @@ export class RequestContextFactory {
   // Cette methode cree le contexte initial minimal avant authentification.
   public static creerContexteInitial(params?: {
     requestId?: string;
+    correlationId?: string;
     adresseIp?: string;
     userAgent?: string;
     deviceId?: string;
+    appVersion?: string;
+    plateforme?: string;
+    syncId?: string;
+    modeOffline?: boolean;
   }): RequestContext {
     return {
       requestId: RequestContextFactory.nettoyerOptionnel(params?.requestId) ?? randomUUID(),
+      correlationId: RequestContextFactory.nettoyerOptionnel(params?.correlationId),
       permissions: [],
       scopes: [],
       restrictions: [],
       titulariats: [],
-      modeOffline: false,
+      modeOffline: params?.modeOffline === true,
       adresseIp: RequestContextFactory.nettoyerOptionnel(params?.adresseIp),
       userAgent: RequestContextFactory.nettoyerOptionnel(params?.userAgent),
       deviceId: RequestContextFactory.nettoyerOptionnel(params?.deviceId),
+      appVersion: RequestContextFactory.nettoyerOptionnel(params?.appVersion),
+      plateforme: RequestContextFactory.nettoyerOptionnel(params?.plateforme),
+      syncId: RequestContextFactory.nettoyerOptionnel(params?.syncId),
     };
   }
 
@@ -48,6 +57,9 @@ export class RequestContextFactory {
       deviceId:
         RequestContextFactory.nettoyerOptionnel(enrichissement.deviceId)
         ?? contexte.deviceId,
+      appVersion: contexte.appVersion,
+      plateforme: contexte.plateforme,
+      syncId: contexte.syncId,
     };
   }
 

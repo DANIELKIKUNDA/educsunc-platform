@@ -11,6 +11,9 @@ export class AuditAuthApplicationService {
     organisationActiveId?: string;
     ecoleActiveId?: string;
     estOffline: boolean;
+    deviceId?: string;
+    adresseIp?: string;
+    userAgent?: string;
   }): Promise<void> {
     await this.securityAuditPort.journaliserConnexion(params);
   }
@@ -20,6 +23,12 @@ export class AuditAuthApplicationService {
     email?: string;
     utilisateurId?: string;
     raison: string;
+    sessionId?: string;
+    organisationActiveId?: string;
+    ecoleActiveId?: string;
+    deviceId?: string;
+    adresseIp?: string;
+    userAgent?: string;
   }): Promise<void> {
     await this.securityAuditPort.journaliserEchec(params);
   }
