@@ -3,7 +3,8 @@ import { PaginationEntreeDTO } from './PaginationEntreeDTO';
 // Ce fichier definit les criteres applicatifs de recherche d'eleves.
 export interface CritereRechercheEleveEntreeDTO extends PaginationEntreeDTO {
   idOrganisation: string;
-  idEcole?: string;
+  idEcole: string;
+  idUtilisateur: string;
   matricule?: string;
   nom?: string;
   postNom?: string;

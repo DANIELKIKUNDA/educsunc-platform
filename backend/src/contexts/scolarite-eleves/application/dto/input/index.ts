@@ -13,5 +13,6 @@ export * from './ChangerEleveDeClasseEntreeDTO';
 export * from './DeclarerAbandonEleveEntreeDTO';
 export * from './TransfererEleveEntreeDTO';
 export * from './ReintegrerEleveEntreeDTO';
+export * from './ReactiverEleveEntreeDTO';
 export * from './SuspendreEleveEntreeDTO';
 export * from './DeclarerDecesEleveEntreeDTO';

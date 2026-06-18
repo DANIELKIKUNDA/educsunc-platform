@@ -12,6 +12,8 @@ export interface DepotInscriptionScolaire {
   trouverParId(idInscriptionScolaire: UUID): Promise<InscriptionScolaire | null>;
   /** Recherche l'inscription active d'un eleve pour une annee scolaire. */
   trouverInscriptionActiveParEleveEtAnnee(idEleve: UUID, idAnneeScolaire: UUID): Promise<InscriptionScolaire | null>;
+  /** Recherche la derniere inscription active connue d'un eleve, toutes annees confondues. */
+  trouverDerniereInscriptionActiveParEleve(idEleve: UUID): Promise<InscriptionScolaire | null>;
   /** Liste les inscriptions d'une annee scolaire. */
   listerParAnnee(idAnneeScolaire: UUID): Promise<InscriptionScolaire[]>;
   /** Liste les inscriptions rattachees a une classe pedagogique. */

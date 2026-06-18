@@ -5,6 +5,7 @@ import { AjouterResponsableFamilleEntreeDTO } from '../../dto/input/AjouterRespo
 import { FamilleSortieDTO } from '../../dto/output/FamilleSortieDTO';
 import { ErreurRessourceIntrouvable } from '../../exceptions/ErreurRessourceIntrouvable';
 import { FamilleMapper } from '../../mappers/FamilleMapper';
+import type { AutorisationFamillePort } from '../../ports';
 import { ServiceApplicationConcurrence } from '../../services/ServiceApplicationConcurrence';
 
 // Ce fichier contient le cas d'usage d'ajout d'un responsable familial.
@@ -14,11 +15,18 @@ export interface SortieAjouterResponsableFamille { famille: FamilleSortieDTO }
 export class AjouterResponsableFamille implements UseCase<AjouterResponsableFamilleEntreeDTO, SortieAjouterResponsableFamille> {
   constructor(
     private readonly depotFamille: DepotFamille,
+    private readonly autorisationFamille?: AutorisationFamillePort,
     private readonly serviceConcurrence: ServiceApplicationConcurrence = new ServiceApplicationConcurrence(),
   ) {}
 
   /** Execute l'ajout du responsable. */
   public async executer(entree: AjouterResponsableFamilleEntreeDTO): Promise<SortieAjouterResponsableFamille> {
+    await this.autorisationFamille?.verifierMutationFamille({
+      idUtilisateur: entree.idUtilisateur,
+      idOrganisation: entree.idOrganisation,
+      idEcole: entree.idEcole,
+    });
+
     const famille = await this.depotFamille.trouverParId(entree.idFamille);
 
     if (famille === null) {

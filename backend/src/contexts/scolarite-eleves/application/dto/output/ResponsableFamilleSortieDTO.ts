@@ -10,4 +10,5 @@ export interface ResponsableFamilleSortieDTO {
   lienParente: LienParente;
   adresse?: string;
   estPrincipal: boolean;
+  idUtilisateurAuth?: string;
 }

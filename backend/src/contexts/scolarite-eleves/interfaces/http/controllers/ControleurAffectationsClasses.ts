@@ -17,11 +17,11 @@ export class ControleurAffectationsClasses {
   /** Change un eleve de classe. */
   public async changerClasse(params: unknown, corps: unknown, headers: unknown) { return AffectationClassePresenter.presenterAffectation((await this.changerClasseCas.executer(ValidateurAffectationsHttp.validerChangementClasse(params, corps, headers))).affectation); }
   /** Consulte une affectation par id comme affectation active. */
-  public async consulterAffectation(params: unknown) { return this.consulterAffectationActive(params); }
+  public async consulterAffectation(params: unknown, headers: unknown) { return this.consulterAffectationActive(params, headers); }
   /** Consulte l'affectation active d'une inscription. */
-  public async consulterAffectationActive(params: unknown) { return AffectationClassePresenter.presenterAffectation((await this.consulterAffectationActiveCas.executer(ValidateurAffectationsHttp.validerActive(params))).affectation); }
+  public async consulterAffectationActive(params: unknown, headers: unknown) { return AffectationClassePresenter.presenterAffectation((await this.consulterAffectationActiveCas.executer(ValidateurAffectationsHttp.validerActive(params, headers))).affectation); }
   /** Liste les eleves d'une classe via les affectations. */
-  public async listerElevesParClasse(params: unknown) { return AffectationClassePresenter.presenterListe(await this.listerElevesParClasseCas.executer(ValidateurAffectationsHttp.validerClasse(params))); }
+  public async listerElevesParClasse(params: unknown, headers: unknown) { return AffectationClassePresenter.presenterListe(await this.listerElevesParClasseCas.executer(ValidateurAffectationsHttp.validerClasse(params, headers))); }
   /** Desactive une affectation. */
   public async desactiverAffectation(params: unknown, headers: unknown) { await this.desactiverAffectationCas.executer(ValidateurAffectationsHttp.validerDesactivation(params, headers)); return { donnee: { desactivee: true } }; }
 }

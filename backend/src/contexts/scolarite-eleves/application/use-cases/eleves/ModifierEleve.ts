@@ -4,6 +4,7 @@ import { ModifierEleveEntreeDTO } from '../../dto/input/ModifierEleveEntreeDTO';
 import { EleveDetailSortieDTO } from '../../dto/output/EleveDetailSortieDTO';
 import { ErreurRessourceIntrouvable } from '../../exceptions/ErreurRessourceIntrouvable';
 import { EleveMapper } from '../../mappers/EleveMapper';
+import type { AutorisationElevePort } from '../../ports';
 import { ServiceApplicationConcurrence } from '../../services/ServiceApplicationConcurrence';
 import { ServiceTransactionApplication, ServiceTransactionApplicationSansEffet } from '../../services/ServiceTransactionApplication';
 
@@ -16,12 +17,19 @@ export interface SortieModifierEleve { eleve: EleveDetailSortieDTO }
 export class ModifierEleve implements UseCase<ModifierEleveEntreeDTO, SortieModifierEleve> {
   constructor(
     private readonly depotEleve: DepotEleve,
+    private readonly autorisationEleve?: AutorisationElevePort,
     private readonly serviceConcurrence: ServiceApplicationConcurrence = new ServiceApplicationConcurrence(),
     private readonly serviceTransaction: ServiceTransactionApplication = new ServiceTransactionApplicationSansEffet(),
   ) {}
 
   /** Execute la modification de l'identite d'un eleve. */
   public async executer(entree: ModifierEleveEntreeDTO): Promise<SortieModifierEleve> {
+    await this.autorisationEleve?.verifierMutationEleve({
+      idUtilisateur: entree.idUtilisateur,
+      idOrganisation: entree.idOrganisation,
+      idEcole: entree.idEcole,
+    });
+
     return this.serviceTransaction.executerDansTransaction(async () => {
       const eleve = await this.depotEleve.trouverParId(entree.idEleve);
 

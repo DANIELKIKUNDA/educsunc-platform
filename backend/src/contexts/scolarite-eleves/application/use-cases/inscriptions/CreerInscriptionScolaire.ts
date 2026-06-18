@@ -6,6 +6,8 @@ import { MoteurInscriptionEleve } from '../../../domain/services/MoteurInscripti
 import { CreerInscriptionScolaireEntreeDTO } from '../../dto/input/CreerInscriptionScolaireEntreeDTO';
 import { InscriptionScolaireSortieDTO } from '../../dto/output/InscriptionScolaireSortieDTO';
 import { InscriptionScolaireMapper } from '../../mappers/InscriptionScolaireMapper';
+import { HistorisationParcoursScolaire } from '../../services/HistorisationParcoursScolaire';
+import type { DomainEventBusPort } from '../../../../../shared/application/DomainEventBusPort';
 
 // Ce fichier contient le cas d'usage de creation d'une inscription scolaire.
 export interface SortieCreerInscriptionScolaire { inscription: InscriptionScolaireSortieDTO }
@@ -16,6 +18,8 @@ export class CreerInscriptionScolaire implements UseCase<CreerInscriptionScolair
     private readonly depotInscription: DepotInscriptionScolaire,
     private readonly depotEleve: DepotEleve,
     private readonly moteurInscription: MoteurInscriptionEleve = new MoteurInscriptionEleve(),
+    private readonly historisationParcours?: HistorisationParcoursScolaire,
+    private readonly eventBus?: DomainEventBusPort,
   ) {}
 
   /** Execute la creation de l'inscription. */
@@ -44,6 +48,21 @@ export class CreerInscriptionScolaire implements UseCase<CreerInscriptionScolair
     });
 
     await this.depotInscription.sauvegarder(inscription);
+    await this.historisationParcours?.enregistrerInscription({
+      idOrganisation: entree.idOrganisation,
+      idEcole: entree.idEcole,
+      idEleve: entree.idEleve,
+      idInscriptionScolaire: entree.idInscriptionScolaire,
+      idAnneeScolaire: entree.idAnneeScolaire,
+      declenchePar: entree.idUtilisateur,
+      dateEvenement: new Date(`${entree.dateInscription}T00:00:00.000Z`),
+    });
+    await this.eventBus?.publier(inscription.recupererEvenements(), {
+      organisationId: entree.idOrganisation,
+      ecoleId: entree.idEcole,
+      utilisateurId: entree.idUtilisateur,
+    });
+    inscription.viderEvenements();
 
     return { inscription: InscriptionScolaireMapper.versSortie(inscription) };
   }

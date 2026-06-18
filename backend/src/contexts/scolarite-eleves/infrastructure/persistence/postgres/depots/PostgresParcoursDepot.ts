@@ -25,6 +25,19 @@ export class PostgresParcoursDepot extends BaseDepotPostgresScolariteEleves impl
     return ligne === null ? null : ParcoursPersistenceMapper.depuisLigne(ligne);
   }
 
+  /** Liste les parcours d'un ensemble d'eleves. */
+  public async listerParEleves(idsEleves: UUID[]): Promise<ParcoursScolaireEleve[]> {
+    if (idsEleves.length === 0) {
+      return [];
+    }
+
+    const lignes = await this.executerRequete<ParcoursRow>(
+      'SELECT * FROM parcours WHERE id_eleve = ANY($1::text[])',
+      [idsEleves],
+    );
+    return lignes.map(ParcoursPersistenceMapper.depuisLigne);
+  }
+
   /** Liste les evenements d'un eleve. */
   public async listerEvenementsParEleve(idEleve: UUID): Promise<EvenementParcours[]> {
     return (await this.trouverParEleve(idEleve))?.listerHistorique() ?? [];

@@ -3,17 +3,35 @@ import { OutilsValidationHttpScolarite } from './outils-validation-http-scolarit
 // Ce fichier valide syntaxiquement les requetes HTTP parcours.
 export class ValidateurParcoursHttp {
   /** Valide une consultation de parcours. */
-  public static validerParEleve(params: unknown) {
-    return { idEleve: OutilsValidationHttpScolarite.lireParametre(OutilsValidationHttpScolarite.obtenirObjet(params, 'params'), 'id') };
+  public static validerParEleve(params: unknown, headers: unknown) {
+    return {
+      ...OutilsValidationHttpScolarite.lireContexteUtilisateurRequis(headers, false),
+      idEleve: OutilsValidationHttpScolarite.lireParametre(
+        OutilsValidationHttpScolarite.obtenirObjet(params, 'params'),
+        'id',
+      ),
+    };
   }
 
   /** Valide une liste par annee. */
-  public static validerParAnnee(params: unknown) {
-    return { idAnneeScolaire: OutilsValidationHttpScolarite.lireParametre(OutilsValidationHttpScolarite.obtenirObjet(params, 'params'), 'idAnnee') };
+  public static validerParAnnee(params: unknown, headers: unknown) {
+    return {
+      ...OutilsValidationHttpScolarite.lireContexteUtilisateurRequis(headers, false),
+      idAnneeScolaire: OutilsValidationHttpScolarite.lireParametre(
+        OutilsValidationHttpScolarite.obtenirObjet(params, 'params'),
+        'idAnnee',
+      ),
+    };
   }
 
   /** Valide une reconstruction. */
   public static validerReconstruction(params: unknown, headers: unknown) {
-    return { ...OutilsValidationHttpScolarite.lireContexte(headers, false), idEleve: OutilsValidationHttpScolarite.lireParametre(OutilsValidationHttpScolarite.obtenirObjet(params, 'params'), 'id') };
+    return {
+      ...OutilsValidationHttpScolarite.lireContexteUtilisateurRequis(headers, false),
+      idEleve: OutilsValidationHttpScolarite.lireParametre(
+        OutilsValidationHttpScolarite.obtenirObjet(params, 'params'),
+        'id',
+      ),
+    };
   }
 }

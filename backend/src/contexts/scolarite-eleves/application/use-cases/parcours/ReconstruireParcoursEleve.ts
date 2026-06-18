@@ -1,4 +1,5 @@
 import { UseCase } from '../../../../../shared/application/UseCase';
+import type { AutorisationParcoursElevePort } from '../../ports';
 import { DepotParcoursScolaireEleve } from '../../../domain/repositories/DepotParcoursScolaireEleve';
 import { ContexteCommandeScolariteDTO } from '../../dto/input/CommandesCommunesDTO';
 import { ParcoursEleveSortieDTO } from '../../dto/output/ParcoursEleveSortieDTO';
@@ -13,9 +14,18 @@ export interface SortieReconstruireParcoursEleve { parcours: ParcoursEleveSortie
 
 /** Ce cas d'usage reconstruit le parcours sans perdre l'historique existant. */
 export class ReconstruireParcoursEleve implements UseCase<ReconstruireParcoursEleveEntree, SortieReconstruireParcoursEleve> {
-  constructor(private readonly depotParcours: DepotParcoursScolaireEleve) {}
+  constructor(
+    private readonly depotParcours: DepotParcoursScolaireEleve,
+    private readonly autorisationParcours?: AutorisationParcoursElevePort,
+  ) {}
   /** Execute la reconstruction a partir de l'historique deja connu. */
   public async executer(entree: ReconstruireParcoursEleveEntree): Promise<SortieReconstruireParcoursEleve> {
+    await this.autorisationParcours?.verifierReconstructionParcoursEleve({
+      idUtilisateur: entree.idUtilisateur,
+      idOrganisation: entree.idOrganisation,
+      idEcole: entree.idEcole,
+      idEleve: entree.idEleve,
+    });
     const parcours = await this.depotParcours.trouverParEleve(entree.idEleve);
     if (parcours === null) throw new ErreurRessourceIntrouvable('Parcours scolaire introuvable.');
     parcours.reconstruireParcours(parcours.listerHistorique(), entree.idUtilisateur);

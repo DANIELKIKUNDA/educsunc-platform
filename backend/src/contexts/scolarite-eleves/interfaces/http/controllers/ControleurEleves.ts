@@ -20,7 +20,7 @@ export class ControleurEleves {
   /** Modifie l'identite d'un eleve. */
   public async modifierEleve(params: unknown, corps: unknown, headers: unknown) { return ElevePresenter.presenterEleve((await this.modifierEleveCas.executer(ValidateurElevesHttp.validerModification(params, corps, headers))).eleve); }
   /** Consulte un eleve. */
-  public async consulterEleve(params: unknown) { return ElevePresenter.presenterEleve((await this.consulterEleveCas.executer(ValidateurElevesHttp.validerConsultation(params))).eleve); }
+  public async consulterEleve(params: unknown, headers: unknown) { return ElevePresenter.presenterEleve((await this.consulterEleveCas.executer(ValidateurElevesHttp.validerConsultation(params, headers))).eleve); }
   /** Liste les eleves. */
   public async listerEleves(query: unknown, headers: unknown) { return ElevePresenter.presenterListe(await this.listerElevesCas.executer(ValidateurElevesHttp.validerListe(query, headers))); }
   /** Recherche les eleves. */

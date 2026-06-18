@@ -4,16 +4,26 @@ import { DepotFamille } from '../../../domain/repositories/DepotFamille';
 import { CreerFamilleEntreeDTO } from '../../dto/input/CreerFamilleEntreeDTO';
 import { FamilleSortieDTO } from '../../dto/output/FamilleSortieDTO';
 import { FamilleMapper } from '../../mappers/FamilleMapper';
+import type { AutorisationFamillePort } from '../../ports';
 
 // Ce fichier contient le cas d'usage de creation d'une famille.
 export interface SortieCreerFamille { famille: FamilleSortieDTO }
 
 /** Ce cas d'usage orchestre la creation d'une famille sans logique de persistance technique. */
 export class CreerFamille implements UseCase<CreerFamilleEntreeDTO, SortieCreerFamille> {
-  constructor(private readonly depotFamille: DepotFamille) {}
+  constructor(
+    private readonly depotFamille: DepotFamille,
+    private readonly autorisationFamille?: AutorisationFamillePort,
+  ) {}
 
   /** Execute la creation de la famille. */
   public async executer(entree: CreerFamilleEntreeDTO): Promise<SortieCreerFamille> {
+    await this.autorisationFamille?.verifierMutationFamille({
+      idUtilisateur: entree.idUtilisateur,
+      idOrganisation: entree.idOrganisation,
+      idEcole: entree.idEcole,
+    });
+
     const famille = Famille.creer({
       idFamille: entree.idFamille,
       idOrganisation: entree.idOrganisation,

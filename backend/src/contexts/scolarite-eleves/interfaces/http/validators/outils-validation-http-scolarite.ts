@@ -112,4 +112,15 @@ export class OutilsValidationHttpScolarite {
       idempotencyKey: this.lireIdempotencyKey(headers, obligatoireIdempotence),
     };
   }
+
+  /** Construit le contexte commun attendu pour les commandes qui exigent un utilisateur authentifie. */
+  public static lireContexteUtilisateurRequis(headers: unknown, obligatoireIdempotence: boolean): { idOrganisation: string; idEcole: string; idUtilisateur: string; idempotencyKey?: string } {
+    const donnees = this.obtenirObjet(headers, 'headers');
+    return {
+      idOrganisation: this.lireChaineRequise(donnees, 'x-organisation-id'),
+      idEcole: this.lireChaineRequise(donnees, 'x-tenant-id'),
+      idUtilisateur: this.lireChaineRequise(donnees, 'x-user-id'),
+      idempotencyKey: this.lireIdempotencyKey(headers, obligatoireIdempotence),
+    };
+  }
 }

@@ -14,11 +14,11 @@ export class ControleurScolariteOrganisation {
   ) {}
 
   /** Liste eleves organisation. */
-  public async listerElevesParOrganisation(params: unknown, query: unknown) { return ElevePresenter.presenterListe(await this.listerElevesParOrganisationCas.executer(ValidateurOrganisationScolariteHttp.validerOrganisation(params, query))); }
+  public async listerElevesParOrganisation(params: unknown, query: unknown, headers: unknown) { return ElevePresenter.presenterListe(await this.listerElevesParOrganisationCas.executer(ValidateurOrganisationScolariteHttp.validerOrganisation(params, query, headers))); }
   /** Liste inscriptions organisation. */
-  public async listerInscriptionsParOrganisation(params: unknown, query: unknown) { return InscriptionScolairePresenter.presenterListe(await this.listerInscriptionsParOrganisationCas.executer(ValidateurOrganisationScolariteHttp.validerOrganisation(params, query))); }
+  public async listerInscriptionsParOrganisation(params: unknown, query: unknown, headers: unknown) { return InscriptionScolairePresenter.presenterListe(await this.listerInscriptionsParOrganisationCas.executer(ValidateurOrganisationScolariteHttp.validerOrganisation(params, query, headers))); }
   /** Consulte synthese organisation. */
-  public async consulterSyntheseOrganisation(params: unknown) { return SyntheseScolaritePresenter.presenterSynthese(await this.consulterSyntheseOrganisationCas.executer(ValidateurOrganisationScolariteHttp.validerOrganisation(params))); }
+  public async consulterSyntheseOrganisation(params: unknown, query: unknown, headers: unknown) { return SyntheseScolaritePresenter.presenterSynthese(await this.consulterSyntheseOrganisationCas.executer(ValidateurOrganisationScolariteHttp.validerOrganisation(params, query, headers))); }
   /** Liste alertes organisation. */
-  public async listerAlertesOrganisation(params: unknown) { return SyntheseScolaritePresenter.presenterAlertes(await this.listerAlertesOrganisationCas.executer(ValidateurOrganisationScolariteHttp.validerOrganisation(params))); }
+  public async listerAlertesOrganisation(params: unknown, query: unknown, headers: unknown) { return SyntheseScolaritePresenter.presenterAlertes(await this.listerAlertesOrganisationCas.executer(ValidateurOrganisationScolariteHttp.validerOrganisation(params, query, headers))); }
 }

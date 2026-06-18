@@ -4,6 +4,7 @@ import { ContexteCommandeScolariteDTO } from '../../dto/input/CommandesCommunesD
 import { FamilleSortieDTO } from '../../dto/output/FamilleSortieDTO';
 import { ErreurRessourceIntrouvable } from '../../exceptions/ErreurRessourceIntrouvable';
 import { FamilleMapper } from '../../mappers/FamilleMapper';
+import type { AutorisationFamillePort } from '../../ports';
 import { ServiceApplicationConcurrence } from '../../services/ServiceApplicationConcurrence';
 
 // Ce fichier contient le cas d'usage qui definit le responsable principal d'une famille.
@@ -17,11 +18,18 @@ export interface SortieDefinirResponsablePrincipal { famille: FamilleSortieDTO }
 export class DefinirResponsablePrincipal implements UseCase<DefinirResponsablePrincipalEntree, SortieDefinirResponsablePrincipal> {
   constructor(
     private readonly depotFamille: DepotFamille,
+    private readonly autorisationFamille?: AutorisationFamillePort,
     private readonly serviceConcurrence: ServiceApplicationConcurrence = new ServiceApplicationConcurrence(),
   ) {}
 
   /** Execute le changement de responsable principal. */
   public async executer(entree: DefinirResponsablePrincipalEntree): Promise<SortieDefinirResponsablePrincipal> {
+    await this.autorisationFamille?.verifierMutationFamille({
+      idUtilisateur: entree.idUtilisateur,
+      idOrganisation: entree.idOrganisation,
+      idEcole: entree.idEcole,
+    });
+
     const famille = await this.depotFamille.trouverParId(entree.idFamille);
 
     if (famille === null) {

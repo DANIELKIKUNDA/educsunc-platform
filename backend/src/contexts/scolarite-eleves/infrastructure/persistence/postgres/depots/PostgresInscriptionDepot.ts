@@ -45,6 +45,18 @@ export class PostgresInscriptionDepot extends BaseDepotPostgresScolariteEleves i
     return ligne === null ? null : InscriptionPersistenceMapper.depuisLigne(ligne);
   }
 
+  /** Recherche la derniere inscription active connue d'un eleve. */
+  public async trouverDerniereInscriptionActiveParEleve(idEleve: UUID): Promise<InscriptionScolaire | null> {
+    const ligne = await this.executerRequeteUnique<InscriptionRow>(
+      `SELECT * FROM inscriptions
+       WHERE id_eleve = $1 AND statut_inscription = 'VALIDEE'
+       ORDER BY date_inscription DESC, cree_le DESC
+       LIMIT 1`,
+      [idEleve],
+    );
+    return ligne === null ? null : InscriptionPersistenceMapper.depuisLigne(ligne);
+  }
+
   /** Liste les inscriptions d'une annee. */
   public async listerParAnnee(idAnneeScolaire: UUID): Promise<InscriptionScolaire[]> {
     const lignes = await this.executerRequete<InscriptionRow>('SELECT * FROM inscriptions WHERE id_annee_scolaire = $1 ORDER BY date_inscription DESC', [idAnneeScolaire]);

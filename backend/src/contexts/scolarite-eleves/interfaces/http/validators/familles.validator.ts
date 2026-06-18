@@ -7,7 +7,7 @@ export class ValidateurFamillesHttp {
   public static validerCreation(corps: unknown, headers: unknown) {
     const body = OutilsValidationHttpScolarite.obtenirObjet(corps, 'body');
     return {
-      ...OutilsValidationHttpScolarite.lireContexte(headers, true),
+      ...OutilsValidationHttpScolarite.lireContexteUtilisateurRequis(headers, true),
       idFamille: OutilsValidationHttpScolarite.lireChaineRequise(body, 'idFamille'),
       codeFamille: OutilsValidationHttpScolarite.lireChaineRequise(body, 'codeFamille'),
       nomFamille: OutilsValidationHttpScolarite.lireChaineRequise(body, 'nomFamille'),
@@ -21,7 +21,7 @@ export class ValidateurFamillesHttp {
   public static validerModification(params: unknown, corps: unknown, headers: unknown) {
     const body = OutilsValidationHttpScolarite.obtenirObjet(corps, 'body');
     return {
-      ...OutilsValidationHttpScolarite.lireContexte(headers, false),
+      ...OutilsValidationHttpScolarite.lireContexteUtilisateurRequis(headers, false),
       idFamille: OutilsValidationHttpScolarite.lireParametre(OutilsValidationHttpScolarite.obtenirObjet(params, 'params'), 'id'),
       nomFamille: OutilsValidationHttpScolarite.lireChaineOptionnelle(body, 'nomFamille'),
       adresse: OutilsValidationHttpScolarite.lireChaineOptionnelle(body, 'adresse'),
@@ -32,13 +32,16 @@ export class ValidateurFamillesHttp {
   }
 
   /** Valide la consultation d'une famille. */
-  public static validerConsultation(params: unknown) {
-    return { idFamille: OutilsValidationHttpScolarite.lireParametre(OutilsValidationHttpScolarite.obtenirObjet(params, 'params'), 'id') };
+  public static validerConsultation(params: unknown, headers: unknown) {
+    return {
+      ...OutilsValidationHttpScolarite.lireContexteUtilisateurRequis(headers, false),
+      idFamille: OutilsValidationHttpScolarite.lireParametre(OutilsValidationHttpScolarite.obtenirObjet(params, 'params'), 'id'),
+    };
   }
 
   /** Valide la liste des familles. */
   public static validerListe(query: unknown, headers: unknown) {
-    return { ...OutilsValidationHttpScolarite.lireContexte(headers, false), ...OutilsValidationHttpScolarite.lirePagination(query) };
+    return { ...OutilsValidationHttpScolarite.lireContexteUtilisateurRequis(headers, false), ...OutilsValidationHttpScolarite.lirePagination(query) };
   }
 
   /** Valide l'ajout ou la modification d'un responsable. */
@@ -46,7 +49,7 @@ export class ValidateurFamillesHttp {
     const body = OutilsValidationHttpScolarite.obtenirObjet(corps, 'body');
     const p = OutilsValidationHttpScolarite.obtenirObjet(params, 'params');
     return {
-      ...OutilsValidationHttpScolarite.lireContexte(headers, false),
+      ...OutilsValidationHttpScolarite.lireContexteUtilisateurRequis(headers, false),
       idFamille: OutilsValidationHttpScolarite.lireParametre(p, 'id'),
       idResponsableFamille: OutilsValidationHttpScolarite.lireChaineOptionnelle(p, 'idResponsable') ?? OutilsValidationHttpScolarite.lireChaineRequise(body, 'idResponsableFamille'),
       nomComplet: OutilsValidationHttpScolarite.lireChaineRequise(body, 'nomComplet'),
@@ -56,6 +59,7 @@ export class ValidateurFamillesHttp {
       lienParente: OutilsValidationHttpScolarite.lireEnumRequis(body, 'lienParente', LienParente),
       adresse: OutilsValidationHttpScolarite.lireChaineOptionnelle(body, 'adresse'),
       estPrincipal: Boolean(body.estPrincipal),
+      idUtilisateurAuth: OutilsValidationHttpScolarite.lireChaineOptionnelle(body, 'idUtilisateurAuth'),
       versionAttendue: OutilsValidationHttpScolarite.lireVersionAttendue(body),
     };
   }
@@ -65,7 +69,7 @@ export class ValidateurFamillesHttp {
     const body = OutilsValidationHttpScolarite.obtenirObjet(corps, 'body');
     const p = OutilsValidationHttpScolarite.obtenirObjet(params, 'params');
     return {
-      ...OutilsValidationHttpScolarite.lireContexte(headers, false),
+      ...OutilsValidationHttpScolarite.lireContexteUtilisateurRequis(headers, false),
       idFamille: OutilsValidationHttpScolarite.lireParametre(p, 'id'),
       idResponsableFamille: OutilsValidationHttpScolarite.lireParametre(p, 'idResponsable'),
       versionAttendue: OutilsValidationHttpScolarite.lireVersionAttendue(body),

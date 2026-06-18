@@ -11,6 +11,8 @@ export interface DepotParcoursScolaireEleve {
   sauvegarder(parcours: ParcoursScolaireEleve): Promise<void>;
   /** Recherche le parcours d'un eleve. */
   trouverParEleve(idEleve: UUID): Promise<ParcoursScolaireEleve | null>;
+  /** Liste les parcours d'un ensemble d'eleves. */
+  listerParEleves(idsEleves: UUID[]): Promise<ParcoursScolaireEleve[]>;
   /** Liste les evenements du parcours d'un eleve. */
   listerEvenementsParEleve(idEleve: UUID): Promise<EvenementParcours[]>;
   /** Liste les evenements de parcours d'une annee scolaire. */

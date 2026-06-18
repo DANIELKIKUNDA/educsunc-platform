@@ -12,4 +12,5 @@ export interface AjouterResponsableFamilleEntreeDTO extends ContexteCommandeScol
   lienParente: LienParente;
   adresse?: string;
   estPrincipal: boolean;
+  idUtilisateurAuth?: string;
 }

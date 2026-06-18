@@ -12,11 +12,11 @@ export class ControleurParcoursEleves {
   ) {}
 
   /** Consulte parcours. */
-  public async consulterParcours(params: unknown) { return ParcoursElevePresenter.presenterParcours((await this.consulterParcoursCas.executer(ValidateurParcoursHttp.validerParEleve(params))).parcours); }
+  public async consulterParcours(params: unknown, headers: unknown) { return ParcoursElevePresenter.presenterParcours((await this.consulterParcoursCas.executer(ValidateurParcoursHttp.validerParEleve(params, headers))).parcours); }
   /** Liste evenements eleve. */
-  public async listerEvenementsParEleve(params: unknown) { return ParcoursElevePresenter.presenterEvenements(await this.listerEvenementsParEleveCas.executer(ValidateurParcoursHttp.validerParEleve(params))); }
+  public async listerEvenementsParEleve(params: unknown, headers: unknown) { return ParcoursElevePresenter.presenterEvenements(await this.listerEvenementsParEleveCas.executer(ValidateurParcoursHttp.validerParEleve(params, headers))); }
   /** Liste evenements annee. */
-  public async listerEvenementsParAnnee(params: unknown) { return ParcoursElevePresenter.presenterEvenements(await this.listerEvenementsParAnneeCas.executer(ValidateurParcoursHttp.validerParAnnee(params))); }
+  public async listerEvenementsParAnnee(params: unknown, headers: unknown) { return ParcoursElevePresenter.presenterEvenements(await this.listerEvenementsParAnneeCas.executer(ValidateurParcoursHttp.validerParAnnee(params, headers))); }
   /** Reconstruit parcours. */
   public async reconstruireParcours(params: unknown, headers: unknown) { return ParcoursElevePresenter.presenterParcours((await this.reconstruireParcoursCas.executer(ValidateurParcoursHttp.validerReconstruction(params, headers))).parcours); }
 }

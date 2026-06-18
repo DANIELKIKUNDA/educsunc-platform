@@ -1,4 +1,6 @@
 import { OrigineInscription } from '../../../domain/value-objects/OrigineInscription';
+import { SexeEleve } from '../../../domain/value-objects/SexeEleve';
+import { TypeProvenanceEcole } from '../../../domain/value-objects/TypeProvenanceEcole';
 import { OutilsValidationHttpScolarite } from './outils-validation-http-scolarite';
 
 // Ce fichier valide syntaxiquement les requetes HTTP inscriptions.
@@ -19,8 +21,53 @@ export class ValidateurInscriptionsHttp {
   }
 
   /** Valide une inscription complete. */
-  public static validerComplete(corps: unknown) {
-    return OutilsValidationHttpScolarite.obtenirObjet(corps, 'body') as any;
+  public static validerComplete(corps: unknown, headers: unknown) {
+    const body = OutilsValidationHttpScolarite.obtenirObjet(corps, 'body');
+    const eleve = OutilsValidationHttpScolarite.obtenirObjet(body.eleve, 'body.eleve');
+    const inscription = OutilsValidationHttpScolarite.obtenirObjet(body.inscription, 'body.inscription');
+    const affectation = body.affectation === undefined
+      ? undefined
+      : OutilsValidationHttpScolarite.obtenirObjet(body.affectation, 'body.affectation');
+    const contexte = OutilsValidationHttpScolarite.lireContexteUtilisateurRequis(headers, true);
+
+    return {
+      eleve: {
+        ...contexte,
+        idEleve: OutilsValidationHttpScolarite.lireChaineRequise(eleve, 'idEleve'),
+        matricule: OutilsValidationHttpScolarite.lireChaineRequise(eleve, 'matricule'),
+        nom: OutilsValidationHttpScolarite.lireChaineRequise(eleve, 'nom'),
+        postNom: OutilsValidationHttpScolarite.lireChaineRequise(eleve, 'postNom'),
+        prenom: OutilsValidationHttpScolarite.lireChaineOptionnelle(eleve, 'prenom'),
+        sexe: OutilsValidationHttpScolarite.lireEnumRequis(eleve, 'sexe', SexeEleve),
+        dateNaissance: OutilsValidationHttpScolarite.lireDateLocaleRequise(eleve, 'dateNaissance'),
+        lieuNaissance: OutilsValidationHttpScolarite.lireChaineOptionnelle(eleve, 'lieuNaissance'),
+        nationalite: OutilsValidationHttpScolarite.lireChaineOptionnelle(eleve, 'nationalite'),
+        typeProvenance: OutilsValidationHttpScolarite.lireEnumRequis(eleve, 'typeProvenance', TypeProvenanceEcole),
+        nomEcoleProvenance: OutilsValidationHttpScolarite.lireChaineRequise(eleve, 'nomEcoleProvenance'),
+        idEcoleProvenance: OutilsValidationHttpScolarite.lireChaineOptionnelle(eleve, 'idEcoleProvenance'),
+        idFamille: OutilsValidationHttpScolarite.lireChaineOptionnelle(eleve, 'idFamille'),
+      },
+      inscription: {
+        ...contexte,
+        idInscriptionScolaire: OutilsValidationHttpScolarite.lireChaineRequise(inscription, 'idInscriptionScolaire'),
+        idEleve: OutilsValidationHttpScolarite.lireChaineRequise(inscription, 'idEleve'),
+        idAnneeScolaire: OutilsValidationHttpScolarite.lireChaineRequise(inscription, 'idAnneeScolaire'),
+        dateInscription: OutilsValidationHttpScolarite.lireDateLocaleRequise(inscription, 'dateInscription'),
+        origineInscription: OutilsValidationHttpScolarite.lireEnumRequis(inscription, 'origineInscription', OrigineInscription),
+        numeroOrdre: OutilsValidationHttpScolarite.lireChaineOptionnelle(inscription, 'numeroOrdre'),
+        observation: OutilsValidationHttpScolarite.lireChaineOptionnelle(inscription, 'observation'),
+      },
+      affectation: affectation === undefined
+        ? undefined
+        : {
+          ...contexte,
+          idAffectationClasse: OutilsValidationHttpScolarite.lireChaineRequise(affectation, 'idAffectationClasse'),
+          idInscriptionScolaire: OutilsValidationHttpScolarite.lireChaineRequise(affectation, 'idInscriptionScolaire'),
+          idClassePedagogique: OutilsValidationHttpScolarite.lireChaineRequise(affectation, 'idClassePedagogique'),
+          dateAffectation: OutilsValidationHttpScolarite.lireDateLocaleRequise(affectation, 'dateAffectation'),
+          motifAffectation: OutilsValidationHttpScolarite.lireChaineOptionnelle(affectation, 'motifAffectation'),
+        },
+    };
   }
 
   /** Valide une action sur inscription. */

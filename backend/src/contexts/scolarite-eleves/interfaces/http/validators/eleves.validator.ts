@@ -9,7 +9,7 @@ export class ValidateurElevesHttp {
   public static validerCreation(corps: unknown, headers: unknown) {
     const body = OutilsValidationHttpScolarite.obtenirObjet(corps, 'body');
     return {
-      ...OutilsValidationHttpScolarite.lireContexte(headers, true),
+      ...OutilsValidationHttpScolarite.lireContexteUtilisateurRequis(headers, true),
       idEleve: OutilsValidationHttpScolarite.lireChaineRequise(body, 'idEleve'),
       matricule: OutilsValidationHttpScolarite.lireChaineRequise(body, 'matricule'),
       nom: OutilsValidationHttpScolarite.lireChaineRequise(body, 'nom'),
@@ -31,7 +31,7 @@ export class ValidateurElevesHttp {
     const body = OutilsValidationHttpScolarite.obtenirObjet(corps, 'body');
     const parametres = OutilsValidationHttpScolarite.obtenirObjet(params, 'params');
     return {
-      ...OutilsValidationHttpScolarite.lireContexte(headers, false),
+      ...OutilsValidationHttpScolarite.lireContexteUtilisateurRequis(headers, false),
       idEleve: OutilsValidationHttpScolarite.lireParametre(parametres, 'id'),
       matricule: OutilsValidationHttpScolarite.lireChaineOptionnelle(body, 'matricule'),
       nom: OutilsValidationHttpScolarite.lireChaineOptionnelle(body, 'nom'),
@@ -46,13 +46,16 @@ export class ValidateurElevesHttp {
   }
 
   /** Valide une consultation par id. */
-  public static validerConsultation(params: unknown) {
-    return { idEleve: OutilsValidationHttpScolarite.lireParametre(OutilsValidationHttpScolarite.obtenirObjet(params, 'params'), 'id') };
+  public static validerConsultation(params: unknown, headers: unknown) {
+    return {
+      ...OutilsValidationHttpScolarite.lireContexteUtilisateurRequis(headers, false),
+      idEleve: OutilsValidationHttpScolarite.lireParametre(OutilsValidationHttpScolarite.obtenirObjet(params, 'params'), 'id'),
+    };
   }
 
   /** Valide une liste d'eleves. */
   public static validerListe(query: unknown, headers: unknown) {
-    return { ...OutilsValidationHttpScolarite.lireContexte(headers, false), ...OutilsValidationHttpScolarite.lirePagination(query) };
+    return { ...OutilsValidationHttpScolarite.lireContexteUtilisateurRequis(headers, false), ...OutilsValidationHttpScolarite.lirePagination(query) };
   }
 
   /** Valide une recherche d'eleves. */
@@ -72,7 +75,7 @@ export class ValidateurElevesHttp {
   public static validerRattachementFamille(params: unknown, corps: unknown, headers: unknown) {
     const body = OutilsValidationHttpScolarite.obtenirObjet(corps, 'body');
     return {
-      ...OutilsValidationHttpScolarite.lireContexte(headers, false),
+      ...OutilsValidationHttpScolarite.lireContexteUtilisateurRequis(headers, false),
       idEleve: OutilsValidationHttpScolarite.lireParametre(OutilsValidationHttpScolarite.obtenirObjet(params, 'params'), 'id'),
       idFamille: OutilsValidationHttpScolarite.lireChaineRequise(body, 'idFamille'),
       versionAttendue: OutilsValidationHttpScolarite.lireVersionAttendue(body),
@@ -83,7 +86,7 @@ export class ValidateurElevesHttp {
   public static validerChangementStatut(params: unknown, corps: unknown, headers: unknown, nouveauStatut: StatutEleve) {
     const body = OutilsValidationHttpScolarite.obtenirObjet(corps, 'body');
     return {
-      ...OutilsValidationHttpScolarite.lireContexte(headers, true),
+      ...OutilsValidationHttpScolarite.lireContexteUtilisateurRequis(headers, true),
       idEleve: OutilsValidationHttpScolarite.lireParametre(OutilsValidationHttpScolarite.obtenirObjet(params, 'params'), 'id'),
       nouveauStatut,
       versionAttendue: OutilsValidationHttpScolarite.lireVersionAttendue(body),

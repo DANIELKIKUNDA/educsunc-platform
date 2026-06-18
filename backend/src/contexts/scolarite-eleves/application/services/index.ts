@@ -6,3 +6,4 @@ export * from './ServiceApplicationIdempotence';
 export * from './ServiceApplicationReadModel';
 export * from './OrchestrateurInscriptionEleve';
 export * from './OrchestrateurCycleVieEleve';
+export * from './HistorisationParcoursScolaire';

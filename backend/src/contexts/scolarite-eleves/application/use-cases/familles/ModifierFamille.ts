@@ -4,6 +4,7 @@ import { ContexteCommandeScolariteDTO } from '../../dto/input/CommandesCommunesD
 import { FamilleSortieDTO } from '../../dto/output/FamilleSortieDTO';
 import { ErreurRessourceIntrouvable } from '../../exceptions/ErreurRessourceIntrouvable';
 import { FamilleMapper } from '../../mappers/FamilleMapper';
+import type { AutorisationFamillePort } from '../../ports';
 import { ServiceApplicationConcurrence } from '../../services/ServiceApplicationConcurrence';
 
 // Ce fichier contient le cas d'usage de modification des coordonnees d'une famille.
@@ -20,11 +21,18 @@ export interface SortieModifierFamille { famille: FamilleSortieDTO }
 export class ModifierFamille implements UseCase<ModifierFamilleEntree, SortieModifierFamille> {
   constructor(
     private readonly depotFamille: DepotFamille,
+    private readonly autorisationFamille?: AutorisationFamillePort,
     private readonly serviceConcurrence: ServiceApplicationConcurrence = new ServiceApplicationConcurrence(),
   ) {}
 
   /** Execute la modification des coordonnees. */
   public async executer(entree: ModifierFamilleEntree): Promise<SortieModifierFamille> {
+    await this.autorisationFamille?.verifierMutationFamille({
+      idUtilisateur: entree.idUtilisateur,
+      idOrganisation: entree.idOrganisation,
+      idEcole: entree.idEcole,
+    });
+
     const famille = await this.depotFamille.trouverParId(entree.idFamille);
 
     if (famille === null) {

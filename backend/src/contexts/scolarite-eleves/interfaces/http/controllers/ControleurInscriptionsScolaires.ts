@@ -17,7 +17,7 @@ export class ControleurInscriptionsScolaires {
   /** Cree une inscription. */
   public async creerInscription(corps: unknown, headers: unknown) { return InscriptionScolairePresenter.presenterInscription((await this.creerInscriptionCas.executer(ValidateurInscriptionsHttp.validerCreation(corps, headers))).inscription); }
   /** Cree une inscription complete. */
-  public async creerInscriptionComplete(corps: unknown) { return { donnee: await this.creerInscriptionCompleteCas.executer(ValidateurInscriptionsHttp.validerComplete(corps)) }; }
+  public async creerInscriptionComplete(corps: unknown, headers: unknown) { return { donnee: await this.creerInscriptionCompleteCas.executer(ValidateurInscriptionsHttp.validerComplete(corps, headers)) }; }
   /** Valide une inscription. */
   public async validerInscription(params: unknown, corps: unknown, headers: unknown) { return InscriptionScolairePresenter.presenterInscription((await this.validerInscriptionCas.executer(ValidateurInscriptionsHttp.validerAction(params, corps, headers))).inscription); }
   /** Annule une inscription. */

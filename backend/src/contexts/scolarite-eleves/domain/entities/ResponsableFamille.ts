@@ -14,6 +14,7 @@ export interface ProprietesResponsableFamille {
   lienParente: LienParente;
   adresse?: string;
   estPrincipal: boolean;
+  idUtilisateurAuth?: UUID;
 }
 
 /**
@@ -28,7 +29,8 @@ export class ResponsableFamille extends Entite<UUID> {
     private profession: string | undefined,
     private lienParente: LienParente,
     private adresse: string | undefined,
-    private estPrincipal: boolean
+    private estPrincipal: boolean,
+    private idUtilisateurAuth?: UUID,
   ) {
     super(idResponsableFamille);
     this.nomComplet = this.nettoyerTexteObligatoire(nomComplet, 'nomComplet');
@@ -37,6 +39,7 @@ export class ResponsableFamille extends Entite<UUID> {
     this.profession = this.nettoyerTexteOptionnel(profession);
     this.lienParente = this.validerLienParente(lienParente);
     this.adresse = this.nettoyerTexteOptionnel(adresse);
+    this.idUtilisateurAuth = this.nettoyerTexteOptionnel(idUtilisateurAuth);
   }
 
   /** Cree un responsable familial a partir de proprietes nommees. */
@@ -50,6 +53,7 @@ export class ResponsableFamille extends Entite<UUID> {
       proprietes.lienParente,
       proprietes.adresse,
       proprietes.estPrincipal,
+      proprietes.idUtilisateurAuth,
     );
   }
 
@@ -103,6 +107,11 @@ export class ResponsableFamille extends Entite<UUID> {
     return this.adresse;
   }
 
+  /** Retourne l'identifiant utilisateur authentifie lie a ce responsable quand il existe. */
+  public obtenirIdUtilisateurAuth(): string | undefined {
+    return this.idUtilisateurAuth;
+  }
+
   /** Indique si ce responsable est le contact principal de la famille. */
   public estResponsablePrincipal(): boolean {
     return this.estPrincipal;
@@ -119,6 +128,7 @@ export class ResponsableFamille extends Entite<UUID> {
       lienParente: this.lienParente,
       adresse: this.adresse,
       estPrincipal: this.estPrincipal,
+      idUtilisateurAuth: this.idUtilisateurAuth,
     };
   }
 

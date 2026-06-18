@@ -3,17 +3,32 @@ import { DepotFamille } from '../../../domain/repositories/DepotFamille';
 import { FamilleSortieDTO } from '../../dto/output/FamilleSortieDTO';
 import { ErreurRessourceIntrouvable } from '../../exceptions/ErreurRessourceIntrouvable';
 import { FamilleMapper } from '../../mappers/FamilleMapper';
+import type { AutorisationFamillePort } from '../../ports';
 
 // Ce fichier contient le cas d'usage de consultation d'une famille.
-export interface ConsulterFamilleEntree { idFamille: string }
+export interface ConsulterFamilleEntree {
+  idFamille: string;
+  idOrganisation: string;
+  idEcole: string;
+  idUtilisateur: string;
+}
 export interface SortieConsulterFamille { famille: FamilleSortieDTO }
 
 /** Ce cas d'usage retourne une famille par identifiant. */
 export class ConsulterFamille implements UseCase<ConsulterFamilleEntree, SortieConsulterFamille> {
-  constructor(private readonly depotFamille: DepotFamille) {}
+  constructor(
+    private readonly depotFamille: DepotFamille,
+    private readonly autorisationFamille?: AutorisationFamillePort,
+  ) {}
 
   /** Execute la consultation d'une famille. */
   public async executer(entree: ConsulterFamilleEntree): Promise<SortieConsulterFamille> {
+    await this.autorisationFamille?.verifierLectureFamille({
+      idUtilisateur: entree.idUtilisateur,
+      idOrganisation: entree.idOrganisation,
+      idEcole: entree.idEcole,
+    });
+
     const famille = await this.depotFamille.trouverParId(entree.idFamille);
 
     if (famille === null) {

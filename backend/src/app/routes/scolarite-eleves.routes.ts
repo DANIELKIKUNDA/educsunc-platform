@@ -1,4 +1,13 @@
 import type { FastifyPluginAsync } from 'fastify';
+import { AutorisationAffectationClasseAdapter } from '../adapters/AutorisationAffectationClasseAdapter';
+import { AutorisationEleveAdapter } from '../adapters/AutorisationEleveAdapter';
+import { AutorisationFamilleAdapter } from '../adapters/AutorisationFamilleAdapter';
+import { AutorisationOrganisationScolariteAdapter } from '../adapters/AutorisationOrganisationScolariteAdapter';
+import { AutorisationParcoursEleveAdapter } from '../adapters/AutorisationParcoursEleveAdapter';
+import { AutorisationCycleVieEleveAdapter } from '../adapters/AutorisationCycleVieEleveAdapter';
+import { AutorisationInscriptionCompleteAdapter } from '../adapters/AutorisationInscriptionCompleteAdapter';
+import { SectionClassePedagogiqueAdapter } from '../adapters/SectionClassePedagogiqueAdapter';
+import { SharedDomainEventBusAdapter } from '../adapters/SharedDomainEventBusAdapter';
 
 import {
   AffecterEleveAClasse,
@@ -45,7 +54,13 @@ import {
   TransfererEleve,
   ValiderInscriptionScolaire,
 } from '../../contexts/scolarite-eleves/application/use-cases';
-import { ServiceApplicationConcurrence, ServiceApplicationTenant } from '../../contexts/scolarite-eleves/application/services';
+import {
+  HistorisationParcoursScolaire,
+  OrchestrateurInscriptionEleve,
+  ServiceApplicationConcurrence,
+  type StoreIdempotenceApplication,
+  ServiceApplicationTenant,
+} from '../../contexts/scolarite-eleves/application/services';
 import {
   ControleurAffectationsClasses,
   ControleurCycleVieEleves,
@@ -65,6 +80,7 @@ import {
   PostgresFamilleDepot,
   PostgresInscriptionDepot,
   PostgresParcoursDepot,
+  PostgresIdempotencyStore,
   type InfrastructurePostgresScolariteEleves,
   creerInfrastructurePostgresScolariteEleves,
 } from '../../contexts/scolarite-eleves/infrastructure/persistence/postgres';
@@ -82,6 +98,13 @@ interface DepotsScolariteEleves {
 interface CompositionRoutesScolariteEleves {
   infrastructure: InfrastructurePostgresScolariteEleves;
   dependancesRoutes: DependancesRoutesScolariteEleves;
+  autorisationAffectationClasse: AutorisationAffectationClasseAdapter;
+  autorisationEleve: AutorisationEleveAdapter;
+  autorisationFamille: AutorisationFamilleAdapter;
+  autorisationCycleVieEleve: AutorisationCycleVieEleveAdapter;
+  autorisationParcoursEleve: AutorisationParcoursEleveAdapter;
+  autorisationOrganisationScolarite: AutorisationOrganisationScolariteAdapter;
+  sectionClassePedagogiqueAdapter: SectionClassePedagogiqueAdapter;
 }
 
 // Cette fonction instancie les depots PostgreSQL du BC avec le meme contexte tenant.
@@ -111,49 +134,134 @@ function composerRoutesScolariteEleves(): CompositionRoutesScolariteEleves {
   const serviceTenant = new ServiceApplicationTenant();
   const serviceConcurrence = new ServiceApplicationConcurrence();
   const serviceTransaction = infrastructure.uniteDeTravail;
+  const autorisationInscriptionComplete = new AutorisationInscriptionCompleteAdapter();
+  const autorisationAffectationClasse = new AutorisationAffectationClasseAdapter();
+  const autorisationEleve = new AutorisationEleveAdapter();
+  const autorisationFamille = new AutorisationFamilleAdapter();
+  const autorisationCycleVieEleve = new AutorisationCycleVieEleveAdapter();
+  const autorisationParcoursEleve = new AutorisationParcoursEleveAdapter();
+  const autorisationOrganisationScolarite = new AutorisationOrganisationScolariteAdapter();
+  const sectionClassePedagogiqueAdapter = new SectionClassePedagogiqueAdapter();
+  const eventBus = new SharedDomainEventBusAdapter();
+  const historisationParcours = new HistorisationParcoursScolaire(
+    depots.depotParcours,
+    depots.depotInscription,
+    depots.depotAffectation,
+  );
+  const storeIdempotenceTechnique = new PostgresIdempotencyStore(infrastructure.clientLecture);
+  const storeIdempotence: StoreIdempotenceApplication<{
+    donnee: Awaited<ReturnType<CreerInscriptionComplete['executer']>>;
+  }> = {
+    async trouver(cleIdempotence) {
+      const enregistrement = await storeIdempotenceTechnique.obtenir(cleIdempotence);
+      if (enregistrement === null) {
+        return null;
+      }
+
+      return {
+        cleIdempotence,
+        empreintePayload: enregistrement.empreinteRequete ?? '',
+        sortie: (enregistrement.resultat as {
+          donnee: Awaited<ReturnType<CreerInscriptionComplete['executer']>>;
+        } | null) ?? { donnee: undefined as never },
+      };
+    },
+    async enregistrer(cleIdempotence, empreintePayload, sortie) {
+      const existeDeja = await storeIdempotenceTechnique.existe(cleIdempotence);
+
+      if (!existeDeja) {
+        await storeIdempotenceTechnique.enregistrer({
+          cle: cleIdempotence,
+          statut: 'SUCCES',
+          operation: 'SCOLARITE_INSCRIPTION_COMPLETE',
+          empreinteRequete: empreintePayload,
+          resultat: sortie as unknown as Record<string, unknown>,
+        });
+        return;
+      }
+
+      await storeIdempotenceTechnique.marquerResultat(
+        cleIdempotence,
+        'SUCCES',
+        sortie as unknown as Record<string, unknown>,
+      );
+    },
+  };
 
   const creerEleve = new CreerEleve(
     depots.depotEleve,
+    autorisationEleve,
     serviceTenant,
     serviceTransaction,
   );
   const creerInscription = new CreerInscriptionScolaire(
     depots.depotInscription,
     depots.depotEleve,
+    undefined,
+    historisationParcours,
+    eventBus,
   );
   const affecterEleveAClasse = new AffecterEleveAClasse(
     depots.depotAffectation,
     depots.depotInscription,
+    autorisationAffectationClasse,
+    undefined,
+    historisationParcours,
+    eventBus,
   );
 
   const controleurEleves = new ControleurEleves(
     creerEleve,
-    new ModifierEleve(depots.depotEleve, serviceConcurrence, serviceTransaction),
-    new ConsulterEleve(depots.depotEleve),
-    new ListerEleves(depots.depotEleve),
-    new RechercherEleves(depots.depotEleve),
-    new RattacherEleveAFamille(depots.depotEleve, depots.depotFamille),
-    new DetacherEleveDeFamille(depots.depotEleve),
-    new MarquerEleveDecede(depots.depotEleve),
+    new ModifierEleve(depots.depotEleve, autorisationEleve, serviceConcurrence, serviceTransaction),
+    new ConsulterEleve(depots.depotEleve, autorisationEleve),
+    new ListerEleves(depots.depotEleve, autorisationEleve),
+    new RechercherEleves(depots.depotEleve, autorisationEleve),
+    new RattacherEleveAFamille(depots.depotEleve, depots.depotFamille, autorisationEleve),
+    new DetacherEleveDeFamille(depots.depotEleve, autorisationEleve),
+    new MarquerEleveDecede(depots.depotEleve, serviceConcurrence, autorisationCycleVieEleve),
   );
 
   const controleurFamilles = new ControleurFamilles(
-    new CreerFamille(depots.depotFamille),
-    new ModifierFamille(depots.depotFamille, serviceConcurrence),
-    new ConsulterFamille(depots.depotFamille),
-    new ListerFamilles(depots.depotFamille),
-    new AjouterResponsableFamille(depots.depotFamille, serviceConcurrence),
-    new ModifierResponsableFamille(depots.depotFamille, serviceConcurrence),
-    new RetirerResponsableFamille(depots.depotFamille, serviceConcurrence),
-    new DefinirResponsablePrincipal(depots.depotFamille, serviceConcurrence),
-    new EvaluerFamilleNombreuse(depots.depotFamille),
+    new CreerFamille(depots.depotFamille, autorisationFamille),
+    new ModifierFamille(depots.depotFamille, autorisationFamille, serviceConcurrence),
+    new ConsulterFamille(depots.depotFamille, autorisationFamille),
+    new ListerFamilles(depots.depotFamille, autorisationFamille),
+    new AjouterResponsableFamille(depots.depotFamille, autorisationFamille, serviceConcurrence),
+    new ModifierResponsableFamille(depots.depotFamille, autorisationFamille, serviceConcurrence),
+    new RetirerResponsableFamille(depots.depotFamille, autorisationFamille, serviceConcurrence),
+    new DefinirResponsablePrincipal(depots.depotFamille, autorisationFamille, serviceConcurrence),
+    new EvaluerFamilleNombreuse(depots.depotFamille, autorisationFamille),
   );
 
   const controleurInscriptions = new ControleurInscriptionsScolaires(
     creerInscription,
-    new CreerInscriptionComplete(creerEleve, creerInscription, affecterEleveAClasse),
-    new ValiderInscriptionScolaire(depots.depotInscription, serviceConcurrence),
-    new AnnulerInscriptionScolaire(depots.depotInscription, serviceConcurrence),
+    new OrchestrateurInscriptionEleve(
+      new CreerInscriptionComplete(
+        creerEleve,
+        creerInscription,
+        new ValiderInscriptionScolaire(
+          depots.depotInscription,
+          serviceConcurrence,
+          historisationParcours,
+          eventBus,
+        ),
+        affecterEleveAClasse,
+        autorisationInscriptionComplete,
+        serviceTransaction,
+      ),
+      storeIdempotence,
+    ),
+    new ValiderInscriptionScolaire(
+      depots.depotInscription,
+      serviceConcurrence,
+      historisationParcours,
+      eventBus,
+    ),
+    new AnnulerInscriptionScolaire(
+      depots.depotInscription,
+      serviceConcurrence,
+      historisationParcours,
+    ),
     new ConsulterInscriptionScolaire(depots.depotInscription),
     new ListerInscriptionsParAnnee(depots.depotInscription),
     new ListerInscriptionsParClasse(depots.depotInscription),
@@ -161,37 +269,109 @@ function composerRoutesScolariteEleves(): CompositionRoutesScolariteEleves {
 
   const controleurAffectations = new ControleurAffectationsClasses(
     affecterEleveAClasse,
-    new ChangerEleveDeClasse(depots.depotAffectation, serviceConcurrence),
-    new ConsulterAffectationActive(depots.depotAffectation),
-    new ListerElevesParClasse(depots.depotAffectation),
-    new DesactiverAffectationClasse(depots.depotAffectation),
+    new ChangerEleveDeClasse(
+      depots.depotAffectation,
+      depots.depotInscription,
+      autorisationAffectationClasse,
+      serviceConcurrence,
+      historisationParcours,
+      eventBus,
+    ),
+    new ConsulterAffectationActive(depots.depotAffectation, autorisationAffectationClasse),
+    new ListerElevesParClasse(depots.depotAffectation, autorisationAffectationClasse),
+    new DesactiverAffectationClasse(depots.depotAffectation, autorisationAffectationClasse),
   );
 
   const controleurCycleVie = new ControleurCycleVieEleves(
-    new DeclarerAbandonEleve(depots.depotEleve),
-    new TransfererEleve(depots.depotEleve),
-    new ReintegrerEleve(depots.depotEleve),
-    new SuspendreEleve(depots.depotEleve),
-    new ReactiverEleve(depots.depotEleve),
-    new DeclarerDecesEleve(depots.depotEleve),
+    new DeclarerAbandonEleve(
+      depots.depotEleve,
+      serviceConcurrence,
+      autorisationCycleVieEleve,
+      historisationParcours,
+      eventBus,
+    ),
+    new TransfererEleve(
+      depots.depotEleve,
+      serviceConcurrence,
+      autorisationCycleVieEleve,
+      historisationParcours,
+      eventBus,
+    ),
+    new ReintegrerEleve(
+      depots.depotEleve,
+      serviceConcurrence,
+      autorisationCycleVieEleve,
+      historisationParcours,
+      eventBus,
+    ),
+    new SuspendreEleve(
+      depots.depotEleve,
+      serviceConcurrence,
+      autorisationCycleVieEleve,
+      historisationParcours,
+      eventBus,
+    ),
+    new ReactiverEleve(
+      depots.depotEleve,
+      serviceConcurrence,
+      autorisationCycleVieEleve,
+      historisationParcours,
+      eventBus,
+    ),
+    new DeclarerDecesEleve(
+      depots.depotEleve,
+      serviceConcurrence,
+      autorisationCycleVieEleve,
+      historisationParcours,
+      eventBus,
+    ),
   );
 
   const controleurParcours = new ControleurParcoursEleves(
-    new ConsulterParcoursEleve(depots.depotParcours),
-    new ListerEvenementsParEleve(depots.depotParcours),
-    new ListerEvenementsParAnnee(depots.depotParcours),
-    new ReconstruireParcoursEleve(depots.depotParcours),
+    new ConsulterParcoursEleve(depots.depotParcours, autorisationParcoursEleve),
+    new ListerEvenementsParEleve(depots.depotParcours, autorisationParcoursEleve),
+    new ListerEvenementsParAnnee(
+      depots.depotParcours,
+      depots.depotInscription,
+      depots.depotAffectation,
+      sectionClassePedagogiqueAdapter,
+      autorisationParcoursEleve,
+    ),
+    new ReconstruireParcoursEleve(depots.depotParcours, autorisationParcoursEleve),
   );
 
   const controleurOrganisation = new ControleurScolariteOrganisation(
-    new ListerElevesParOrganisation(depots.depotEleve),
-    new ListerInscriptionsParOrganisation(depots.depotInscription),
-    new ConsulterSyntheseScolariteOrganisation(),
-    new ListerAlertesScolariteOrganisation(),
+    new ListerElevesParOrganisation(
+      depots.depotEleve,
+      autorisationOrganisationScolarite,
+    ),
+    new ListerInscriptionsParOrganisation(
+      depots.depotInscription,
+      autorisationOrganisationScolarite,
+    ),
+    new ConsulterSyntheseScolariteOrganisation(
+      depots.depotEleve,
+      depots.depotFamille,
+      depots.depotInscription,
+      autorisationOrganisationScolarite,
+    ),
+    new ListerAlertesScolariteOrganisation(
+      depots.depotEleve,
+      depots.depotFamille,
+      depots.depotInscription,
+      autorisationOrganisationScolarite,
+    ),
   );
 
   return {
     infrastructure,
+    autorisationAffectationClasse,
+    autorisationEleve,
+    autorisationFamille,
+    autorisationCycleVieEleve,
+    autorisationParcoursEleve,
+    autorisationOrganisationScolarite,
+    sectionClassePedagogiqueAdapter,
     dependancesRoutes: {
       controleurEleves,
       controleurFamilles,
@@ -216,6 +396,13 @@ export const routeScolariteEleves: PluginRoutesScolariteEleves = Object.assign(
     const composition = composerRoutesScolariteEleves();
 
     serveur.addHook('onClose', async () => {
+      await composition.autorisationAffectationClasse.fermer();
+      await composition.autorisationEleve.fermer();
+      await composition.autorisationFamille.fermer?.();
+      await composition.autorisationCycleVieEleve.fermer();
+      await composition.autorisationParcoursEleve.fermer();
+      await composition.autorisationOrganisationScolarite.fermer();
+      await composition.sectionClassePedagogiqueAdapter.fermer();
       await composition.infrastructure.pool.end();
     });
 

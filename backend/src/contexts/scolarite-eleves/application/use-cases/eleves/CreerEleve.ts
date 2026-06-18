@@ -7,6 +7,7 @@ import { CreerEleveEntreeDTO } from '../../dto/input/CreerEleveEntreeDTO';
 import { EleveDetailSortieDTO } from '../../dto/output/EleveDetailSortieDTO';
 import { ErreurValidationDTO } from '../../exceptions/ErreurValidationDTO';
 import { EleveMapper } from '../../mappers/EleveMapper';
+import type { AutorisationElevePort } from '../../ports';
 import { ServiceApplicationTenant } from '../../services/ServiceApplicationTenant';
 import { ServiceTransactionApplication, ServiceTransactionApplicationSansEffet } from '../../services/ServiceTransactionApplication';
 
@@ -19,12 +20,18 @@ export interface SortieCreerEleve { eleve: EleveDetailSortieDTO }
 export class CreerEleve implements UseCase<CreerEleveEntreeDTO, SortieCreerEleve> {
   constructor(
     private readonly depotEleve: DepotEleve,
+    private readonly autorisationEleve?: AutorisationElevePort,
     private readonly serviceTenant: ServiceApplicationTenant = new ServiceApplicationTenant(),
     private readonly serviceTransaction: ServiceTransactionApplication = new ServiceTransactionApplicationSansEffet(),
   ) {}
 
   /** Execute la creation d'un eleve apres validation applicative minimale. */
   public async executer(entree: CreerEleveEntreeDTO): Promise<SortieCreerEleve> {
+    await this.autorisationEleve?.verifierMutationEleve({
+      idUtilisateur: entree.idUtilisateur,
+      idOrganisation: entree.idOrganisation,
+      idEcole: entree.idEcole,
+    });
     this.validerEntree(entree);
     await this.serviceTenant.verifierTenant(entree.idOrganisation, entree.idEcole);
 

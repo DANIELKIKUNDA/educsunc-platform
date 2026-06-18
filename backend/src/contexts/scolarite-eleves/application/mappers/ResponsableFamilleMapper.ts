@@ -19,6 +19,7 @@ export class ResponsableFamilleMapper {
       lienParente: proprietes.lienParente,
       adresse: proprietes.adresse,
       estPrincipal: proprietes.estPrincipal,
+      idUtilisateurAuth: proprietes.idUtilisateurAuth,
     };
   }
 }
