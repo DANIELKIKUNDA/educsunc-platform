@@ -6,6 +6,7 @@ import { ValidationBulletinOfficielle } from '../entities/ValidationBulletinOffi
 // Ce contrat abstrait la persistence des bulletins d'un eleve.
 export interface DepotBulletinEleve {
   sauvegarder(bulletinEleve: BulletinEleve): Promise<void>;
+  trouverParId(idBulletinEleve: string): Promise<BulletinEleve | null>;
   trouverParEleveEtAnnee(idEleve: string, idAnneeScolaire: string): Promise<BulletinEleve | null>;
   trouverVersionActive(idEleve: string, idInscriptionScolaire: string, idAnneeScolaire: string): Promise<BulletinEleve | null>;
   listerParClasse(idClassePedagogique: string, idAnneeScolaire: string): Promise<BulletinEleve[]>;

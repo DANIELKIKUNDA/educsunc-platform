@@ -9,6 +9,7 @@ import { AbandonsProclamationDetectes } from '../events/AbandonsProclamationDete
 import { ColonneProclameeVerrouillee } from '../events/ColonneProclameeVerrouillee';
 import { NonClassesProclamationDetectes } from '../events/NonClassesProclamationDetectes';
 import { ProclamationClasseGeneree } from '../events/ProclamationClasseGeneree';
+import { ProclamationClasseInitialisee } from '../events/ProclamationClasseInitialisee';
 import { StatistiquesProclamationCalculees } from '../events/StatistiquesProclamationCalculees';
 import { ErreurProclamationIncoherente } from '../exceptions/ErreurProclamationIncoherente';
 import { CodeColonneBulletin } from '../value-objects/CodeColonneBulletin';
@@ -75,6 +76,45 @@ export class ProclamationClasse extends RacineAgregat<string> {
     this.snapshotsResultats = [...(params.snapshotsResultats ?? [])];
   }
 
+  // Cette methode cree une proclamation brouillon prete a etre alimentee par la generation officielle.
+  public static initialiser(params: {
+    idProclamationClasse: string;
+    idEcole: string;
+    idClassePedagogique: string;
+    idAnneeScolaire: string;
+    codeColonne: CodeColonneBulletin;
+    typeProclamation: TypeProclamation;
+    versionReferentielProgramme: string;
+    creePar: string;
+    creeLe?: Date;
+  }): ProclamationClasse {
+    const proclamation = new ProclamationClasse({
+      idProclamationClasse: params.idProclamationClasse,
+      idEcole: params.idEcole,
+      idClassePedagogique: params.idClassePedagogique,
+      idAnneeScolaire: params.idAnneeScolaire,
+      codeColonne: params.codeColonne,
+      typeProclamation: params.typeProclamation,
+      dateGeneration: params.creeLe ?? new Date(),
+      genereePar: params.creePar,
+      versionReferentielProgramme: params.versionReferentielProgramme,
+      lignesProclamation: [],
+      elevesNonClasses: [],
+      elevesAbandon: [],
+      historiqueGeneration: [],
+      etatProclamation: EtatProclamation.BROUILLON,
+    });
+
+    proclamation.ajouterEvenement(
+      new ProclamationClasseInitialisee(
+        proclamation.obtenirId(),
+        proclamation.obtenirIdClassePedagogique(),
+      ),
+    );
+
+    return proclamation;
+  }
+
   // Cette methode expose les lignes classees de la proclamation.
   public obtenirLignesProclamation(): LigneProclamationClasse[] {
     return [...this.lignesProclamation];
@@ -83,6 +123,11 @@ export class ProclamationClasse extends RacineAgregat<string> {
   // Cette methode expose l'ecole rattachee a la proclamation.
   public obtenirIdEcole(): string {
     return this.idEcole;
+  }
+
+  // Cette methode expose la classe pedagogique rattachee a la proclamation.
+  public obtenirIdClassePedagogique(): string {
+    return this.idClassePedagogique;
   }
 
   // Cette methode expose l'annee scolaire rattachee a la proclamation.

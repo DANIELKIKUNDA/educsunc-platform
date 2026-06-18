@@ -1,13 +1,16 @@
 import type { DeclarerAbandonUseCase } from 'contexts/bulletins-evaluations/application/use-cases/DeclarerAbandon/DeclarerAbandonUseCase';
 import type { DeclarerNonClasseUseCase } from 'contexts/bulletins-evaluations/application/use-cases/DeclarerNonClasse/DeclarerNonClasseUseCase';
+import type { ConsulterResultatEleveUseCase } from 'contexts/bulletins-evaluations/application/use-cases/ConsulterResultatEleve/ConsulterResultatEleveUseCase';
 import type { EncoderConduiteUseCase } from 'contexts/bulletins-evaluations/application/use-cases/EncoderConduite/EncoderConduiteUseCase';
 import { EncoderConduiteValidator } from '../validators/EncoderConduiteValidator';
+import { ValidationHttpBulletinsEvaluations } from '../validators/ValidationHttpBulletinsEvaluations';
 
 // Ce controleur expose l'encodage de conduite et les lectures associees.
 export class ConduiteApplicationController {
   // Ce constructeur injecte les cas d'usage de conduite et les actions associees sur l'application.
   constructor(
     private readonly encoderConduiteUseCase: EncoderConduiteUseCase,
+    private readonly consulterResultatEleveUseCase: ConsulterResultatEleveUseCase,
     _declarerNonClasseUseCase: DeclarerNonClasseUseCase,
     _declarerAbandonUseCase: DeclarerAbandonUseCase,
   ) {}
@@ -20,12 +23,41 @@ export class ConduiteApplicationController {
   }
 
   // Cette methode expose une lecture simple de conduite quand la projection existe.
-  public async consulterConduite(): Promise<{ donnee: unknown[] }> {
-    return { donnee: [] };
+  public async consulterConduite(params: unknown, query: unknown, headers: unknown): Promise<{ donnee: unknown[] }> {
+    const resultat = await this.consulterResultat(params, query, headers);
+    return {
+      donnee: resultat.applications
+        .filter((element) => element.conduite !== undefined || element.pointsConduite !== undefined)
+        .map((element) => ({
+          codePeriode: element.codePeriode,
+          conduite: element.conduite,
+          pointsConduite: element.pointsConduite,
+        })),
+    };
   }
 
   // Cette methode expose une lecture simple d'application quand la projection existe.
-  public async consulterApplication(): Promise<{ donnee: unknown[] }> {
-    return { donnee: [] };
+  public async consulterApplication(params: unknown, query: unknown, headers: unknown): Promise<{ donnee: unknown[] }> {
+    const resultat = await this.consulterResultat(params, query, headers);
+    return {
+      donnee: resultat.applications
+        .filter((element) => element.application !== undefined)
+        .map((element) => ({
+          codePeriode: element.codePeriode,
+          application: element.application,
+        })),
+    };
+  }
+
+  private async consulterResultat(params: unknown, query: unknown, headers: unknown) {
+    const donneesParams = ValidationHttpBulletinsEvaluations.obtenirObjet(params, 'params');
+    const donneesQuery = ValidationHttpBulletinsEvaluations.obtenirObjet(query, 'query');
+
+    return this.consulterResultatEleveUseCase.executer({
+      idEleve: ValidationHttpBulletinsEvaluations.lireChaineRequise(donneesParams, 'idEleve'),
+      idAnneeScolaire: ValidationHttpBulletinsEvaluations.lireChaineRequise(donneesQuery, 'idAnneeScolaire'),
+      idUtilisateur: ValidationHttpBulletinsEvaluations.lireHeaderChaineRequise(headers, 'x-user-id'),
+      idOrganisation: ValidationHttpBulletinsEvaluations.lireHeaderChaine(headers, 'x-organisation-id'),
+    });
   }
 }

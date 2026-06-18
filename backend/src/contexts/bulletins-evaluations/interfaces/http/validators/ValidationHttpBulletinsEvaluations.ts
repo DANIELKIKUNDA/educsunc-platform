@@ -121,6 +121,21 @@ export class ValidationHttpBulletinsEvaluations {
     return typeof valeur === 'string' && valeur.trim().length > 0 ? valeur.trim() : undefined;
   }
 
+  // Cette methode lit un header texte obligatoire.
+  public static lireHeaderChaineRequise(headers: unknown, nomHeader: string): string {
+    const valeur = this.lireHeaderChaine(headers, nomHeader);
+
+    if (valeur === undefined) {
+      throw new ValidationError(
+        `Le header "${nomHeader}" doit etre present et non vide.`,
+        'VALIDATION_HTTP_HEADER_INVALIDE',
+        { nomHeader },
+      );
+    }
+
+    return valeur;
+  }
+
   // Cette methode lit une date optionnelle a partir d'un texte ISO.
   public static lireDateOptionnelle(donnees: ObjetHttpBulletinsEvaluations, nomChamp: string): Date | undefined {
     const valeur = this.lireChaineOptionnelle(donnees, nomChamp);

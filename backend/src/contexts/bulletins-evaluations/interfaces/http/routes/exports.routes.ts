@@ -7,7 +7,7 @@ export const creerExportsRoutes = (
   dependances: DependancesRoutesBulletinsEvaluationsDocument,
 ): FastifyPluginAsync => async (serveur) => {
   serveur.get('/exports/bulletins', (requete, reponse) =>
-    executerRouteBulletin(requete, reponse, () => dependances.exportsBulletinController.exporterBulletins(requete.query), dependances.contexteTenant));
+    executerRouteBulletin(requete, reponse, () => dependances.exportsBulletinController.exporterBulletins(requete.query, requete.headers), dependances.contexteTenant));
   serveur.get('/exports/proclamations', (requete, reponse) =>
     executerRouteBulletin(requete, reponse, () => dependances.exportsBulletinController.exporterProclamations(requete.query), dependances.contexteTenant));
   serveur.get('/exports/statistiques', (requete, reponse) =>

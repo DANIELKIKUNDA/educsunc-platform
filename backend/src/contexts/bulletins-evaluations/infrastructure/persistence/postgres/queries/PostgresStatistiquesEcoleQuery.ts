@@ -1,12 +1,15 @@
 import type { StatistiquesEcoleQuery } from 'contexts/bulletins-evaluations/application/queries/StatistiquesEcoleQuery';
 import type { StatistiquesEcoleReadModel } from 'contexts/bulletins-evaluations/application/read-models/StatistiquesEcoleReadModel';
+import type { DepotSyntheseResultatsEcole } from 'contexts/bulletins-evaluations/domain/repositories/DepotSyntheseResultatsEcole';
 import { PostgresDepotSyntheseResultatsEcole } from '../depots/PostgresDepotSyntheseResultatsEcole';
 import { obtenirMemoireTechniqueBulletins } from '../depots/outilsDepotBulletin';
 import { SynthesePostgresMapper } from '../mappers';
 
 // Ce fichier fournit la lecture locale des statistiques globales d'une ecole.
 export class PostgresStatistiquesEcoleQuery implements StatistiquesEcoleQuery {
-  private readonly depot = new PostgresDepotSyntheseResultatsEcole();
+  constructor(
+    private readonly depot: DepotSyntheseResultatsEcole = new PostgresDepotSyntheseResultatsEcole(),
+  ) {}
 
   // Cette methode relit les totaux d'ecole depuis la synthese deja generee.
   public async executer(idEcole: string, idAnneeScolaire: string, codeColonne: string): Promise<StatistiquesEcoleReadModel | null> {

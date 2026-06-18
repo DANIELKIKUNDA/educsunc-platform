@@ -1,6 +1,8 @@
 import type { DepotFicheCotationEleveCours } from '../../../domain/repositories/DepotFicheCotationEleveCours';
 import type { DepotResultatBulletinEleve } from '../../../domain/repositories/DepotResultatBulletinEleve';
 import { MoteurCalculBulletin } from '../../../domain/services/MoteurCalculBulletin';
+import { MoteurDiagnosticPedagogique } from '../../../domain/services/MoteurDiagnosticPedagogique';
+import type { CriteresAnalysePedagogiquePort } from '../../ports/out/CriteresAnalysePedagogiquePort';
 import type { RecalculerResultatEleveInput } from '../../dto/input/RecalculerResultatEleveInput';
 import type { ResultatBulletinOutput } from '../../dto/output/ResultatBulletinOutput';
 import { ApplicationException } from '../../exceptions/ApplicationException';
@@ -16,7 +18,9 @@ export class RecalculerResultatEleveUseCase {
     private readonly transactionManagerPort: TransactionManagerPort,
     private readonly serviceProjectionLecture = new ServiceProjectionLecture(),
     private readonly moteurCalculBulletin = new MoteurCalculBulletin(),
+    private readonly moteurDiagnosticPedagogique = new MoteurDiagnosticPedagogique(),
     private readonly eventBusPort?: EventBusPort,
+    private readonly criteresAnalysePedagogiquePort?: CriteresAnalysePedagogiquePort,
   ) {}
 
   // Cette methode recalcule puis projette les resultats consolides.
@@ -29,6 +33,27 @@ export class RecalculerResultatEleveUseCase {
 
       const fiches = await this.depotFicheCotation.listerParEleve(input.idEleve, input.idAnneeScolaire);
       this.moteurCalculBulletin.recalculer(resultat, fiches);
+      const criteres = await this.criteresAnalysePedagogiquePort?.resoudreCriteresAnalysePedagogique({
+        idEcole: resultat.obtenirIdEcole(),
+        idClassePedagogique: resultat.obtenirIdClassePedagogique(),
+        idAnneeScolaire: resultat.obtenirIdAnneeScolaire(),
+        idProgrammeNiveau: resultat.obtenirIdProgrammeNiveau(),
+      });
+
+      for (const colonne of resultat.obtenirResultatsColonnes()) {
+        const cotes = fiches
+          .filter((fiche) => fiche.obtenirEstCalculable())
+          .map((fiche) => fiche.obtenirCoteParColonne(colonne.obtenirCodeColonne()))
+          .filter((cote): cote is NonNullable<typeof cote> => cote !== undefined);
+
+        resultat.mettreAJourDiagnosticEchec(this.moteurDiagnosticPedagogique.calculer(
+          `${resultat.obtenirId()}-${colonne.obtenirCodeColonne()}-diagnostic`,
+          colonne.obtenirCodeColonne(),
+          cotes,
+          criteres,
+        ));
+      }
+
       await this.depotResultat.sauvegarder(resultat);
       await this.eventBusPort?.publier(resultat.recupererEvenements());
       const sortie = this.serviceProjectionLecture.projeterResultat(resultat);

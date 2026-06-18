@@ -15,7 +15,8 @@ export class EncoderConduiteValidator {
       ),
       codePeriode: ValidationHttpBulletinsEvaluations.lireEnumRequis(donnees, 'codePeriode', CodePeriodeSimple),
       pointsConduite: ValidationHttpBulletinsEvaluations.lireEntierRequis(donnees, 'pointsConduite'),
-      idUtilisateur: ValidationHttpBulletinsEvaluations.lireHeaderChaine(headers, 'x-user-id') ?? 'SYSTEME',
+      idUtilisateur: ValidationHttpBulletinsEvaluations.lireHeaderChaineRequise(headers, 'x-user-id'),
+      idOrganisation: ValidationHttpBulletinsEvaluations.lireHeaderChaine(headers, 'x-organisation-id'),
     };
   }
 }

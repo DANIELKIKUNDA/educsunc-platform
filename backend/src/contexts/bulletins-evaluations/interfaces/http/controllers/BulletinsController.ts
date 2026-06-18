@@ -3,8 +3,9 @@ import type { ConsulterBulletinEleveUseCase } from 'contexts/bulletins-evaluatio
 import type { ConsulterHistoriqueBulletinUseCase } from 'contexts/bulletins-evaluations/application/use-cases/ConsulterHistoriqueBulletin/ConsulterHistoriqueBulletinUseCase';
 import type { GenererBulletinEleveUseCase } from 'contexts/bulletins-evaluations/application/use-cases/GenererBulletinEleve/GenererBulletinEleveUseCase';
 import { BulletinPresenter } from '../presenters/BulletinPresenter';
+import { ConsulterBulletinValidator } from '../validators/ConsulterBulletinValidator';
+import { ConsulterHistoriqueBulletinValidator } from '../validators/ConsulterHistoriqueBulletinValidator';
 import { GenererBulletinValidator } from '../validators/GenererBulletinValidator';
-import { ValidationHttpBulletinsEvaluations } from '../validators/ValidationHttpBulletinsEvaluations';
 
 // Ce controleur expose les endpoints HTTP autour des bulletins d'eleve.
 export class BulletinsController {
@@ -24,18 +25,15 @@ export class BulletinsController {
   }
 
   // Cette methode consulte un bulletin eleve.
-  public async consulter(params: unknown): Promise<{ donnee: unknown }> {
-    const donnees = ValidationHttpBulletinsEvaluations.obtenirObjet(params, 'params');
-    const sortie = await this.consulterBulletinEleveUseCase.executer({
-      idEleve: ValidationHttpBulletinsEvaluations.lireChaineRequise(donnees, 'idEleve'),
-      idAnneeScolaire: ValidationHttpBulletinsEvaluations.lireChaineRequise(donnees, 'idAnneeScolaire'),
-    });
+  public async consulter(params: unknown, headers: unknown): Promise<{ donnee: unknown }> {
+    const entree = ConsulterBulletinValidator.valider(params, headers);
+    const sortie = await this.consulterBulletinEleveUseCase.executer(entree);
     return BulletinPresenter.presenter(sortie as never);
   }
 
   // Cette methode prepare un PDF de bulletin a partir de la lecture existante.
-  public async telechargerPdf(params: unknown): Promise<{ donnee: unknown }> {
-    const bulletin = await this.consulter(params);
+  public async telechargerPdf(params: unknown, headers: unknown): Promise<{ donnee: unknown }> {
+    const bulletin = await this.consulter(params, headers);
 
     if (this.bulletinPdfPort === undefined) {
       return bulletin;
@@ -46,11 +44,9 @@ export class BulletinsController {
   }
 
   // Cette methode expose l'historique d'un bulletin.
-  public async consulterHistorique(params: unknown): Promise<{ donnee: unknown }> {
-    const donnees = ValidationHttpBulletinsEvaluations.obtenirObjet(params, 'params');
-    const sortie = await this.consulterHistoriqueBulletinUseCase.executer(
-      ValidationHttpBulletinsEvaluations.lireChaineRequise(donnees, 'idBulletinEleve'),
-    );
+  public async consulterHistorique(params: unknown, headers: unknown): Promise<{ donnee: unknown }> {
+    const entree = ConsulterHistoriqueBulletinValidator.valider(params, headers);
+    const sortie = await this.consulterHistoriqueBulletinUseCase.executer(entree);
     return { donnee: sortie };
   }
 }

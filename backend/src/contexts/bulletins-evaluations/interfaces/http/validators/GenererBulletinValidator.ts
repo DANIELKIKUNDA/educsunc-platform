@@ -13,7 +13,8 @@ export class GenererBulletinValidator {
       idAnneeScolaire: ValidationHttpBulletinsEvaluations.lireChaineRequise(donnees, 'idAnneeScolaire'),
       typeGeneration: ValidationHttpBulletinsEvaluations.lireChaineRequise(donnees, 'typeGeneration') as never,
       versionBulletin: ValidationHttpBulletinsEvaluations.lireValeur(donnees, 'versionBulletin') as number | undefined,
-      idUtilisateur: ValidationHttpBulletinsEvaluations.lireHeaderChaine(headers, 'x-user-id') ?? 'SYSTEME',
+      idUtilisateur: ValidationHttpBulletinsEvaluations.lireHeaderChaineRequise(headers, 'x-user-id'),
+      idOrganisation: ValidationHttpBulletinsEvaluations.lireHeaderChaine(headers, 'x-organisation-id'),
       preparerPdf: ValidationHttpBulletinsEvaluations.lireBooleenOptionnel(donnees, 'preparerPdf'),
     };
   }

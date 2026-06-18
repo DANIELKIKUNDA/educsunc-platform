@@ -5,4 +5,7 @@ export interface RecalculerClassementInput {
   idClassePedagogique: string;
   idAnneeScolaire: string;
   codeColonne: CodeColonneBulletin;
+  idEcole: string;
+  idUtilisateur: string;
+  idOrganisation?: string;
 }

@@ -17,7 +17,7 @@ export class ModifierCoteValidator {
       codeColonne: ValidationHttpBulletinsEvaluations.lireEnumRequis(donnees, 'codeColonne', CodeColonneBulletin),
       nouvelleCote: ValidationHttpBulletinsEvaluations.lireEntierRequis(donnees, 'nouvelleCote'),
       versionAttendue: ValidationHttpBulletinsEvaluations.lireEntierRequis(donnees, 'versionAttendue'),
-      idUtilisateur: ValidationHttpBulletinsEvaluations.lireHeaderChaine(headers, 'x-user-id') ?? 'SYSTEME',
+      idUtilisateur: ValidationHttpBulletinsEvaluations.lireHeaderChaineRequise(headers, 'x-user-id'),
       cleIdempotence: ValidationHttpBulletinsEvaluations.lireHeaderChaine(headers, 'x-idempotency-key'),
     };
   }

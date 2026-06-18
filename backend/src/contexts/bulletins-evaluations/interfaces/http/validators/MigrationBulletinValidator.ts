@@ -19,7 +19,7 @@ export class MigrationBulletinValidator {
         donnees,
         'nouvelleVersionReferentiel',
       ),
-      idUtilisateur: ValidationHttpBulletinsEvaluations.lireHeaderChaine(headers, 'x-user-id') ?? 'SYSTEME',
+      idUtilisateur: ValidationHttpBulletinsEvaluations.lireHeaderChaineRequise(headers, 'x-user-id'),
     };
   }
 
@@ -29,7 +29,7 @@ export class MigrationBulletinValidator {
 
     return {
       idMigrationBulletin: ValidationHttpBulletinsEvaluations.lireChaineRequise(donnees, 'idMigrationBulletin'),
-      idUtilisateur: ValidationHttpBulletinsEvaluations.lireHeaderChaine(headers, 'x-user-id') ?? 'SYSTEME',
+      idUtilisateur: ValidationHttpBulletinsEvaluations.lireHeaderChaineRequise(headers, 'x-user-id'),
     };
   }
 }

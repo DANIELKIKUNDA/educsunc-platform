@@ -31,6 +31,9 @@ test('la saga de generation enchaine recalcul, classement puis generation', asyn
           idResultatBulletinEleve: 'resultat-1',
           idEleve: 'eleve-1',
           idInscriptionScolaire: 'inscription-1',
+          idEcole: 'ecole-1',
+          idClassePedagogique: 'classe-1',
+          idAnneeScolaire: 'annee-1',
           resultatsColonnes: [{
             codeColonne: CodeColonneBulletin.TOTAL_GENERAL,
             estClassable: true,
@@ -42,8 +45,10 @@ test('la saga de generation enchaine recalcul, classement puis generation', asyn
       },
     } as unknown as RecalculerResultatEleveUseCase,
     {
-      async executer() {
+      async executer(entree: { idClassePedagogique: string; idEcole: string }) {
         ordre.push('classement');
+        assert.equal(entree.idClassePedagogique, 'classe-1');
+        assert.equal(entree.idEcole, 'ecole-1');
       },
     } as unknown as RecalculerClassementClasseUseCase,
     {

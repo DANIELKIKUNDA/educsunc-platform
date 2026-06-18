@@ -1,13 +1,20 @@
 import type { DepotFicheCotationEleveCours } from '../../../domain/repositories/DepotFicheCotationEleveCours';
 import { MoteurEncodageCotes } from '../../../domain/services/MoteurEncodageCotes';
+import { PolicyFenetreEncodageCotes } from '../../../domain/policies/PolicyFenetreEncodageCotes';
 import type { ModifierCoteInput } from '../../dto/input/ModifierCoteInput';
 import type { FicheCotationOutput } from '../../dto/output/FicheCotationOutput';
 import { ApplicationException } from '../../exceptions/ApplicationException';
+import type { ClockPort } from '../../ports/out/ClockPort';
 import type { EventBusPort } from '../../ports/out/EventBusPort';
+import type { FenetreEncodageCalendrierPort } from '../../ports/out/FenetreEncodageCalendrierPort';
 import type { TransactionManagerPort } from '../../ports/out/TransactionManagerPort';
 import { ServiceAuditBulletin } from '../../services/ServiceAuditBulletin';
 import { ServiceProjectionLecture } from '../../services/ServiceProjectionLecture';
 import { ServiceValidationConcurrence } from '../../services/ServiceValidationConcurrence';
+
+const horlogeSysteme: ClockPort = {
+  maintenant: () => new Date(),
+};
 
 // Ce use case orchestre la modification applicative d'une cote existante.
 export class ModifierCoteUseCase {
@@ -19,6 +26,9 @@ export class ModifierCoteUseCase {
     private readonly serviceAuditBulletin = new ServiceAuditBulletin(),
     private readonly moteurEncodageCotes = new MoteurEncodageCotes(),
     private readonly eventBusPort?: EventBusPort,
+    private readonly fenetreEncodageCalendrierPort?: FenetreEncodageCalendrierPort,
+    private readonly clockPort: ClockPort = horlogeSysteme,
+    private readonly policyFenetreEncodageCotes = new PolicyFenetreEncodageCotes(),
   ) {}
 
   // Cette methode execute la modification complete de la cote.
@@ -30,6 +40,22 @@ export class ModifierCoteUseCase {
       }
 
       this.serviceValidationConcurrence.verifier(input.versionAttendue, fiche.obtenirVersion());
+      if (this.fenetreEncodageCalendrierPort) {
+        const fenetreCalendrier =
+          await this.fenetreEncodageCalendrierPort.determinerFenetreEncodage({
+            idEcole: fiche.obtenirIdEcole(),
+            idAnneeScolaire: fiche.obtenirIdAnneeScolaire(),
+            codeColonne: input.codeColonne,
+            dateReference: this.clockPort.maintenant(),
+          });
+        this.policyFenetreEncodageCotes.verifier({
+          codeColonne: input.codeColonne,
+          calendrierTrouve: fenetreCalendrier !== null,
+          calendrierVerrouille: fenetreCalendrier?.verrouille ?? false,
+          periodeCouranteCode: fenetreCalendrier?.periodeCouranteCode ?? null,
+          examenCourantCode: fenetreCalendrier?.examenCourantCode ?? null,
+        });
+      }
       this.moteurEncodageCotes.modifier(fiche, input.codeColonne, input.nouvelleCote, input.idUtilisateur, input.versionAttendue);
       await this.depotFicheCotation.sauvegarder(fiche);
       await this.eventBusPort?.publier(fiche.recupererEvenements());

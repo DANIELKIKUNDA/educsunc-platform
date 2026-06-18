@@ -23,8 +23,8 @@ export class ClassementPostgresMapper {
     return {
       idClassementColonneClasse: classement.obtenirId(),
       idClassePedagogique: classement.obtenirIdClassePedagogique(),
-      idAnneeScolaire: String(Reflect.get(classement, 'idAnneeScolaire') ?? ''),
-      codeColonne: Reflect.get(classement, 'codeColonne'),
+      idAnneeScolaire: classement.obtenirIdAnneeScolaire(),
+      codeColonne: classement.obtenirCodeColonne(),
       lignes: classement.obtenirLignesClassement().map((ligne) => this.versLigne(ligne)),
     };
   }

@@ -7,7 +7,20 @@ export const creerClassementsRoutes = (
   dependances: DependancesRoutesBulletinsEvaluationsDocument,
 ): FastifyPluginAsync => async (serveur) => {
   serveur.get('/classements/classe/:idClassePedagogique', (requete, reponse) =>
-    executerRouteBulletin(requete, reponse, () => dependances.classementsController.consulter(Object.assign({}, requete.params as object, requete.query as object)), dependances.contexteTenant));
+    executerRouteBulletin(
+      requete,
+      reponse,
+      () => dependances.classementsController.consulter(
+        Object.assign({}, requete.params as object, requete.query as object),
+        requete.headers,
+      ),
+      dependances.contexteTenant,
+    ));
   serveur.post('/classements/recalcul', (requete, reponse) =>
-    executerRouteBulletin(requete, reponse, () => dependances.classementsController.recalculer(requete.body), dependances.contexteTenant));
+    executerRouteBulletin(
+      requete,
+      reponse,
+      () => dependances.classementsController.recalculer(requete.body, requete.headers),
+      dependances.contexteTenant,
+    ));
 };

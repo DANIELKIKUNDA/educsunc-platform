@@ -1,6 +1,8 @@
 // Ce fichier centralise les adaptateurs d'infrastructure du BC Bulletins & Evaluations.
 export * from './BulletinEventBusAdapter';
 export * from './BulletinPdfAdapter';
+export * from './ProclamationPdfAdapter';
+export * from './SynthesePdfAdapter';
 export * from './StoreIdempotenceBulletinSharedAdapter';
 export * from './ReferentielAcademiqueAdapter';
 export * from './ScolariteElevesAdapter';

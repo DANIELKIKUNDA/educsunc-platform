@@ -8,8 +8,8 @@ export class ClassementMapper {
     return {
       idClassementColonneClasse: classement.obtenirId(),
       idClassePedagogique: classement.obtenirIdClassePedagogique(),
-      idAnneeScolaire: '',
-      codeColonne: (classement as unknown as { codeColonne: ClassementClasseOutput['codeColonne'] }).codeColonne,
+      idAnneeScolaire: classement.obtenirIdAnneeScolaire(),
+      codeColonne: classement.obtenirCodeColonne(),
       lignes: classement.obtenirLignesClassement().map((ligne) => ({
         idEleve: ligne.obtenirIdEleve(),
         sexe: ligne.obtenirSexe(),

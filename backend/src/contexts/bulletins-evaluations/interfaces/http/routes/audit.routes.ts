@@ -7,9 +7,31 @@ export const creerAuditRoutes = (
   dependances: DependancesRoutesBulletinsEvaluationsDocument,
 ): FastifyPluginAsync => async (serveur) => {
   serveur.get('/audit/cotes', (requete, reponse) =>
-    executerRouteBulletin(requete, reponse, () => dependances.auditBulletinController.consulterAuditCotes(requete.query as never), dependances.contexteTenant));
+    executerRouteBulletin(
+      requete,
+      reponse,
+      () => dependances.auditBulletinController.consulterAuditCotes(requete.query as never, requete.headers),
+      dependances.contexteTenant,
+    ));
+  serveur.get('/audit/conduite', (requete, reponse) =>
+    executerRouteBulletin(
+      requete,
+      reponse,
+      () => dependances.auditBulletinController.consulterAuditConduite(requete.query as never, requete.headers),
+      dependances.contexteTenant,
+    ));
   serveur.get('/audit/bulletins', (requete, reponse) =>
-    executerRouteBulletin(requete, reponse, () => dependances.auditBulletinController.consulterAuditBulletins(), dependances.contexteTenant));
+    executerRouteBulletin(
+      requete,
+      reponse,
+      () => dependances.auditBulletinController.consulterAuditBulletins(requete.query as never, requete.headers),
+      dependances.contexteTenant,
+    ));
   serveur.get('/audit/classements', (requete, reponse) =>
-    executerRouteBulletin(requete, reponse, () => dependances.auditBulletinController.consulterAuditClassements(), dependances.contexteTenant));
+    executerRouteBulletin(
+      requete,
+      reponse,
+      () => dependances.auditBulletinController.consulterAuditClassements(requete.query as never, requete.headers),
+      dependances.contexteTenant,
+    ));
 };

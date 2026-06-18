@@ -1,15 +1,18 @@
 import { BlocApplicationConduite } from '../../../domain/entities/BlocApplicationConduite';
 import { LigneBulletinEleve } from '../../../domain/entities/LigneBulletinEleve';
+import type { BulletinEleve } from '../../../domain/aggregates/BulletinEleve';
 import type { DepotBulletinEleve } from '../../../domain/repositories/DepotBulletinEleve';
 import type { DepotResultatBulletinEleve } from '../../../domain/repositories/DepotResultatBulletinEleve';
 import type { GenererBulletinEleveInput } from '../../dto/input/GenererBulletinEleveInput';
 import type { BulletinEleveOutput } from '../../dto/output/BulletinEleveOutput';
 import { GenerationBulletinException } from '../../exceptions/GenerationBulletinException';
 import type { BulletinPdfPort } from '../../ports/out/BulletinPdfPort';
+import type { AutorisationGenerationBulletinPort } from '../../ports/out/AutorisationGenerationBulletinPort';
 import type { CacheBulletinPort } from '../../ports/out/CacheBulletinPort';
 import type { EventBusPort } from '../../ports/out/EventBusPort';
 import type { ReferentielAcademiquePort } from '../../ports/out/ReferentielAcademiquePort';
 import type { TransactionManagerPort } from '../../ports/out/TransactionManagerPort';
+import { ErreurProgrammeNonValide } from '../../exceptions/ErreurProgrammeNonValide';
 import { ServiceAuditBulletin } from '../../services/ServiceAuditBulletin';
 import { ServiceCacheBulletin } from '../../services/ServiceCacheBulletin';
 import { ServiceGenerationBulletin } from '../../services/ServiceGenerationBulletin';
@@ -22,6 +25,7 @@ export class GenererBulletinEleveUseCase {
     private readonly depotResultat: DepotResultatBulletinEleve,
     private readonly transactionManagerPort: TransactionManagerPort,
     private readonly referentielAcademiquePort: ReferentielAcademiquePort,
+    private readonly autorisationGenerationBulletinPort: AutorisationGenerationBulletinPort,
     private readonly serviceGenerationBulletin = new ServiceGenerationBulletin(),
     private readonly serviceProjectionLecture = new ServiceProjectionLecture(),
     private readonly serviceAuditBulletin = new ServiceAuditBulletin(),
@@ -41,13 +45,60 @@ export class GenererBulletinEleveUseCase {
         throw new GenerationBulletinException('Le bulletin actif de cet eleve est introuvable.');
       }
 
+      await this.verifierAutorisation(input, bulletin);
+
       const resultat = await this.depotResultat.trouverParEleveInscription(input.idEleve, input.idInscriptionScolaire);
       if (resultat === null) {
         throw new GenerationBulletinException('Le resultat consolide necessaire au bulletin est introuvable.');
       }
 
-      const programme = await this.referentielAcademiquePort.consulterProgrammeNiveau((bulletin as unknown as { versionReferentielProgramme: string }).versionReferentielProgramme);
-      const cours = programme === null ? [] : await this.referentielAcademiquePort.listerCoursProgramme(programme.idProgrammeNiveau);
+      if (bulletin.obtenirIdInscriptionScolaire() !== resultat.obtenirIdInscriptionScolaire()) {
+        throw new GenerationBulletinException(
+          'Le bulletin actif et le resultat consolide ne referencent pas la meme inscription scolaire.',
+        );
+      }
+
+      if (bulletin.obtenirIdEcole() !== resultat.obtenirIdEcole()) {
+        throw new GenerationBulletinException(
+          'Le bulletin actif et le resultat consolide ne referencent pas la meme ecole.',
+        );
+      }
+
+      if (bulletin.obtenirIdClassePedagogique() !== resultat.obtenirIdClassePedagogique()) {
+        throw new GenerationBulletinException(
+          'Le bulletin actif et le resultat consolide ne referencent pas la meme classe pedagogique.',
+        );
+      }
+
+      if (bulletin.obtenirIdAnneeScolaire() !== resultat.obtenirIdAnneeScolaire()) {
+        throw new GenerationBulletinException(
+          'Le bulletin actif et le resultat consolide ne referencent pas la meme annee scolaire.',
+        );
+      }
+
+      if (bulletin.obtenirIdProgrammeNiveau() !== resultat.obtenirIdProgrammeNiveau()) {
+        throw new GenerationBulletinException(
+          'Le bulletin actif et le resultat consolide ne referencent pas le meme programme niveau.',
+        );
+      }
+
+      if (bulletin.obtenirVersionReferentielProgramme() !== resultat.obtenirVersionReferentielProgramme()) {
+        throw new GenerationBulletinException(
+          'Le bulletin actif et le resultat consolide ne referencent pas la meme version de referentiel programme.',
+        );
+      }
+
+      const referenceProgramme = {
+        idProgrammeNiveau: bulletin.obtenirIdProgrammeNiveau(),
+        idEcole: bulletin.obtenirIdEcole(),
+      };
+      const programme = await this.lireProgramme(referenceProgramme);
+      if (programme.versionReferentielProgramme !== bulletin.obtenirVersionReferentielProgramme()) {
+        throw new GenerationBulletinException(
+          'Le programme niveau local ne reference pas la meme version de referentiel que le bulletin actif.',
+        );
+      }
+      const cours = await this.lireCoursProgramme(referenceProgramme);
       const lignes = cours.map((coursProgramme, index) => new LigneBulletinEleve({
         idLigneBulletinEleve: `${bulletin.obtenirId()}-ligne-${index + 1}`,
         idReferentielCours: coursProgramme.idReferentielCours,
@@ -66,7 +117,11 @@ export class GenererBulletinEleveUseCase {
 
       this.serviceGenerationBulletin.generer(bulletin, lignes, blocs, input.idUtilisateur, input.typeGeneration);
       await this.depotBulletin.sauvegarder(bulletin);
-      await this.eventBusPort?.publier(bulletin.recupererEvenements());
+      await this.eventBusPort?.publier(bulletin.recupererEvenements(), {
+        organisationId: input.idOrganisation,
+        ecoleId: bulletin.obtenirIdEcole(),
+        utilisateurId: input.idUtilisateur,
+      });
       const sortie = this.serviceProjectionLecture.projeterBulletin(bulletin);
       await this.serviceCacheBulletin.enregistrer(`bulletin:${input.idEleve}:${input.idAnneeScolaire}`, sortie, 300);
       if (input.preparerPdf) {
@@ -74,7 +129,7 @@ export class GenererBulletinEleveUseCase {
       }
       await this.serviceAuditBulletin.journaliser({
         action: 'GENERER_BULLETIN',
-        idEcole: (bulletin as unknown as { idEcole: string }).idEcole,
+        idEcole: bulletin.obtenirIdEcole(),
         idUtilisateur: input.idUtilisateur,
         referenceMetier: bulletin.obtenirId(),
         details: { typeGeneration: input.typeGeneration },
@@ -82,5 +137,70 @@ export class GenererBulletinEleveUseCase {
       bulletin.viderEvenements();
       return sortie;
     });
+  }
+
+  private async verifierAutorisation(
+    input: GenererBulletinEleveInput,
+    bulletin: BulletinEleve,
+  ): Promise<void> {
+    try {
+      await this.autorisationGenerationBulletinPort.verifierGenerationBulletin({
+        idUtilisateur: input.idUtilisateur,
+        idOrganisation: input.idOrganisation,
+        idEcole: bulletin.obtenirIdEcole(),
+        idClassePedagogique: bulletin.obtenirIdClassePedagogique(),
+        idAnneeScolaire: bulletin.obtenirIdAnneeScolaire(),
+      });
+    } catch {
+      throw new GenerationBulletinException(
+        "L'utilisateur demandeur n'est pas autorise a generer ce bulletin.",
+      );
+    }
+  }
+
+  private async lireProgramme(referenceProgramme: {
+    idProgrammeNiveau: string;
+    idEcole: string;
+  }) {
+    const programme = await this.referentielAcademiquePort.consulterProgrammeNiveau(referenceProgramme);
+
+    if (programme === null) {
+      throw new GenerationBulletinException(
+        'Le programme niveau local rattache au bulletin est introuvable.',
+      );
+    }
+
+    if (programme.statutProgrammeNiveau !== 'VALIDE') {
+      throw new ErreurProgrammeNonValide();
+    }
+
+    return programme;
+  }
+
+  private async lireCoursProgramme(referenceProgramme: {
+    idProgrammeNiveau: string;
+    idEcole: string;
+  }) {
+    try {
+      const cours = await this.referentielAcademiquePort.listerCoursProgramme(referenceProgramme);
+
+      if (cours.length === 0) {
+        throw new GenerationBulletinException(
+          'Le programme niveau rattache au bulletin ne contient aucun cours exploitable.',
+        );
+      }
+
+      return cours;
+    } catch (erreur) {
+      if (erreur instanceof GenerationBulletinException) {
+        throw erreur;
+      }
+
+      throw new GenerationBulletinException(
+        erreur instanceof Error
+          ? erreur.message
+          : 'Les cours du programme niveau rattache au bulletin sont introuvables.',
+      );
+    }
   }
 }

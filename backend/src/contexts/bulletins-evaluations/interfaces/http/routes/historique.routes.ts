@@ -7,9 +7,9 @@ export const creerHistoriqueRoutes = (
   dependances: DependancesRoutesBulletinsEvaluationsDocument,
 ): FastifyPluginAsync => async (serveur) => {
   serveur.get('/historique/bulletins/:idBulletinEleve', (requete, reponse) =>
-    executerRouteBulletin(requete, reponse, () => dependances.historiqueBulletinController.consulterHistoriqueBulletins(requete.params), dependances.contexteTenant));
+    executerRouteBulletin(requete, reponse, () => dependances.historiqueBulletinController.consulterHistoriqueBulletins(requete.params, requete.headers), dependances.contexteTenant));
   serveur.get('/historique/proclamations', (requete, reponse) =>
-    executerRouteBulletin(requete, reponse, () => dependances.historiqueBulletinController.consulterHistoriqueProclamations(), dependances.contexteTenant));
+    executerRouteBulletin(requete, reponse, () => dependances.historiqueBulletinController.consulterHistoriqueProclamations(requete.query), dependances.contexteTenant));
   serveur.get('/historique/snapshots', (requete, reponse) =>
-    executerRouteBulletin(requete, reponse, () => dependances.historiqueBulletinController.consulterSnapshots(), dependances.contexteTenant));
+    executerRouteBulletin(requete, reponse, () => dependances.historiqueBulletinController.consulterSnapshots(requete.query), dependances.contexteTenant));
 };

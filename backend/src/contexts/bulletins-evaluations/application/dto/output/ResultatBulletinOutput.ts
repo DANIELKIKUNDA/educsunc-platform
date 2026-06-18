@@ -7,6 +7,8 @@ export interface ResultatBulletinOutput {
   idResultatBulletinEleve: string;
   idEleve: string;
   idInscriptionScolaire: string;
+  idEcole: string;
+  idClassePedagogique: string;
   resultatsColonnes: {
     codeColonne: CodeColonneBulletin;
     totalObtenu?: number;

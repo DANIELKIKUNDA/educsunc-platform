@@ -9,7 +9,7 @@ export const creerConduiteRoutes = (
   serveur.post('/conduite', (requete, reponse) =>
     executerRouteBulletin(requete, reponse, () => dependances.conduiteApplicationController.encoder(requete.body, requete.headers), dependances.contexteTenant));
   serveur.get('/conduite/:idEleve', (requete, reponse) =>
-    executerRouteBulletin(requete, reponse, () => dependances.conduiteApplicationController.consulterConduite(), dependances.contexteTenant));
+    executerRouteBulletin(requete, reponse, () => dependances.conduiteApplicationController.consulterConduite(requete.params, requete.query, requete.headers), dependances.contexteTenant));
   serveur.get('/application/:idEleve', (requete, reponse) =>
-    executerRouteBulletin(requete, reponse, () => dependances.conduiteApplicationController.consulterApplication(), dependances.contexteTenant));
+    executerRouteBulletin(requete, reponse, () => dependances.conduiteApplicationController.consulterApplication(requete.params, requete.query, requete.headers), dependances.contexteTenant));
 };

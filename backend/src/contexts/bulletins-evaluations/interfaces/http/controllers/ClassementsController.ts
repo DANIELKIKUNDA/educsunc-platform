@@ -1,9 +1,8 @@
 import type { ConsulterClassementClasseUseCase } from 'contexts/bulletins-evaluations/application/use-cases/ConsulterClassementClasse/ConsulterClassementClasseUseCase';
 import type { RecalculerClassementClasseUseCase } from 'contexts/bulletins-evaluations/application/use-cases/RecalculerClassementClasse/RecalculerClassementClasseUseCase';
 import { ClassementPresenter } from '../presenters/ClassementPresenter';
-import { QueryFilterValidator } from '../validators/QueryFilterValidator';
+import { ConsulterClassementValidator } from '../validators/ConsulterClassementValidator';
 import { RecalculClassementValidator } from '../validators/RecalculClassementValidator';
-import { ValidationHttpBulletinsEvaluations } from '../validators/ValidationHttpBulletinsEvaluations';
 
 // Ce controleur expose les routes HTTP de consultation et recalcul des classements.
 export class ClassementsController {
@@ -14,28 +13,15 @@ export class ClassementsController {
   ) {}
 
   // Cette methode consulte le classement d'une classe.
-  public async consulter(query: unknown): Promise<{ donnee: unknown }> {
-    const filtres = QueryFilterValidator.valider(query);
-    const sortie = await this.consulterClassementClasseUseCase.executer({
-      idClassePedagogique: ValidationHttpBulletinsEvaluations.lireChaineRequise(
-        filtres as Record<string, unknown>,
-        'idClassePedagogique',
-      ),
-      idAnneeScolaire: ValidationHttpBulletinsEvaluations.lireChaineRequise(
-        filtres as Record<string, unknown>,
-        'idAnneeScolaire',
-      ),
-      codeColonne: ValidationHttpBulletinsEvaluations.lireChaineRequise(
-        filtres as Record<string, unknown>,
-        'codeColonne',
-      ) as never,
-    });
+  public async consulter(query: unknown, headers: unknown): Promise<{ donnee: unknown }> {
+    const entree = ConsulterClassementValidator.valider(query, headers);
+    const sortie = await this.consulterClassementClasseUseCase.executer(entree);
     return ClassementPresenter.presenter(sortie as never);
   }
 
   // Cette methode relance le recalcul d'un classement.
-  public async recalculer(corps: unknown): Promise<{ donnee: unknown }> {
-    const entree = RecalculClassementValidator.valider(corps);
+  public async recalculer(corps: unknown, headers: unknown): Promise<{ donnee: unknown }> {
+    const entree = RecalculClassementValidator.valider(corps, headers);
     const sortie = await this.recalculerClassementClasseUseCase.executer(entree);
     return { donnee: sortie };
   }

@@ -1,11 +1,28 @@
 import type { BulletinPdfPort } from 'contexts/bulletins-evaluations/application/ports/out/BulletinPdfPort';
+import type { AutorisationGenerationBulletinPort } from 'contexts/bulletins-evaluations/application/ports/out/AutorisationGenerationBulletinPort';
+import type { AutorisationClassementPort } from 'contexts/bulletins-evaluations/application/ports/out/AutorisationClassementPort';
+import type { AutorisationConduitePort } from 'contexts/bulletins-evaluations/application/ports/out/AutorisationConduitePort';
+import type { AutorisationGenerationProclamationPort } from 'contexts/bulletins-evaluations/application/ports/out/AutorisationGenerationProclamationPort';
+import type { AutorisationConsultationStatistiquesPort } from 'contexts/bulletins-evaluations/application/ports/out/AutorisationConsultationStatistiquesPort';
+import type { AutorisationGenerationSynthesePort } from 'contexts/bulletins-evaluations/application/ports/out/AutorisationGenerationSynthesePort';
 import type { CacheBulletinPort } from 'contexts/bulletins-evaluations/application/ports/out/CacheBulletinPort';
+import type { ClockPort } from 'contexts/bulletins-evaluations/application/ports/out/ClockPort';
+import type {
+  FenetreEncodageCalendrierPort,
+  FenetreEncodageCalendrierReadModel,
+} from 'contexts/bulletins-evaluations/application/ports/out/FenetreEncodageCalendrierPort';
 import type { EnregistrementIdempotence, IdempotencyPort } from 'contexts/bulletins-evaluations/application/ports/out/IdempotencyPort';
 import type { EventBusPort } from 'contexts/bulletins-evaluations/application/ports/out/EventBusPort';
 import type { OfflineSyncPort } from 'contexts/bulletins-evaluations/application/ports/out/OfflineSyncPort';
+import type { CriteresAnalysePedagogiquePort } from 'contexts/bulletins-evaluations/application/ports/out/CriteresAnalysePedagogiquePort';
 import { CodeColonneBulletin } from 'contexts/bulletins-evaluations/domain/value-objects/CodeColonneBulletin';
+import { CriteresAnalysePedagogique } from 'contexts/bulletins-evaluations/domain/entities/CriteresAnalysePedagogique';
 import { TypeStructureEvaluation } from 'contexts/bulletins-evaluations/domain/value-objects/TypeStructureEvaluation';
-import type { ProgrammeNiveauDTO, ReferentielAcademiquePort } from 'contexts/bulletins-evaluations/application/ports/out/ReferentielAcademiquePort';
+import type {
+  ProgrammeNiveauDTO,
+  ReferenceProgrammeNiveauDTO,
+  ReferentielAcademiquePort,
+} from 'contexts/bulletins-evaluations/application/ports/out/ReferentielAcademiquePort';
 import type { TransactionManagerPort } from 'contexts/bulletins-evaluations/application/ports/out/TransactionManagerPort';
 import type { ServiceCache } from 'shared/infrastructure/cache/CacheService';
 
@@ -25,6 +42,15 @@ export class EventBusMemoire implements EventBusPort {
 
   public async publier(evenements: unknown[]): Promise<void> {
     this.evenementsPublies.push(...evenements);
+  }
+}
+
+// Cette fausse horloge fixe permet de piloter la date metier pendant les tests.
+export class HorlogeFixeMemoire implements ClockPort {
+  constructor(private readonly dateFixe: Date) {}
+
+  public maintenant(): Date {
+    return new Date(this.dateFixe.getTime());
   }
 }
 
@@ -80,8 +106,350 @@ export class PdfPortMemoire implements BulletinPdfPort {
   }
 }
 
+// Ce faux adaptateur d'autorisation permet de verifier localement les controles de generation.
+export class AutorisationGenerationBulletinPortMemoire implements AutorisationGenerationBulletinPort {
+  public dernierContexte:
+    | {
+      idUtilisateur: string;
+      idOrganisation?: string;
+      idEcole: string;
+      idClassePedagogique: string;
+      idAnneeScolaire: string;
+    }
+    | null = null;
+
+  constructor(private readonly erreur?: Error) {}
+
+  public async verifierGenerationBulletin(params: {
+    idUtilisateur: string;
+    idOrganisation?: string;
+    idEcole: string;
+    idClassePedagogique: string;
+    idAnneeScolaire: string;
+  }): Promise<void> {
+    this.dernierContexte = params;
+
+    if (this.erreur) {
+      throw this.erreur;
+    }
+  }
+}
+
+// Ce faux adaptateur permet de verifier localement les controles de lecture et recalcul de classement.
+export class AutorisationClassementPortMemoire implements AutorisationClassementPort {
+  public dernierContexteConsultation:
+    | {
+      idUtilisateur: string;
+      idOrganisation?: string;
+      idEcole: string;
+      idClassePedagogique: string;
+      idAnneeScolaire: string;
+    }
+    | null = null;
+
+  public dernierContexteRecalcul:
+    | {
+      idUtilisateur: string;
+      idOrganisation?: string;
+      idEcole: string;
+      idClassePedagogique: string;
+      idAnneeScolaire: string;
+    }
+    | null = null;
+
+  constructor(
+    private readonly erreurConsultation?: Error,
+    private readonly erreurRecalcul?: Error,
+  ) {}
+
+  public async verifierConsultationClassementClasse(params: {
+    idUtilisateur: string;
+    idOrganisation?: string;
+    idEcole: string;
+    idClassePedagogique: string;
+    idAnneeScolaire: string;
+  }): Promise<void> {
+    this.dernierContexteConsultation = params;
+
+    if (this.erreurConsultation) {
+      throw this.erreurConsultation;
+    }
+  }
+
+  public async verifierRecalculClassementClasse(params: {
+    idUtilisateur: string;
+    idOrganisation?: string;
+    idEcole: string;
+    idClassePedagogique: string;
+    idAnneeScolaire: string;
+  }): Promise<void> {
+    this.dernierContexteRecalcul = params;
+
+    if (this.erreurRecalcul) {
+      throw this.erreurRecalcul;
+    }
+  }
+}
+
+// Ce faux adaptateur permet de verifier localement les controles d'encodage de conduite.
+export class AutorisationConduitePortMemoire implements AutorisationConduitePort {
+  public dernierContexte:
+    | {
+      idUtilisateur: string;
+      idOrganisation?: string;
+      idEcole: string;
+      idClassePedagogique: string;
+      idAnneeScolaire: string;
+    }
+    | null = null;
+
+  constructor(private readonly erreur?: Error) {}
+
+  public async verifierEncodageConduite(params: {
+    idUtilisateur: string;
+    idOrganisation?: string;
+    idEcole: string;
+    idClassePedagogique: string;
+    idAnneeScolaire: string;
+  }): Promise<void> {
+    this.dernierContexte = params;
+
+    if (this.erreur) {
+      throw this.erreur;
+    }
+  }
+}
+
+// Ce faux adaptateur d'autorisation permet de verifier localement les controles d'initialisation et de generation de proclamation.
+export class AutorisationGenerationProclamationPortMemoire implements AutorisationGenerationProclamationPort {
+  public dernierContexteInitialisation:
+    | {
+      idUtilisateur: string;
+      idOrganisation?: string;
+      idEcole: string;
+      idClassePedagogique: string;
+      idAnneeScolaire: string;
+    }
+    | null = null;
+
+  public dernierContexteGeneration:
+    | {
+      idUtilisateur: string;
+      idOrganisation?: string;
+      idEcole: string;
+      idClassePedagogique: string;
+      idAnneeScolaire: string;
+    }
+    | null = null;
+
+  constructor(
+    private readonly erreurInitialisation?: Error,
+    private readonly erreurGeneration?: Error,
+  ) {}
+
+  public async verifierInitialisationProclamation(params: {
+    idUtilisateur: string;
+    idOrganisation?: string;
+    idEcole: string;
+    idClassePedagogique: string;
+    idAnneeScolaire: string;
+  }): Promise<void> {
+    this.dernierContexteInitialisation = params;
+
+    if (this.erreurInitialisation) {
+      throw this.erreurInitialisation;
+    }
+  }
+
+  public async verifierGenerationProclamation(params: {
+    idUtilisateur: string;
+    idOrganisation?: string;
+    idEcole: string;
+    idClassePedagogique: string;
+    idAnneeScolaire: string;
+  }): Promise<void> {
+    this.dernierContexteGeneration = params;
+
+    if (this.erreurGeneration) {
+      throw this.erreurGeneration;
+    }
+  }
+}
+
+// Ce faux adaptateur d'autorisation permet de verifier localement les controles de generation de synthese.
+export class AutorisationGenerationSynthesePortMemoire implements AutorisationGenerationSynthesePort {
+  public dernierContexteInitialisation:
+    | {
+      idUtilisateur: string;
+      idOrganisation?: string;
+      idEcole: string;
+      idAnneeScolaire: string;
+      idClassesPedagogiques: string[];
+    }
+    | null = null;
+
+  public dernierContexte:
+    | {
+      idUtilisateur: string;
+      idOrganisation?: string;
+      idEcole: string;
+      idAnneeScolaire: string;
+      idClassesPedagogiques: string[];
+    }
+    | null = null;
+
+  constructor(
+    private readonly erreurGeneration?: Error,
+    private readonly erreurInitialisation?: Error,
+  ) {}
+
+  public async verifierInitialisationSynthese(params: {
+    idUtilisateur: string;
+    idOrganisation?: string;
+    idEcole: string;
+    idAnneeScolaire: string;
+    idClassesPedagogiques: string[];
+  }): Promise<void> {
+    this.dernierContexteInitialisation = {
+      ...params,
+      idClassesPedagogiques: [...params.idClassesPedagogiques],
+    };
+
+    if (this.erreurInitialisation) {
+      throw this.erreurInitialisation;
+    }
+  }
+
+  public async verifierGenerationSynthese(params: {
+    idUtilisateur: string;
+    idOrganisation?: string;
+    idEcole: string;
+    idAnneeScolaire: string;
+    idClassesPedagogiques: string[];
+  }): Promise<void> {
+    this.dernierContexte = {
+      ...params,
+      idClassesPedagogiques: [...params.idClassesPedagogiques],
+    };
+
+    if (this.erreurGeneration) {
+      throw this.erreurGeneration;
+    }
+  }
+}
+
+// Ce faux adaptateur permet de verifier localement les acces statistiques classe et ecole.
+export class AutorisationConsultationStatistiquesPortMemoire implements AutorisationConsultationStatistiquesPort {
+  public dernierContexteClasse:
+    | {
+      idUtilisateur: string;
+      idOrganisation?: string;
+      idEcole: string;
+      idClassePedagogique: string;
+      idAnneeScolaire: string;
+    }
+    | null = null;
+
+  public dernierContexteEcole:
+    | {
+      idUtilisateur: string;
+      idOrganisation?: string;
+      idEcole: string;
+      idAnneeScolaire: string;
+    }
+    | null = null;
+
+  constructor(
+    private readonly erreurClasse?: Error,
+    private readonly erreurEcole?: Error,
+  ) {}
+
+  public async verifierConsultationStatistiquesClasse(params: {
+    idUtilisateur: string;
+    idOrganisation?: string;
+    idEcole: string;
+    idClassePedagogique: string;
+    idAnneeScolaire: string;
+  }): Promise<void> {
+    this.dernierContexteClasse = params;
+
+    if (this.erreurClasse) {
+      throw this.erreurClasse;
+    }
+  }
+
+  public async verifierConsultationStatistiquesEcole(params: {
+    idUtilisateur: string;
+    idOrganisation?: string;
+    idEcole: string;
+    idAnneeScolaire: string;
+  }): Promise<void> {
+    this.dernierContexteEcole = params;
+
+    if (this.erreurEcole) {
+      throw this.erreurEcole;
+    }
+  }
+}
+
+// Ce faux port calendrier expose une fenetre temporelle deterministe pour les tests d'encodage.
+export class FenetreEncodageCalendrierPortMemoire implements FenetreEncodageCalendrierPort {
+  public dernierContexte:
+    | {
+      idEcole: string;
+      idAnneeScolaire: string;
+      codeColonne: CodeColonneBulletin;
+      dateReference: Date;
+    }
+    | null = null;
+
+  constructor(
+    private readonly fenetreCalendrier: FenetreEncodageCalendrierReadModel | null,
+  ) {}
+
+  public async determinerFenetreEncodage(params: {
+    idEcole: string;
+    idAnneeScolaire: string;
+    codeColonne: CodeColonneBulletin;
+    dateReference: Date;
+  }): Promise<FenetreEncodageCalendrierReadModel | null> {
+    this.dernierContexte = {
+      ...params,
+      dateReference: new Date(params.dateReference.getTime()),
+    };
+    return this.fenetreCalendrier;
+  }
+}
+
+// Ce faux port fournit des criteres pedagogiques deterministes aux tests.
+export class CriteresAnalysePedagogiquePortMemoire implements CriteresAnalysePedagogiquePort {
+  public dernierContexte:
+    | {
+      idEcole: string;
+      idClassePedagogique: string;
+      idAnneeScolaire: string;
+      idProgrammeNiveau: string;
+    }
+    | null = null;
+
+  constructor(private readonly criteres = CriteresAnalysePedagogique.parDefaut()) {}
+
+  public async resoudreCriteresAnalysePedagogique(params: {
+    idEcole: string;
+    idClassePedagogique: string;
+    idAnneeScolaire: string;
+    idProgrammeNiveau: string;
+  }): Promise<CriteresAnalysePedagogique> {
+    this.dernierContexte = params;
+    return this.criteres;
+  }
+}
+
 // Ce faux adaptateur referentiel fournit un programme et des cours stables.
 export class ReferentielAcademiquePortMemoire implements ReferentielAcademiquePort {
+  public derniereReferenceProgrammeConsultee: ReferenceProgrammeNiveauDTO | null = null;
+  public derniereReferenceCoursProgramme: ReferenceProgrammeNiveauDTO | null = null;
+
   public async consulterCours(idReferentielCours: string) {
     return {
       idReferentielCours,
@@ -92,16 +460,19 @@ export class ReferentielAcademiquePortMemoire implements ReferentielAcademiquePo
     };
   }
 
-  public async consulterProgrammeNiveau(idProgrammeNiveau: string): Promise<ProgrammeNiveauDTO | null> {
+  public async consulterProgrammeNiveau(referenceProgramme: ReferenceProgrammeNiveauDTO): Promise<ProgrammeNiveauDTO | null> {
+    this.derniereReferenceProgrammeConsultee = referenceProgramme;
+
     return {
-      idProgrammeNiveau,
+      idProgrammeNiveau: referenceProgramme.idProgrammeNiveau,
       idClassePedagogique: 'classe-1',
       typeStructureEvaluation: TypeStructureEvaluation.SEMESTRIEL,
-      versionReferentielProgramme: 'programme-version-1',
+      versionReferentielProgramme: 'version-ref-1',
+      statutProgrammeNiveau: 'VALIDE',
     };
   }
 
-  public async listerCoursProgramme(): Promise<Array<{
+  public async listerCoursProgramme(referenceProgramme: ReferenceProgrammeNiveauDTO): Promise<Array<{
     idReferentielCours: string;
     codeCours: string;
     libelleCours: string;
@@ -109,6 +480,8 @@ export class ReferentielAcademiquePortMemoire implements ReferentielAcademiquePo
     estCalculable: boolean;
     aExamen: boolean;
   }>> {
+    this.derniereReferenceCoursProgramme = referenceProgramme;
+
     return [
       {
         idReferentielCours: 'cours-1',

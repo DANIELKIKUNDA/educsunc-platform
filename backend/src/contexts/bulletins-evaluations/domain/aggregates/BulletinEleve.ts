@@ -23,6 +23,7 @@ export class BulletinEleve extends RacineAgregat<string> {
   private idInscriptionScolaire: string;
   private idClassePedagogique: string;
   private idAnneeScolaire: string;
+  private idProgrammeNiveau: string;
   private typeStructureEvaluation: TypeStructureEvaluation;
   private etatBulletin: EtatBulletin;
   private versionBulletin: number;
@@ -46,6 +47,7 @@ export class BulletinEleve extends RacineAgregat<string> {
     idInscriptionScolaire: string;
     idClassePedagogique: string;
     idAnneeScolaire: string;
+    idProgrammeNiveau: string;
     typeStructureEvaluation: TypeStructureEvaluation;
     etatBulletin?: EtatBulletin;
     versionBulletin?: number;
@@ -67,6 +69,7 @@ export class BulletinEleve extends RacineAgregat<string> {
     this.idInscriptionScolaire = params.idInscriptionScolaire;
     this.idClassePedagogique = params.idClassePedagogique;
     this.idAnneeScolaire = params.idAnneeScolaire;
+    this.idProgrammeNiveau = params.idProgrammeNiveau;
     this.typeStructureEvaluation = params.typeStructureEvaluation;
     this.etatBulletin = params.etatBulletin ?? EtatBulletin.BROUILLON;
     this.versionBulletin = params.versionBulletin ?? 1;
@@ -106,6 +109,11 @@ export class BulletinEleve extends RacineAgregat<string> {
   // Cette methode expose l'annee scolaire rattachee.
   public obtenirIdAnneeScolaire(): string {
     return this.idAnneeScolaire;
+  }
+
+  // Cette methode expose le programme niveau local rattache au bulletin.
+  public obtenirIdProgrammeNiveau(): string {
+    return this.idProgrammeNiveau;
   }
 
   // Cette methode expose les blocs application/conduite.

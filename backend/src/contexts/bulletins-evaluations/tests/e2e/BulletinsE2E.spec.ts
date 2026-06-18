@@ -18,6 +18,7 @@ test('le workflow HTTP minimal de consultation d un bulletin fonctionne', async 
   const reponse = await serveur.inject({
     method: 'GET',
     url: '/bulletins/eleve-1/annee-1',
+    headers: { 'x-tenant-id': 'ecole-1', 'x-user-id': 'user-1' },
   });
   assert.equal(reponse.statusCode, 200);
   assert.equal(reponse.json().donnee.idEleve, 'eleve-1');

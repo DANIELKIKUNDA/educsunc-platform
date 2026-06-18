@@ -11,3 +11,6 @@ export * from './CacheException';
 export * from './AuditException';
 export * from './ReadModelException';
 export * from './QueryException';
+export * from './ErreurCalendrierEncodageInexploitable';
+export * from './ErreurFenetreEncodageFermee';
+export * from './ErreurProgrammeNonValide';

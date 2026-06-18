@@ -60,6 +60,11 @@ export class ClassementColonneClasse extends RacineAgregat<string> {
     return this.idAnneeScolaire;
   }
 
+  // Cette methode expose la colonne officielle sur laquelle porte le classement.
+  public obtenirCodeColonne(): CodeColonneBulletin {
+    return this.codeColonne;
+  }
+
   // Cette methode expose la structure d'evaluation calculee.
   public obtenirTypeStructureEvaluation(): TypeStructureEvaluation {
     return this.typeStructureEvaluation;
@@ -68,6 +73,11 @@ export class ClassementColonneClasse extends RacineAgregat<string> {
   // Cette methode expose la date du dernier calcul de classement.
   public obtenirDateCalcul(): Date {
     return this.dateCalcul;
+  }
+
+  // Cette methode expose la version technique du classement persiste.
+  public obtenirVersion(): number {
+    return this.version;
   }
 
   // Cette methode recalcule et ordonne toutes les lignes classees.

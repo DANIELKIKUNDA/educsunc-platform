@@ -14,6 +14,10 @@ export class PostgresDepotBulletinEleve implements DepotBulletinEleve {
     PostgresDepotBulletinEleve.stockage.set(bulletinEleve.obtenirId(), bulletinEleve);
   }
 
+  public async trouverParId(idBulletinEleve: string): Promise<BulletinEleve | null> {
+    return PostgresDepotBulletinEleve.stockage.get(idBulletinEleve) ?? null;
+  }
+
   public async trouverParEleveEtAnnee(idEleve: string, idAnneeScolaire: string): Promise<BulletinEleve | null> {
     return [...PostgresDepotBulletinEleve.stockage.values()].find((bulletin) =>
       String(Reflect.get(bulletin, 'idEleve') ?? '') === idEleve

@@ -23,9 +23,11 @@ export class SagaGenerationBulletin {
     const colonnePrincipale = resultat.resultatsColonnes.at(-1)?.codeColonne;
     if (colonnePrincipale !== undefined) {
       await this.recalculerClassementClasseUseCase.executer({
-        idClassePedagogique: '',
+        idClassePedagogique: resultat.idClassePedagogique,
         idAnneeScolaire: input.idAnneeScolaire,
         codeColonne: colonnePrincipale,
+        idEcole: resultat.idEcole,
+        idUtilisateur: input.idUtilisateur,
       });
     }
 

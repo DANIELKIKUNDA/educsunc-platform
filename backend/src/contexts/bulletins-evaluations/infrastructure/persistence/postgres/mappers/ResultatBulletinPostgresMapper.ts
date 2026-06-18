@@ -68,6 +68,8 @@ export class ResultatBulletinPostgresMapper {
       idResultatBulletinEleve: resultat.obtenirId(),
       idEleve: resultat.obtenirIdEleve(),
       idInscriptionScolaire: resultat.obtenirIdInscriptionScolaire(),
+      idEcole: resultat.obtenirIdEcole(),
+      idClassePedagogique: resultat.obtenirIdClassePedagogique(),
       resultatsColonnes: resultat.obtenirResultatsColonnes().map((colonne) => this.versColonne(colonne)),
       applications: this.versApplicationsConduites(
         resultat.obtenirApplicationsPeriodes(),

@@ -12,4 +12,9 @@ export class PostgresBulletinEleveQuery implements BulletinEleveQuery {
     const bulletin = await this.depot.trouverParEleveEtAnnee(idEleve, idAnneeScolaire);
     return bulletin === null ? null : BulletinPostgresMapper.versReadModel(bulletin);
   }
+
+  public async executerParId(idBulletinEleve: string): Promise<BulletinEleveReadModel | null> {
+    const bulletin = await this.depot.trouverParId(idBulletinEleve);
+    return bulletin === null ? null : BulletinPostgresMapper.versReadModel(bulletin);
+  }
 }

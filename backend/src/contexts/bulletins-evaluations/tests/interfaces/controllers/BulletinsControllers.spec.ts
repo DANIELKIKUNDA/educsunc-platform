@@ -9,6 +9,8 @@ import { PdfPortMemoire } from '../../mocks/BulletinsEvaluationsMocks';
 
 // Ce fichier couvre les controllers HTTP principaux du BC.
 test('le controller bulletins valide, appelle les cas d usage et presente les sorties', async () => {
+  let consultationEntree: Record<string, unknown> | undefined;
+  let historiqueEntree: Record<string, unknown> | undefined;
   const controller = new BulletinsController(
     {
       async executer() {
@@ -26,7 +28,8 @@ test('le controller bulletins valide, appelle les cas d usage et presente les so
       },
     } as unknown as GenererBulletinEleveUseCase,
     {
-      async executer() {
+      async executer(entree: unknown) {
+        consultationEntree = entree as Record<string, unknown>;
         return {
           idBulletinEleve: 'bulletin-1',
           idEleve: 'eleve-1',
@@ -41,7 +44,8 @@ test('le controller bulletins valide, appelle les cas d usage et presente les so
       },
     } as unknown as ConsulterBulletinEleveUseCase,
     {
-      async executer() {
+      async executer(entree: unknown) {
+        historiqueEntree = entree as Record<string, unknown>;
         return [{ versionBulletin: 1 }];
       },
     } as unknown as ConsulterHistoriqueBulletinUseCase,
@@ -54,12 +58,31 @@ test('le controller bulletins valide, appelle les cas d usage et presente les so
     idAnneeScolaire: 'annee-1',
     idUtilisateur: 'user-1',
     typeGeneration: 'PROGRESSIF',
-  }, {});
+  }, { 'x-user-id': 'user-1' });
   assert.equal((generation.donnee as { idEleve: string }).idEleve, 'eleve-1');
 
-  const consultation = await controller.consulter({ idEleve: 'eleve-1', idAnneeScolaire: 'annee-1' });
+  const consultation = await controller.consulter(
+    { idEleve: 'eleve-1', idAnneeScolaire: 'annee-1' },
+    { 'x-user-id': 'user-1', 'x-tenant-id': 'ecole-1', 'x-organisation-id': 'org-1' },
+  );
   assert.equal((consultation.donnee as { idBulletinEleve: string }).idBulletinEleve, 'bulletin-1');
+  assert.deepEqual(consultationEntree, {
+    idEleve: 'eleve-1',
+    idAnneeScolaire: 'annee-1',
+    idUtilisateur: 'user-1',
+    idEcole: 'ecole-1',
+    idOrganisation: 'org-1',
+  });
 
-  const historique = await controller.consulterHistorique({ idBulletinEleve: 'bulletin-1' });
+  const historique = await controller.consulterHistorique(
+    { idBulletinEleve: 'bulletin-1' },
+    { 'x-user-id': 'user-1', 'x-tenant-id': 'ecole-1', 'x-organisation-id': 'org-1' },
+  );
   assert.equal((historique.donnee as Array<{ versionBulletin: number }>)[0].versionBulletin, 1);
+  assert.deepEqual(historiqueEntree, {
+    idBulletinEleve: 'bulletin-1',
+    idUtilisateur: 'user-1',
+    idEcole: 'ecole-1',
+    idOrganisation: 'org-1',
+  });
 });

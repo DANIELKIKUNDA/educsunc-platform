@@ -2,6 +2,7 @@ import { RacineAgregat } from '../../../../shared/domain/AggregateRoot';
 import { LigneSyntheseResultatsClasse } from '../entities/LigneSyntheseResultatsClasse';
 import { StatistiquesProclamationClasseProps } from '../entities/StatistiquesProclamationClasse';
 import { TotauxSyntheseEcole } from '../entities/TotauxSyntheseEcole';
+import { SyntheseResultatsEcoleInitialisee } from '../events/SyntheseResultatsEcoleInitialisee';
 import { SyntheseResultatsEcoleGeneree } from '../events/SyntheseResultatsEcoleGeneree';
 import { TotauxSyntheseEcoleCalcules } from '../events/TotauxSyntheseEcoleCalcules';
 import { ErreurSyntheseResultatsIncoherente } from '../exceptions/ErreurSyntheseResultatsIncoherente';
@@ -45,9 +46,45 @@ export class SyntheseResultatsEcole extends RacineAgregat<string> {
     this.totauxSyntheseEcole = params.totauxSyntheseEcole;
   }
 
+  // Cette methode cree une synthese vide et unique avant sa consolidation officielle.
+  public static initialiser(params: {
+    idSyntheseResultatsEcole: string;
+    idEcole: string;
+    idAnneeScolaire: string;
+    codeColonne: CodeColonneBulletin;
+    typeSynthese: TypeSyntheseResultats;
+    creePar: string;
+    creeLe?: Date;
+  }): SyntheseResultatsEcole {
+    const synthese = new SyntheseResultatsEcole({
+      idSyntheseResultatsEcole: params.idSyntheseResultatsEcole,
+      idEcole: params.idEcole,
+      idAnneeScolaire: params.idAnneeScolaire,
+      codeColonne: params.codeColonne,
+      typeSynthese: params.typeSynthese,
+      dateGeneration: params.creeLe ?? new Date(),
+      genereePar: params.creePar,
+      lignesSyntheseResultatsClasse: [],
+    });
+
+    synthese.ajouterEvenement(
+      new SyntheseResultatsEcoleInitialisee(
+        synthese.obtenirId(),
+        synthese.obtenirIdEcole(),
+      ),
+    );
+
+    return synthese;
+  }
+
   // Cette methode expose les lignes consolidees par classe.
   public obtenirLignesSyntheseResultatsClasse(): LigneSyntheseResultatsClasse[] {
     return [...this.lignesSyntheseResultatsClasse];
+  }
+
+  // Cette methode expose l'ecole rattachee a la synthese.
+  public obtenirIdEcole(): string {
+    return this.idEcole;
   }
 
   // Cette methode expose l'annee scolaire rattachee a la synthese.

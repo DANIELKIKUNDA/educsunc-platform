@@ -6,4 +6,5 @@ export interface EncoderConduiteInput {
   codePeriode: CodePeriodeSimple;
   pointsConduite: number;
   idUtilisateur: string;
+  idOrganisation?: string;
 }

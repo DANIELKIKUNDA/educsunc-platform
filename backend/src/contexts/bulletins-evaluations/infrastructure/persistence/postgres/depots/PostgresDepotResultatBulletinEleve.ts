@@ -1,14 +1,21 @@
 import { ResultatBulletinEleve } from 'contexts/bulletins-evaluations/domain/aggregates/ResultatBulletinEleve';
+import { HistoriqueEncodageConduite } from 'contexts/bulletins-evaluations/domain/entities/HistoriqueEncodageConduite';
 import { SnapshotResultatBulletin } from 'contexts/bulletins-evaluations/domain/entities/SnapshotResultatBulletin';
 import type { DepotResultatBulletinEleve } from 'contexts/bulletins-evaluations/domain/repositories/DepotResultatBulletinEleve';
+import { obtenirMemoireTechniqueBulletins } from './outilsDepotBulletin';
 
 // Ce fichier fournit un depot PostgreSQL simplifie pour les resultats consolides.
 export class PostgresDepotResultatBulletinEleve implements DepotResultatBulletinEleve {
   private static readonly stockage = new Map<string, ResultatBulletinEleve>();
+  private static readonly historiquesConduite = new Map<string, HistoriqueEncodageConduite[]>();
   private static readonly snapshots = new Map<string, SnapshotResultatBulletin[]>();
 
   public async sauvegarder(resultatBulletinEleve: ResultatBulletinEleve): Promise<void> {
     PostgresDepotResultatBulletinEleve.stockage.set(resultatBulletinEleve.obtenirId(), resultatBulletinEleve);
+  }
+
+  public async trouverParId(idResultatBulletinEleve: string): Promise<ResultatBulletinEleve | null> {
+    return PostgresDepotResultatBulletinEleve.stockage.get(idResultatBulletinEleve) ?? null;
   }
 
   public async trouverParEleveEtAnnee(idEleve: string, idAnneeScolaire: string): Promise<ResultatBulletinEleve | null> {
@@ -43,6 +50,28 @@ export class PostgresDepotResultatBulletinEleve implements DepotResultatBulletin
         && Boolean(Reflect.get(colonne, 'estNonClasse')),
       ),
     );
+  }
+
+  public async ajouterHistoriqueEncodageConduite(
+    historiqueEncodageConduite: HistoriqueEncodageConduite,
+  ): Promise<void> {
+    const idResultatBulletinEleve = historiqueEncodageConduite.obtenirIdResultatBulletinEleve();
+    const historiques = PostgresDepotResultatBulletinEleve.historiquesConduite.get(idResultatBulletinEleve) ?? [];
+    historiques.push(historiqueEncodageConduite);
+    PostgresDepotResultatBulletinEleve.historiquesConduite.set(idResultatBulletinEleve, historiques);
+
+    const audits = obtenirMemoireTechniqueBulletins().auditsEncodage.get(idResultatBulletinEleve) ?? [];
+    audits.push({
+      action: historiqueEncodageConduite.obtenirAnciensPointsConduite() === null ? 'ENCODAGE_CONDUITE' : 'MODIFICATION_CONDUITE',
+      dateAction: historiqueEncodageConduite.obtenirDateEncodage(),
+      idUtilisateur: historiqueEncodageConduite.obtenirEncodeePar(),
+      commentaire: `Periode ${String(historiqueEncodageConduite.obtenirCodePeriode())} : ${historiqueEncodageConduite.obtenirAnciensPointsConduite() ?? 'null'} -> ${historiqueEncodageConduite.obtenirNouveauxPointsConduite()}`,
+    });
+    obtenirMemoireTechniqueBulletins().auditsEncodage.set(idResultatBulletinEleve, audits);
+  }
+
+  public async listerHistoriqueEncodageConduite(idResultatBulletinEleve: string): Promise<HistoriqueEncodageConduite[]> {
+    return [...(PostgresDepotResultatBulletinEleve.historiquesConduite.get(idResultatBulletinEleve) ?? [])];
   }
 
   // Cette methode ajoute un snapshot de resultat pour un eleve.

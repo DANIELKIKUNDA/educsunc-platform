@@ -23,6 +23,7 @@ export class ResultatBulletinEleve extends RacineAgregat<string> {
   private idInscriptionScolaire: string;
   private idClassePedagogique: string;
   private idAnneeScolaire: string;
+  private idProgrammeNiveau: string;
   private typeStructureEvaluation: TypeStructureEvaluation;
   private estNonClassePourColonne: Partial<Record<CodeColonneBulletin, boolean>>;
   private versionReferentielProgramme: string;
@@ -44,6 +45,7 @@ export class ResultatBulletinEleve extends RacineAgregat<string> {
     idInscriptionScolaire: string;
     idClassePedagogique: string;
     idAnneeScolaire: string;
+    idProgrammeNiveau: string;
     typeStructureEvaluation: TypeStructureEvaluation;
     estNonClassePourColonne?: Partial<Record<CodeColonneBulletin, boolean>>;
     versionReferentielProgramme: string;
@@ -63,6 +65,7 @@ export class ResultatBulletinEleve extends RacineAgregat<string> {
     this.idInscriptionScolaire = params.idInscriptionScolaire;
     this.idClassePedagogique = params.idClassePedagogique;
     this.idAnneeScolaire = params.idAnneeScolaire;
+    this.idProgrammeNiveau = params.idProgrammeNiveau;
     this.typeStructureEvaluation = params.typeStructureEvaluation;
     this.estNonClassePourColonne = { ...(params.estNonClassePourColonne ?? {}) };
     this.versionReferentielProgramme = params.versionReferentielProgramme;
@@ -100,6 +103,11 @@ export class ResultatBulletinEleve extends RacineAgregat<string> {
   // Cette methode expose l'annee scolaire rattachee.
   public obtenirIdAnneeScolaire(): string {
     return this.idAnneeScolaire;
+  }
+
+  // Cette methode expose le programme niveau local rattache au resultat consolide.
+  public obtenirIdProgrammeNiveau(): string {
+    return this.idProgrammeNiveau;
   }
 
   // Cette methode expose la structure d'evaluation.

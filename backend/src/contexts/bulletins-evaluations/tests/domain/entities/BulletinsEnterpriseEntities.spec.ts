@@ -1,9 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { HistoriqueEncodageConduite } from 'contexts/bulletins-evaluations/domain/entities/HistoriqueEncodageConduite';
 import { HistoriqueModificationCote } from 'contexts/bulletins-evaluations/domain/entities/HistoriqueModificationCote';
 import { SnapshotResultatBulletin } from 'contexts/bulletins-evaluations/domain/entities/SnapshotResultatBulletin';
 import { ValidationBulletinOfficielle } from 'contexts/bulletins-evaluations/domain/entities/ValidationBulletinOfficielle';
+import { CodePeriodeSimple } from 'contexts/bulletins-evaluations/domain/value-objects/CodePeriodeSimple';
 import { EtatValidationBulletin } from 'contexts/bulletins-evaluations/domain/value-objects/EtatValidationBulletin';
+import { MentionBulletin } from 'contexts/bulletins-evaluations/domain/value-objects/MentionBulletin';
 
 // Ce fichier couvre les nouvelles entites enterprise ajoutees au domaine.
 test("l'historique de modification de cote est cree et reste immutable", () => {
@@ -27,6 +30,27 @@ test("l'historique de modification de cote est cree et reste immutable", () => {
   assert.equal(historique.obtenirAncienneCote(), 8);
   assert.equal(historique.obtenirNouvelleCote(), 10);
   assert.equal(historique.obtenirMotifModification(), 'Correction apres verification');
+});
+
+test("l'historique d'encodage de conduite est cree et reste immutable", () => {
+  const historique = new HistoriqueEncodageConduite({
+    idHistoriqueEncodageConduite: 'hist-conduite-1',
+    idResultatBulletinEleve: 'resultat-1',
+    idEleve: 'eleve-1',
+    idClassePedagogique: 'classe-1',
+    idAnneeScolaire: 'annee-1',
+    codePeriode: CodePeriodeSimple.P1,
+    anciensPointsConduite: 65,
+    nouveauxPointsConduite: 80,
+    ancienneMentionConduite: MentionBulletin.B,
+    nouvelleMentionConduite: MentionBulletin.TB,
+    encodeePar: 'titulaire-1',
+    dateEncodage: new Date('2026-05-18T11:00:00.000Z'),
+  });
+
+  assert.equal(historique.obtenirAnciensPointsConduite(), 65);
+  assert.equal(historique.obtenirNouveauxPointsConduite(), 80);
+  assert.equal(historique.obtenirEncodeePar(), 'titulaire-1');
 });
 
 test('le snapshot de resultat conserve la version du referentiel et reste fige', () => {

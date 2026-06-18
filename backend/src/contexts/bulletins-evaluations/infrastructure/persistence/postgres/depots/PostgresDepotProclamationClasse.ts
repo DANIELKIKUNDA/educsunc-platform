@@ -29,6 +29,19 @@ export class PostgresDepotProclamationClasse implements DepotProclamationClasse 
     );
   }
 
+  public async listerParEcoleEtColonne(
+    idEcole: string,
+    codeColonne: string,
+    idAnneeScolaire: string,
+  ): Promise<ProclamationClasse[]> {
+    return [...PostgresDepotProclamationClasse.stockage.values()].filter((proclamation) =>
+      proclamation.obtenirIdEcole() === idEcole
+      && proclamation.obtenirCodeColonne() === codeColonne
+      && proclamation.obtenirIdAnneeScolaire() === idAnneeScolaire
+      && proclamation.obtenirEtatProclamation() !== EtatProclamation.ANNULEE
+    );
+  }
+
   public async listerHistoriqueProclamations(idClassePedagogique: string, idAnneeScolaire: string): Promise<ProclamationClasse[]> {
     return await this.listerParClasseEtAnnee(idClassePedagogique, idAnneeScolaire);
   }

@@ -2,4 +2,7 @@
 export interface ConsulterBulletinInput {
   idEleve: string;
   idAnneeScolaire: string;
+  idUtilisateur: string;
+  idEcole: string;
+  idOrganisation?: string;
 }

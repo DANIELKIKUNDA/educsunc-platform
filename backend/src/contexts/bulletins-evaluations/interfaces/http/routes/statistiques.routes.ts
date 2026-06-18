@@ -7,11 +7,11 @@ export const creerStatistiquesRoutes = (
   dependances: DependancesRoutesBulletinsEvaluationsDocument,
 ): FastifyPluginAsync => async (serveur) => {
   serveur.get('/statistiques/classes', (requete, reponse) =>
-    executerRouteBulletin(requete, reponse, () => dependances.statistiquesBulletinController.consulterClasses(requete.query as never), dependances.contexteTenant));
+    executerRouteBulletin(requete, reponse, () => dependances.statistiquesBulletinController.consulterClasses(requete.query, requete.headers), dependances.contexteTenant));
   serveur.get('/statistiques/ecole', (requete, reponse) =>
-    executerRouteBulletin(requete, reponse, () => dependances.statistiquesBulletinController.consulterEcole(requete.query as never), dependances.contexteTenant));
+    executerRouteBulletin(requete, reponse, () => dependances.statistiquesBulletinController.consulterEcole(requete.query, requete.headers), dependances.contexteTenant));
   serveur.get('/statistiques/non-classes', (requete, reponse) =>
-    executerRouteBulletin(requete, reponse, () => dependances.statistiquesBulletinController.consulterNonClasses(requete.query as never), dependances.contexteTenant));
+    executerRouteBulletin(requete, reponse, () => dependances.statistiquesBulletinController.consulterNonClasses(requete.query, requete.headers), dependances.contexteTenant));
   serveur.get('/statistiques/abandons', (requete, reponse) =>
-    executerRouteBulletin(requete, reponse, () => dependances.statistiquesBulletinController.consulterAbandons(requete.query as never), dependances.contexteTenant));
+    executerRouteBulletin(requete, reponse, () => dependances.statistiquesBulletinController.consulterAbandons(requete.query, requete.headers), dependances.contexteTenant));
 };

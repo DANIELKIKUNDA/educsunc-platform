@@ -6,5 +6,6 @@ export interface GenererBulletinEleveInput {
   typeGeneration: 'BROUILLON' | 'PROGRESSIF' | 'FINALISATION';
   versionBulletin?: number;
   idUtilisateur: string;
+  idOrganisation?: string;
   preparerPdf?: boolean;
 }

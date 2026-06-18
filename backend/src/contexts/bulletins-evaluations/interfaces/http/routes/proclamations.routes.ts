@@ -6,6 +6,8 @@ import { executerRouteBulletin } from './outilsRoutesBulletins';
 export const creerProclamationsRoutes = (
   dependances: DependancesRoutesBulletinsEvaluationsDocument,
 ): FastifyPluginAsync => async (serveur) => {
+  serveur.post('/proclamations/initialiser', (requete, reponse) =>
+    executerRouteBulletin(requete, reponse, () => dependances.proclamationsController.initialiser(requete.body, requete.headers), dependances.contexteTenant, 201));
   serveur.post('/proclamations/generer', (requete, reponse) =>
     executerRouteBulletin(requete, reponse, () => dependances.proclamationsController.generer(requete.body, requete.headers), dependances.contexteTenant, 201));
   serveur.get('/proclamations/classe/:idClassePedagogique', (requete, reponse) =>

@@ -18,7 +18,7 @@ export class GenererSyntheseValidator {
         'typeSynthese',
         TypeSyntheseResultats,
       ),
-      idUtilisateur: ValidationHttpBulletinsEvaluations.lireHeaderChaine(headers, 'x-user-id') ?? 'SYSTEME',
+      idUtilisateur: ValidationHttpBulletinsEvaluations.lireHeaderChaineRequise(headers, 'x-user-id'),
     };
   }
 }

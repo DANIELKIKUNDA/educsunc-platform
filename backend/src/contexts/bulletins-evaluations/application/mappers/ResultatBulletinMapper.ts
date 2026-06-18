@@ -9,6 +9,8 @@ export class ResultatBulletinMapper {
       idResultatBulletinEleve: resultat.obtenirId(),
       idEleve: resultat.obtenirIdEleve(),
       idInscriptionScolaire: resultat.obtenirIdInscriptionScolaire(),
+      idEcole: resultat.obtenirIdEcole(),
+      idClassePedagogique: resultat.obtenirIdClassePedagogique(),
       resultatsColonnes: resultat.obtenirResultatsColonnes().map((colonne) => ({
         codeColonne: colonne.obtenirCodeColonne(),
         totalObtenu: colonne.obtenirTotalObtenu(),
