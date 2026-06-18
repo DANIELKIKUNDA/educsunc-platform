@@ -1,4 +1,9 @@
 import { ParametresPaiementEcole } from 'contexts/paiements-facturation/domain/aggregates/ParametresPaiementEcole';
+import {
+  RoleConsultationHistoriquePaiementsDeleguee,
+  RoleExonerationDeleguee,
+  RolePerceptionDeleguee,
+} from 'contexts/paiements-facturation/application/dto/input/ParametresPaiementEntreeDTO';
 import { ModePaiement } from 'contexts/paiements-facturation/domain/value-objects/ModePaiement';
 import { MoisScolaire } from 'contexts/paiements-facturation/domain/value-objects/MoisScolaire';
 import { PolitiqueArrieres } from 'contexts/paiements-facturation/domain/value-objects/PolitiqueArrieres';
@@ -9,6 +14,9 @@ export interface ParametresPaiementEcoleOutput {
   idEcole: string;
   paiementPartielAutorise: boolean;
   paiementPartielParTypeFrais?: Record<string, boolean>;
+  perceptionDelegueeParTypeFrais?: Record<string, RolePerceptionDeleguee[]>;
+  consultationHistoriquePaiementsDeleguee?: RoleConsultationHistoriquePaiementsDeleguee[];
+  exonerationDeleguee?: RoleExonerationDeleguee[];
   politiqueArrieres: PolitiqueArrieres;
   autoriserInscriptionAvecDette: boolean;
   bloquerRetraitDocumentsSiDette: boolean;
@@ -27,6 +35,22 @@ export const versParametresPaiementOutput = (parametres: ParametresPaiementEcole
   paiementPartielParTypeFrais: parametres.obtenirPaiementPartielParTypeFrais() === undefined
     ? undefined
     : Object.fromEntries(parametres.obtenirPaiementPartielParTypeFrais() as Map<TypeFrais, boolean>),
+  perceptionDelegueeParTypeFrais:
+    parametres.obtenirPerceptionDelegueeParTypeFrais() === undefined
+      ? undefined
+      : Object.fromEntries(
+        [...(parametres.obtenirPerceptionDelegueeParTypeFrais() as Map<TypeFrais, RolePerceptionDeleguee[]>)].map(
+          ([typeFrais, roles]) => [typeFrais, [...roles]],
+        ),
+      ),
+  consultationHistoriquePaiementsDeleguee:
+    parametres.obtenirConsultationHistoriquePaiementsDeleguee() === undefined
+      ? undefined
+      : [...(parametres.obtenirConsultationHistoriquePaiementsDeleguee() as RoleConsultationHistoriquePaiementsDeleguee[])],
+  exonerationDeleguee:
+    parametres.obtenirExonerationDeleguee() === undefined
+      ? undefined
+      : [...(parametres.obtenirExonerationDeleguee() as RoleExonerationDeleguee[])],
   politiqueArrieres: parametres.obtenirPolitiqueArrieres(),
   autoriserInscriptionAvecDette: parametres.obtenirAutoriserInscriptionAvecDette(),
   bloquerRetraitDocumentsSiDette: parametres.obtenirBloquerRetraitDocumentsSiDette(),

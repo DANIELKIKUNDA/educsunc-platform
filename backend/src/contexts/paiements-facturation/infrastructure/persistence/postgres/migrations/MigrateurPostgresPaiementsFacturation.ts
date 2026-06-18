@@ -13,6 +13,11 @@ import { Migration_009_CreateExonerations } from './Migration_009_CreateExonerat
 import { Migration_010_CreatePlansAnticipationFrais } from './Migration_010_CreatePlansAnticipationFrais';
 import { Migration_011_CreateRestitutions } from './Migration_011_CreateRestitutions';
 import { Migration_012_CreateAnnulationsPaiement } from './Migration_012_CreateAnnulationsPaiement';
+import { Migration_013_AddPerceptionDelegueeParametresPaiement } from './Migration_013_AddPerceptionDelegueeParametresPaiement';
+import { Migration_014_AddConsultationHistoriqueDelegueeParametresPaiement } from './Migration_014_AddConsultationHistoriqueDelegueeParametresPaiement';
+import { Migration_015_IndustrialiserRecusOfficiels } from './Migration_015_IndustrialiserRecusOfficiels';
+import { Migration_016_AssetsDocumentairesRecus } from './Migration_016_AssetsDocumentairesRecus';
+import { Migration_017_AddExonerationDelegueeParametresPaiement } from './Migration_017_AddExonerationDelegueeParametresPaiement';
 
 // Ce fichier execute sequentiellement les migrations PostgreSQL du BC Paiements.
 export class MigrateurPostgresPaiementsFacturation {
@@ -29,6 +34,11 @@ export class MigrateurPostgresPaiementsFacturation {
     new Migration_010_CreatePlansAnticipationFrais(),
     new Migration_011_CreateRestitutions(),
     new Migration_012_CreateAnnulationsPaiement(),
+    new Migration_013_AddPerceptionDelegueeParametresPaiement(),
+    new Migration_014_AddConsultationHistoriqueDelegueeParametresPaiement(),
+    new Migration_015_IndustrialiserRecusOfficiels(),
+    new Migration_016_AssetsDocumentairesRecus(),
+    new Migration_017_AddExonerationDelegueeParametresPaiement(),
   ];
 
   constructor(

@@ -4,6 +4,7 @@ import type { ConfigurerParametresPaiementEcoleInput } from 'contexts/paiements-
 import type { ParametresPaiementEcoleOutput } from 'contexts/paiements-facturation/application/dto/output/ParametresPaiementSortieDTO';
 import { versParametresPaiementOutput } from 'contexts/paiements-facturation/application/mappers/ParametresPaiementApplicationMapper';
 import type { AuditPort } from 'contexts/paiements-facturation/application/ports/AuditPort';
+import { ErreurDroitsInsuffisants } from 'contexts/paiements-facturation/application/exceptions/ErreurDroitsInsuffisants';
 import { TypeFrais } from 'contexts/paiements-facturation/domain/value-objects/TypeFrais';
 
 export class ConfigurerParametresPaiementEcoleUseCase {
@@ -13,6 +14,8 @@ export class ConfigurerParametresPaiementEcoleUseCase {
   ) {}
 
   public async executer(input: ConfigurerParametresPaiementEcoleInput): Promise<ParametresPaiementEcoleOutput> {
+    this.verifierActeurAutorise(input.roleActif);
+
     const existant = await this.depotParametresPaiementEcole.trouverActifParEcole(input.idEcole);
     existant?.desactiver();
     if (existant !== null) {
@@ -26,6 +29,22 @@ export class ConfigurerParametresPaiementEcoleUseCase {
       paiementPartielParTypeFrais: input.paiementPartielParTypeFrais === undefined
         ? undefined
         : new Map(Object.entries(input.paiementPartielParTypeFrais) as Array<[TypeFrais, boolean]>),
+      perceptionDelegueeParTypeFrais: input.perceptionDelegueeParTypeFrais === undefined
+        ? undefined
+        : new Map(
+          Object.entries(input.perceptionDelegueeParTypeFrais).map(([typeFrais, roles]) => [
+            typeFrais as TypeFrais,
+            [...(roles ?? [])],
+          ]),
+        ),
+      consultationHistoriquePaiementsDeleguee:
+        input.consultationHistoriquePaiementsDeleguee === undefined
+          ? undefined
+          : [...input.consultationHistoriquePaiementsDeleguee],
+      exonerationDeleguee:
+        input.exonerationDeleguee === undefined
+          ? undefined
+          : [...input.exonerationDeleguee],
       politiqueArrieres: input.politiqueArrieres,
       autoriserInscriptionAvecDette: input.autoriserInscriptionAvecDette,
       bloquerRetraitDocumentsSiDette: input.bloquerRetraitDocumentsSiDette,
@@ -41,10 +60,23 @@ export class ConfigurerParametresPaiementEcoleUseCase {
     await this.depotParametresPaiementEcole.sauvegarder(parametres);
     await this.auditPort?.journaliserActionFinanciere({
       action: 'CONFIGURER_PARAMETRES_PAIEMENT_ECOLE',
+      idOrganisation: input.idOrganisation,
       idEcole: input.idEcole,
+      idUtilisateur: input.idUtilisateur,
+      roleActif: input.roleActif,
       referenceMetier: parametres.obtenirId(),
     });
 
     return versParametresPaiementOutput(parametres);
+  }
+
+  private verifierActeurAutorise(roleActif?: string): void {
+    if (roleActif === 'ADMIN_SYSTEME_ECOLE') {
+      return;
+    }
+
+    throw new ErreurDroitsInsuffisants(
+      "Seul l'admin systeme ecole peut configurer les parametres de paiement de l'ecole.",
+    );
   }
 }

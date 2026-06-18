@@ -21,6 +21,11 @@ export interface FamillePaiementDTO {
   idFamille: string;
   idEcole: string;
   nombreEnfants?: number;
+  responsables?: Array<{
+    idResponsableFamille: string;
+    idUtilisateurAuth?: string;
+    estPrincipal: boolean;
+  }>;
 }
 
 export interface StatutScolaireDTO {

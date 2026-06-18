@@ -136,7 +136,11 @@ export class CaisseJour extends RacineAgregat<string> {
     this.totalFondsConsommes = Money.zero(devise);
 
     this.operations.forEach((operation) => {
-      const signe = operation.obtenirTypeOperation() === TypeOperationCaisse.RESTITUTION ? -1 : 1;
+      const signe = operation.obtenirTypeOperation() === TypeOperationCaisse.RESTITUTION
+        || operation.obtenirTypeOperation() === TypeOperationCaisse.ANNULATION
+        || operation.obtenirTypeOperation() === TypeOperationCaisse.AJUSTEMENT_INVERSE
+        ? -1
+        : 1;
       const montantOperation = operation.obtenirMontant().obtenirMontant() * signe;
       const montantSigne = new Money(Math.abs(montantOperation), devise);
 

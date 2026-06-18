@@ -48,3 +48,55 @@ export interface RecuPaiementOutput {
   dateEmission: Date;
   statutRecu: string;
 }
+
+export interface RecuPaiementOfficielLigneOutput {
+  numeroLigne: number;
+  typeFrais: string;
+  libelle: string;
+  montant: Money;
+}
+
+export interface RecuPaiementOfficielOutput {
+  idRecu: string;
+  numeroRecu: string;
+  idPaiement: string;
+  dateEmission: Date;
+  statutRecu: string;
+  modePaiement: ModePaiement;
+  totalPaye: Money;
+  montantEnLettres: string;
+  ecole: {
+    idEcole: string;
+    nom: string;
+    sigle?: string;
+    adresse?: string;
+    telephone?: string;
+    email?: string;
+    logoUrl?: string;
+    cachetUrl?: string;
+  };
+  contexteScolaire: {
+    anneeScolaire?: string;
+    classe?: string;
+  };
+  eleve: {
+    idEleve: string;
+    code: string;
+    nom: string;
+    postnom: string;
+    prenom?: string;
+    sexe: string;
+  };
+  caissier: {
+    idUtilisateur: string;
+    nomComplet: string;
+    signatureUrl?: string;
+  };
+  lignes: RecuPaiementOfficielLigneOutput[];
+}
+
+export interface RecuPaiementPdfOutput {
+  nomFichier: string;
+  mimeType: string;
+  contenu: Buffer;
+}

@@ -11,9 +11,11 @@ export class GenererObligationsMasseUseCase {
       resultat[idEleve] = await this.genererObligationsEleveUseCase.executer({
         idEleve,
         idInscriptionScolaire: `${idEleve}-${input.idAnneeScolaire}`,
+        idOrganisation: input.idOrganisation,
         idEcole: input.idEcole,
         idAnneeScolaire: input.idAnneeScolaire,
         creePar: input.creePar,
+        roleActif: input.roleActif,
       });
     }
     return resultat;

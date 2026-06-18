@@ -5,5 +5,6 @@ export * from './DetteElevePresenter';
 export * from './FraisExigiblesPresenter';
 export * from './CaissePresenter';
 export * from './HistoriquePaiementsPresenter';
+export * from './RecusPaiementPresenter';
 export * from './RestitutionPresenter';
 export * from './ErreurPaiementsFacturationPresenter';

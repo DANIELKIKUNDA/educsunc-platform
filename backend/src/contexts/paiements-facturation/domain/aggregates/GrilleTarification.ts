@@ -127,6 +127,81 @@ export class GrilleTarification extends RacineAgregat<string> {
     this.marquerModification(modifiePar);
   }
 
+  public reconfigurer(proprietes: {
+    libelle?: string;
+    montant?: Money;
+    section?: string;
+    categorieFraisEtat?: CategorieFraisEtat;
+    categorieTechnique?: CategorieTechnique;
+    estClasseTENASOSP?: boolean;
+    estClasseEXETAT?: boolean;
+    estClasseFinaliste?: boolean;
+    moisScolaire?: MoisScolaire;
+    trancheFraisEtat?: TrancheFraisEtat;
+    obligatoire?: boolean;
+    dateDebutValidite?: string;
+    dateFinValidite?: string;
+  }, modifiePar: string): void {
+    if (proprietes.libelle !== undefined) {
+      this.libelle = GrilleTarification.validerTexte(proprietes.libelle, 'libelle');
+    }
+
+    if (proprietes.montant !== undefined) {
+      this.montant = proprietes.montant;
+    }
+
+    if (proprietes.section !== undefined) {
+      this.section = GrilleTarification.nettoyerTexteOptionnel(proprietes.section);
+    }
+
+    if (proprietes.categorieFraisEtat !== undefined) {
+      this.categorieFraisEtat = proprietes.categorieFraisEtat;
+    }
+
+    if (proprietes.categorieTechnique !== undefined) {
+      this.categorieTechnique = proprietes.categorieTechnique;
+    }
+
+    if (proprietes.estClasseTENASOSP !== undefined) {
+      this.estClasseTENASOSP = proprietes.estClasseTENASOSP;
+    }
+
+    if (proprietes.estClasseEXETAT !== undefined) {
+      this.estClasseEXETAT = proprietes.estClasseEXETAT;
+    }
+
+    if (proprietes.estClasseFinaliste !== undefined) {
+      this.estClasseFinaliste = proprietes.estClasseFinaliste;
+    }
+
+    if (proprietes.moisScolaire !== undefined) {
+      this.moisScolaire = proprietes.moisScolaire;
+    }
+
+    if (proprietes.trancheFraisEtat !== undefined) {
+      this.trancheFraisEtat = proprietes.trancheFraisEtat;
+    }
+
+    if (proprietes.obligatoire !== undefined) {
+      this.obligatoire = proprietes.obligatoire;
+    }
+
+    if (proprietes.dateDebutValidite !== undefined) {
+      this.dateDebutValidite = GrilleTarification.nettoyerTexteOptionnel(
+        proprietes.dateDebutValidite,
+      );
+    }
+
+    if (proprietes.dateFinValidite !== undefined) {
+      this.dateFinValidite = GrilleTarification.nettoyerTexteOptionnel(
+        proprietes.dateFinValidite,
+      );
+    }
+
+    this.verifierCoherence();
+    this.marquerModification(modifiePar);
+  }
+
   public renommer(libelle: string, modifiePar: string): void {
     this.libelle = GrilleTarification.validerTexte(libelle, 'libelle');
     this.marquerModification(modifiePar);

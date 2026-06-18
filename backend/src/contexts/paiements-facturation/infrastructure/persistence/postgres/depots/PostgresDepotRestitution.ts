@@ -62,4 +62,15 @@ export class PostgresDepotRestitution
       ? null
       : MappersPaiementsPostgres.depuisPersistanceRestitution(ligne);
   }
+
+  public async trouverParPaiement(idPaiement: string): Promise<Restitution | null> {
+    const ligne = await this.executerRequeteUnique<PersistanceRestitutionPostgres>(
+      'SELECT * FROM "restitutions" WHERE "id_paiement" = $1 LIMIT 1',
+      [idPaiement],
+    );
+
+    return ligne === null
+      ? null
+      : MappersPaiementsPostgres.depuisPersistanceRestitution(ligne);
+  }
 }

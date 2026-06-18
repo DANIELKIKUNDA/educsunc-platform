@@ -8,3 +8,4 @@ export * from './GetPaiementsParCaissierQuery';
 export * from './GetPaiementsParTypeFraisQuery';
 export * from './GetArrieresEleveQuery';
 export * from './GetFondsAnticipesQuery';
+export * from './GetRecusPaiementQuery';

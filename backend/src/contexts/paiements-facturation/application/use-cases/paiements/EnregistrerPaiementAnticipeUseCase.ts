@@ -8,6 +8,7 @@ export class EnregistrerPaiementAnticipeUseCase {
 
   public async executer(input: EnregistrerPaiementAnticipeInput): Promise<PaiementEnregistreOutput> {
     return this.enregistrerPaiementUseCase.executer({
+      idOrganisation: input.idOrganisation,
       idEleve: input.idEleve,
       idEcole: input.idEcole,
       typeFraisDeclare: input.typeFraisDeclare,

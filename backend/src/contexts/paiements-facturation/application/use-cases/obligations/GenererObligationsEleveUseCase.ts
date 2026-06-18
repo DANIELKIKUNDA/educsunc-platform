@@ -1,8 +1,10 @@
 import type { GenererObligationsEleveInput } from 'contexts/paiements-facturation/application/dto/input/ObligationsEntreeDTO';
 import type { ObligationFinanciereOutput } from 'contexts/paiements-facturation/application/dto/output/ObligationsSortieDTO';
 import type { AuditPort } from 'contexts/paiements-facturation/application/ports/AuditPort';
+import type { ClasseReglesFraisDTO } from 'contexts/paiements-facturation/application/ports/ReferentielAcademiquePort';
 import type { ReferentielAcademiquePort } from 'contexts/paiements-facturation/application/ports/ReferentielAcademiquePort';
 import type { ScolariteElevesPort } from 'contexts/paiements-facturation/application/ports/ScolariteElevesPort';
+import { GrilleTarification } from 'contexts/paiements-facturation/domain/aggregates/GrilleTarification';
 import { MoteurGenerationObligations } from 'contexts/paiements-facturation/domain/services/MoteurGenerationObligations';
 import type { DepotGrilleTarification } from 'contexts/paiements-facturation/domain/repositories/DepotGrilleTarification';
 import type { DepotObligationFinanciere } from 'contexts/paiements-facturation/domain/repositories/DepotObligationFinanciere';
@@ -22,13 +24,23 @@ export class GenererObligationsEleveUseCase {
   public async executer(input: GenererObligationsEleveInput): Promise<ObligationFinanciereOutput[]> {
     await this.scolariteElevesPort.consulterEleve(input.idEleve);
     const classe = await this.scolariteElevesPort.consulterClasseActiveEleve(input.idEleve);
+    let reglesClasse: ClasseReglesFraisDTO | undefined;
     if (classe !== null) {
-      await this.referentielAcademiquePort.consulterReglesFraisClasse(classe.idClassePedagogique);
+      reglesClasse = await this.referentielAcademiquePort.consulterReglesFraisClasse(
+        classe.idClassePedagogique,
+      );
     }
     await this.depotParametresPaiementEcole.trouverActifParEcole(input.idEcole);
-    const grilles = await this.depotGrilleTarification.listerActivesParEcoleEtAnnee(input.idEcole, input.idAnneeScolaire);
+    const grilles = await this.depotGrilleTarification.listerActivesParEcoleEtAnnee(
+      input.idEcole,
+      input.idAnneeScolaire,
+    );
+    const grillesApplicables = this.selectionnerGrillesApplicables(grilles, reglesClasse);
     const obligationsExistantes = await this.depotObligationFinanciere.listerParEleveEtAnnee(input.idEcole, input.idEleve, input.idAnneeScolaire);
-    const obligationsGenerees = this.moteurGenerationObligations.genererDepuisGrilles(input, grilles)
+    const obligationsGenerees = this.moteurGenerationObligations.genererDepuisGrilles(
+      input,
+      grillesApplicables,
+    )
       .filter((obligation) => !obligationsExistantes.some((existante) =>
         existante.obtenirTypeFrais() === obligation.obtenirTypeFrais()
         && existante.obtenirReferenceFrais().obtenirValeur() === obligation.obtenirReferenceFrais().obtenirValeur(),
@@ -40,7 +52,10 @@ export class GenererObligationsEleveUseCase {
 
     await this.auditPort?.journaliserActionFinanciere({
       action: 'GENERER_OBLIGATIONS_ELEVE',
+      idOrganisation: input.idOrganisation,
       idEcole: input.idEcole,
+      idUtilisateur: input.creePar,
+      roleActif: input.roleActif,
       referenceMetier: input.idEleve,
     });
 
@@ -58,5 +73,67 @@ export class GenererObligationsEleveUseCase {
       solde: obligation.obtenirSolde(),
       statut: obligation.obtenirStatut(),
     }));
+  }
+
+  private selectionnerGrillesApplicables(
+    grilles: GrilleTarification[],
+    reglesClasse?: ClasseReglesFraisDTO,
+  ): GrilleTarification[] {
+    if (reglesClasse === undefined) {
+      return grilles.filter((grille) =>
+        grille.obtenirSection() === undefined
+        && grille.obtenirCategorieTechnique() === undefined
+        && grille.obtenirCategorieFraisEtat() === undefined
+        && grille.obtenirEstClasseTENASOSP() === undefined
+        && grille.obtenirEstClasseEXETAT() === undefined
+        && grille.obtenirEstClasseFinaliste() === undefined,
+      );
+    }
+
+    return grilles.filter((grille) => {
+      if (grille.obtenirSection() !== undefined && grille.obtenirSection() !== reglesClasse.section) {
+        return false;
+      }
+
+      if (
+        grille.obtenirCategorieTechnique() !== undefined
+        && (
+          reglesClasse.optionEstTechnique !== true
+          || grille.obtenirCategorieTechnique() !== reglesClasse.optionCategorieTechnique
+        )
+      ) {
+        return false;
+      }
+
+      if (
+        grille.obtenirCategorieFraisEtat() !== undefined
+        && grille.obtenirCategorieFraisEtat() !== reglesClasse.categorieFraisEtat
+      ) {
+        return false;
+      }
+
+      if (
+        grille.obtenirEstClasseTENASOSP() !== undefined
+        && grille.obtenirEstClasseTENASOSP() !== reglesClasse.estClasseTENASOSP
+      ) {
+        return false;
+      }
+
+      if (
+        grille.obtenirEstClasseEXETAT() !== undefined
+        && grille.obtenirEstClasseEXETAT() !== reglesClasse.estClasseEXETAT
+      ) {
+        return false;
+      }
+
+      if (
+        grille.obtenirEstClasseFinaliste() !== undefined
+        && grille.obtenirEstClasseFinaliste() !== reglesClasse.estClasseFinaliste
+      ) {
+        return false;
+      }
+
+      return true;
+    });
   }
 }

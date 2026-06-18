@@ -31,6 +31,14 @@ interface LigneFamillePaiement {
   id_famille: string;
   id_ecole: string;
   nombre_enfants: number | string | null;
+  responsables:
+    | Array<{
+      idResponsableFamille: string;
+      idUtilisateurAuth?: string;
+      estPrincipal?: boolean;
+    }>
+    | string
+    | null;
 }
 
 interface LigneStatutPaiement {
@@ -149,6 +157,7 @@ export class ScolariteElevesAdapter implements ScolariteElevesPort {
           'SELECT',
           '"famille"."id" AS "id_famille",',
           '"famille"."id_ecole",',
+          '"famille"."responsables",',
           'COUNT("membre"."id_eleve") AS "nombre_enfants"',
           'FROM "familles" "famille"',
           'JOIN "membres_famille" "membre" ON "membre"."id_famille" = "famille"."id"',
@@ -164,6 +173,16 @@ export class ScolariteElevesAdapter implements ScolariteElevesPort {
       return null;
     }
 
+    const responsables = ligne.responsables === null
+      ? []
+      : typeof ligne.responsables === 'string'
+        ? JSON.parse(ligne.responsables) as Array<{
+          idResponsableFamille: string;
+          idUtilisateurAuth?: string;
+          estPrincipal?: boolean;
+        }>
+        : ligne.responsables;
+
     return {
       idFamille: ligne.id_famille,
       idEcole: ligne.id_ecole,
@@ -171,6 +190,11 @@ export class ScolariteElevesAdapter implements ScolariteElevesPort {
         ligne.nombre_enfants === null
           ? undefined
           : Number.parseInt(String(ligne.nombre_enfants), 10),
+      responsables: responsables.map((responsable) => ({
+        idResponsableFamille: responsable.idResponsableFamille,
+        idUtilisateurAuth: responsable.idUtilisateurAuth,
+        estPrincipal: responsable.estPrincipal === true,
+      })),
     };
   }
 

@@ -4,7 +4,13 @@ import { ObligationFinanciereEleve } from '../aggregates/ObligationFinanciereEle
 import { convertirMontantEnLettres } from 'shared/utils/montantEnLettres';
 
 export class MoteurRecu {
-  public generer(paiement: Paiement, obligations: Map<string, ObligationFinanciereEleve>, idCaissier: string): RecuPaiement[] {
+  public generer(
+    paiement: Paiement,
+    obligations: Map<string, ObligationFinanciereEleve>,
+    idCaissier: string,
+    numeroRecu?: string,
+    dateEmission = new Date(),
+  ): RecuPaiement[] {
     return paiement.obtenirRepartitions().map((repartition, index) => {
       const obligation = obligations.get(repartition.obtenirIdObligation());
 
@@ -14,7 +20,7 @@ export class MoteurRecu {
 
       return RecuPaiement.creer({
         idRecu: `${paiement.obtenirId()}-RECU-${index + 1}`,
-        numeroRecu: `${paiement.obtenirId()}-${index + 1}`,
+        numeroRecu: numeroRecu ?? `${paiement.obtenirId()}-${index + 1}`,
         idPaiement: paiement.obtenirId(),
         idObligation: obligation.obtenirId(),
         idEcole: paiement.obtenirIdEcole(),
@@ -32,7 +38,7 @@ export class MoteurRecu {
         ),
         modePaiement: paiement.obtenirModePaiement(),
         idCaissier,
-        dateEmission: new Date(),
+        dateEmission,
       });
     });
   }

@@ -8,8 +8,8 @@ export class ConsulterFraisExigiblesController {
   constructor(private readonly casUsage: ConsulterFraisExigiblesEleveUseCase) {}
 
   // Cette methode valide le parametre eleve puis presente la liste des frais.
-  public async consulter(parametres: unknown): Promise<{ donnee: unknown }> {
-    const entree = ParamValidator.validerFraisExigibles(parametres);
+  public async consulter(parametres: unknown, headers: unknown): Promise<{ donnee: unknown }> {
+    const entree = ParamValidator.validerFraisExigiblesAvecContexte(parametres, headers);
     const sortie = await this.casUsage.executer(entree);
 
     return FraisExigiblesPresenter.presenterFraisExigibles(sortie);

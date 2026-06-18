@@ -4,6 +4,7 @@ import { ModePaiement } from 'contexts/paiements-facturation/domain/value-object
 import { TypeFrais } from 'contexts/paiements-facturation/domain/value-objects/TypeFrais';
 
 export interface EnregistrerPaiementInput {
+  idOrganisation: string;
   idEleve: string;
   idEcole: string;
   typeFraisDeclare: TypeFrais;
@@ -15,6 +16,7 @@ export interface EnregistrerPaiementInput {
 }
 
 export interface EnregistrerPaiementArriereInput {
+  idOrganisation: string;
   idEleve: string;
   idEcole: string;
   montant: Money;
@@ -25,6 +27,7 @@ export interface EnregistrerPaiementArriereInput {
 }
 
 export interface EnregistrerPaiementAnticipeInput {
+  idOrganisation: string;
   idEleve: string;
   idEcole: string;
   montant: Money;

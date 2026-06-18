@@ -8,3 +8,4 @@ export * from './PaiementsParCaissierQueryRepository';
 export * from './PaiementsParTypeFraisQueryRepository';
 export * from './ArrieresEleveQueryRepository';
 export * from './FondsAnticipesQueryRepository';
+export * from './RecusPaiementQueryRepository';

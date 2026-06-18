@@ -1,8 +1,19 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import type { AuditFinancierInput } from '../../../application/ports/AuditPort';
+import type { AutorisationPerceptionPaiementPort } from '../../../application/ports/AutorisationPerceptionPaiementPort';
+import type { DepotRecuPaiementOfficielPort, RecuPaiementOfficielPersistable } from '../../../application/ports/DepotRecuPaiementOfficielPort';
+import type { ServiceNumeroRecuPaiementPort } from '../../../application/ports/ServiceNumeroRecuPaiementPort';
 import type { EnregistrerPaiementInput } from '../../../application/dto/input/PaiementsEntreeDTO';
 import type { PaiementEnregistreOutput } from '../../../application/dto/output/PaiementsSortieDTO';
+import type {
+  ClasseEleveDTO,
+  ElevePaiementDTO,
+  FamillePaiementDTO,
+  InscriptionPaiementDTO,
+  ScolariteElevesPort,
+  StatutScolaireDTO,
+} from '../../../application/ports/ScolariteElevesPort';
 import { ServiceIdempotencePaiement, type EnregistrementIdempotencePaiement, type StoreIdempotencePaiement } from '../../../application/services/ServiceIdempotencePaiement';
 import { ServiceTransactionPaiement, type UniteTravailPaiement } from '../../../application/services/ServiceTransactionPaiement';
 import { EnregistrerPaiementUseCase } from '../../../application/use-cases/paiements/EnregistrerPaiementUseCase';
@@ -24,11 +35,13 @@ import { OrigineObligation } from '../../../domain/value-objects/OrigineObligati
 import { PolitiqueArrieres } from '../../../domain/value-objects/PolitiqueArrieres';
 import { ReferenceFrais } from '../../../domain/value-objects/ReferenceFrais';
 import { TypeFrais } from '../../../domain/value-objects/TypeFrais';
+import type { DomainEventBusPort } from '../../../../../shared/application/DomainEventBusPort';
 
 // Ce fichier teste l'orchestration applicative du cas d'usage d'enregistrement d'un paiement.
 
 class DepotObligationMemoire implements DepotObligationFinanciere {
   public readonly sauvegardes: ObligationFinanciereEleve[] = [];
+  public derniereLectureAnneeScolaire?: string;
 
   constructor(private readonly obligations: ObligationFinanciereEleve[]) {}
 
@@ -43,8 +56,9 @@ class DepotObligationMemoire implements DepotObligationFinanciere {
   public async listerParEleveEtAnnee(
     _idEcole: string,
     _idEleve: string,
-    _idAnneeScolaire: string,
+    idAnneeScolaire: string,
   ): Promise<ObligationFinanciereEleve[]> {
+    this.derniereLectureAnneeScolaire = idAnneeScolaire;
     return this.obligations;
   }
 }
@@ -92,8 +106,34 @@ class DepotRecuMemoire implements DepotRecuPaiement {
     this.sauvegardes.push(recu);
   }
 
+  public async trouverParId(idRecu: string): Promise<RecuPaiement | null> {
+    return this.sauvegardes.find((recu) => recu.obtenirId() === idRecu) ?? null;
+  }
+
   public async listerParPaiement(idPaiement: string): Promise<RecuPaiement[]> {
     return this.sauvegardes.filter((recu) => recu.obtenirIdPaiement() === idPaiement);
+  }
+}
+
+class DepotRecuOfficielMemoire implements DepotRecuPaiementOfficielPort {
+  public readonly sauvegardes: RecuPaiementOfficielPersistable[] = [];
+
+  public async sauvegarder(recu: RecuPaiementOfficielPersistable): Promise<void> {
+    this.sauvegardes.push(recu);
+  }
+
+  public async trouverParIdRecu(idRecu: string): Promise<RecuPaiementOfficielPersistable | null> {
+    return this.sauvegardes.find((recu) => recu.idRecu === idRecu) ?? null;
+  }
+
+  public async trouverParPaiement(idPaiement: string): Promise<RecuPaiementOfficielPersistable | null> {
+    return this.sauvegardes.find((recu) => recu.idPaiement === idPaiement) ?? null;
+  }
+}
+
+class ServiceNumeroRecuMemoire implements ServiceNumeroRecuPaiementPort {
+  public async generer(): Promise<string> {
+    return 'ECOLE-2026-000001';
   }
 }
 
@@ -121,6 +161,7 @@ class DepotCaisseMemoire implements DepotCaisseJour {
 class DepotRestitutionMemoire implements DepotRestitution {
   public async sauvegarder(): Promise<void> {}
   public async trouverParId(): Promise<null> { return null; }
+  public async trouverParPaiement(): Promise<null> { return null; }
 }
 
 class StoreIdempotenceMemoire implements StoreIdempotencePaiement<PaiementEnregistreOutput> {
@@ -154,6 +195,55 @@ class AuditMemoire {
 
   public async journaliserActionFinanciere(input: AuditFinancierInput): Promise<void> {
     this.entrees.push(input);
+  }
+}
+
+class AutorisationPerceptionMemoire implements AutorisationPerceptionPaiementPort {
+  public readonly appels: Array<{
+    idUtilisateur: string;
+    idOrganisation: string;
+    idEcole: string;
+    idEleve: string;
+    typeFrais: TypeFrais;
+  }> = [];
+
+  public async verifierPerceptionPaiement(params: {
+    idUtilisateur: string;
+    idOrganisation: string;
+    idEcole: string;
+    idEleve: string;
+    typeFrais: TypeFrais;
+  }): Promise<void> {
+    this.appels.push(params);
+  }
+}
+
+class ScolaritePortMemoire implements ScolariteElevesPort {
+  public async consulterEleve(idEleve: string): Promise<ElevePaiementDTO> {
+    return { idEleve, idEcole: 'ECOLE-001', idOrganisation: 'ORG-001' };
+  }
+
+  public async consulterInscriptionActive(idEleve: string): Promise<InscriptionPaiementDTO | null> {
+    return {
+      idInscriptionScolaire: 'INSC-001',
+      idEleve,
+      idEcole: 'ECOLE-001',
+      idAnneeScolaire: 'ANNEE-001',
+    };
+  }
+
+  public async consulterClasseActiveEleve(): Promise<ClasseEleveDTO | null> { return null; }
+  public async consulterFamilleEleve(): Promise<FamillePaiementDTO | null> { return null; }
+  public async verifierStatutScolaire(idEleve: string): Promise<StatutScolaireDTO> {
+    return { idEleve, statut: 'ACTIF', actif: true };
+  }
+}
+
+class EventBusMemoire implements DomainEventBusPort {
+  public readonly publications: string[][] = [];
+
+  public async publier(evenements: { typeEvenement: string }[]): Promise<void> {
+    this.publications.push(evenements.map((evenement) => evenement.typeEvenement));
   }
 }
 
@@ -200,6 +290,7 @@ function creerCaisseOuverte(): CaisseJour {
 
 function creerEntreePaiement(montant: number): EnregistrerPaiementInput {
   return {
+    idOrganisation: 'ORG-001',
     idEleve: 'ELEVE-001',
     idEcole: 'ECOLE-001',
     typeFraisDeclare: TypeFrais.FRAIS_SCOLAIRES,
@@ -219,10 +310,14 @@ function creerCasUsage(
   const depotPaiement = new DepotPaiementMemoire();
   const depotParametres = new DepotParametresMemoire(creerParametres());
   const depotRecu = new DepotRecuMemoire();
+  const depotRecuOfficiel = new DepotRecuOfficielMemoire();
   const depotCaisse = new DepotCaisseMemoire(caisse);
   const depotRestitution = new DepotRestitutionMemoire();
   const storeIdempotence = new StoreIdempotenceMemoire();
   const audit = new AuditMemoire();
+  const autorisation = new AutorisationPerceptionMemoire();
+  const scolarite = new ScolaritePortMemoire();
+  const eventBus = new EventBusMemoire();
   const casUsage = new EnregistrerPaiementUseCase(
     depotObligation,
     depotPaiement,
@@ -232,10 +327,15 @@ function creerCasUsage(
     depotRestitution,
     new ServiceIdempotencePaiement(storeIdempotence),
     new ServiceTransactionPaiement(new UniteTravailImmediate()),
+    autorisation,
+    scolarite,
+    depotRecuOfficiel,
+    new ServiceNumeroRecuMemoire(),
     undefined,
     undefined,
     undefined,
     audit,
+    eventBus,
   );
 
   return {
@@ -243,14 +343,18 @@ function creerCasUsage(
     depotObligation,
     depotPaiement,
     depotRecu,
+    depotRecuOfficiel,
     depotCaisse,
     audit,
+    autorisation,
+    scolarite,
+    eventBus,
   };
 }
 
 test('EnregistrerPaiement repartit correctement un paiement exact sur une obligation', async () => {
   const obligation = creerObligation('OBL-001', 10_000);
-  const { casUsage, depotPaiement, depotRecu, audit } = creerCasUsage([obligation]);
+  const { casUsage, depotPaiement, depotRecu, depotRecuOfficiel, audit } = creerCasUsage([obligation]);
 
   const sortie = await casUsage.executer(creerEntreePaiement(10_000));
 
@@ -259,6 +363,8 @@ test('EnregistrerPaiement repartit correctement un paiement exact sur une obliga
   assert.equal(obligation.obtenirSolde().obtenirMontant(), 0);
   assert.equal(depotPaiement.sauvegardes.length, 1);
   assert.equal(depotRecu.sauvegardes.length, 1);
+  assert.equal(depotRecuOfficiel.sauvegardes.length, 1);
+  assert.equal(depotRecuOfficiel.sauvegardes[0]?.numeroRecu, 'ECOLE-2026-000001');
   assert.equal(audit.entrees.length, 1);
 });
 
@@ -277,7 +383,7 @@ test('EnregistrerPaiement gere un paiement partiel et conserve le reste a payer'
 test('EnregistrerPaiement repartit un paiement superieur sur plusieurs obligations', async () => {
   const obligationA = creerObligation('OBL-001', 10_000);
   const obligationB = creerObligation('OBL-002', 6_000);
-  const { casUsage } = creerCasUsage([obligationA, obligationB]);
+  const { casUsage, depotRecu, depotRecuOfficiel } = creerCasUsage([obligationA, obligationB]);
 
   const sortie = await casUsage.executer(creerEntreePaiement(12_000));
 
@@ -286,6 +392,10 @@ test('EnregistrerPaiement repartit un paiement superieur sur plusieurs obligatio
   assert.equal(sortie.repartitions[1]?.montantAffecte.obtenirMontant(), 2_000);
   assert.equal(obligationA.obtenirSolde().obtenirMontant(), 0);
   assert.equal(obligationB.obtenirSolde().obtenirMontant(), 4_000);
+  assert.equal(depotRecu.sauvegardes.length, 2);
+  assert.equal(depotRecu.sauvegardes[0]?.obtenirNumeroRecu(), 'ECOLE-2026-000001');
+  assert.equal(depotRecu.sauvegardes[1]?.obtenirNumeroRecu(), 'ECOLE-2026-000001');
+  assert.equal(depotRecuOfficiel.sauvegardes[0]?.lignes.length, 2);
 });
 
 test('EnregistrerPaiement detecte un excedent non repartissable', async () => {
@@ -306,4 +416,42 @@ test('EnregistrerPaiement lie le paiement a une caisse ouverte quand elle existe
   assert.equal(caisse.obtenirOperations().length, 1);
   assert.equal(caisse.obtenirTotalEncaisse().obtenirMontant(), 3_000);
   assert.equal(caisse.obtenirTotalParCaissier().get('CAISSIER-001')?.obtenirMontant(), 3_000);
+});
+
+test("EnregistrerPaiement reapplique l'autorisation locale avant la perception", async () => {
+  const obligation = creerObligation('OBL-001', 10_000);
+  const { casUsage, autorisation } = creerCasUsage([obligation]);
+
+  await casUsage.executer(creerEntreePaiement(5_000));
+
+  assert.equal(autorisation.appels.length, 1);
+  assert.deepEqual(autorisation.appels[0], {
+    idUtilisateur: 'CAISSIER-001',
+    idOrganisation: 'ORG-001',
+    idEcole: 'ECOLE-001',
+    idEleve: 'ELEVE-001',
+    typeFrais: TypeFrais.FRAIS_SCOLAIRES,
+  });
+});
+
+test("EnregistrerPaiement utilise l'annee scolaire active pour charger les obligations", async () => {
+  const obligation = creerObligation('OBL-001', 10_000);
+  const { casUsage, depotObligation } = creerCasUsage([obligation]);
+
+  await casUsage.executer(creerEntreePaiement(5_000));
+
+  assert.equal(depotObligation.derniereLectureAnneeScolaire, 'ANNEE-001');
+});
+
+test('EnregistrerPaiement publie les evenements metier vers le bus partage', async () => {
+  const obligation = creerObligation('OBL-001', 10_000);
+  const { casUsage, eventBus } = creerCasUsage([obligation]);
+
+  await casUsage.executer(creerEntreePaiement(10_000));
+
+  assert.deepEqual(eventBus.publications, [[
+    'PaiementCree',
+    'PaiementReparti',
+    'PaiementValide',
+  ]]);
 });

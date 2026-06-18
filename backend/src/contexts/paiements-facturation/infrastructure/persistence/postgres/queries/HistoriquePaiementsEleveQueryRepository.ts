@@ -11,15 +11,17 @@ export class HistoriquePaiementsEleveQueryRepository extends BaseDepotPostgresPa
   }
 
   public async consulterParEleve(
+    idEcole: string,
     idEleve: string,
   ): Promise<HistoriquePaiementsEleveReadModel> {
     const lignes = await this.executerRequete<PersistancePaiementPostgres>(
       [
         'SELECT * FROM "paiements"',
         'WHERE "id_eleve" = $1',
+        'AND "id_ecole" = $2',
         'ORDER BY "cree_le" DESC',
       ].join(' '),
-      [idEleve],
+      [idEleve, idEcole],
     );
 
     return {

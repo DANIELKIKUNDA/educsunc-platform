@@ -135,6 +135,15 @@ export class ObligationFinanciereEleve extends RacineAgregat<string> {
     this.recalculerStatut();
   }
 
+  public retirerExoneration(montant: Money): void {
+    if (montant.estZero() || montant.estSuperieurA(this.montantExonere)) {
+      throw new Error('Le montant de retrait d exoneration est invalide.');
+    }
+
+    this.montantExonere = this.montantExonere.soustraire(montant);
+    this.recalculerStatut();
+  }
+
   public annuler(): void {
     this.statut = StatutDette.ANNULE;
     this.version += 1;

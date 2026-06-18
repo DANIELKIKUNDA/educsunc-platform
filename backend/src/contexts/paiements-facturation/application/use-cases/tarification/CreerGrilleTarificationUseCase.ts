@@ -4,6 +4,7 @@ import type { CreerGrilleTarificationInput } from 'contexts/paiements-facturatio
 import type { GrilleTarificationOutput } from 'contexts/paiements-facturation/application/dto/output/GrilleTarificationSortieDTO';
 import { versGrilleTarificationOutput } from 'contexts/paiements-facturation/application/mappers/GrilleTarificationApplicationMapper';
 import type { AuditPort } from 'contexts/paiements-facturation/application/ports/AuditPort';
+import { ErreurDroitsInsuffisants } from 'contexts/paiements-facturation/application/exceptions/ErreurDroitsInsuffisants';
 import { ErreurUseCasePaiement } from 'contexts/paiements-facturation/application/exceptions/ErreurUseCasePaiement';
 
 export class CreerGrilleTarificationUseCase {
@@ -13,6 +14,8 @@ export class CreerGrilleTarificationUseCase {
   ) {}
 
   public async executer(input: CreerGrilleTarificationInput): Promise<GrilleTarificationOutput> {
+    this.verifierActeurAutorise(input.roleActif);
+
     const grillesExistantes = await this.depotGrilleTarification.listerActivesParEcoleEtAnnee(input.idEcole, input.idAnneeScolaire);
     const conflit = grillesExistantes.some((grille) =>
       grille.obtenirTypeFrais() === input.typeFrais
@@ -25,6 +28,7 @@ export class CreerGrilleTarificationUseCase {
 
     const grille = GrilleTarification.creer({
       idGrilleTarification: `${input.idEcole}-${input.idAnneeScolaire}-${Date.now()}`,
+      idOrganisation: input.idOrganisation,
       idEcole: input.idEcole,
       idAnneeScolaire: input.idAnneeScolaire,
       typeFrais: input.typeFrais,
@@ -36,19 +40,33 @@ export class CreerGrilleTarificationUseCase {
       estClasseTENASOSP: input.estClasseTENASOSP,
       estClasseEXETAT: input.estClasseEXETAT,
       estClasseFinaliste: input.estClasseFinaliste,
+      moisScolaire: input.moisScolaire,
+      trancheFraisEtat: input.trancheFraisEtat,
       obligatoire: input.obligatoire,
       actif: true,
+      dateDebutValidite: input.dateDebutValidite,
+      dateFinValidite: input.dateFinValidite,
       creePar: input.creePar,
     });
 
     await this.depotGrilleTarification.sauvegarder(grille);
     await this.auditPort?.journaliserActionFinanciere({
       action: 'CREER_GRILLE_TARIFICATION',
+      idOrganisation: input.idOrganisation,
       idEcole: input.idEcole,
       idUtilisateur: input.creePar,
+      roleActif: input.roleActif,
       referenceMetier: grille.obtenirId(),
     });
 
     return versGrilleTarificationOutput(grille);
+  }
+
+  private verifierActeurAutorise(roleActif?: string): void {
+    if (roleActif !== 'ADMIN_SYSTEME_ECOLE') {
+      throw new ErreurDroitsInsuffisants(
+        "Seul l'admin systeme ecole peut gerer les grilles de tarification.",
+      );
+    }
   }
 }

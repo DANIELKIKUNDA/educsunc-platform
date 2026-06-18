@@ -26,15 +26,19 @@ import { PolitiqueArrieres } from '../../../domain/value-objects/PolitiqueArrier
 import { ReferenceFrais } from '../../../domain/value-objects/ReferenceFrais';
 import { StatutDette } from '../../../domain/value-objects/StatutDette';
 import { TypeFrais } from '../../../domain/value-objects/TypeFrais';
+import type { AutorisationSituationFinanciereElevePort } from '../../../application/ports/AutorisationSituationFinanciereElevePort';
 
 // Ce fichier teste les lectures applicatives de dette eleve et de frais exigibles.
 
 class DepotDetteMemoire implements DepotDetteEleve {
+  public dernierIdEcole?: string;
+
   constructor(private readonly dette: DetteEleve | null) {}
 
   public async sauvegarder(_dette: DetteEleve): Promise<void> {}
 
-  public async trouverParEleve(_idEcole: string, _idEleve: string): Promise<DetteEleve | null> {
+  public async trouverParEleve(idEcole: string, _idEleve: string): Promise<DetteEleve | null> {
+    this.dernierIdEcole = idEcole;
     return this.dette;
   }
 }
@@ -83,6 +87,26 @@ class ScolaritePortMemoire implements ScolariteElevesPort {
   public async consulterFamilleEleve(): Promise<FamillePaiementDTO | null> { return null; }
   public async verifierStatutScolaire(idEleve: string): Promise<StatutScolaireDTO> {
     return { idEleve, statut: 'ACTIF', actif: true };
+  }
+}
+
+class AutorisationSituationFinanciereMemoire
+  implements AutorisationSituationFinanciereElevePort
+{
+  public appels: Array<{
+    idUtilisateur: string;
+    idOrganisation: string;
+    idEcole: string;
+    idEleve: string;
+  }> = [];
+
+  public async verifierConsultationSituationFinanciereEleve(params: {
+    idUtilisateur: string;
+    idOrganisation: string;
+    idEcole: string;
+    idEleve: string;
+  }): Promise<void> {
+    this.appels.push(params);
   }
 }
 
@@ -177,26 +201,53 @@ function creerDetteEleve(): DetteEleve {
 }
 
 test('ConsulterDetteEleve retourne le total global et les details par annee', async () => {
-  const casUsage = new ConsulterDetteEleveUseCase(new DepotDetteMemoire(creerDetteEleve()));
+  const autorisation = new AutorisationSituationFinanciereMemoire();
+  const casUsage = new ConsulterDetteEleveUseCase(
+    new DepotDetteMemoire(creerDetteEleve()),
+    new ScolaritePortMemoire(),
+    autorisation,
+  );
 
-  const sortie = await casUsage.executer({ idEleve: 'ELEVE-001' });
+  const sortie = await casUsage.executer({
+    idOrganisation: 'ORG-001',
+    idEcole: 'ECOLE-001',
+    idUtilisateur: 'UTIL-001',
+    idEleve: 'ELEVE-001',
+  });
 
   assert.equal(sortie.totalGlobal.obtenirMontant(), 9_000);
   assert.equal(sortie.dettesParAnnee.length, 2);
   assert.equal(sortie.dettesParAnnee[0]?.lignes.length, 1);
+  assert.deepEqual(autorisation.appels[0], {
+    idUtilisateur: 'UTIL-001',
+    idOrganisation: 'ORG-001',
+    idEcole: 'ECOLE-001',
+    idEleve: 'ELEVE-001',
+  });
 });
 
 test('ConsulterDetteEleve separe bien annee courante et arrieres', async () => {
-  const casUsage = new ConsulterDetteEleveUseCase(new DepotDetteMemoire(creerDetteEleve()));
+  const depotDette = new DepotDetteMemoire(creerDetteEleve());
+  const casUsage = new ConsulterDetteEleveUseCase(
+    depotDette,
+    new ScolaritePortMemoire(),
+  );
 
-  const sortie = await casUsage.executer({ idEleve: 'ELEVE-001' });
+  const sortie = await casUsage.executer({
+    idOrganisation: 'ORG-001',
+    idEcole: 'ECOLE-001',
+    idUtilisateur: 'UTIL-001',
+    idEleve: 'ELEVE-001',
+  });
 
   assert.equal(sortie.totalArrieres.obtenirMontant(), 3_000);
   assert.equal(sortie.totalAnneeActive.obtenirMontant(), 6_000);
   assert.equal(sortie.dettesParAnnee.find((dette) => dette.statutAnnee === 'ACTIVE')?.soldeRestant.obtenirMontant(), 6_000);
+  assert.equal(depotDette.dernierIdEcole, 'ECOLE-001');
 });
 
 test('ConsulterFraisExigiblesEleve retourne uniquement les frais non soldes', async () => {
+  const autorisation = new AutorisationSituationFinanciereMemoire();
   const obligations = [
     creerObligation('OBL-001', 10_000, 4_000),
     creerObligation('OBL-002', 5_000, 5_000),
@@ -205,12 +256,19 @@ test('ConsulterFraisExigiblesEleve retourne uniquement les frais non soldes', as
     new ScolaritePortMemoire(),
     new DepotObligationsMemoire(obligations),
     new DepotParametresMemoire(creerParametres()),
+    autorisation,
   );
 
-  const sortie = await casUsage.executer({ idEleve: 'ELEVE-001' });
+  const sortie = await casUsage.executer({
+    idOrganisation: 'ORG-001',
+    idEcole: 'ECOLE-001',
+    idUtilisateur: 'UTIL-001',
+    idEleve: 'ELEVE-001',
+  });
 
   assert.equal(sortie.fraisDisponibles.length, 1);
   assert.equal(sortie.fraisDisponibles[0]?.resteAPayer.obtenirMontant(), 6_000);
+  assert.equal(autorisation.appels.length, 1);
 });
 
 test('ConsulterFraisExigiblesEleve exclut les frais soldes et conserve la regle de paiement partiel', async () => {
@@ -224,7 +282,12 @@ test('ConsulterFraisExigiblesEleve exclut les frais soldes et conserve la regle 
     new DepotParametresMemoire(creerParametres()),
   );
 
-  const sortie = await casUsage.executer({ idEleve: 'ELEVE-001' });
+  const sortie = await casUsage.executer({
+    idOrganisation: 'ORG-001',
+    idEcole: 'ECOLE-001',
+    idUtilisateur: 'UTIL-001',
+    idEleve: 'ELEVE-001',
+  });
 
   assert.equal(sortie.fraisDisponibles.length, 1);
   assert.equal(sortie.fraisDisponibles[0]?.paiementPartielAutorise, true);

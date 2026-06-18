@@ -43,6 +43,11 @@ import { TypeFrais } from '../../../../domain/value-objects/TypeFrais';
 import { TypeOperationCaisse } from '../../../../domain/value-objects/TypeOperationCaisse';
 import { TypePlanAnticipation } from '../../../../domain/value-objects/TypePlanAnticipation';
 import { BaseMapperPostgresPaiementsFacturation } from './BaseMapperPostgresPaiementsFacturation';
+import {
+  RoleConsultationHistoriquePaiementsDeleguee,
+  RoleExonerationDeleguee,
+  RolePerceptionDeleguee,
+} from '../../../../application/dto/input/ParametresPaiementEntreeDTO';
 
 interface MoneyPersistance {
   montant: number;
@@ -52,6 +57,11 @@ interface MoneyPersistance {
 interface PaiementPartielParTypePersistance {
   typeFrais: TypeFrais;
   autorise: boolean;
+}
+
+interface PerceptionDelegueeParTypePersistance {
+  typeFrais: TypeFrais;
+  roles: RolePerceptionDeleguee[];
 }
 
 interface TotalParCaissierPersistance {
@@ -93,6 +103,9 @@ export interface PersistanceParametresPaiementEcolePostgres {
   id_ecole: string;
   paiement_partiel_autorise: boolean;
   paiement_partiel_par_type_frais: PaiementPartielParTypePersistance[] | null;
+  perception_deleguee_par_type_frais: PerceptionDelegueeParTypePersistance[] | null;
+  consultation_historique_paiements_deleguee: RoleConsultationHistoriquePaiementsDeleguee[] | null;
+  exoneration_deleguee: RoleExonerationDeleguee[] | null;
   politique_arrieres: PolitiqueArrieres;
   autoriser_inscription_avec_dette: boolean;
   bloquer_retrait_documents_si_dette: boolean;
@@ -312,6 +325,13 @@ export class MappersPaiementsPostgres extends BaseMapperPostgresPaiementsFactura
         this.versPersistancePaiementPartielParType(
           parametres.obtenirPaiementPartielParTypeFrais(),
         ),
+      perception_deleguee_par_type_frais:
+        this.versPersistancePerceptionDelegueeParType(
+          parametres.obtenirPerceptionDelegueeParTypeFrais(),
+        ),
+      consultation_historique_paiements_deleguee:
+        parametres.obtenirConsultationHistoriquePaiementsDeleguee() ?? null,
+      exoneration_deleguee: parametres.obtenirExonerationDeleguee() ?? null,
       politique_arrieres: parametres.obtenirPolitiqueArrieres(),
       autoriser_inscription_avec_dette:
         parametres.obtenirAutoriserInscriptionAvecDette(),
@@ -341,6 +361,13 @@ export class MappersPaiementsPostgres extends BaseMapperPostgresPaiementsFactura
       paiementPartielParTypeFrais: this.depuisPersistancePaiementPartielParType(
         ligne.paiement_partiel_par_type_frais,
       ),
+      perceptionDelegueeParTypeFrais:
+        this.depuisPersistancePerceptionDelegueeParType(
+          ligne.perception_deleguee_par_type_frais,
+        ),
+      consultationHistoriquePaiementsDeleguee:
+        ligne.consultation_historique_paiements_deleguee ?? undefined,
+      exonerationDeleguee: ligne.exoneration_deleguee ?? undefined,
       politiqueArrieres: ligne.politique_arrieres,
       autoriserInscriptionAvecDette: ligne.autoriser_inscription_avec_dette,
       bloquerRetraitDocumentsSiDette:
@@ -1065,6 +1092,31 @@ export class MappersPaiementsPostgres extends BaseMapperPostgresPaiementsFactura
     }
 
     return new Map(regles.map((regle) => [regle.typeFrais, regle.autorise]));
+  }
+
+  // Cette methode convertit la delegation de perception vers un format serialisable.
+  private static versPersistancePerceptionDelegueeParType(
+    regles?: Map<TypeFrais, RolePerceptionDeleguee[]>,
+  ): PerceptionDelegueeParTypePersistance[] | null {
+    if (regles === undefined) {
+      return null;
+    }
+
+    return Array.from(regles.entries()).map(([typeFrais, roles]) => ({
+      typeFrais,
+      roles: [...roles],
+    }));
+  }
+
+  // Cette methode reconstruit la delegation de perception depuis PostgreSQL.
+  private static depuisPersistancePerceptionDelegueeParType(
+    regles: PerceptionDelegueeParTypePersistance[] | null,
+  ): Map<TypeFrais, RolePerceptionDeleguee[]> | undefined {
+    if (regles === null) {
+      return undefined;
+    }
+
+    return new Map(regles.map((regle) => [regle.typeFrais, [...regle.roles]]));
   }
 
   // Cette methode reconstruit un objet Money simple present dans les vues JSON.

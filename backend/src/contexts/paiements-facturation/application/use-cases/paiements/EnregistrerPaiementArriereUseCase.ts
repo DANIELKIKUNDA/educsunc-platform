@@ -9,6 +9,7 @@ export class EnregistrerPaiementArriereUseCase {
 
   public async executer(input: EnregistrerPaiementArriereInput): Promise<PaiementEnregistreOutput> {
     return this.enregistrerPaiementUseCase.executer({
+      idOrganisation: input.idOrganisation,
       idEleve: input.idEleve,
       idEcole: input.idEcole,
       typeFraisDeclare: input.typeFraisDeclare ?? TypeFrais.FRAIS_SCOLAIRES,

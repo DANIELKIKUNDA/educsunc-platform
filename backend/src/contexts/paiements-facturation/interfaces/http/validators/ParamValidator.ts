@@ -4,29 +4,59 @@ import type {
   OuvrirCaisseJourInput,
 } from '../../../application/dto/input/CaisseEntreeDTO';
 import type {
+  ConsulterArrieresEleveInput,
   ConsulterDetteEleveInput,
   ConsulterFraisExigiblesEleveInput,
+  ConsulterHistoriquePaiementsEleveInput,
 } from '../../../application/dto/input/DettesEntreeDTO';
+import type { ConsulterRapportFinancierJournalierInput } from '../../../application/dto/input/RapportsEntreeDTO';
+import type { ConsulterPaiementsParCaissierInput } from '../../../application/dto/input/AnalysesFinancieresEntreeDTO';
+import type { ConsulterPaiementsParTypeFraisInput } from '../../../application/dto/input/AnalysesFinancieresEntreeDTO';
+import type { ConsulterFondsAnticipesInput } from '../../../application/dto/input/AnalysesFinancieresEntreeDTO';
 import { ValidationHttpPaiementsFacturation } from './ValidationHttpPaiementsFacturation';
 
 // Ce validator gere les identifiants et parametres techniques communs des routes HTTP paiements.
 export class ParamValidator {
   // Cette methode valide le parametre idEleve pour la lecture d'une dette.
-  public static validerDetteEleve(parametres: unknown): ConsulterDetteEleveInput {
+  public static validerDetteEleveAvecContexte(
+    parametres: unknown,
+    headers: unknown,
+  ): ConsulterDetteEleveInput {
     const donnees = ValidationHttpPaiementsFacturation.obtenirObjet(parametres, 'params');
 
     return {
+      idOrganisation: this.lireIdentifiantOrganisation(donnees, headers),
+      idEcole: this.lireIdentifiantEcole(donnees, headers),
+      idUtilisateur: this.lireIdentifiantUtilisateur(donnees, headers, 'idUtilisateur'),
+      idEleve: ValidationHttpPaiementsFacturation.lireChaineRequise(donnees, 'idEleve'),
+    };
+  }
+
+  public static validerArrieresEleveAvecContexte(
+    parametres: unknown,
+    headers: unknown,
+  ): ConsulterArrieresEleveInput {
+    const donnees = ValidationHttpPaiementsFacturation.obtenirObjet(parametres, 'params');
+
+    return {
+      idOrganisation: this.lireIdentifiantOrganisation(donnees, headers),
+      idEcole: this.lireIdentifiantEcole(donnees, headers),
+      idUtilisateur: this.lireIdentifiantUtilisateur(donnees, headers, 'idUtilisateur'),
       idEleve: ValidationHttpPaiementsFacturation.lireChaineRequise(donnees, 'idEleve'),
     };
   }
 
   // Cette methode valide le parametre idEleve pour la lecture des frais exigibles.
-  public static validerFraisExigibles(
+  public static validerFraisExigiblesAvecContexte(
     parametres: unknown,
+    headers: unknown,
   ): ConsulterFraisExigiblesEleveInput {
     const donnees = ValidationHttpPaiementsFacturation.obtenirObjet(parametres, 'params');
 
     return {
+      idOrganisation: this.lireIdentifiantOrganisation(donnees, headers),
+      idEcole: this.lireIdentifiantEcole(donnees, headers),
+      idUtilisateur: this.lireIdentifiantUtilisateur(donnees, headers, 'idUtilisateur'),
       idEleve: ValidationHttpPaiementsFacturation.lireChaineRequise(donnees, 'idEleve'),
     };
   }
@@ -34,10 +64,14 @@ export class ParamValidator {
   // Cette methode valide le parametre idEleve pour l'historique des paiements.
   public static validerHistoriquePaiements(
     parametres: unknown,
-  ): { idEleve: string } {
+    headers: unknown,
+  ): ConsulterHistoriquePaiementsEleveInput {
     const donnees = ValidationHttpPaiementsFacturation.obtenirObjet(parametres, 'params');
 
     return {
+      idOrganisation: this.lireIdentifiantOrganisation(donnees, headers),
+      idEcole: this.lireIdentifiantEcole(donnees, headers),
+      idUtilisateur: this.lireIdentifiantUtilisateur(donnees, headers, 'idUtilisateur'),
       idEleve: ValidationHttpPaiementsFacturation.lireChaineRequise(donnees, 'idEleve'),
     };
   }
@@ -50,6 +84,7 @@ export class ParamValidator {
     const donnees = ValidationHttpPaiementsFacturation.obtenirObjet(corps, 'body');
 
     return {
+      idOrganisation: this.lireIdentifiantOrganisation(donnees, headers),
       idEcole: this.lireIdentifiantEcole(donnees, headers),
       date: ValidationHttpPaiementsFacturation.lireDateTexteRequise(donnees, 'date'),
       idUtilisateur: this.lireIdentifiantUtilisateur(donnees, headers, 'idUtilisateur'),
@@ -64,8 +99,69 @@ export class ParamValidator {
     const donnees = ValidationHttpPaiementsFacturation.obtenirObjet(query, 'query');
 
     return {
+      idOrganisation: this.lireIdentifiantOrganisation(donnees, headers),
       idEcole: this.lireIdentifiantEcole(donnees, headers),
       date: ValidationHttpPaiementsFacturation.lireDateTexteRequise(donnees, 'date'),
+      idUtilisateur: this.lireIdentifiantUtilisateur(donnees, headers, 'idUtilisateur'),
+    };
+  }
+
+  public static validerConsultationRapportFinancierJournalier(
+    query: unknown,
+    headers: unknown,
+  ): ConsulterRapportFinancierJournalierInput {
+    const donnees = ValidationHttpPaiementsFacturation.obtenirObjet(query, 'query');
+
+    return {
+      idOrganisation: this.lireIdentifiantOrganisation(donnees, headers),
+      idEcole: this.lireIdentifiantEcole(donnees, headers),
+      date: ValidationHttpPaiementsFacturation.lireDateTexteRequise(donnees, 'date'),
+      idUtilisateur: this.lireIdentifiantUtilisateur(donnees, headers, 'idUtilisateur'),
+    };
+  }
+
+  public static validerConsultationPaiementsParCaissier(
+    query: unknown,
+    headers: unknown,
+  ): ConsulterPaiementsParCaissierInput {
+    const donnees = ValidationHttpPaiementsFacturation.obtenirObjet(query, 'query');
+
+    return {
+      idOrganisation: this.lireIdentifiantOrganisation(donnees, headers),
+      idEcole: this.lireIdentifiantEcole(donnees, headers),
+      idUtilisateur: this.lireIdentifiantUtilisateur(donnees, headers, 'idUtilisateur'),
+      dateDebut: ValidationHttpPaiementsFacturation.lireChaineOptionnelle(donnees, 'dateDebut'),
+      dateFin: ValidationHttpPaiementsFacturation.lireChaineOptionnelle(donnees, 'dateFin'),
+    };
+  }
+
+  public static validerConsultationPaiementsParTypeFrais(
+    query: unknown,
+    headers: unknown,
+  ): ConsulterPaiementsParTypeFraisInput {
+    const donnees = ValidationHttpPaiementsFacturation.obtenirObjet(query, 'query');
+
+    return {
+      idOrganisation: this.lireIdentifiantOrganisation(donnees, headers),
+      idEcole: this.lireIdentifiantEcole(donnees, headers),
+      idUtilisateur: this.lireIdentifiantUtilisateur(donnees, headers, 'idUtilisateur'),
+      dateDebut: ValidationHttpPaiementsFacturation.lireChaineOptionnelle(donnees, 'dateDebut'),
+      dateFin: ValidationHttpPaiementsFacturation.lireChaineOptionnelle(donnees, 'dateFin'),
+    };
+  }
+
+  public static validerConsultationFondsAnticipes(
+    query: unknown,
+    headers: unknown,
+  ): ConsulterFondsAnticipesInput {
+    const donnees = ValidationHttpPaiementsFacturation.obtenirObjet(query, 'query');
+
+    return {
+      idOrganisation: this.lireIdentifiantOrganisation(donnees, headers),
+      idEcole: this.lireIdentifiantEcole(donnees, headers),
+      idUtilisateur: this.lireIdentifiantUtilisateur(donnees, headers, 'idUtilisateur'),
+      dateDebut: ValidationHttpPaiementsFacturation.lireChaineOptionnelle(donnees, 'dateDebut'),
+      dateFin: ValidationHttpPaiementsFacturation.lireChaineOptionnelle(donnees, 'dateFin'),
     };
   }
 
@@ -77,6 +173,8 @@ export class ParamValidator {
     const donnees = ValidationHttpPaiementsFacturation.obtenirObjet(corps, 'body');
 
     return {
+      idOrganisation: this.lireIdentifiantOrganisation(donnees, headers),
+      idEcole: this.lireIdentifiantEcole(donnees, headers),
       idCaisseJour: ValidationHttpPaiementsFacturation.lireChaineRequise(donnees, 'idCaisseJour'),
       montantPhysiqueDeclare:
         donnees.montantPhysiqueDeclare === undefined
@@ -102,6 +200,18 @@ export class ParamValidator {
       ValidationHttpPaiementsFacturation.lireChaineOptionnelle(donnees, 'idEcole')
       ?? ValidationHttpPaiementsFacturation.lireHeaderChaine(headers, 'x-tenant-id')
       ?? this.creerErreurIdentifiant('idEcole')
+    );
+  }
+
+  // Cette methode retrouve l'organisation cible depuis le corps ou le header.
+  public static lireIdentifiantOrganisation(
+    donnees: Record<string, unknown>,
+    headers: unknown,
+  ): string {
+    return (
+      ValidationHttpPaiementsFacturation.lireChaineOptionnelle(donnees, 'idOrganisation')
+      ?? ValidationHttpPaiementsFacturation.lireHeaderChaine(headers, 'x-organisation-id')
+      ?? this.creerErreurIdentifiant('idOrganisation')
     );
   }
 

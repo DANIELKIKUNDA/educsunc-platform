@@ -4,15 +4,23 @@ import type { OuvrirCaisseJourInput } from 'contexts/paiements-facturation/appli
 import type { CaisseJourOutput } from 'contexts/paiements-facturation/application/dto/output/CaisseSortieDTO';
 import { versCaisseJourOutput } from 'contexts/paiements-facturation/application/mappers/CaisseApplicationMapper';
 import type { AuditPort } from 'contexts/paiements-facturation/application/ports/AuditPort';
+import type { AutorisationCaissePort } from 'contexts/paiements-facturation/application/ports/AutorisationCaissePort';
 import { ErreurCaisseIndisponible } from 'contexts/paiements-facturation/application/exceptions/ErreurCaisseIndisponible';
 
 export class OuvrirCaisseJourUseCase {
   constructor(
     private readonly depotCaisseJour: DepotCaisseJour,
+    private readonly autorisationCaissePort?: AutorisationCaissePort,
     private readonly auditPort?: AuditPort,
   ) {}
 
   public async executer(input: OuvrirCaisseJourInput): Promise<CaisseJourOutput> {
+    await this.autorisationCaissePort?.verifierOuvertureCaisse({
+      idUtilisateur: input.idUtilisateur,
+      idOrganisation: input.idOrganisation,
+      idEcole: input.idEcole,
+    });
+
     const existante = await this.depotCaisseJour.trouverActiveParEcoleEtDate(input.idEcole, input.date);
     if (existante !== null) {
       throw new ErreurCaisseIndisponible('Une caisse active existe deja pour cette ecole et cette date.');
@@ -26,6 +34,7 @@ export class OuvrirCaisseJourUseCase {
     await this.depotCaisseJour.sauvegarder(caisse);
     await this.auditPort?.journaliserActionFinanciere({
       action: 'OUVRIR_CAISSE_JOUR',
+      idOrganisation: input.idOrganisation,
       idEcole: input.idEcole,
       idUtilisateur: input.idUtilisateur,
       referenceMetier: caisse.obtenirId(),

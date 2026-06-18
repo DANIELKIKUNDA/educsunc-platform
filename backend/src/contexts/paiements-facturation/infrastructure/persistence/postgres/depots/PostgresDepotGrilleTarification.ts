@@ -71,19 +71,49 @@ export class PostgresDepotGrilleTarification
       : this.marquerAgregatCharge(MappersPaiementsPostgres.depuisPersistanceGrille(ligne));
   }
 
+  public async trouverParIdEtEcole(
+    idGrilleTarification: string,
+    idEcole: string,
+  ): Promise<GrilleTarification | null> {
+    const ligne = await this.executerRequeteUnique<PersistanceGrilleTarificationPostgres>(
+      'SELECT * FROM "grilles_tarification" WHERE "id" = $1 AND "id_ecole" = $2 LIMIT 1',
+      [idGrilleTarification, idEcole],
+    );
+
+    return ligne === null
+      ? null
+      : this.marquerAgregatCharge(MappersPaiementsPostgres.depuisPersistanceGrille(ligne));
+  }
+
   public async listerActivesParEcoleEtAnnee(
     idEcole: string,
     idAnneeScolaire: string,
   ): Promise<GrilleTarification[]> {
+    return this.listerParEcoleEtAnnee(idEcole, idAnneeScolaire, true);
+  }
+
+  public async listerParEcoleEtAnnee(
+    idEcole: string,
+    idAnneeScolaire: string,
+    actif?: boolean,
+  ): Promise<GrilleTarification[]> {
+    const clauses = [
+      'SELECT * FROM "grilles_tarification"',
+      'WHERE "id_ecole" = $1',
+      'AND "id_annee_scolaire" = $2',
+    ];
+    const parametres: unknown[] = [idEcole, idAnneeScolaire];
+
+    if (actif !== undefined) {
+      clauses.push(`AND "actif" = $${parametres.length + 1}`);
+      parametres.push(actif);
+    }
+
+    clauses.push('ORDER BY "type_frais" ASC, "libelle" ASC');
+
     const lignes = await this.executerRequete<PersistanceGrilleTarificationPostgres>(
-      [
-        'SELECT * FROM "grilles_tarification"',
-        'WHERE "id_ecole" = $1',
-        'AND "id_annee_scolaire" = $2',
-        'AND "actif" = true',
-        'ORDER BY "type_frais" ASC, "libelle" ASC',
-      ].join(' '),
-      [idEcole, idAnneeScolaire],
+      clauses.join(' '),
+      parametres,
     );
 
     return lignes.map((ligne) =>

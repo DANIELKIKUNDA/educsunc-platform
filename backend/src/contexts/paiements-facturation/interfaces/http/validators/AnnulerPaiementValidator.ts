@@ -11,6 +11,13 @@ export class AnnulerPaiementValidator {
     const donneesCorps = ValidationHttpPaiementsFacturation.obtenirObjet(corps, 'body');
 
     return {
+      idOrganisation: ParamValidator.lireIdentifiantOrganisation(donneesCorps, headers),
+      idEcole: ParamValidator.lireIdentifiantEcole(donneesCorps, headers),
+      idUtilisateur: ParamValidator.lireIdentifiantUtilisateur(
+        donneesCorps,
+        headers,
+        'idUtilisateur',
+      ),
       idPaiement: ValidationHttpPaiementsFacturation.lireChaineRequise(
         donneesParametres,
         'idPaiement',

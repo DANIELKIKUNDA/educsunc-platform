@@ -8,8 +8,8 @@ export class ConsulterDetteEleveController {
   constructor(private readonly casUsage: ConsulterDetteEleveUseCase) {}
 
   // Cette methode traite la lecture HTTP de la dette d'un eleve.
-  public async consulter(parametres: unknown): Promise<{ donnee: unknown }> {
-    const entree = ParamValidator.validerDetteEleve(parametres);
+  public async consulter(parametres: unknown, headers: unknown): Promise<{ donnee: unknown }> {
+    const entree = ParamValidator.validerDetteEleveAvecContexte(parametres, headers);
     const sortie = await this.casUsage.executer(entree);
 
     return DetteElevePresenter.presenterDetteEleve(sortie);

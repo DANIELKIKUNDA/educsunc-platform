@@ -12,6 +12,7 @@ export class EnregistrerPaiementValidator {
     const donnees = ValidationHttpPaiementsFacturation.obtenirObjet(corps, 'body');
 
     return {
+      idOrganisation: ParamValidator.lireIdentifiantOrganisation(donnees, headers),
       idEleve: ValidationHttpPaiementsFacturation.lireChaineRequise(donnees, 'idEleve'),
       idEcole: ParamValidator.lireIdentifiantEcole(donnees, headers),
       typeFraisDeclare: ValidationHttpPaiementsFacturation.lireEnumRequis(

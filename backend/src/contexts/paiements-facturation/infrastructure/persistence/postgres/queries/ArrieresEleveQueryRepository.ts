@@ -1,4 +1,5 @@
 import { Money } from '../../../../domain/value-objects/Money';
+import type { ArrieresEleveReadModel } from '../../../../application/read-models/ArrieresEleveReadModel';
 import type { PersistanceDetteElevePostgres } from '../mappers/MappersPaiementsPostgres';
 import { BaseDepotPostgresPaiementsFacturation } from '../depots/BaseDepotPostgresPaiementsFacturation';
 import type { ClientPostgresPaiementsFacturation } from '../depots/ClientPostgresPaiementsFacturation';
@@ -9,19 +10,25 @@ export class ArrieresEleveQueryRepository extends BaseDepotPostgresPaiementsFact
     super(clientLecture);
   }
 
-  public async consulterMontant(idEleve: string): Promise<Money> {
+  public async consulterParEleve(idEcole: string, idEleve: string): Promise<ArrieresEleveReadModel> {
     const ligne = await this.executerRequeteUnique<PersistanceDetteElevePostgres>(
-      'SELECT * FROM "dettes_eleves" WHERE "id_eleve" = $1 LIMIT 1',
-      [idEleve],
+      'SELECT * FROM "dettes_eleves" WHERE "id_ecole" = $1 AND "id_eleve" = $2 LIMIT 1',
+      [idEcole, idEleve],
     );
 
     if (ligne === null) {
-      return new Money(0, 'CDF');
+      return {
+        idEleve,
+        totalArrieres: new Money(0, 'CDF'),
+      };
     }
 
-    return new Money(
-      ligne.total_arrieres.montant,
-      ligne.total_arrieres.devise,
-    );
+    return {
+      idEleve,
+      totalArrieres: new Money(
+        ligne.total_arrieres.montant,
+        ligne.total_arrieres.devise,
+      ),
+    };
   }
 }

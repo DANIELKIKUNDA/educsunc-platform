@@ -1,5 +1,6 @@
 import type {
   PaiementEnregistreOutput,
+  RecuPaiementOfficielOutput,
   RecuPaiementOutput,
   RepartitionPaiementOutput,
 } from '../../../application/dto/output/PaiementsSortieDTO';
@@ -41,6 +42,51 @@ export interface PaiementEnregistreHttp {
   };
 }
 
+export interface RecuPaiementOfficielHttp {
+  idRecu: string;
+  numeroRecu: string;
+  idPaiement: string;
+  dateEmission: string;
+  heureEmission: string;
+  statutRecu: string;
+  modePaiement: string;
+  totalPaye: { montant: number; devise: string };
+  montantEnLettres: string;
+  ecole: {
+    idEcole: string;
+    nom: string;
+    sigle?: string;
+    adresse?: string;
+    telephone?: string;
+    email?: string;
+    logoUrl?: string;
+    cachetUrl?: string;
+  };
+  contexteScolaire: {
+    anneeScolaire?: string;
+    classe?: string;
+  };
+  eleve: {
+    idEleve: string;
+    code: string;
+    nom: string;
+    postnom: string;
+    prenom?: string;
+    sexe: string;
+  };
+  caissier: {
+    idUtilisateur: string;
+    nomComplet: string;
+    signatureUrl?: string;
+  };
+  lignes: Array<{
+    numeroLigne: number;
+    typeFrais: string;
+    libelle: string;
+    montant: { montant: number; devise: string };
+  }>;
+}
+
 // Ce presenter isole les details de serialisation des paiements et recus.
 export class PaiementPresenter {
   // Cette methode presente un paiement enregistre.
@@ -76,6 +122,32 @@ export class PaiementPresenter {
     recu: RecuPaiementOutput,
   ): { donnee: RecuPaiementHttp } {
     return PresentationHttpPaiementsFacturation.detail(this.presenterRecu(recu));
+  }
+
+  public static presenterRecuPaiementOfficiel(
+    recu: RecuPaiementOfficielOutput,
+  ): { donnee: RecuPaiementOfficielHttp } {
+    return PresentationHttpPaiementsFacturation.detail({
+      idRecu: recu.idRecu,
+      numeroRecu: recu.numeroRecu,
+      idPaiement: recu.idPaiement,
+      dateEmission: PresentationHttpPaiementsFacturation.presenterDate(recu.dateEmission),
+      heureEmission: recu.dateEmission.toISOString().slice(11, 19),
+      statutRecu: recu.statutRecu,
+      modePaiement: String(recu.modePaiement),
+      totalPaye: PresentationHttpPaiementsFacturation.presenterMontant(recu.totalPaye),
+      montantEnLettres: recu.montantEnLettres,
+      ecole: { ...recu.ecole },
+      contexteScolaire: { ...recu.contexteScolaire },
+      eleve: { ...recu.eleve },
+      caissier: { ...recu.caissier },
+      lignes: recu.lignes.map((ligne) => ({
+        numeroLigne: ligne.numeroLigne,
+        typeFrais: ligne.typeFrais,
+        libelle: ligne.libelle,
+        montant: PresentationHttpPaiementsFacturation.presenterMontant(ligne.montant),
+      })),
+    });
   }
 
   // Cette methode presente une liste de recus.

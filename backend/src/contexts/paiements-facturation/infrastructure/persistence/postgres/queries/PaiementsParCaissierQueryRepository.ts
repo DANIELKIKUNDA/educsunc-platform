@@ -1,4 +1,5 @@
 import { Money } from '../../../../domain/value-objects/Money';
+import type { PaiementsParCaissierReadModel } from '../../../../application/read-models/PaiementsParCaissierReadModel';
 import type { PersistancePaiementPostgres } from '../mappers/MappersPaiementsPostgres';
 import { BaseDepotPostgresPaiementsFacturation } from '../depots/BaseDepotPostgresPaiementsFacturation';
 import type { ClientPostgresPaiementsFacturation } from '../depots/ClientPostgresPaiementsFacturation';
@@ -11,10 +12,25 @@ export class PaiementsParCaissierQueryRepository extends BaseDepotPostgresPaieme
 
   public async listerParCaissier(
     idEcole: string,
-  ): Promise<ReadonlyArray<{ idCaissier: string; total: Money }>> {
+    dateDebut?: string,
+    dateFin?: string,
+  ): Promise<PaiementsParCaissierReadModel> {
+    const clauses = ['"id_ecole" = $1'];
+    const parametres: unknown[] = [idEcole];
+
+    if (dateDebut !== undefined) {
+      clauses.push(`DATE("cree_le") >= $${parametres.length + 1}`);
+      parametres.push(dateDebut);
+    }
+
+    if (dateFin !== undefined) {
+      clauses.push(`DATE("cree_le") <= $${parametres.length + 1}`);
+      parametres.push(dateFin);
+    }
+
     const lignes = await this.executerRequete<PersistancePaiementPostgres>(
-      'SELECT * FROM "paiements" WHERE "id_ecole" = $1',
-      [idEcole],
+      `SELECT * FROM "paiements" WHERE ${clauses.join(' AND ')}`,
+      parametres,
     );
     const totaux = new Map<string, number>();
 
@@ -23,9 +39,14 @@ export class PaiementsParCaissierQueryRepository extends BaseDepotPostgresPaieme
       totaux.set(ligne.cree_par, total + ligne.montant_total);
     });
 
-    return Array.from(totaux.entries()).map(([idCaissier, total]) => ({
-      idCaissier,
-      total: new Money(total, 'CDF'),
-    }));
+    return {
+      idEcole,
+      dateDebut,
+      dateFin,
+      lignes: Array.from(totaux.entries()).map(([idCaissier, total]) => ({
+        idCaissier,
+        total: new Money(total, 'CDF'),
+      })),
+    };
   }
 }
