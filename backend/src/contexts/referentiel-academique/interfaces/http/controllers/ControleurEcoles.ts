@@ -14,6 +14,8 @@ import {
   ReponseListeEcolesHttp,
 } from '../presenters/EcolePresenter';
 import { ValidateurEcoleHttp } from '../validators/ecole.validator';
+import type { RequestContext } from '../../../../../shared/context';
+import { AutorisationSocleAcademiqueAdapter } from '../../../../../app/adapters/AutorisationSocleAcademiqueAdapter';
 
 // Ce controleur orchestre les entrees et sorties HTTP des ecoles.
 export class ControleurEcoles {
@@ -25,6 +27,7 @@ export class ControleurEcoles {
   private readonly casUsageRenommerEcole: RenommerEcole;
   private readonly casUsageActiverEcole: ActiverEcole;
   private readonly casUsageDesactiverEcole: DesactiverEcole;
+  private readonly autorisationSocleAcademique: AutorisationSocleAcademiqueAdapter;
 
   // Ce constructeur injecte les cas d'usage exposes par les routes ecoles.
   constructor(
@@ -36,6 +39,7 @@ export class ControleurEcoles {
     casUsageRenommerEcole: RenommerEcole,
     casUsageActiverEcole: ActiverEcole,
     casUsageDesactiverEcole: DesactiverEcole,
+    autorisationSocleAcademique: AutorisationSocleAcademiqueAdapter = new AutorisationSocleAcademiqueAdapter(),
   ) {
     this.casUsageCreerEcole = casUsageCreerEcole;
     this.casUsageConsulterEcole = casUsageConsulterEcole;
@@ -45,18 +49,27 @@ export class ControleurEcoles {
     this.casUsageRenommerEcole = casUsageRenommerEcole;
     this.casUsageActiverEcole = casUsageActiverEcole;
     this.casUsageDesactiverEcole = casUsageDesactiverEcole;
+    this.autorisationSocleAcademique = autorisationSocleAcademique;
   }
 
   // Cette methode traite la creation HTTP d'une ecole.
-  public async creerEcole(corps: unknown): Promise<ReponseEcoleHttp> {
-    const entree = ValidateurEcoleHttp.validerCreation(corps);
+  public async creerEcole(
+    corps: unknown,
+    contexte?: RequestContext,
+  ): Promise<ReponseEcoleHttp> {
+    const idUtilisateur = await this.verifierMutationAdministrationEcoles(contexte);
+    const entree = ValidateurEcoleHttp.validerCreation(corps, idUtilisateur);
     const sortie = await this.casUsageCreerEcole.executer(entree);
 
     return EcolePresenter.presenterEcole(sortie.ecole);
   }
 
   // Cette methode traite la consultation HTTP d'une ecole.
-  public async consulterEcole(parametres: unknown): Promise<ReponseEcoleHttp> {
+  public async consulterEcole(
+    parametres: unknown,
+    contexte?: RequestContext,
+  ): Promise<ReponseEcoleHttp> {
+    await this.verifierLectureAdministrationEcoles(contexte);
     const entree = ValidateurEcoleHttp.validerConsultation(parametres);
     const sortie = await this.casUsageConsulterEcole.executer(entree);
 
@@ -64,7 +77,11 @@ export class ControleurEcoles {
   }
 
   // Cette methode traite la liste HTTP des ecoles.
-  public async listerEcoles(query: unknown): Promise<ReponseListeEcolesHttp> {
+  public async listerEcoles(
+    query: unknown,
+    contexte?: RequestContext,
+  ): Promise<ReponseListeEcolesHttp> {
+    await this.verifierLectureAdministrationEcoles(contexte);
     const entree = ValidateurEcoleHttp.validerListe(query);
 
     if (entree.idOrganisation === undefined) {
@@ -89,7 +106,9 @@ export class ControleurEcoles {
   public async listerEcolesParOrganisation(
     parametres: unknown,
     query: unknown,
+    contexte?: RequestContext,
   ): Promise<ReponseListeEcolesHttp> {
+    await this.verifierLectureAdministrationEcoles(contexte);
     const entree = ValidateurEcoleHttp.validerListeParOrganisation(parametres, query);
     const sortie = await this.casUsageListerEcolesParOrganisation.executer(entree);
 
@@ -100,8 +119,14 @@ export class ControleurEcoles {
   public async changerModeExploitationEcole(
     parametres: unknown,
     corps: unknown,
+    contexte?: RequestContext,
   ): Promise<ReponseEcoleHttp> {
-    const entree = ValidateurEcoleHttp.validerChangementMode(parametres, corps);
+    const idUtilisateur = await this.verifierMutationAdministrationEcoles(contexte);
+    const entree = ValidateurEcoleHttp.validerChangementMode(
+      parametres,
+      corps,
+      idUtilisateur,
+    );
     const sortie = await this.casUsageChangerModeExploitationEcole.executer(entree);
 
     return EcolePresenter.presenterEcole(sortie.ecole);
@@ -111,8 +136,14 @@ export class ControleurEcoles {
   public async renommerEcole(
     parametres: unknown,
     corps: unknown,
+    contexte?: RequestContext,
   ): Promise<ReponseEcoleHttp> {
-    const entree = ValidateurEcoleHttp.validerRenommage(parametres, corps);
+    const idUtilisateur = await this.verifierMutationAdministrationEcoles(contexte);
+    const entree = ValidateurEcoleHttp.validerRenommage(
+      parametres,
+      corps,
+      idUtilisateur,
+    );
     const sortie = await this.casUsageRenommerEcole.executer(entree);
 
     return EcolePresenter.presenterEcole(sortie.ecole);
@@ -122,8 +153,14 @@ export class ControleurEcoles {
   public async activerEcole(
     parametres: unknown,
     corps: unknown,
+    contexte?: RequestContext,
   ): Promise<ReponseEcoleHttp> {
-    const entree = ValidateurEcoleHttp.validerActivation(parametres, corps);
+    const idUtilisateur = await this.verifierMutationAdministrationEcoles(contexte);
+    const entree = ValidateurEcoleHttp.validerActivation(
+      parametres,
+      corps,
+      idUtilisateur,
+    );
     const sortie = await this.casUsageActiverEcole.executer(entree);
 
     return EcolePresenter.presenterEcole(sortie.ecole);
@@ -133,10 +170,50 @@ export class ControleurEcoles {
   public async desactiverEcole(
     parametres: unknown,
     corps: unknown,
+    contexte?: RequestContext,
   ): Promise<ReponseEcoleHttp> {
-    const entree = ValidateurEcoleHttp.validerDesactivation(parametres, corps);
+    const idUtilisateur = await this.verifierMutationAdministrationEcoles(contexte);
+    const entree = ValidateurEcoleHttp.validerDesactivation(
+      parametres,
+      corps,
+      idUtilisateur,
+    );
     const sortie = await this.casUsageDesactiverEcole.executer(entree);
 
     return EcolePresenter.presenterEcole(sortie.ecole);
+  }
+
+  private async verifierLectureAdministrationEcoles(
+    contexte?: RequestContext,
+  ): Promise<string> {
+    const idUtilisateur = contexte?.utilisateurId;
+
+    if (!idUtilisateur) {
+      throw new Error("L'utilisateur courant est requis pour consulter l'administration des ecoles.");
+    }
+
+    await this.autorisationSocleAcademique.verifierLectureSocleAcademique({
+      idUtilisateur,
+      roleActif: contexte?.roleActif,
+    });
+
+    return idUtilisateur;
+  }
+
+  private async verifierMutationAdministrationEcoles(
+    contexte?: RequestContext,
+  ): Promise<string> {
+    const idUtilisateur = contexte?.utilisateurId;
+
+    if (!idUtilisateur) {
+      throw new Error("L'utilisateur courant est requis pour administrer les ecoles.");
+    }
+
+    await this.autorisationSocleAcademique.verifierMutationSocleAcademique({
+      idUtilisateur,
+      roleActif: contexte?.roleActif,
+    });
+
+    return idUtilisateur;
   }
 }

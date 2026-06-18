@@ -15,7 +15,7 @@ export const creerRoutesEcoles = (
   serveur.post('/api/ecoles', async (requete, reponse) => {
     const resultat = await dependances.executerRouteTenant(
       requete,
-      () => dependances.controleurEcoles.creerEcole(requete.body),
+      () => dependances.controleurEcoles.creerEcole(requete.body, requete.context),
     );
     return reponse.code(200).send(resultat);
   });
@@ -23,7 +23,7 @@ export const creerRoutesEcoles = (
   serveur.get('/api/ecoles', async (requete, reponse) => {
     const resultat = await dependances.executerRouteTenant(
       requete,
-      () => dependances.controleurEcoles.listerEcoles(requete.query),
+      () => dependances.controleurEcoles.listerEcoles(requete.query, requete.context),
       {
         mode: 'lecture_organisationnelle_ou_tenant',
         clesOrganisation: ['idOrganisation'],
@@ -36,7 +36,7 @@ export const creerRoutesEcoles = (
   serveur.get('/api/ecoles/:id', async (requete, reponse) => {
     const resultat = await dependances.executerRouteTenant(
       requete,
-      () => dependances.controleurEcoles.consulterEcole(requete.params),
+      () => dependances.controleurEcoles.consulterEcole(requete.params, requete.context),
       {
         mode: 'lecture_organisationnelle_ou_tenant',
         clesTenant: ['id'],
@@ -51,6 +51,7 @@ export const creerRoutesEcoles = (
       () => dependances.controleurEcoles.listerEcolesParOrganisation(
         requete.params,
         requete.query,
+        requete.context,
       ),
       {
         mode: 'lecture_organisationnelle_ou_tenant',
@@ -66,6 +67,7 @@ export const creerRoutesEcoles = (
       () => dependances.controleurEcoles.changerModeExploitationEcole(
         requete.params,
         requete.body,
+        requete.context,
       ),
       {
         mode: 'tenant_requis',
@@ -81,6 +83,7 @@ export const creerRoutesEcoles = (
       () => dependances.controleurEcoles.renommerEcole(
         requete.params,
         requete.body,
+        requete.context,
       ),
       {
         mode: 'tenant_requis',
@@ -96,6 +99,7 @@ export const creerRoutesEcoles = (
       () => dependances.controleurEcoles.activerEcole(
         requete.params,
         requete.body,
+        requete.context,
       ),
       {
         mode: 'tenant_requis',
@@ -111,6 +115,7 @@ export const creerRoutesEcoles = (
       () => dependances.controleurEcoles.desactiverEcole(
         requete.params,
         requete.body,
+        requete.context,
       ),
       {
         mode: 'tenant_requis',

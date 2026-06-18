@@ -4,3 +4,4 @@ export * from './ValiderCalendrierAcademique';
 export * from './VerrouillerCalendrierAcademique';
 export * from './ConsulterCalendrierAcademique';
 export * from './ConsulterCalendrierParEcoleEtAnnee';
+export * from './DeterminerFenetreCalendrier';

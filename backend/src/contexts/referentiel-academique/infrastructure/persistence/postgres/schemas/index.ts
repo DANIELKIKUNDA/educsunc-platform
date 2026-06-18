@@ -7,6 +7,7 @@ export * from './SchemaPostgres';
 export * from './SchemasTablesGlobales';
 export * from './SchemasTablesLocalesEcole';
 export * from './SchemasTablesTechniquesAssociees';
+export * from './responsabilites-classes-pedagogiques.schema';
 
 // Cette collection regroupe tous les schemas PostgreSQL du BC Referentiel Academique.
 export const schemasTablesPostgresReferentielAcademique: readonly SchemaTablePostgres[] = [

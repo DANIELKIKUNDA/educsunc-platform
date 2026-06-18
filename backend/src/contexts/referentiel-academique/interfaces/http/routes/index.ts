@@ -16,6 +16,7 @@ import { creerRoutesMigrationsReferentiel } from './migrations-referentiel.route
 import { creerRoutesOrganisations } from './organisations.routes';
 import { creerRoutesProgrammesNiveau } from './programmes-niveau.routes';
 import { creerRoutesReferentielsAcademiques } from './referentiels-academiques.routes';
+import { creerRoutesSocleAcademique } from './socle-academique.routes';
 import { creerRoutesStructureScolaire } from './structure-scolaire.routes';
 
 // Cette interface regroupe les controleurs requis pour enregistrer toutes les routes du BC.
@@ -51,6 +52,13 @@ export const creerRoutesReferentielAcademique = (
   await serveur.register(
     creerRoutesAnneesScolaires({
       controleurAnneesScolaires: dependances.controleurAnneesScolaires,
+      executerRouteTenant: dependances.executerRouteTenant,
+      executerRouteIdempotente: dependances.executerRouteIdempotente,
+    }),
+  );
+  await serveur.register(
+    creerRoutesSocleAcademique({
+      controleurStructureScolaire: dependances.controleurStructureScolaire,
       executerRouteTenant: dependances.executerRouteTenant,
       executerRouteIdempotente: dependances.executerRouteIdempotente,
     }),
@@ -95,6 +103,7 @@ export const creerRoutesReferentielAcademique = (
 export * from './organisations.routes';
 export * from './ecoles.routes';
 export * from './annees-scolaires.routes';
+export * from './socle-academique.routes';
 export * from './structure-scolaire.routes';
 export * from './referentiels-academiques.routes';
 export * from './programmes-niveau.routes';

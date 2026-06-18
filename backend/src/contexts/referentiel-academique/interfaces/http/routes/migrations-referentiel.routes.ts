@@ -18,7 +18,7 @@ export const creerRoutesMigrationsReferentiel = (
     const resultat = await dependances.executerRouteTenant(
       requete,
       () => dependances.controleurMigrationsReferentiel
-        .listerMigrationsReferentielParProgrammeNiveau(requete.query),
+        .listerMigrationsReferentielParProgrammeNiveau(requete.query, requete.context),
       {
         mode: 'lecture_organisationnelle_ou_tenant',
       },
@@ -32,7 +32,7 @@ export const creerRoutesMigrationsReferentiel = (
       () => dependances.executerRouteTenant(
         requete,
         () => dependances.controleurMigrationsReferentiel
-          .analyserMigrationReferentiel(requete.body),
+          .analyserMigrationReferentiel(requete.body, requete.context),
         {
           mode: 'tenant_requis',
           clesTenant: ['idEcole'],
@@ -51,7 +51,7 @@ export const creerRoutesMigrationsReferentiel = (
       () => dependances.executerRouteTenant(
         requete,
         () => dependances.controleurMigrationsReferentiel
-          .appliquerMigrationReferentiel(requete.body),
+          .appliquerMigrationReferentiel(requete.body, requete.context),
         {
           mode: 'tenant_requis',
           clesTenant: ['idEcole'],
@@ -70,7 +70,7 @@ export const creerRoutesMigrationsReferentiel = (
       () => dependances.executerRouteTenant(
         requete,
         () => dependances.controleurMigrationsReferentiel
-          .annulerMigrationReferentiel(requete.params, requete.body),
+          .annulerMigrationReferentiel(requete.params, requete.body, requete.context),
         {
           mode: 'tenant_requis',
         },
@@ -88,7 +88,7 @@ export const creerRoutesMigrationsReferentiel = (
       () => dependances.executerRouteTenant(
         requete,
         () => dependances.controleurMigrationsReferentiel
-          .relancerRecalculApresMigration(requete.params, requete.body),
+          .relancerRecalculApresMigration(requete.params, requete.body, requete.context),
         {
           mode: 'tenant_requis',
         },
@@ -104,7 +104,7 @@ export const creerRoutesMigrationsReferentiel = (
     const resultat = await dependances.executerRouteTenant(
       requete,
       () => dependances.controleurMigrationsReferentiel
-        .consulterRapportMigration(requete.params),
+        .consulterRapportMigration(requete.params, requete.context),
       {
         mode: 'lecture_organisationnelle_ou_tenant',
       },

@@ -63,6 +63,12 @@ export class PeriodeCalendrier extends Entite<PeriodeCalendrierId> {
     return new Date(this.dateFin.getTime());
   }
 
+  // Cette methode indique si une date donnee tombe dans la periode, bornes incluses.
+  public contientDate(dateReference: Date): boolean {
+    const date = this.validerDate(dateReference, 'dateReference');
+    return date.getTime() >= this.dateDebut.getTime() && date.getTime() <= this.dateFin.getTime();
+  }
+
   // Cette methode indique si deux periodes se chevauchent.
   public seChevaucheAvec(autrePeriode: PeriodeCalendrier): boolean {
     return (

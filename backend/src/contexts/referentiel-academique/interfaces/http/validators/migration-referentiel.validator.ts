@@ -29,6 +29,7 @@ export class ValidateurMigrationReferentielHttp {
   // Cette methode valide la requete HTTP d'analyse d'une migration.
   public static validerAnalyse(
     corps: unknown,
+    declenchePar: string,
   ): AnalyserMigrationReferentielEntree {
     const donnees = OutilsValidationHttpReferentielAcademique.obtenirObjet(corps, 'corps');
 
@@ -38,7 +39,6 @@ export class ValidateurMigrationReferentielHttp {
         idProgrammeNiveau: true,
         idAncienneVersionReferentiel: true,
         idNouvelleVersionReferentiel: true,
-        declenchePar: true,
       },
       'analyse-migration-referentiel',
     );
@@ -58,16 +58,14 @@ export class ValidateurMigrationReferentielHttp {
           donnees,
           'idNouvelleVersionReferentiel',
         ),
-      declenchePar: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
-        donnees,
-        'declenchePar',
-      ),
+      declenchePar,
     };
   }
 
   // Cette methode valide la requete HTTP d'application d'une migration.
   public static validerApplication(
     corps: unknown,
+    appliquePar: string,
   ): AppliquerMigrationReferentielEntree {
     const donnees = OutilsValidationHttpReferentielAcademique.obtenirObjet(corps, 'corps');
 
@@ -75,7 +73,6 @@ export class ValidateurMigrationReferentielHttp {
       donnees,
       {
         idMigrationReferentielProgramme: true,
-        appliquePar: true,
       },
       'application-migration-referentiel',
     );
@@ -91,10 +88,7 @@ export class ValidateurMigrationReferentielHttp {
           donnees,
           'idMigrationReferentielProgramme',
         ),
-      appliquePar: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
-        donnees,
-        'appliquePar',
-      ),
+      appliquePar,
       demandesTransformationNotes: demandesBrutes?.map((demande, index) =>
         this.validerDemandeTransformationNote(demande, index)
       ),
@@ -105,18 +99,15 @@ export class ValidateurMigrationReferentielHttp {
   public static validerAnnulation(
     parametres: unknown,
     corps: unknown,
+    annulePar: string,
   ): AnnulerMigrationReferentielEntree {
     const donneesParametres = OutilsValidationHttpReferentielAcademique.obtenirObjet(
       parametres,
       'parametres',
     );
-    const donneesCorps = OutilsValidationHttpReferentielAcademique.obtenirObjet(corps, 'corps');
+    OutilsValidationHttpReferentielAcademique.obtenirObjet(corps, 'corps');
 
-    OutilsValidationHttpReferentielAcademique.validerChampsRequis(
-      donneesCorps,
-      { annulePar: true },
-      'annulation-migration-referentiel',
-    );
+    OutilsValidationHttpReferentielAcademique.obtenirObjet(corps, 'corps');
 
     return {
       idMigrationReferentielProgramme:
@@ -124,10 +115,7 @@ export class ValidateurMigrationReferentielHttp {
           donneesParametres,
           'id',
         ),
-      annulePar: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
-        donneesCorps,
-        'annulePar',
-      ),
+      annulePar,
     };
   }
 
@@ -153,18 +141,15 @@ export class ValidateurMigrationReferentielHttp {
   public static validerRelanceRecalcul(
     parametres: unknown,
     corps: unknown,
+    relancePar: string,
   ): RelancerRecalculApresMigrationEntree {
     const donneesParametres = OutilsValidationHttpReferentielAcademique.obtenirObjet(
       parametres,
       'parametres',
     );
-    const donneesCorps = OutilsValidationHttpReferentielAcademique.obtenirObjet(corps, 'corps');
+    OutilsValidationHttpReferentielAcademique.obtenirObjet(corps, 'corps');
 
-    OutilsValidationHttpReferentielAcademique.validerChampsRequis(
-      donneesCorps,
-      { relancePar: true },
-      'relance-recalcul-migration',
-    );
+    OutilsValidationHttpReferentielAcademique.obtenirObjet(corps, 'corps');
 
     return {
       idMigrationReferentielProgramme:
@@ -172,10 +157,7 @@ export class ValidateurMigrationReferentielHttp {
           donneesParametres,
           'id',
         ),
-      relancePar: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
-        donneesCorps,
-        'relancePar',
-      ),
+      relancePar,
     };
   }
 

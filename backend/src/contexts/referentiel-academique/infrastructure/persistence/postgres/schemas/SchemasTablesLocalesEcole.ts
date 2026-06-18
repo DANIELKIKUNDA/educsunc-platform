@@ -305,6 +305,155 @@ export const schemaTableClassesPedagogiques: SchemaTablePostgres = creerSchemaTa
   ],
 });
 
+// Ce schema decrit la table locale des responsabilites de classes pedagogiques.
+export const schemaTableResponsabilitesClassesPedagogiques: SchemaTablePostgres =
+  creerSchemaTablePostgres({
+    nomTable: 'responsabilites_classes_pedagogiques',
+    categorie: 'locale_ecole',
+    description: 'Table locale des responsabilites officielles de classes pedagogiques.',
+    strategieIsolationTenant: 'directe',
+    colonneTenant: 'id_ecole',
+    clePrimaire: ['id'],
+    colonnes: [
+      creerColonneIdentifiant('Identifiant technique de la responsabilite de classe pedagogique.'),
+      {
+        nom: 'id_organisation',
+        type: 'uuid',
+        obligatoire: true,
+        commentaire: "Organisation de rattachement de l'ecole.",
+      },
+      {
+        nom: 'id_ecole',
+        type: 'uuid',
+        obligatoire: true,
+        commentaire: "Ecole proprietaire de la responsabilite.",
+      },
+      {
+        nom: 'id_classe_pedagogique',
+        type: 'uuid',
+        obligatoire: true,
+        commentaire: 'Classe pedagogique ciblee.',
+      },
+      {
+        nom: 'id_classe_academique',
+        type: 'uuid',
+        obligatoire: true,
+        commentaire: 'Classe academique support.',
+      },
+      {
+        nom: 'id_section_scolaire',
+        type: 'uuid',
+        obligatoire: true,
+        commentaire: 'Section scolaire support.',
+      },
+      {
+        nom: 'id_annee_scolaire',
+        type: 'uuid',
+        obligatoire: true,
+        commentaire: "Annee scolaire de rattachement.",
+      },
+      {
+        nom: 'id_utilisateur_enseignant',
+        type: 'varchar',
+        taille: 120,
+        obligatoire: true,
+        commentaire: 'Utilisateur enseignant responsable de la classe.',
+      },
+      {
+        nom: 'active',
+        type: 'boolean',
+        obligatoire: true,
+        valeurParDefautSql: 'true',
+        commentaire: 'Indique si la responsabilite est active.',
+      },
+      {
+        nom: 'date_debut',
+        type: 'timestamptz',
+        obligatoire: true,
+        commentaire: 'Date de debut de la responsabilite.',
+      },
+      {
+        nom: 'date_fin',
+        type: 'timestamptz',
+        obligatoire: false,
+        commentaire: 'Date de fin de la responsabilite si elle existe.',
+      },
+      ...creerColonnesCreation(true),
+      creerColonneVersionMetier('Version metier de la responsabilite de classe pedagogique.'),
+    ],
+    references: [
+      {
+        colonneLocale: 'id_organisation',
+        tableReferencee: 'organisations',
+        colonneReferencee: 'id',
+        actionSuppression: 'restrict',
+        actionMiseAJour: 'cascade',
+        commentaire: "Reference vers l'organisation porteuse.",
+      },
+      {
+        colonneLocale: 'id_ecole',
+        tableReferencee: 'ecoles',
+        colonneReferencee: 'id',
+        actionSuppression: 'restrict',
+        actionMiseAJour: 'cascade',
+        commentaire: "Reference vers l'ecole proprietaire.",
+      },
+      {
+        colonneLocale: 'id_classe_pedagogique',
+        tableReferencee: 'classes_pedagogiques',
+        colonneReferencee: 'id',
+        actionSuppression: 'restrict',
+        actionMiseAJour: 'cascade',
+        commentaire: 'Reference vers la classe pedagogique ciblee.',
+      },
+      {
+        colonneLocale: 'id_classe_academique',
+        tableReferencee: 'classes_academiques',
+        colonneReferencee: 'id',
+        actionSuppression: 'restrict',
+        actionMiseAJour: 'cascade',
+        commentaire: 'Reference vers la classe academique support.',
+      },
+      {
+        colonneLocale: 'id_section_scolaire',
+        tableReferencee: 'sections_scolaires',
+        colonneReferencee: 'id',
+        actionSuppression: 'restrict',
+        actionMiseAJour: 'cascade',
+        commentaire: 'Reference vers la section scolaire support.',
+      },
+      {
+        colonneLocale: 'id_annee_scolaire',
+        tableReferencee: 'annees_scolaires',
+        colonneReferencee: 'id',
+        actionSuppression: 'restrict',
+        actionMiseAJour: 'cascade',
+        commentaire: "Reference vers l'annee scolaire.",
+      },
+    ],
+    index: [
+      {
+        nom: 'ux_responsabilites_classes_pedagogiques_active',
+        colonnes: ['id_classe_pedagogique', 'id_annee_scolaire'],
+        unique: true,
+        conditionSql: 'active = true',
+        commentaire: 'Garantit un seul responsable actif par classe pedagogique et annee.',
+      },
+      {
+        nom: 'ix_responsabilites_classes_pedagogiques_enseignant',
+        colonnes: ['id_utilisateur_enseignant'],
+        unique: false,
+        commentaire: 'Accelere les lectures par enseignant responsable.',
+      },
+      {
+        nom: 'ix_responsabilites_classes_pedagogiques_ecole_annee',
+        colonnes: ['id_ecole', 'id_annee_scolaire'],
+        unique: false,
+        commentaire: 'Accelere les lectures par ecole et annee.',
+      },
+    ],
+  });
+
 // Ce schema decrit la table locale des programmes de niveau exploites dans une ecole.
 export const schemaTableProgrammesNiveau: SchemaTablePostgres = creerSchemaTablePostgres({
   nomTable: 'programmes_niveau',
@@ -979,6 +1128,7 @@ export const schemaTableTransformationsNote: SchemaTablePostgres = creerSchemaTa
 export const schemasTablesLocalesEcoleReferentielAcademique: readonly SchemaTablePostgres[] = [
   schemaTableAnneesScolaires,
   schemaTableClassesPedagogiques,
+  schemaTableResponsabilitesClassesPedagogiques,
   schemaTableProgrammesNiveau,
   schemaTableLignesProgrammeNiveau,
   schemaTableCalendriersAcademiques,

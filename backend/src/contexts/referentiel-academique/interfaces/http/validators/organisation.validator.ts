@@ -10,7 +10,7 @@ import { OutilsValidationHttpReferentielAcademique } from './OutilsValidationHtt
 // Ce validateur gere la validation HTTP des routes organisations.
 export class ValidateurOrganisationHttp {
   // Cette methode valide la requete HTTP de creation d'une organisation.
-  public static validerCreation(corps: unknown): CreerOrganisationEntree {
+  public static validerCreation(corps: unknown, creePar: string): CreerOrganisationEntree {
     const donnees = OutilsValidationHttpReferentielAcademique.obtenirObjet(corps, 'corps');
 
     OutilsValidationHttpReferentielAcademique.validerChampsRequis(
@@ -19,7 +19,6 @@ export class ValidateurOrganisationHttp {
         code: true,
         nom: true,
         typeOrganisation: true,
-        creePar: true,
       },
       'creation-organisation',
     );
@@ -32,10 +31,7 @@ export class ValidateurOrganisationHttp {
         'typeOrganisation',
         TypeOrganisation,
       ),
-      creePar: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
-        donnees,
-        'creePar',
-      ),
+      creePar,
       description: OutilsValidationHttpReferentielAcademique.lireChaineOptionnelle(
         donnees,
         'description',
@@ -67,6 +63,7 @@ export class ValidateurOrganisationHttp {
   public static validerRenommage(
     parametres: unknown,
     corps: unknown,
+    modifiePar: string,
   ): RenommerOrganisationEntree {
     const donneesParametres = OutilsValidationHttpReferentielAcademique.obtenirObjet(
       parametres,
@@ -78,7 +75,6 @@ export class ValidateurOrganisationHttp {
       donneesCorps,
       {
         nouveauNom: true,
-        modifiePar: true,
       },
       'renommage-organisation',
     );
@@ -92,10 +88,7 @@ export class ValidateurOrganisationHttp {
         donneesCorps,
         'nouveauNom',
       ),
-      modifiePar: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
-        donneesCorps,
-        'modifiePar',
-      ),
+      modifiePar,
     };
   }
 
@@ -103,43 +96,37 @@ export class ValidateurOrganisationHttp {
   public static validerActivation(
     parametres: unknown,
     corps: unknown,
+    modifiePar: string,
   ): ActiverOrganisationEntree {
-    return this.validerChangementStatut(parametres, corps);
+    return this.validerChangementStatut(parametres, corps, modifiePar);
   }
 
   // Cette methode valide la requete HTTP de desactivation d'une organisation.
   public static validerDesactivation(
     parametres: unknown,
     corps: unknown,
+    modifiePar: string,
   ): DesactiverOrganisationEntree {
-    return this.validerChangementStatut(parametres, corps);
+    return this.validerChangementStatut(parametres, corps, modifiePar);
   }
 
   private static validerChangementStatut(
     parametres: unknown,
     corps: unknown,
+    modifiePar: string,
   ): ActiverOrganisationEntree {
     const donneesParametres = OutilsValidationHttpReferentielAcademique.obtenirObjet(
       parametres,
       'parametres',
     );
-    const donneesCorps = OutilsValidationHttpReferentielAcademique.obtenirObjet(corps, 'corps');
-
-    OutilsValidationHttpReferentielAcademique.validerChampsRequis(
-      donneesCorps,
-      { modifiePar: true },
-      'changement-statut-organisation',
-    );
+    OutilsValidationHttpReferentielAcademique.obtenirObjet(corps, 'corps');
 
     return {
       idOrganisation: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
         donneesParametres,
         'id',
       ),
-      modifiePar: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
-        donneesCorps,
-        'modifiePar',
-      ),
+      modifiePar,
     };
   }
 }

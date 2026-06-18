@@ -15,7 +15,7 @@ export const creerRoutesOrganisations = (
   serveur.post('/api/organisations', async (requete, reponse) => {
     const resultat = await dependances.executerRouteTenant(
       requete,
-      () => dependances.controleurOrganisations.creerOrganisation(requete.body),
+      () => dependances.controleurOrganisations.creerOrganisation(requete.body, requete.context),
     );
     return reponse.code(200).send(resultat);
   });
@@ -23,7 +23,7 @@ export const creerRoutesOrganisations = (
   serveur.get('/api/organisations', async (requete, reponse) => {
     const resultat = await dependances.executerRouteTenant(
       requete,
-      () => dependances.controleurOrganisations.listerOrganisations(requete.query),
+      () => dependances.controleurOrganisations.listerOrganisations(requete.query, requete.context),
     );
     return reponse.code(200).send(resultat);
   });
@@ -33,6 +33,7 @@ export const creerRoutesOrganisations = (
       requete,
       () => dependances.controleurOrganisations.consulterOrganisation(
         requete.params,
+        requete.context,
       ),
     );
     return reponse.code(200).send(resultat);
@@ -44,6 +45,7 @@ export const creerRoutesOrganisations = (
       () => dependances.controleurOrganisations.renommerOrganisation(
         requete.params,
         requete.body,
+        requete.context,
       ),
     );
     return reponse.code(200).send(resultat);
@@ -55,6 +57,7 @@ export const creerRoutesOrganisations = (
       () => dependances.controleurOrganisations.activerOrganisation(
         requete.params,
         requete.body,
+        requete.context,
       ),
     );
     return reponse.code(200).send(resultat);
@@ -66,6 +69,7 @@ export const creerRoutesOrganisations = (
       () => dependances.controleurOrganisations.desactiverOrganisation(
         requete.params,
         requete.body,
+        requete.context,
       ),
     );
     return reponse.code(200).send(resultat);

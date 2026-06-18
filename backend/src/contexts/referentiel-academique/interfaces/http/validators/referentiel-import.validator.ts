@@ -39,6 +39,7 @@ export class ValidateurReferentielImportHttp {
   // Cette methode valide la requete HTTP d'import des sections scolaires.
   public static validerImportSections(
     corps: unknown,
+    importePar: string,
   ): ImporterSectionsDepuisJsonEntree {
     const donnees = OutilsValidationHttpReferentielAcademique.obtenirObjet(corps, 'corps');
     const sections = OutilsValidationHttpReferentielAcademique.lireTableauRequis(
@@ -48,16 +49,14 @@ export class ValidateurReferentielImportHttp {
 
     return {
       sections: sections.map((section, index) => this.validerSection(section, index)),
-      importePar: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
-        donnees,
-        'importePar',
-      ),
+      importePar,
     };
   }
 
   // Cette methode valide la requete HTTP d'import des options d'etude.
   public static validerImportOptions(
     corps: unknown,
+    importePar: string,
   ): ImporterOptionsDepuisJsonEntree {
     const donnees = OutilsValidationHttpReferentielAcademique.obtenirObjet(corps, 'corps');
     const options = OutilsValidationHttpReferentielAcademique.lireTableauRequis(
@@ -67,16 +66,14 @@ export class ValidateurReferentielImportHttp {
 
     return {
       options: options.map((option, index) => this.validerOption(option, index)),
-      importePar: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
-        donnees,
-        'importePar',
-      ),
+      importePar,
     };
   }
 
   // Cette methode valide la requete HTTP d'import des classes academiques.
   public static validerImportClasses(
     corps: unknown,
+    importePar: string,
   ): ImporterClassesAcademiquesDepuisJsonEntree {
     const donnees = OutilsValidationHttpReferentielAcademique.obtenirObjet(corps, 'corps');
     const classesAcademiques = OutilsValidationHttpReferentielAcademique.lireTableauRequis(
@@ -88,16 +85,14 @@ export class ValidateurReferentielImportHttp {
       classesAcademiques: classesAcademiques.map((classeAcademique, index) =>
         this.validerClasseAcademique(classeAcademique, index)
       ),
-      importePar: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
-        donnees,
-        'importePar',
-      ),
+      importePar,
     };
   }
 
   // Cette methode valide la requete HTTP d'import des cours academiques.
   public static validerImportCours(
     corps: unknown,
+    importePar: string,
   ): ImporterCoursAcademiquesDepuisJsonEntree {
     const donnees = OutilsValidationHttpReferentielAcademique.obtenirObjet(corps, 'corps');
     const cours = OutilsValidationHttpReferentielAcademique.lireTableauRequis(
@@ -107,16 +102,14 @@ export class ValidateurReferentielImportHttp {
 
     return {
       cours: cours.map((coursAcademique, index) => this.validerCours(coursAcademique, index)),
-      importePar: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
-        donnees,
-        'importePar',
-      ),
+      importePar,
     };
   }
 
   // Cette methode valide la requete HTTP d'import des programmes academiques.
   public static validerImportProgrammes(
     corps: unknown,
+    importePar: string,
   ): ImporterProgrammesAcademiquesDepuisJsonEntree {
     const donnees = OutilsValidationHttpReferentielAcademique.obtenirObjet(corps, 'corps');
     const programmes = OutilsValidationHttpReferentielAcademique.lireTableauRequis(
@@ -126,16 +119,14 @@ export class ValidateurReferentielImportHttp {
 
     return {
       programmes: programmes.map((programme, index) => this.validerProgramme(programme, index)),
-      importePar: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
-        donnees,
-        'importePar',
-      ),
+      importePar,
     };
   }
 
   // Cette methode valide la requete HTTP d'import des lignes de programme.
   public static validerImportLignes(
     corps: unknown,
+    importePar: string,
   ): ImporterLignesProgrammeDepuisJsonEntree {
     const donnees = OutilsValidationHttpReferentielAcademique.obtenirObjet(corps, 'corps');
     const lignes = OutilsValidationHttpReferentielAcademique.lireTableauRequis(
@@ -150,16 +141,14 @@ export class ValidateurReferentielImportHttp {
         'typeStructureEvaluation',
         TypeStructureEvaluation,
       ),
-      importePar: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
-        donnees,
-        'importePar',
-      ),
+      importePar,
     };
   }
 
   // Cette methode valide la requete HTTP de publication d'une version de referentiel.
   public static validerPublicationVersion(
     corps: unknown,
+    publiePar: string,
   ): PublierVersionReferentielEntree {
     const donnees = OutilsValidationHttpReferentielAcademique.obtenirObjet(corps, 'corps');
 
@@ -171,7 +160,6 @@ export class ValidateurReferentielImportHttp {
         anneeReference: true,
         datePublication: true,
         sourceImport: true,
-        publiePar: true,
       },
       'publication-version-referentiel',
     );
@@ -202,10 +190,7 @@ export class ValidateurReferentielImportHttp {
         donnees,
         'motifPublication',
       ),
-      publiePar: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
-        donnees,
-        'publiePar',
-      ),
+      publiePar,
     };
   }
 
@@ -213,6 +198,7 @@ export class ValidateurReferentielImportHttp {
   public static validerActivationVersion(
     parametres: unknown,
     corps: unknown,
+    activePar: string,
   ): ActiverVersionReferentielEntree {
     const donneesParametres = OutilsValidationHttpReferentielAcademique.obtenirObjet(
       parametres,
@@ -220,22 +206,13 @@ export class ValidateurReferentielImportHttp {
     );
     const donneesCorps = OutilsValidationHttpReferentielAcademique.obtenirObjet(corps, 'corps');
 
-    OutilsValidationHttpReferentielAcademique.validerChampsRequis(
-      donneesCorps,
-      { activePar: true },
-      'activation-version-referentiel',
-    );
-
     return {
       idVersionReferentielProgramme:
         OutilsValidationHttpReferentielAcademique.lireChaineRequise(
           donneesParametres,
           'id',
         ),
-      activePar: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
-        donneesCorps,
-        'activePar',
-      ),
+      activePar,
     };
   }
 

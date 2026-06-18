@@ -14,36 +14,6 @@ export interface DependancesRoutesStructureScolaire {
 export const creerRoutesStructureScolaire = (
   dependances: DependancesRoutesStructureScolaire,
 ): FastifyPluginAsync => async (serveur) => {
-  serveur.post('/api/sections-scolaires', async (requete, reponse) => {
-    const resultat = await dependances.executerRouteTenant(
-      requete,
-      () => dependances.controleurStructureScolaire.creerSectionScolaire(
-        requete.body,
-      ),
-    );
-    return reponse.code(200).send(resultat);
-  });
-
-  serveur.post('/api/classes-academiques', async (requete, reponse) => {
-    const resultat = await dependances.executerRouteTenant(
-      requete,
-      () => dependances.controleurStructureScolaire.creerClasseAcademique(
-        requete.body,
-      ),
-    );
-    return reponse.code(200).send(resultat);
-  });
-
-  serveur.post('/api/options-etudes', async (requete, reponse) => {
-    const resultat = await dependances.executerRouteTenant(
-      requete,
-      () => dependances.controleurStructureScolaire.creerOptionEtude(
-        requete.body,
-      ),
-    );
-    return reponse.code(200).send(resultat);
-  });
-
   serveur.post('/api/classes-pedagogiques', async (requete, reponse) => {
     const resultat = await dependances.executerRouteIdempotente(
       requete,
@@ -60,26 +30,6 @@ export const creerRoutesStructureScolaire = (
       {
         operation: 'CREER_CLASSE_PEDAGOGIQUE',
       },
-    );
-    return reponse.code(200).send(resultat);
-  });
-
-  serveur.get('/api/classes-academiques', async (requete, reponse) => {
-    const resultat = await dependances.executerRouteTenant(
-      requete,
-      () => dependances.controleurStructureScolaire.listerClassesAcademiques(
-        requete.query,
-      ),
-    );
-    return reponse.code(200).send(resultat);
-  });
-
-  serveur.get('/api/sections-scolaires', async (requete, reponse) => {
-    const resultat = await dependances.executerRouteTenant(
-      requete,
-      () => dependances.controleurStructureScolaire.listerSectionsScolaires(
-        requete.query,
-      ),
     );
     return reponse.code(200).send(resultat);
   });
@@ -102,6 +52,46 @@ export const creerRoutesStructureScolaire = (
     const resultat = await dependances.executerRouteTenant(
       requete,
       () => dependances.controleurStructureScolaire.consulterReglesFraisClasse(
+        requete.params,
+      ),
+      {
+        mode: 'tenant_requis',
+      },
+    );
+    return reponse.code(200).send(resultat);
+  });
+
+  serveur.post('/api/classes-pedagogiques/:id/responsable', async (requete, reponse) => {
+    const resultat = await dependances.executerRouteTenant(
+      requete,
+      () => dependances.controleurStructureScolaire.attribuerResponsableClassePedagogique(
+        requete.params,
+        requete.body,
+      ),
+      {
+        mode: 'tenant_requis',
+      },
+    );
+    return reponse.code(200).send(resultat);
+  });
+
+  serveur.get('/api/classes-pedagogiques/:id/responsable/annee/:idAnneeScolaire', async (requete, reponse) => {
+    const resultat = await dependances.executerRouteTenant(
+      requete,
+      () => dependances.controleurStructureScolaire.consulterResponsableClassePedagogique(
+        requete.params,
+      ),
+      {
+        mode: 'tenant_requis',
+      },
+    );
+    return reponse.code(200).send(resultat);
+  });
+
+  serveur.delete('/api/classes-pedagogiques/:id/responsable/annee/:idAnneeScolaire', async (requete, reponse) => {
+    const resultat = await dependances.executerRouteTenant(
+      requete,
+      () => dependances.controleurStructureScolaire.retirerResponsableClassePedagogique(
         requete.params,
       ),
       {
@@ -153,13 +143,4 @@ export const creerRoutesStructureScolaire = (
     return reponse.code(200).send(resultat);
   });
 
-  serveur.get('/api/options-etudes', async (requete, reponse) => {
-    const resultat = await dependances.executerRouteTenant(
-      requete,
-      () => dependances.controleurStructureScolaire.listerOptionsEtudes(
-        requete.query,
-      ),
-    );
-    return reponse.code(200).send(resultat);
-  });
 };

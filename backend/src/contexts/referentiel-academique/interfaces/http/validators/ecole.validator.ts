@@ -17,7 +17,7 @@ export interface EntreeListeEcolesHttp extends Pagination {
 // Ce validateur gere la validation HTTP des routes ecoles.
 export class ValidateurEcoleHttp {
   // Cette methode valide la requete HTTP de creation d'une ecole.
-  public static validerCreation(corps: unknown): CreerEcoleEntree {
+  public static validerCreation(corps: unknown, creePar: string): CreerEcoleEntree {
     const donnees = OutilsValidationHttpReferentielAcademique.obtenirObjet(corps, 'corps');
 
     OutilsValidationHttpReferentielAcademique.validerChampsRequis(
@@ -27,7 +27,6 @@ export class ValidateurEcoleHttp {
         code: true,
         nom: true,
         modeExploitation: true,
-        creePar: true,
       },
       'creation-ecole',
     );
@@ -44,10 +43,7 @@ export class ValidateurEcoleHttp {
         'modeExploitation',
         ModeExploitation,
       ),
-      creePar: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
-        donnees,
-        'creePar',
-      ),
+      creePar,
       sigle: OutilsValidationHttpReferentielAcademique.lireChaineOptionnelle(donnees, 'sigle'),
       adresse: OutilsValidationHttpReferentielAcademique.lireChaineOptionnelle(
         donnees,
@@ -115,6 +111,7 @@ export class ValidateurEcoleHttp {
   public static validerChangementMode(
     parametres: unknown,
     corps: unknown,
+    modifiePar: string,
   ): ChangerModeExploitationEcoleEntree {
     const donneesParametres = OutilsValidationHttpReferentielAcademique.obtenirObjet(
       parametres,
@@ -126,7 +123,6 @@ export class ValidateurEcoleHttp {
       donneesCorps,
       {
         nouveauModeExploitation: true,
-        modifiePar: true,
       },
       'changement-mode-ecole',
     );
@@ -141,10 +137,7 @@ export class ValidateurEcoleHttp {
         'nouveauModeExploitation',
         ModeExploitation,
       ),
-      modifiePar: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
-        donneesCorps,
-        'modifiePar',
-      ),
+      modifiePar,
     };
   }
 
@@ -152,6 +145,7 @@ export class ValidateurEcoleHttp {
   public static validerRenommage(
     parametres: unknown,
     corps: unknown,
+    modifiePar: string,
   ): RenommerEcoleEntree {
     const donneesParametres = OutilsValidationHttpReferentielAcademique.obtenirObjet(
       parametres,
@@ -163,7 +157,6 @@ export class ValidateurEcoleHttp {
       donneesCorps,
       {
         nouveauNom: true,
-        modifiePar: true,
       },
       'renommage-ecole',
     );
@@ -177,10 +170,7 @@ export class ValidateurEcoleHttp {
         donneesCorps,
         'nouveauNom',
       ),
-      modifiePar: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
-        donneesCorps,
-        'modifiePar',
-      ),
+      modifiePar,
     };
   }
 
@@ -188,43 +178,37 @@ export class ValidateurEcoleHttp {
   public static validerActivation(
     parametres: unknown,
     corps: unknown,
+    modifiePar: string,
   ): ActiverEcoleEntree {
-    return this.validerChangementStatut(parametres, corps);
+    return this.validerChangementStatut(parametres, corps, modifiePar);
   }
 
   // Cette methode valide la requete HTTP de desactivation d'une ecole.
   public static validerDesactivation(
     parametres: unknown,
     corps: unknown,
+    modifiePar: string,
   ): DesactiverEcoleEntree {
-    return this.validerChangementStatut(parametres, corps);
+    return this.validerChangementStatut(parametres, corps, modifiePar);
   }
 
   private static validerChangementStatut(
     parametres: unknown,
     corps: unknown,
+    modifiePar: string,
   ): ActiverEcoleEntree {
     const donneesParametres = OutilsValidationHttpReferentielAcademique.obtenirObjet(
       parametres,
       'parametres',
     );
-    const donneesCorps = OutilsValidationHttpReferentielAcademique.obtenirObjet(corps, 'corps');
-
-    OutilsValidationHttpReferentielAcademique.validerChampsRequis(
-      donneesCorps,
-      { modifiePar: true },
-      'changement-statut-ecole',
-    );
+    OutilsValidationHttpReferentielAcademique.obtenirObjet(corps, 'corps');
 
     return {
       idEcole: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
         donneesParametres,
         'id',
       ),
-      modifiePar: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
-        donneesCorps,
-        'modifiePar',
-      ),
+      modifiePar,
     };
   }
 }

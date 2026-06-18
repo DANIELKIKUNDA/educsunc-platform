@@ -70,7 +70,9 @@ import {
   PublierVersionReferentiel,
 } from '../../contexts/referentiel-academique/application/use-cases/referentiels';
 import {
+  AttribuerResponsableClassePedagogique,
   ArchiverClassePedagogique,
+  ConsulterResponsableClassePedagogique,
   CreerClasseAcademique,
   CreerClassePedagogique,
   CreerOptionEtude,
@@ -82,6 +84,7 @@ import {
   ListerOptionsEtudes,
   ListerSectionsScolaires,
   RenommerClassePedagogique,
+  RetirerResponsableClassePedagogique,
 } from '../../contexts/referentiel-academique/application/use-cases/structure';
 import {
   OrchestrateurImportReferentiel,
@@ -114,6 +117,7 @@ import {
   DepotOptionEtudePostgres,
   DepotOrganisationPostgres,
   DepotProgrammeNiveauPostgres,
+  DepotResponsabiliteClassePedagogiquePostgres,
   DepotReferentielCoursPostgres,
   DepotReferentielProgrammePostgres,
   ReglesFraisClasseQueryRepository,
@@ -123,6 +127,9 @@ import {
 } from '../../contexts/referentiel-academique/infrastructure/persistence/postgres';
 import { ServiceJournalAuditReferentielAcademiquePostgres } from '../../contexts/referentiel-academique/infrastructure/services/ServiceJournalAuditReferentielAcademiquePostgres';
 import { ContexteExecutionTenantReferentielAcademique } from '../../contexts/referentiel-academique/infrastructure/tenancy/ContexteExecutionTenantReferentielAcademique';
+import { AutorisationSocleAcademiqueAdapter } from '../adapters/AutorisationSocleAcademiqueAdapter';
+import { AutorisationMigrationReferentielAdapter } from '../adapters/AutorisationMigrationReferentielAdapter';
+import { EligibiliteResponsableClassePedagogiqueAdapter } from '../adapters/EligibiliteResponsableClassePedagogiqueAdapter';
 
 // Cette interface regroupe les depots PostgreSQL utiles au BC une fois compose.
 interface DepotsReferentielAcademique {
@@ -133,6 +140,7 @@ interface DepotsReferentielAcademique {
   depotClasseAcademique: DepotClasseAcademiquePostgres;
   depotOptionEtude: DepotOptionEtudePostgres;
   depotClassePedagogique: DepotClassePedagogiquePostgres;
+  depotResponsabiliteClassePedagogique: DepotResponsabiliteClassePedagogiquePostgres;
   depotReferentielCours: DepotReferentielCoursPostgres;
   depotReferentielProgramme: DepotReferentielProgrammePostgres;
   depotProgrammeNiveau: DepotProgrammeNiveauPostgres;
@@ -182,6 +190,11 @@ function creerDepotsReferentielAcademique(
       contexteExecutionTenant,
     ),
     depotClassePedagogique: new DepotClassePedagogiquePostgres(
+      clientLecture,
+      uniteDeTravail,
+      contexteExecutionTenant,
+    ),
+    depotResponsabiliteClassePedagogique: new DepotResponsabiliteClassePedagogiquePostgres(
       clientLecture,
       uniteDeTravail,
       contexteExecutionTenant,
@@ -240,6 +253,12 @@ function composerRoutesReferentielAcademique(): CompositionRoutesReferentielAcad
     creerExecuteurRouteTenantReferentielAcademique(contexteExecutionTenant);
   const executerRouteIdempotente =
     creerExecuteurRouteIdempotenteReferentielAcademique(storeIdempotence);
+  const eligibiliteResponsableClassePedagogiqueAdapter =
+    new EligibiliteResponsableClassePedagogiqueAdapter();
+  const autorisationSocleAcademiqueAdapter = new AutorisationSocleAcademiqueAdapter();
+  const autorisationMigrationReferentielAdapter = new AutorisationMigrationReferentielAdapter(
+    autorisationSocleAcademiqueAdapter,
+  );
 
   const controleurOrganisations = new ControleurOrganisations(
     new CreerOrganisation(depots.depotOrganisation),
@@ -332,10 +351,30 @@ function composerRoutesReferentielAcademique(): CompositionRoutesReferentielAcad
       depots.depotAnneeScolaire,
     ),
     new ListerOptionsEtudes(depots.depotOptionEtude),
+    new AttribuerResponsableClassePedagogique(
+      depots.depotResponsabiliteClassePedagogique,
+      depots.depotClassePedagogique,
+      depots.depotClasseAcademique,
+      depots.depotSectionScolaire,
+      depots.depotAnneeScolaire,
+      depots.depotEcole,
+      eligibiliteResponsableClassePedagogiqueAdapter,
+    ),
+    new RetirerResponsableClassePedagogique(
+      depots.depotResponsabiliteClassePedagogique,
+      depots.depotClasseAcademique,
+      depots.depotSectionScolaire,
+    ),
+    new ConsulterResponsableClassePedagogique(
+      depots.depotResponsabiliteClassePedagogique,
+      depots.depotClasseAcademique,
+      depots.depotSectionScolaire,
+    ),
     new RenommerClassePedagogique(depots.depotClassePedagogique),
     new DesactiverClassePedagogique(depots.depotClassePedagogique),
     new ArchiverClassePedagogique(depots.depotClassePedagogique),
     new ConsulterReglesFraisClasse(depots.reglesFraisClasseQueryRepository),
+    autorisationSocleAcademiqueAdapter,
   );
 
   const casUsageImporterSectionsDepuisJson = new ImporterSectionsDepuisJson(
@@ -483,6 +522,7 @@ function composerRoutesReferentielAcademique(): CompositionRoutesReferentielAcad
       depots.depotMigrationReferentielProgramme,
     ),
     new RelancerRecalculApresMigration(depots.depotMigrationReferentielProgramme),
+    autorisationMigrationReferentielAdapter,
   );
 
   return {

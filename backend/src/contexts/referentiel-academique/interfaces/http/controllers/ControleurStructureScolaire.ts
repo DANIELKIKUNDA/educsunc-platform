@@ -1,9 +1,13 @@
+import type { RequestContext } from 'shared/context';
+import { AutorisationSocleAcademiqueAdapter } from '../../../../../app/adapters/AutorisationSocleAcademiqueAdapter';
 import { ClasseAcademiqueSortie } from '../../../application/dto/output/ClasseAcademiqueSortie';
 import { ClasseReglesFraisDTO } from '../../../application/dto/output/ClasseReglesFraisDTO';
 import { OptionEtudeSortie } from '../../../application/dto/output/OptionEtudeSortie';
 import { SectionScolaireSortie } from '../../../application/dto/output/SectionScolaireSortie';
 import {
+  AttribuerResponsableClassePedagogique,
   ArchiverClassePedagogique,
+  ConsulterResponsableClassePedagogique,
   CreerClasseAcademique,
   CreerClassePedagogique,
   CreerOptionEtude,
@@ -15,15 +19,21 @@ import {
   ListerOptionsEtudes,
   ListerSectionsScolaires,
   RenommerClassePedagogique,
+  RetirerResponsableClassePedagogique,
 } from '../../../application/use-cases/structure';
 import {
   ClassePedagogiquePresenter,
   ReponseClassePedagogiqueHttp,
   ReponseListeClassesPedagogiquesHttp,
 } from '../presenters/ClassePedagogiquePresenter';
+import {
+  ReponseResponsabiliteClassePedagogiqueHttp,
+  ResponsabiliteClassePedagogiquePresenter,
+} from '../presenters/ResponsabiliteClassePedagogiquePresenter';
 import { ValidateurClasseAcademiqueHttp } from '../validators/classe-academique.validator';
 import { ValidateurClassePedagogiqueHttp } from '../validators/classe-pedagogique.validator';
 import { ValidateurOptionEtudeHttp } from '../validators/option-etude.validator';
+import { ValidateurResponsabiliteClassePedagogiqueHttp } from '../validators/responsabilite-classe-pedagogique.validator';
 
 interface PaginationHttp {
   total: number;
@@ -81,10 +91,17 @@ export class ControleurStructureScolaire {
   private readonly casUsageListerClassesPedagogiquesParEcoleEtAnnee:
     ListerClassesPedagogiquesParEcoleEtAnnee;
   private readonly casUsageListerOptionsEtudes: ListerOptionsEtudes;
+  private readonly casUsageAttribuerResponsableClassePedagogique:
+    AttribuerResponsableClassePedagogique;
+  private readonly casUsageRetirerResponsableClassePedagogique:
+    RetirerResponsableClassePedagogique;
+  private readonly casUsageConsulterResponsableClassePedagogique:
+    ConsulterResponsableClassePedagogique;
   private readonly casUsageRenommerClassePedagogique: RenommerClassePedagogique;
   private readonly casUsageDesactiverClassePedagogique: DesactiverClassePedagogique;
   private readonly casUsageArchiverClassePedagogique: ArchiverClassePedagogique;
   private readonly casUsageConsulterReglesFraisClasse: ConsulterReglesFraisClasse;
+  private readonly autorisationSocleAcademique: AutorisationSocleAcademiqueAdapter;
 
   // Ce constructeur injecte les cas d'usage exposes par les routes de structure scolaire.
   constructor(
@@ -96,10 +113,14 @@ export class ControleurStructureScolaire {
     casUsageListerClassesAcademiques: ListerClassesAcademiques,
     casUsageListerClassesPedagogiquesParEcoleEtAnnee: ListerClassesPedagogiquesParEcoleEtAnnee,
     casUsageListerOptionsEtudes: ListerOptionsEtudes,
+    casUsageAttribuerResponsableClassePedagogique: AttribuerResponsableClassePedagogique,
+    casUsageRetirerResponsableClassePedagogique: RetirerResponsableClassePedagogique,
+    casUsageConsulterResponsableClassePedagogique: ConsulterResponsableClassePedagogique,
     casUsageRenommerClassePedagogique: RenommerClassePedagogique,
     casUsageDesactiverClassePedagogique: DesactiverClassePedagogique,
     casUsageArchiverClassePedagogique: ArchiverClassePedagogique,
     casUsageConsulterReglesFraisClasse: ConsulterReglesFraisClasse,
+    autorisationSocleAcademique: AutorisationSocleAcademiqueAdapter = new AutorisationSocleAcademiqueAdapter(),
   ) {
     this.casUsageCreerSectionScolaire = casUsageCreerSectionScolaire;
     this.casUsageCreerClasseAcademique = casUsageCreerClasseAcademique;
@@ -110,14 +131,25 @@ export class ControleurStructureScolaire {
     this.casUsageListerClassesPedagogiquesParEcoleEtAnnee =
       casUsageListerClassesPedagogiquesParEcoleEtAnnee;
     this.casUsageListerOptionsEtudes = casUsageListerOptionsEtudes;
+    this.casUsageAttribuerResponsableClassePedagogique =
+      casUsageAttribuerResponsableClassePedagogique;
+    this.casUsageRetirerResponsableClassePedagogique =
+      casUsageRetirerResponsableClassePedagogique;
+    this.casUsageConsulterResponsableClassePedagogique =
+      casUsageConsulterResponsableClassePedagogique;
     this.casUsageRenommerClassePedagogique = casUsageRenommerClassePedagogique;
     this.casUsageDesactiverClassePedagogique = casUsageDesactiverClassePedagogique;
     this.casUsageArchiverClassePedagogique = casUsageArchiverClassePedagogique;
     this.casUsageConsulterReglesFraisClasse = casUsageConsulterReglesFraisClasse;
+    this.autorisationSocleAcademique = autorisationSocleAcademique;
   }
 
   // Cette methode traite la creation HTTP d'une section scolaire.
-  public async creerSectionScolaire(corps: unknown): Promise<ReponseSectionScolaireHttp> {
+  public async creerSectionScolaire(
+    corps: unknown,
+    contexte?: RequestContext,
+  ): Promise<ReponseSectionScolaireHttp> {
+    await this.verifierMutationSocleAcademique(contexte);
     const entree = ValidateurClasseAcademiqueHttp.validerCreationSection(corps);
     const sortie = await this.casUsageCreerSectionScolaire.executer(entree);
 
@@ -129,7 +161,11 @@ export class ControleurStructureScolaire {
   }
 
   // Cette methode traite la creation HTTP d'une classe academique.
-  public async creerClasseAcademique(corps: unknown): Promise<ReponseClasseAcademiqueHttp> {
+  public async creerClasseAcademique(
+    corps: unknown,
+    contexte?: RequestContext,
+  ): Promise<ReponseClasseAcademiqueHttp> {
+    await this.verifierMutationSocleAcademique(contexte);
     const entree = ValidateurClasseAcademiqueHttp.validerCreation(corps);
     const sortie = await this.casUsageCreerClasseAcademique.executer(entree);
 
@@ -141,7 +177,11 @@ export class ControleurStructureScolaire {
   }
 
   // Cette methode traite la creation HTTP d'une option d'etude.
-  public async creerOptionEtude(corps: unknown): Promise<ReponseOptionEtudeHttp> {
+  public async creerOptionEtude(
+    corps: unknown,
+    contexte?: RequestContext,
+  ): Promise<ReponseOptionEtudeHttp> {
+    await this.verifierMutationSocleAcademique(contexte);
     const entree = ValidateurOptionEtudeHttp.validerCreation(corps);
     const sortie = await this.casUsageCreerOptionEtude.executer(entree);
 
@@ -165,7 +205,9 @@ export class ControleurStructureScolaire {
   // Cette methode traite la liste HTTP paginee des classes academiques.
   public async listerClassesAcademiques(
     query: unknown,
+    contexte?: RequestContext,
   ): Promise<ReponseListeClassesAcademiquesHttp> {
+    await this.verifierLectureSocleAcademique(contexte);
     const entree = ValidateurClasseAcademiqueHttp.validerListe(query);
     const sortie = await this.casUsageListerClassesAcademiques.executer(entree);
 
@@ -180,7 +222,9 @@ export class ControleurStructureScolaire {
   // Cette methode traite la liste HTTP paginee des sections scolaires.
   public async listerSectionsScolaires(
     query: unknown,
+    contexte?: RequestContext,
   ): Promise<ReponseListeSectionsScolairesHttp> {
+    await this.verifierLectureSocleAcademique(contexte);
     const entree = ValidateurClasseAcademiqueHttp.validerListe(query);
     const sortie = await this.casUsageListerSectionsScolaires.executer(entree);
 
@@ -214,8 +258,52 @@ export class ControleurStructureScolaire {
     };
   }
 
+  // Cette methode traite l'attribution HTTP du responsable d'une classe pedagogique.
+  public async attribuerResponsableClassePedagogique(
+    parametres: unknown,
+    corps: unknown,
+  ): Promise<ReponseResponsabiliteClassePedagogiqueHttp> {
+    const entree = ValidateurResponsabiliteClassePedagogiqueHttp.validerAttribution(
+      parametres,
+      corps,
+    );
+    const sortie = await this.casUsageAttribuerResponsableClassePedagogique.executer(entree);
+
+    return ResponsabiliteClassePedagogiquePresenter.presenterDetail(
+      sortie.responsabiliteClassePedagogique,
+    );
+  }
+
+  // Cette methode traite le retrait HTTP du responsable actif d'une classe pedagogique.
+  public async retirerResponsableClassePedagogique(
+    parametres: unknown,
+  ): Promise<ReponseResponsabiliteClassePedagogiqueHttp> {
+    const entree = ValidateurResponsabiliteClassePedagogiqueHttp.validerRetrait(parametres);
+    const sortie = await this.casUsageRetirerResponsableClassePedagogique.executer(entree);
+
+    return ResponsabiliteClassePedagogiquePresenter.presenterDetail(
+      sortie.responsabiliteClassePedagogique,
+    );
+  }
+
+  // Cette methode traite la consultation HTTP du responsable actif d'une classe pedagogique.
+  public async consulterResponsableClassePedagogique(
+    parametres: unknown,
+  ): Promise<ReponseResponsabiliteClassePedagogiqueHttp> {
+    const entree = ValidateurResponsabiliteClassePedagogiqueHttp.validerConsultation(parametres);
+    const sortie = await this.casUsageConsulterResponsableClassePedagogique.executer(entree);
+
+    return ResponsabiliteClassePedagogiquePresenter.presenterDetail(
+      sortie.responsabiliteClassePedagogique,
+    );
+  }
+
   // Cette methode traite la liste HTTP paginee des options d'etude.
-  public async listerOptionsEtudes(query: unknown): Promise<ReponseListeOptionsEtudesHttp> {
+  public async listerOptionsEtudes(
+    query: unknown,
+    contexte?: RequestContext,
+  ): Promise<ReponseListeOptionsEtudesHttp> {
+    await this.verifierLectureSocleAcademique(contexte);
     const pagination = ValidateurOptionEtudeHttp.validerListe(query);
     const sortie = await this.casUsageListerOptionsEtudes.executer(pagination);
 
@@ -268,5 +356,31 @@ export class ControleurStructureScolaire {
       taillePage,
       totalPages: taillePage <= 0 ? 0 : Math.ceil(total / taillePage),
     };
+  }
+
+  private async verifierLectureSocleAcademique(contexte?: RequestContext): Promise<void> {
+    const idUtilisateur = contexte?.utilisateurId;
+
+    if (!idUtilisateur) {
+      throw new Error("L'utilisateur courant est requis pour consulter le socle academique.");
+    }
+
+    await this.autorisationSocleAcademique.verifierLectureSocleAcademique({
+      idUtilisateur,
+      roleActif: contexte?.roleActif,
+    });
+  }
+
+  private async verifierMutationSocleAcademique(contexte?: RequestContext): Promise<void> {
+    const idUtilisateur = contexte?.utilisateurId;
+
+    if (!idUtilisateur) {
+      throw new Error("L'utilisateur courant est requis pour administrer le socle academique.");
+    }
+
+    await this.autorisationSocleAcademique.verifierMutationSocleAcademique({
+      idUtilisateur,
+      roleActif: contexte?.roleActif,
+    });
   }
 }

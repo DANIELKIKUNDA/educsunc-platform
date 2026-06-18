@@ -19,7 +19,10 @@ export const creerRoutesReferentielsAcademiques = (
       requete,
       () => dependances.executerRouteTenant(
         requete,
-        () => dependances.controleurReferentielsAcademiques.importerSectionsDepuisJson(requete.body),
+        () => dependances.controleurReferentielsAcademiques.importerSectionsDepuisJson(
+          requete.body,
+          requete.context,
+        ),
       ),
       {
         operation: 'IMPORT_REFERENTIEL_SECTIONS',
@@ -33,7 +36,10 @@ export const creerRoutesReferentielsAcademiques = (
       requete,
       () => dependances.executerRouteTenant(
         requete,
-        () => dependances.controleurReferentielsAcademiques.importerOptionsDepuisJson(requete.body),
+        () => dependances.controleurReferentielsAcademiques.importerOptionsDepuisJson(
+          requete.body,
+          requete.context,
+        ),
       ),
       {
         operation: 'IMPORT_REFERENTIEL_OPTIONS',
@@ -48,7 +54,7 @@ export const creerRoutesReferentielsAcademiques = (
       () => dependances.executerRouteTenant(
         requete,
         () => dependances.controleurReferentielsAcademiques
-          .importerClassesAcademiquesDepuisJson(requete.body),
+          .importerClassesAcademiquesDepuisJson(requete.body, requete.context),
       ),
       {
         operation: 'IMPORT_REFERENTIEL_CLASSES_ACADEMIQUES',
@@ -63,7 +69,7 @@ export const creerRoutesReferentielsAcademiques = (
       () => dependances.executerRouteTenant(
         requete,
         () => dependances.controleurReferentielsAcademiques
-          .importerCoursAcademiquesDepuisJson(requete.body),
+          .importerCoursAcademiquesDepuisJson(requete.body, requete.context),
       ),
       {
         operation: 'IMPORT_REFERENTIEL_COURS',
@@ -78,7 +84,7 @@ export const creerRoutesReferentielsAcademiques = (
       () => dependances.executerRouteTenant(
         requete,
         () => dependances.controleurReferentielsAcademiques
-          .importerProgrammesAcademiquesDepuisJson(requete.body),
+          .importerProgrammesAcademiquesDepuisJson(requete.body, requete.context),
       ),
       {
         operation: 'IMPORT_REFERENTIEL_PROGRAMMES',
@@ -93,7 +99,7 @@ export const creerRoutesReferentielsAcademiques = (
       () => dependances.executerRouteTenant(
         requete,
         () => dependances.controleurReferentielsAcademiques
-          .importerLignesProgrammeDepuisJson(requete.body),
+          .importerLignesProgrammeDepuisJson(requete.body, requete.context),
       ),
       {
         operation: 'IMPORT_REFERENTIEL_LIGNES_PROGRAMME',
@@ -108,7 +114,7 @@ export const creerRoutesReferentielsAcademiques = (
       () => dependances.executerRouteTenant(
         requete,
         () => dependances.controleurReferentielsAcademiques
-          .publierVersionReferentiel(requete.body),
+          .publierVersionReferentiel(requete.body, requete.context),
       ),
       {
         operation: 'PUBLIER_VERSION_REFERENTIEL',
@@ -123,7 +129,7 @@ export const creerRoutesReferentielsAcademiques = (
       () => dependances.executerRouteTenant(
         requete,
         () => dependances.controleurReferentielsAcademiques
-          .activerVersionReferentiel(requete.params, requete.body),
+          .activerVersionReferentiel(requete.params, requete.body, requete.context),
       ),
       {
         operation: 'ACTIVER_VERSION_REFERENTIEL',
@@ -136,7 +142,7 @@ export const creerRoutesReferentielsAcademiques = (
     const resultat = await dependances.executerRouteTenant(
       requete,
       () => dependances.controleurReferentielsAcademiques
-        .comparerDeuxVersionsReferentiel(requete.body),
+        .comparerDeuxVersionsReferentiel(requete.body, requete.context),
     );
     return reponse.code(200).send(resultat);
   });
@@ -145,7 +151,7 @@ export const creerRoutesReferentielsAcademiques = (
     const resultat = await dependances.executerRouteTenant(
       requete,
       () => dependances.controleurReferentielsAcademiques
-        .listerReferentielsProgrammes(requete.query),
+        .listerReferentielsProgrammes(requete.query, requete.context),
     );
     return reponse.code(200).send(resultat);
   });
@@ -154,7 +160,7 @@ export const creerRoutesReferentielsAcademiques = (
     const resultat = await dependances.executerRouteTenant(
       requete,
       () => dependances.controleurReferentielsAcademiques
-        .listerReferentielsCours(requete.query),
+        .listerReferentielsCours(requete.query, requete.context),
     );
     return reponse.code(200).send(resultat);
   });
@@ -163,7 +169,7 @@ export const creerRoutesReferentielsAcademiques = (
     const resultat = await dependances.executerRouteTenant(
       requete,
       () => dependances.controleurReferentielsAcademiques
-        .consulterReferentielProgramme(requete.params),
+        .consulterReferentielProgramme(requete.params, requete.context),
     );
     return reponse.code(200).send(resultat);
   });

@@ -7,6 +7,7 @@ export * from './DepotSectionScolairePostgres';
 export * from './DepotClasseAcademiquePostgres';
 export * from './DepotOptionEtudePostgres';
 export * from './DepotClassePedagogiquePostgres';
+export * from './DepotResponsabiliteClassePedagogiquePostgres';
 export * from './DepotReferentielCoursPostgres';
 export * from './DepotReferentielProgrammePostgres';
 export * from './DepotVersionReferentielProgrammePostgres';
