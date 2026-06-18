@@ -12,6 +12,8 @@ Entetes supportes :
 
 Le contexte tenant est applique par `ScolariteTenantContext`, puis reinitialise apres chaque requete.
 
+Pour les commandes critiques, l'identite utilisateur effectivement consommee par le BC est celle du contexte authentifie. Le BC ne doit pas etre lu comme un espace qui fait confiance a un `x-user-id` arbitraire fourni par le client.
+
 ## Eleves
 
 - `POST /api/eleves` : creer un eleve.
@@ -22,6 +24,13 @@ Le contexte tenant est applique par `ScolariteTenantContext`, puis reinitialise 
 - `POST /api/eleves/:id/rattacher-famille` : rattacher l'eleve a une famille.
 - `POST /api/eleves/:id/detacher-famille` : detacher l'eleve de sa famille.
 - `POST /api/eleves/:id/deces` : marquer l'eleve comme decede.
+
+Lecture officielle :
+
+- le workflow eleve hors inscription est maintenant relu comme un sous-ensemble de gestion scolaire porte par le `CAISSIER`
+- les mutations reappliquent `caisse.write` dans le perimetre `organisation + ecole`
+- les lectures reappliquent `caisse.read` dans le perimetre `organisation + ecole`
+- les routes eleves n'acceptent plus un utilisateur technique implicite pour ce workflow
 
 ## Familles
 
@@ -35,6 +44,14 @@ Le contexte tenant est applique par `ScolariteTenantContext`, puis reinitialise 
 - `POST /api/familles/:id/responsable-principal` : definir le responsable principal.
 - `GET /api/familles/:id/famille-nombreuse` : evaluer une famille nombreuse.
 
+Lecture officielle :
+
+- le workflow familles est maintenant relu comme un sous-ensemble du flux reel d'inscription
+- l'acteur local retenu est le `CAISSIER`
+- les mutations reappliquent `caisse.write` dans le perimetre `organisation + ecole`
+- les lectures reappliquent `caisse.read` dans le perimetre `organisation + ecole`
+- le backend ne laisse plus les routes familles fonctionner avec un utilisateur technique implicite
+
 ## Inscriptions scolaires
 
 - `POST /api/inscriptions-scolaires` : creer une inscription.
@@ -45,6 +62,30 @@ Le contexte tenant est applique par `ScolariteTenantContext`, puis reinitialise 
 - `GET /api/inscriptions-scolaires/par-classe/:idClasse` : lister les inscriptions par classe.
 - `GET /api/inscriptions-scolaires/:id` : consulter une inscription.
 
+### Focus `POST /api/inscriptions-scolaires/complete`
+
+Cette route est maintenant l'entree officielle du workflow compose d'inscription scolaire complete.
+
+Elle attend :
+
+- un header `idempotency-key`
+- un contexte `organisation + ecole + utilisateur`
+- un payload compose `eleve + inscription + affectation optionnelle`
+
+Elle applique :
+
+- une autorisation locale reservee au `CAISSIER`
+- la permission `caisse.write`
+- une transaction composee
+- un rejeu idempotent si la meme cle et le meme payload sont reutilises
+
+Quand une affectation est demandee, le flux reel devient :
+
+1. creation eleve
+2. creation inscription
+3. validation inscription
+4. affectation
+
 ## Affectations de classes
 
 - `POST /api/affectations-classes` : affecter un eleve a une classe pedagogique.
@@ -53,6 +94,14 @@ Le contexte tenant est applique par `ScolariteTenantContext`, puis reinitialise 
 - `GET /api/affectations-classes/active/:idInscription` : consulter l'affectation active d'une inscription.
 - `GET /api/affectations-classes/:id` : consulter une affectation.
 - `GET /api/classes-pedagogiques/:id/eleves` : lister les eleves d'une classe pedagogique.
+
+Lecture officielle :
+
+- les routes d'affectation relisent maintenant l'utilisateur authentifie depuis le contexte HTTP
+- elles reappliquent une autorisation locale `permission + perimetre`
+- `CAISSIER` reste autorise sur toute son ecole via `caisse.read` ou `caisse.write`
+- les gestionnaires pedagogiques restent limites a leur section via `eleves.read` ou `eleves.write`
+- `ADMINISTRATEUR_ECOLE`, `ENSEIGNANT` simple et `DIRECTEUR_DISCIPLINE` n'ouvrent pas implicitement ce workflow
 
 ## Cycle de vie de l'eleve
 
@@ -76,6 +125,14 @@ Le contexte tenant est applique par `ScolariteTenantContext`, puis reinitialise 
 - `GET /api/organisations/:idOrganisation/scolarite/synthese` : consulter la synthese de scolarite d'une organisation.
 - `GET /api/organisations/:idOrganisation/scolarite/alertes` : lister les alertes de scolarite d'une organisation.
 
+Lecture officielle :
+
+- ce bloc transverse est reserve au `PROMOTEUR_ORGANISATION`
+- il reapplique `eleves.read` avec un perimetre `organisation`
+- la route ne se contente plus d un simple `x-organisation-id` technique : elle relit l utilisateur authentifie avant toute lecture
+- `synthese` n est plus un placeholder a zero : elle consolide les eleves, familles et inscriptions connues par les depots reels
+- `alertes` n est plus une liste vide par defaut : elle remonte des constats factuels derives des memes depots
+
 ## Validation HTTP
 
 Les validateurs sont regroupes dans `interfaces/http/validators` :
@@ -89,3 +146,5 @@ Les validateurs sont regroupes dans `interfaces/http/validators` :
 - `organisation-scolarite.validator`
 
 Ils traduisent les entrees HTTP en donnees applicatives mais ne remplacent jamais les validations du domaine.
+
+Pour `inscriptions.validator`, la validation de l'inscription complete n'est plus un simple cast technique : le payload compose est maintenant relu et structure explicitement avant d'entrer en application.

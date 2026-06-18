@@ -18,6 +18,28 @@ Les services applicatifs exposes dans `application/services` couvrent les besoin
 - `OrchestrateurInscriptionEleve` : coordonne les etapes composites d'une inscription complete.
 - `OrchestrateurCycleVieEleve` : coordonne les transitions majeures du cycle de vie eleve.
 
+### Focus `OrchestrateurInscriptionEleve`
+
+L'orchestrateur d'inscription complete porte maintenant explicitement :
+
+- la revalidation locale de securite du workflow
+- la verification d'idempotence
+- l'execution transactionnelle du flux compose
+
+Le deroulement reel est :
+
+1. verifier que l'acteur courant est un `CAISSIER` de la bonne ecole
+2. verifier localement la permission `caisse.write`
+3. verifier la coherence du payload compose
+4. rejouer un resultat deja traite si la meme cle d'idempotence est reutilisee avec le meme payload
+5. executer dans une seule transaction :
+   - creation eleve
+   - creation inscription
+   - validation inscription quand une affectation est demandee
+   - affectation optionnelle
+
+Ce workflow n'est donc plus un simple enchainement technique de use cases.
+
 ## Sagas
 
 Le dossier `application/sagas` contient plusieurs sagas qui prepar ent l'integration avec les flux plus larges du systeme :
@@ -49,3 +71,4 @@ Ce choix maintient l'isolation du domaine tout en permettant de brancher des ada
 - Les lectures organisationnelles sont traitees explicitement, pas implicitement.
 - Les operations composites passent par transaction applicative et non par simple enchainement de controleurs.
 - L'idempotence est prevue pour certaines operations critiques via les services dedies et les tests d'integration associes.
+- `CreerInscriptionComplete` fait maintenant partie de ces operations critiques reellement branchees.

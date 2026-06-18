@@ -32,6 +32,14 @@ Comportement :
 - `POST /api/organisations/:id/activer` : activer une organisation.
 - `POST /api/organisations/:id/desactiver` : desactiver une organisation.
 
+Notes de securite backend :
+
+- ces routes reappliquent une autorisation systeme locale dediee a l'administration des organisations
+- `MANAGER_SYSTEME` reste l'acteur naturel de ce workflow
+- `OPERATEUR_SYSTEME` ne devient acteur positif que si la plateforme l'autorise explicitement via `EDUCSYN_ORG01_ALLOW_OPERATEUR_SYSTEME=true`
+- `SUPPORT_SYSTEME`, `ADMIN_SYSTEME_ECOLE` et `ADMINISTRATEUR_ECOLE` ne deviennent pas administrateurs d'organisations par simple heritage de `referentiel.read` ou `referentiel.write`
+- l'identite d'audit `creePar` ou `modifiePar` est desormais imposee par le contexte authentifie, plus declaree librement dans le corps HTTP
+
 ## Ecoles
 
 - `POST /api/ecoles` : creer une ecole.
@@ -42,6 +50,13 @@ Comportement :
 - `PATCH /api/ecoles/:id/renommer` : renommer une ecole.
 - `POST /api/ecoles/:id/activer` : activer une ecole.
 - `POST /api/ecoles/:id/desactiver` : desactiver une ecole.
+
+Notes de securite backend :
+
+- ces routes reappliquent la meme autorisation systeme locale que le socle academique officiel
+- les acteurs reels admis sont `MANAGER_SYSTEME`, `OPERATEUR_SYSTEME` et `SUPPORT_SYSTEME`, sous reserve de leurs permissions effectives `referentiel.read` et `referentiel.write`
+- `ADMIN_SYSTEME_ECOLE` et `ADMINISTRATEUR_ECOLE` ne deviennent pas administrateurs d ecoles par simple heritage de `referentiel.read` ou `referentiel.write`
+- l identite d audit `creePar` ou `modifiePar` est desormais imposee par le contexte authentifie, plus declaree librement dans le corps HTTP
 
 ## Annees scolaires
 
@@ -82,6 +97,27 @@ Comportement :
 - `POST /api/referentiels/comparer` : comparer deux versions de referentiel.
 - `GET /api/referentiels/programmes` : lister les referentiels programmes.
 - `GET /api/referentiels/programmes/:id` : consulter un referentiel programme.
+
+Notes de securite backend :
+
+- `POST /api/referentiels/import-sections`, `POST /api/referentiels/import-options`, `POST /api/referentiels/import-classes`, `POST /api/referentiels/import-cours`, `POST /api/referentiels/import-programmes` et `POST /api/referentiels/import-lignes` reappliquent une autorisation locale d'import officiel
+- `POST /api/referentiels/comparer` reapplique une autorisation locale de comparaison officielle
+- `GET /api/referentiels/programmes`, `GET /api/referentiels/programmes/:id` et `GET /api/referentiels/cours` reappliquent une autorisation locale de lecture officielle
+- `POST /api/referentiels/versions` reapplique une autorisation locale de publication officielle
+- `POST /api/referentiels/versions/:id/activer` reapplique une autorisation locale d'activation officielle
+- `MANAGER_SYSTEME` reste l'acteur naturel de cet import officiel
+- `OPERATEUR_SYSTEME` ne devient acteur positif que si la plateforme l'autorise explicitement via `EDUCSYN_PLT03_ALLOW_OPERATEUR_SYSTEME=true` pour importer
+- `MANAGER_SYSTEME` reste aussi l'acteur naturel de cette comparaison officielle
+- `OPERATEUR_SYSTEME` ne devient acteur positif que si la plateforme l'autorise explicitement via `EDUCSYN_PLT04_ALLOW_OPERATEUR_SYSTEME=true` pour comparer
+- `MANAGER_SYSTEME` reste aussi l'acteur naturel de cette lecture officielle
+- `OPERATEUR_SYSTEME` ne devient acteur positif que si la plateforme l'autorise explicitement via `EDUCSYN_PLT05_ALLOW_OPERATEUR_SYSTEME=true` pour lire
+- `MANAGER_SYSTEME` reste l'acteur naturel de cette publication
+- `MANAGER_SYSTEME` reste aussi l'acteur naturel de cette activation
+- `OPERATEUR_SYSTEME` ne devient acteur positif que si la plateforme l'autorise explicitement via `EDUCSYN_PLT01_ALLOW_OPERATEUR_SYSTEME=true` pour publier et `EDUCSYN_PLT02_ALLOW_OPERATEUR_SYSTEME=true` pour activer
+- `SUPPORT_SYSTEME`, `ADMIN_SYSTEME_ECOLE` et `ADMINISTRATEUR_ECOLE` ne deviennent ni importeurs, ni comparateurs, ni publieurs, ni activateurs officiels par simple heritage de `referentiel.read` ou `referentiel.write`
+- l'identite d'audit `importePar` est desormais imposee par le contexte authentifie, plus declaree librement dans le corps HTTP
+- l'identite d'audit `publiePar` est desormais imposee par le contexte authentifie, plus declaree librement dans le corps HTTP
+- l'identite d'audit `activePar` est desormais imposee par le contexte authentifie, plus declaree librement dans le corps HTTP
 
 ## Programmes niveau
 
