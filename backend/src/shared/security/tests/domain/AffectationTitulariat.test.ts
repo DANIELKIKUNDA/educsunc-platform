@@ -6,6 +6,8 @@ import { creerAffectationTitulariat } from '../support/SecurityTestSupport';
 test('doit affecter titulaire a classe et annee scolaire', () => {
   const titulariat = creerAffectationTitulariat();
 
+  assert.equal(titulariat.obtenirIdOrganisation(), 'org-1');
+  assert.equal(titulariat.obtenirIdEcole(), 'ecole-1');
   assert.equal(titulariat.obtenirIdClasse(), 'classe-1');
   assert.equal(titulariat.obtenirIdAnneeScolaire(), 'annee-1');
   assert.equal(titulariat.obtenirEstActif(), true);
@@ -15,9 +17,15 @@ test('doit empecher double titulariat actif', () => {
   const moteur = new MoteurTitulariat();
   assert.throws(() => moteur.attribuerTitulariat({
     idUtilisateur: 'u1',
+    idOrganisation: 'org-1',
+    idEcole: 'ecole-1',
     idClasse: 'classe-1',
     idAnneeScolaire: 'annee-1',
     classePossedeDejaTitulaire: true,
+    codeRoleActif: 'ENSEIGNANT',
+    affectationActive: true,
+    idOrganisationAffectation: 'org-1',
+    idEcoleAffectation: 'ecole-1',
   }), ErreurClasseDejaTitulaire);
 });
 

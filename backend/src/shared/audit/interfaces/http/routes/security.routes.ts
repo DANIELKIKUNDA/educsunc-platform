@@ -3,7 +3,7 @@ import type { DependancesRoutesAudit } from './DependancesRoutesAudit';
 import { appliquerPoliciesRouteAudit, executerRouteAudit } from './_route-helpers';
 
 export const creerSecurityRoutes = (dependances: DependancesRoutesAudit): FastifyPluginAsync => async (serveur) => {
-  serveur.get('/api/v1/security/incidents', (requete, reponse) =>
+  serveur.get('/api/v1/security/incidents/:id', (requete, reponse) =>
     executerRouteAudit(dependances, requete, reponse, async () => {
       await appliquerPoliciesRouteAudit(dependances, requete, reponse, {
         permission: 'audit.security.read',

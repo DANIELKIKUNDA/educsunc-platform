@@ -2,6 +2,7 @@ import {
   AffectationTitulariat,
   AffectationUtilisateur,
   ContexteActifUtilisateur,
+  MoteurCapacitesEffectives,
   MoteurAutorisation,
   MoteurRestrictionsMetier,
   MoteurScope,
@@ -89,12 +90,16 @@ export function creerAffectationUtilisateur(params?: Partial<{
 
 export function creerAffectationTitulariat(params?: Partial<{
   idUtilisateur: string;
+  idOrganisation: string;
+  idEcole: string;
   idClasse: string;
   idAnneeScolaire: string;
   creePar: string;
 }>): AffectationTitulariat {
   return AffectationTitulariat.attribuer({
     idUtilisateur: params?.idUtilisateur ?? 'utilisateur-1',
+    idOrganisation: params?.idOrganisation ?? 'org-1',
+    idEcole: params?.idEcole ?? 'ecole-1',
     idClasse: params?.idClasse ?? 'classe-1',
     idAnneeScolaire: params?.idAnneeScolaire ?? 'annee-1',
     creePar: params?.creePar ?? 'tests',
@@ -216,6 +221,7 @@ export function creerSecurityAffectationService(options?: {
     notificationPort,
     service: new SecurityAffectationService(
       repositories.affectationRepository,
+      repositories.roleRepository,
       repositories.titulariatRepository,
       new VerifierTitulariatClasseQueryMemoire(options?.classePossedeDejaTitulaire ?? false),
       notificationPort,
@@ -254,10 +260,12 @@ export function creerSecurityFacade() {
     facade: new SecurityFacade(
       repositories.roleRepository,
       repositories.affectationRepository,
+      repositories.titulariatRepository,
       permissionCache,
       new MoteurAutorisation(),
       new MoteurScope(),
       new MoteurRestrictionsMetier(),
+      new MoteurCapacitesEffectives(),
     ),
   };
 }

@@ -8,6 +8,7 @@ export * from './read-models';
 export * from './sagas';
 export * from './services/SecurityAffectationService';
 export * from './services/SecurityAuditService';
+export * from './services/SecurityCapacitesEffectivesService';
 export * from './services/SecurityContextService';
 export * from './services/SecurityFacade';
 export * from './services/SecurityRoleService';

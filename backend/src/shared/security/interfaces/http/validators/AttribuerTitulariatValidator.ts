@@ -7,6 +7,8 @@ export class AttribuerTitulariatValidator {
     const donnees = ValidationHttpSecurity.obtenirObjet(corps, 'body');
     return {
       idUtilisateur: ValidationHttpSecurity.lireChaineRequise(donnees, 'idUtilisateur'),
+      idOrganisation: ValidationHttpSecurity.lireChaineRequise(donnees, 'idOrganisation'),
+      idEcole: ValidationHttpSecurity.lireChaineRequise(donnees, 'idEcole'),
       idClasse: ValidationHttpSecurity.lireChaineRequise(donnees, 'idClasse'),
       idAnneeScolaire: ValidationHttpSecurity.lireChaineRequise(donnees, 'idAnneeScolaire'),
       creePar: ValidationHttpSecurity.lireChaineOptionnelle(donnees, 'creePar'),

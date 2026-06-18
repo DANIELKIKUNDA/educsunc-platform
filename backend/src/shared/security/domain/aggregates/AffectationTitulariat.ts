@@ -9,6 +9,8 @@ import { PolicyTitulariatClasse } from '../policies/PolicyTitulariatClasse';
 export interface ProprietesAffectationTitulariat {
   idAffectationTitulariat: string;
   idUtilisateur: string;
+  idOrganisation: string;
+  idEcole: string;
   idClasse: string;
   idAnneeScolaire: string;
   estActif: boolean;
@@ -22,6 +24,8 @@ export interface ProprietesAffectationTitulariat {
 // Cet agregat represente le titulariat pedagogique officiel d'une classe.
 export class AffectationTitulariat extends RacineAgregat<string> {
   private idUtilisateur: string;
+  private idOrganisation: string;
+  private idEcole: string;
   private idClasse: string;
   private idAnneeScolaire: string;
   private estActif: boolean;
@@ -34,6 +38,8 @@ export class AffectationTitulariat extends RacineAgregat<string> {
   constructor(proprietes: ProprietesAffectationTitulariat) {
     super(AffectationTitulariat.validerTexte(proprietes.idAffectationTitulariat, 'idAffectationTitulariat'));
     this.idUtilisateur = AffectationTitulariat.validerTexte(proprietes.idUtilisateur, 'idUtilisateur');
+    this.idOrganisation = AffectationTitulariat.validerTexte(proprietes.idOrganisation, 'idOrganisation');
+    this.idEcole = AffectationTitulariat.validerTexte(proprietes.idEcole, 'idEcole');
     this.idClasse = AffectationTitulariat.validerTexte(proprietes.idClasse, 'idClasse');
     this.idAnneeScolaire = AffectationTitulariat.validerTexte(proprietes.idAnneeScolaire, 'idAnneeScolaire');
     this.estActif = Boolean(proprietes.estActif);
@@ -46,6 +52,8 @@ export class AffectationTitulariat extends RacineAgregat<string> {
 
   public static attribuer(params: {
     idUtilisateur: string;
+    idOrganisation: string;
+    idEcole: string;
     idClasse: string;
     idAnneeScolaire: string;
     creePar?: string;
@@ -55,6 +63,8 @@ export class AffectationTitulariat extends RacineAgregat<string> {
     const titulariat = new AffectationTitulariat({
       idAffectationTitulariat: randomUUID(),
       idUtilisateur: params.idUtilisateur,
+      idOrganisation: params.idOrganisation,
+      idEcole: params.idEcole,
       idClasse: params.idClasse,
       idAnneeScolaire: params.idAnneeScolaire,
       estActif: true,
@@ -73,6 +83,14 @@ export class AffectationTitulariat extends RacineAgregat<string> {
 
   public obtenirIdUtilisateur(): string {
     return this.idUtilisateur;
+  }
+
+  public obtenirIdOrganisation(): string {
+    return this.idOrganisation;
+  }
+
+  public obtenirIdEcole(): string {
+    return this.idEcole;
   }
 
   public obtenirIdClasse(): string {
@@ -97,6 +115,53 @@ export class AffectationTitulariat extends RacineAgregat<string> {
 
   public obtenirCreePar(): string | undefined {
     return this.creePar;
+  }
+
+  public appartientAuScope(idOrganisation?: string, idEcole?: string): boolean {
+    if (idOrganisation && this.idOrganisation !== idOrganisation) {
+      return false;
+    }
+
+    if (idEcole && this.idEcole !== idEcole) {
+      return false;
+    }
+
+    return true;
+  }
+
+  public correspondAClasseAnnee(idClasse: string, idAnneeScolaire: string): boolean {
+    return this.idClasse === AffectationTitulariat.validerTexte(idClasse, 'idClasse')
+      && this.idAnneeScolaire === AffectationTitulariat.validerTexte(idAnneeScolaire, 'idAnneeScolaire');
+  }
+
+  public estActifDansScope(params: {
+    idOrganisation?: string;
+    idEcole?: string;
+    idClasse?: string;
+    idAnneeScolaire?: string;
+    maintenant?: Date;
+  }): boolean {
+    if (!this.estActif) {
+      return false;
+    }
+
+    if (this.dateFin && this.dateFin.getTime() <= (params.maintenant ?? new Date()).getTime()) {
+      return false;
+    }
+
+    if (!this.appartientAuScope(params.idOrganisation, params.idEcole)) {
+      return false;
+    }
+
+    if (params.idClasse && params.idAnneeScolaire) {
+      return this.correspondAClasseAnnee(params.idClasse, params.idAnneeScolaire);
+    }
+
+    if (params.idClasse || params.idAnneeScolaire) {
+      return false;
+    }
+
+    return true;
   }
 
   public retirer(dateFin = new Date()): void {

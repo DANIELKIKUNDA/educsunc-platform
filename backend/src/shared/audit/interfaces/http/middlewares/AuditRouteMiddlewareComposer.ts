@@ -17,6 +17,8 @@ import { DeviceMiddleware } from './device/DeviceMiddleware';
 import { CorrelationMiddleware } from './tracing/CorrelationMiddleware';
 import { RequestIdMiddleware } from './tracing/RequestIdMiddleware';
 import { AuditValidationMiddleware } from './validation/AuditValidationMiddleware';
+import { AuditAdminMiddleware } from './admin/AuditAdminMiddleware';
+import { AuditInternalMiddleware } from './internal/AuditInternalMiddleware';
 
 // Ce composite expose le pipeline officiel des middlewares Audit aux routes Fastify.
 export class AuditRouteMiddlewareComposer {
@@ -39,6 +41,8 @@ export class AuditRouteMiddlewareComposer {
     private readonly monitoringMiddleware = new AuditMonitoringMiddleware(),
     private readonly errorMiddleware = new AuditErrorMiddleware(),
     private readonly securityMiddleware = new AuditSecurityMiddleware(),
+    private readonly adminMiddleware = new AuditAdminMiddleware(),
+    private readonly internalMiddleware = new AuditInternalMiddleware(),
   ) {}
 
   public composer(): AuditRouteMiddlewareSet {
@@ -68,6 +72,8 @@ export class AuditRouteMiddlewareComposer {
       exports: (requete) => this.exportsMiddleware.verifier(requete),
       throttling: (requete) => this.throttlingMiddleware.verifier(requete),
       monitoring: (requete) => this.monitoringMiddleware.preparer(requete),
+      verifierInterne: (requete) => this.internalMiddleware.verifier(requete),
+      verifierAdmin: (requete) => this.adminMiddleware.verifier(requete),
       apresSucces: (requete, reponse) => this.monitoringMiddleware.surSucces(requete, reponse),
       apresErreur: (requete, reponse) => this.monitoringMiddleware.surErreur(requete, reponse),
       gererErreur: (erreur, requete) => this.errorMiddleware.normaliser(erreur, requete),

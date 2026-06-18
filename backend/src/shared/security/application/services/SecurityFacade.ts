@@ -11,15 +11,21 @@ import type {
   VerifierScopeInput,
 } from '../dto/input';
 import type {
+  AffectationTitulariatRepositoryPort,
   AffectationUtilisateurRepositoryPort,
   AuditSecurityPort,
   PermissionCachePort,
+  ResponsabiliteClassePedagogiquePort,
   RoleRepositoryPort,
 } from '../ports';
 import {
+  CodeRestrictionMetier,
   MoteurAutorisation,
   MoteurRestrictionsMetier,
   MoteurScope,
+  MoteurCapacitesEffectives,
+  PermissionRole,
+  PermissionSecurite,
   PermissionRefusee,
   RestrictionRole,
 } from '../../../security/domain';
@@ -29,25 +35,45 @@ import {
   ErreurVerificationRestriction,
   ErreurVerificationScope,
 } from '../exceptions';
+import { SecurityCapacitesEffectivesService } from './SecurityCapacitesEffectivesService';
 
 // Cette facade est le point d'entree principal consomme par les autres BC.
 export class SecurityFacade {
+  private readonly securityCapacitesEffectivesService: SecurityCapacitesEffectivesService;
+
   constructor(
     private readonly roleRepositoryPort: RoleRepositoryPort,
     private readonly affectationUtilisateurRepositoryPort: AffectationUtilisateurRepositoryPort,
+    private readonly affectationTitulariatRepositoryPort: AffectationTitulariatRepositoryPort,
     private readonly permissionCachePort: PermissionCachePort,
     private readonly moteurAutorisation: MoteurAutorisation,
     private readonly moteurScope: MoteurScope,
     private readonly moteurRestrictionsMetier: MoteurRestrictionsMetier,
+    private readonly moteurCapacitesEffectives: MoteurCapacitesEffectives,
     private readonly auditSecurityPort?: AuditSecurityPort,
-  ) {}
+    private readonly responsabiliteClassePedagogiquePort?: ResponsabiliteClassePedagogiquePort,
+  ) {
+    this.securityCapacitesEffectivesService = new SecurityCapacitesEffectivesService(
+      this.roleRepositoryPort,
+      this.affectationUtilisateurRepositoryPort,
+      this.affectationTitulariatRepositoryPort,
+      this.moteurCapacitesEffectives,
+      this.responsabiliteClassePedagogiquePort,
+    );
+  }
 
   public async verifierPermission(input: VerifierPermissionInput): Promise<VerificationPermissionOutput> {
     try {
       const permissions = await this.permissionCachePort.obtenirPermissions(input.idUtilisateur);
       const autorise = permissions
         ? permissions.includes(input.permissionDemandee)
-        : await this.verifierPermissionDepuisRoles(input.idUtilisateur, input.permissionDemandee);
+        : (await this.securityCapacitesEffectivesService.calculerPourUtilisateur({
+            idUtilisateur: input.idUtilisateur,
+            idOrganisationActive: input.idOrganisation,
+            idEcoleActive: input.idEcole,
+            idClasse: input.idClasse,
+            idAnneeScolaire: input.idAnneeScolaire,
+          })).permissions.includes(input.permissionDemandee);
 
       await this.auditSecurityPort?.journaliser({
         action: autorise ? 'SECURITY_PERMISSION_GRANTED' : 'SECURITY_PERMISSION_DENIED',
@@ -79,13 +105,32 @@ export class SecurityFacade {
         input.idUtilisateur,
       );
       const organisationsAutorisees = affectations
-        .map((affectation) => affectation.obtenirIdOrganisation())
+        .flatMap((affectation) => [
+          affectation.obtenirIdOrganisation(),
+          ...affectation.obtenirScopes()
+            .filter((scope) => scope.obtenirTypeScope().obtenirValeur() === 'ORGANISATION')
+            .map((scope) => scope.obtenirValeurScope()),
+        ])
         .filter((valeur): valeur is string => Boolean(valeur));
       const ecolesAutorisees = affectations
-        .map((affectation) => affectation.obtenirIdEcole())
+        .flatMap((affectation) => [
+          affectation.obtenirIdEcole(),
+          ...affectation.obtenirScopes()
+            .filter((scope) => scope.obtenirTypeScope().obtenirValeur() === 'ECOLE')
+            .map((scope) => scope.obtenirValeurScope()),
+        ])
+        .filter((valeur): valeur is string => Boolean(valeur));
+      const sectionsAutorisees = affectations
+        .flatMap((affectation) => [
+          affectation.obtenirIdSection(),
+          ...affectation.obtenirScopes()
+            .filter((scope) => scope.obtenirTypeScope().obtenirValeur() === 'SECTION')
+            .map((scope) => scope.obtenirValeurScope()),
+        ])
         .filter((valeur): valeur is string => Boolean(valeur));
       this.moteurScope.verifierOrganisation(organisationsAutorisees, input.idOrganisation);
       this.moteurScope.verifierEcole(ecolesAutorisees, input.idEcole);
+      this.moteurScope.verifierSection(sectionsAutorisees, input.idSection);
 
       await this.auditSecurityPort?.journaliser({
         action: 'SECURITY_SCOPE_GRANTED',
@@ -94,7 +139,8 @@ export class SecurityFacade {
         details: {
           idOrganisation: input.idOrganisation,
           idEcole: input.idEcole,
-          scope: [input.idOrganisation, input.idEcole].filter(Boolean).join(':'),
+          idSection: input.idSection,
+          scope: [input.idOrganisation, input.idEcole, input.idSection].filter(Boolean).join(':'),
         },
       });
 
@@ -102,6 +148,7 @@ export class SecurityFacade {
         scopeValide: true,
         idOrganisation: input.idOrganisation,
         idEcole: input.idEcole,
+        idSection: input.idSection,
       };
     } catch (error) {
       await this.auditSecurityPort?.journaliser({
@@ -111,6 +158,7 @@ export class SecurityFacade {
         details: {
           idOrganisation: input.idOrganisation,
           idEcole: input.idEcole,
+          idSection: input.idSection,
           erreur: error instanceof Error ? error.message : 'UNKNOWN',
         },
       });
@@ -160,24 +208,24 @@ export class SecurityFacade {
 
   public async verifierAcces(input: VerifierAccesInput): Promise<DecisionAutorisationOutput> {
     try {
-      const affectations = await this.affectationUtilisateurRepositoryPort.listerActivesParUtilisateur(
-        input.idUtilisateur,
+      const capacites = await this.securityCapacitesEffectivesService.calculerPourUtilisateur({
+        idUtilisateur: input.idUtilisateur,
+        idOrganisationActive: input.idOrganisation,
+        idEcoleActive: input.idEcole,
+        idClasse: input.idClasse,
+        idAnneeScolaire: input.idAnneeScolaire,
+      });
+      const permissions = capacites.permissions.map((permission) =>
+        PermissionRole.creer(new PermissionSecurite(permission)),
       );
-      const roles = await Promise.all(
-        affectations.map((affectation) =>
-          this.roleRepositoryPort.trouverParId(affectation.obtenirIdRole()),
-        ),
+      const restrictions = capacites.restrictions.map((restriction) =>
+        RestrictionRole.creer(new CodeRestrictionMetier(restriction)),
       );
-      const permissions = roles
-        .filter((role): role is NonNullable<typeof role> => role !== null)
-        .flatMap((role) => role.obtenirPermissions());
-      const restrictions = roles
-        .filter((role): role is NonNullable<typeof role> => role !== null)
-        .flatMap((role) => role.obtenirRestrictions());
       const scope = await this.verifierScope({
         idUtilisateur: input.idUtilisateur,
         idOrganisation: input.idOrganisation,
         idEcole: input.idEcole,
+        idSection: input.idSection,
       });
       const restrictionRespectee = input.codeRestriction
         ? !(await this.verifierRestriction({
@@ -200,6 +248,7 @@ export class SecurityFacade {
             permissionDemandee: input.permissionDemandee,
             idOrganisation: input.idOrganisation,
             idEcole: input.idEcole,
+            idSection: input.idSection,
             codeRestriction: input.codeRestriction,
             raison: decision.obtenirRaisonRefus(),
           },
@@ -219,6 +268,7 @@ export class SecurityFacade {
           permissionDemandee: input.permissionDemandee,
           idOrganisation: input.idOrganisation,
           idEcole: input.idEcole,
+          idSection: input.idSection,
           codeRestriction: input.codeRestriction,
         },
       });
@@ -233,36 +283,13 @@ export class SecurityFacade {
           permissionDemandee: input.permissionDemandee,
           idOrganisation: input.idOrganisation,
           idEcole: input.idEcole,
+          idSection: input.idSection,
           codeRestriction: input.codeRestriction,
           erreur: error instanceof Error ? error.message : 'UNKNOWN',
         },
       });
       throw new ErreurAccesRefuse(error instanceof Error ? error.message : undefined);
     }
-  }
-
-  private async verifierPermissionDepuisRoles(
-    idUtilisateur: string,
-    permissionDemandee: string,
-  ): Promise<boolean> {
-    const affectations = await this.affectationUtilisateurRepositoryPort.listerActivesParUtilisateur(
-      idUtilisateur,
-    );
-    const roles = await Promise.all(
-      affectations.map((affectation) =>
-        this.roleRepositoryPort.trouverParId(affectation.obtenirIdRole()),
-      ),
-    );
-    return roles
-      .filter((role): role is NonNullable<typeof role> => role !== null)
-      .some((role) =>
-        role
-          .obtenirPermissions()
-          .some(
-            (permissionRole) =>
-              permissionRole.obtenirPermission().obtenirValeur() === permissionDemandee,
-          ),
-      );
   }
 
   private async listerRestrictionsUtilisateur(idUtilisateur: string): Promise<RestrictionRole[]> {

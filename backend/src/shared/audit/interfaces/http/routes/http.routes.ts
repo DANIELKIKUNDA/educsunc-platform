@@ -3,6 +3,7 @@ import type { DependancesRoutesAudit } from './DependancesRoutesAudit';
 import { creerAdminRoutes } from './admin.routes';
 import { creerAnalyticsRoutes } from './analytics.routes';
 import { creerAuditRoutes } from './audit.routes';
+import { creerEcoleAuditRoutes } from './ecole.routes';
 import { creerExportsRoutes } from './exports.routes';
 import { creerForensicRoutes } from './forensic.routes';
 import { creerHealthRoutes } from './health.routes';
@@ -16,6 +17,7 @@ import { creerSynchronizationRoutes } from './synchronization.routes';
 
 export const creerRoutesHttpAudit = (dependances: DependancesRoutesAudit): FastifyPluginAsync => async (serveur) => {
   await serveur.register(creerAuditRoutes(dependances));
+  await serveur.register(creerEcoleAuditRoutes(dependances));
   await serveur.register(creerForensicRoutes(dependances));
   await serveur.register(creerExportsRoutes(dependances));
   await serveur.register(creerReplayRoutes(dependances));

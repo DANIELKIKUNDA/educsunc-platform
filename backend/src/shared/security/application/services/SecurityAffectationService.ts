@@ -17,6 +17,7 @@ import type {
   AffectationTitulariatRepositoryPort,
   AffectationUtilisateurRepositoryPort,
   AuditSecurityPort,
+  RoleRepositoryPort,
   SecurityNotificationPort,
 } from '../ports';
 import type { VerifierTitulariatClasseQuery } from '../queries';
@@ -33,6 +34,7 @@ import { AffectationUtilisateurMapper, ScopeMapper, TitulariatMapper } from '../
 export class SecurityAffectationService {
   constructor(
     private readonly affectationUtilisateurRepositoryPort: AffectationUtilisateurRepositoryPort,
+    private readonly roleRepositoryPort: RoleRepositoryPort,
     private readonly affectationTitulariatRepositoryPort: AffectationTitulariatRepositoryPort,
     private readonly verifierTitulariatClasseQuery: VerifierTitulariatClasseQuery,
     private readonly securityNotificationPort: SecurityNotificationPort,
@@ -114,6 +116,21 @@ export class SecurityAffectationService {
 
   public async attribuerTitulariat(input: AttribuerTitulariatInput): Promise<TitulariatOutput> {
     try {
+      const affectations = await this.affectationUtilisateurRepositoryPort.listerActivesParUtilisateur(
+        input.idUtilisateur,
+      );
+      const affectationsRoles = await Promise.all(
+        affectations.map(async (affectation) => ({
+          affectation,
+          role: await this.roleRepositoryPort.trouverParId(affectation.obtenirIdRole()),
+        })),
+      );
+      const affectationEnseignant = affectationsRoles.find(({ affectation, role }) =>
+        affectation.estValide()
+        && affectation.obtenirIdOrganisation() === input.idOrganisation
+        && affectation.obtenirIdEcole() === input.idEcole
+        && role?.obtenirCodeRole().obtenirValeur() === 'ENSEIGNANT',
+      );
       const classePossedeDejaTitulaire = await this.verifierTitulariatClasseQuery.executer(
         input.idClasse,
         input.idAnneeScolaire,
@@ -121,6 +138,10 @@ export class SecurityAffectationService {
       const titulariat = this.moteurTitulariat.attribuerTitulariat({
         ...input,
         classePossedeDejaTitulaire,
+        codeRoleActif: affectationEnseignant?.role?.obtenirCodeRole().obtenirValeur(),
+        affectationActive: Boolean(affectationEnseignant),
+        idOrganisationAffectation: affectationEnseignant?.affectation.obtenirIdOrganisation(),
+        idEcoleAffectation: affectationEnseignant?.affectation.obtenirIdEcole(),
       });
       await this.affectationTitulariatRepositoryPort.sauvegarder(titulariat);
       await this.auditSecurityPort?.journaliser({
@@ -129,6 +150,8 @@ export class SecurityAffectationService {
         succes: true,
         details: {
           changement: 'ATTRIBUER',
+          idOrganisation: input.idOrganisation,
+          idEcole: input.idEcole,
           idClasse: input.idClasse,
           idAnneeScolaire: input.idAnneeScolaire,
         },
@@ -136,7 +159,12 @@ export class SecurityAffectationService {
       await this.securityNotificationPort.notifierAccesSensible({
         idUtilisateur: input.idUtilisateur,
         action: 'SECURITY_TITULARIAT_ATTRIBUE',
-        details: { idClasse: input.idClasse, idAnneeScolaire: input.idAnneeScolaire },
+        details: {
+          idOrganisation: input.idOrganisation,
+          idEcole: input.idEcole,
+          idClasse: input.idClasse,
+          idAnneeScolaire: input.idAnneeScolaire,
+        },
       });
       return TitulariatMapper.depuisDomaine(titulariat);
     } catch (error) {
@@ -161,6 +189,8 @@ export class SecurityAffectationService {
       succes: true,
       details: {
         changement: 'RETIRER',
+        idOrganisation: titulariat.obtenirIdOrganisation(),
+        idEcole: titulariat.obtenirIdEcole(),
         idClasse: input.idClasse,
         idAnneeScolaire: input.idAnneeScolaire,
       },

@@ -8,6 +8,7 @@ export class ScopeMiddleware {
     idUtilisateur: string;
     idOrganisation?: string;
     idEcole?: string;
+    idSection?: string;
   }): Promise<void> {
     const resultat = await this.securityFacade.verifierScope(params);
     if (!resultat.scopeValide) {

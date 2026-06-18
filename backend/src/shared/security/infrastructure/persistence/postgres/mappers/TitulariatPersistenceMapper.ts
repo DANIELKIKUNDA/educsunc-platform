@@ -3,6 +3,8 @@ import { AffectationTitulariat, type ProprietesAffectationTitulariat } from '../
 export interface TitulariatRecord {
   id_affectation_titulariat: string;
   id_utilisateur: string;
+  id_organisation: string;
+  id_ecole: string;
   id_classe: string;
   id_annee_scolaire: string;
   est_actif: boolean;
@@ -19,6 +21,8 @@ export class TitulariatPersistenceMapper {
     return {
       id_affectation_titulariat: titulariat.obtenirId(),
       id_utilisateur: titulariat.obtenirIdUtilisateur(),
+      id_organisation: titulariat.obtenirIdOrganisation(),
+      id_ecole: titulariat.obtenirIdEcole(),
       id_classe: titulariat.obtenirIdClasse(),
       id_annee_scolaire: titulariat.obtenirIdAnneeScolaire(),
       est_actif: titulariat.obtenirEstActif(),
@@ -34,6 +38,8 @@ export class TitulariatPersistenceMapper {
     const proprietes: ProprietesAffectationTitulariat = {
       idAffectationTitulariat: record.id_affectation_titulariat,
       idUtilisateur: record.id_utilisateur,
+      idOrganisation: record.id_organisation,
+      idEcole: record.id_ecole,
       idClasse: record.id_classe,
       idAnneeScolaire: record.id_annee_scolaire,
       estActif: record.est_actif,

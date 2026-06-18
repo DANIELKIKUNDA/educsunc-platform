@@ -36,6 +36,7 @@ export function versFiltresRecherche(query: SearchAuditQuery): AuditSearchFilter
   return {
     actionAudit: query.action,
     typeAuditPrincipal: query.typeAuditPrincipal,
+    categorieAudit: query.categorieAudit,
     graviteAudit: query.gravite,
     resultatAudit: query.resultat,
     acteurId: query.acteurId,
@@ -48,6 +49,7 @@ export function versFiltresRecherche(query: SearchAuditQuery): AuditSearchFilter
 
 export function versFiltresTimeline(query: AuditTimelineQuery): AuditSearchFilters {
   return {
+    categorieAudit: query.categorieAudit,
     acteurId: query.acteurId,
     idRessource: query.ressourceId,
     correlationId: query.correlationId ?? query.workflowId,

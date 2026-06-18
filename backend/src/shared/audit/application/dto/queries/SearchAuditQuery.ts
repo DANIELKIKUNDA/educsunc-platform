@@ -6,6 +6,7 @@ export interface SearchAuditQuery {
   readonly typeAuditPrincipal?: string;
   readonly gravite?: string;
   readonly resultat?: string;
+  readonly categorieAudit?: string;
   readonly acteurId?: string;
   readonly ressourceId?: string;
   readonly correlationId?: string;

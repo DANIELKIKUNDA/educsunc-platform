@@ -1,11 +1,24 @@
 import { obtenirSharedEventBus } from '../../../../infrastructure/bus';
 import type { AuditTraceRecord } from '../MonitoringTypes';
 
-// Les traces regroupent les workflows distribués via correlation_id, request_id, session_id et replay_id.
+interface AuditTraceFilters {
+  readonly organisationId?: string;
+  readonly ecoleId?: string;
+}
+
+// Les traces regroupent les workflows distribues via correlation_id, request_id, session_id et replay_id.
 export class AuditTraceService {
-  public lister(): AuditTraceRecord[] {
+  public lister(filtres: AuditTraceFilters = {}): AuditTraceRecord[] {
     const groups = new Map<string, AuditTraceRecord>();
+
     for (const event of obtenirSharedEventBus().lister()) {
+      if (filtres.organisationId && event.metadata.organisationId !== filtres.organisationId) {
+        continue;
+      }
+      if (filtres.ecoleId && event.metadata.ecoleId !== filtres.ecoleId) {
+        continue;
+      }
+
       const key = [
         event.metadata.correlationId ?? 'NA',
         event.metadata.requestId ?? 'NA',
@@ -22,16 +35,18 @@ export class AuditTraceService {
         replayId: event.metadata.replayId,
         organisationId: event.metadata.organisationId,
         ecoleId: event.metadata.ecoleId,
-        workerId: typeof event.payload['workerId'] === 'string' ? event.payload['workerId'] : undefined,
-        queueName: typeof event.payload['queueName'] === 'string' ? event.payload['queueName'] : undefined,
+        workerId: typeof event.payload.workerId === 'string' ? event.payload.workerId : undefined,
+        queueName: typeof event.payload.queueName === 'string' ? event.payload.queueName : undefined,
         retryCount: event.metadata.retryCount,
         eventIds: [],
         eventNames: [],
       };
+
       current.eventIds.push(event.metadata.eventId);
       current.eventNames.push(event.name);
       groups.set(key, current);
     }
+
     return [...groups.values()];
   }
 }

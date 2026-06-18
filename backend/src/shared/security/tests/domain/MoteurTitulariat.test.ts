@@ -12,8 +12,14 @@ test('moteur titulariat valide classe titulaire et refuse hors disponibilite', (
   assert.throws(() => moteur.verifierTitulariat(titulariat), ErreurTitulariatInvalide);
   assert.throws(() => moteur.attribuerTitulariat({
     idUtilisateur: 'u1',
+    idOrganisation: 'org-1',
+    idEcole: 'ecole-1',
     idClasse: 'classe-1',
     idAnneeScolaire: 'annee-1',
     classePossedeDejaTitulaire: true,
+    codeRoleActif: 'ENSEIGNANT',
+    affectationActive: true,
+    idOrganisationAffectation: 'org-1',
+    idEcoleAffectation: 'ecole-1',
   }), ErreurClasseDejaTitulaire);
 });

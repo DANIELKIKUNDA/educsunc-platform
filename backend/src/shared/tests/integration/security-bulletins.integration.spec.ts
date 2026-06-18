@@ -12,10 +12,12 @@ test('SECURITY applique bien les regles d acces sur les bulletins', async () => 
     ecoleId: TENANT_FIXTURES.ecoleA1,
   });
   const titulaire = await bootstrap.creerActeur({
-    ...ROLE_FIXTURES.TITULAIRE,
+    ...ROLE_FIXTURES.ENSEIGNANT,
     organisationId: TENANT_FIXTURES.organisationA,
     ecoleId: TENANT_FIXTURES.ecoleA1,
     classeId: WORKFLOW_FIXTURES.classeA,
+    titulaireClasseId: WORKFLOW_FIXTURES.classeA,
+    titulaireAnneeScolaireId: WORKFLOW_FIXTURES.anneeScolaireId,
   });
   const prefet = await bootstrap.creerActeur({
     ...ROLE_FIXTURES.PREFET,

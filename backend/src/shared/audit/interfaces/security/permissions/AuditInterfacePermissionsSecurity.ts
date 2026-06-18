@@ -3,17 +3,17 @@ import type { AuditInterfaceAuthorizationPolicy, AuditSecuritySurface } from '..
 const PERMISSIONS_BY_SURFACE: Record<AuditSecuritySurface, readonly string[]> = {
   AUTH: [],
   FORENSIC: ['forensic.read'],
-  REPLAY: ['replay.execute'],
-  RETRY: ['retry.execute'],
-  SYNCHRONIZATION: ['synchronization.manage'],
-  EXPORTS: ['exports.generate'],
-  MONITORING: ['monitoring.read'],
-  WORKERS: ['workers.manage'],
-  QUEUES: ['queues.manage'],
-  INCIDENTS: ['forensic.read', 'incidents.read'],
-  ANOMALIES: ['monitoring.read', 'anomalies.read'],
-  RETENTION: ['retention.manage'],
-  RUNTIME: ['monitoring.read'],
+  REPLAY: ['audit.replay'],
+  RETRY: ['audit.retry'],
+  SYNCHRONIZATION: ['audit.sync.read'],
+  EXPORTS: ['audit.export.read'],
+  MONITORING: ['audit.monitoring.read'],
+  WORKERS: ['audit.monitoring.read'],
+  QUEUES: ['audit.monitoring.read'],
+  INCIDENTS: ['audit.security.read'],
+  ANOMALIES: ['audit.security.read'],
+  RETENTION: ['audit.retention.read'],
+  RUNTIME: ['audit.monitoring.read'],
 };
 
 export class AuditInterfacePermissionsSecurity {
@@ -29,4 +29,3 @@ export class AuditInterfacePermissionsSecurity {
     return this.creerPolicy(surface).permissions;
   }
 }
-

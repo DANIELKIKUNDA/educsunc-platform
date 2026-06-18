@@ -1,5 +1,6 @@
 export * from './DependancesRoutesAudit';
 export * from './audit.routes';
+export * from './ecole.routes';
 export * from './forensic.routes';
 export * from './exports.routes';
 export * from './replay.routes';

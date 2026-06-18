@@ -19,4 +19,10 @@ export class PostgresAffectationTitulariatRepository implements AffectationTitul
     );
     return record ? TitulariatPersistenceMapper.depuisRecord(record) : null;
   }
+
+  public async listerActifsParUtilisateur(idUtilisateur: string): Promise<readonly AffectationTitulariat[]> {
+    return Array.from(obtenirMemoireSecurityStore().titulariats.values())
+      .filter((titulariat) => titulariat.id_utilisateur === idUtilisateur && titulariat.est_actif)
+      .map((titulariat) => TitulariatPersistenceMapper.depuisRecord(titulariat));
+  }
 }

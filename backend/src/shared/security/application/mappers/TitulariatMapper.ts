@@ -5,6 +5,8 @@ export class TitulariatMapper {
     return {
       idAffectationTitulariat: titulariat.obtenirId(),
       idUtilisateur: titulariat.obtenirIdUtilisateur(),
+      idOrganisation: titulariat.obtenirIdOrganisation(),
+      idEcole: titulariat.obtenirIdEcole(),
       idClasse: titulariat.obtenirIdClasse(),
       idAnneeScolaire: titulariat.obtenirIdAnneeScolaire(),
       estActif: titulariat.obtenirEstActif(),

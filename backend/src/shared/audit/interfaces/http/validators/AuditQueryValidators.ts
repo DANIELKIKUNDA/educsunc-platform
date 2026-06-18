@@ -13,6 +13,7 @@ export class AuditListValidator {
       taillePage: ValidationHttpAudit.lireEntierDansBornes(donnees, 'taillePage', 1, 500),
       action: ValidationHttpAudit.lireChaineOptionnelle(donnees, 'action'),
       typeAuditPrincipal: ValidationHttpAudit.lireChaineOptionnelle(donnees, 'typeAuditPrincipal'),
+      categorieAudit: ValidationHttpAudit.lireChaineOptionnelle(donnees, 'categorieAudit'),
       gravite: ValidationHttpAudit.lireChaineOptionnelle(donnees, 'gravite'),
       resultat: ValidationHttpAudit.lireChaineOptionnelle(donnees, 'resultat'),
       acteurId: ValidationHttpAudit.lireChaineOptionnelle(donnees, 'acteurId'),
@@ -43,6 +44,7 @@ export class AuditTimelineValidator {
 
     return {
       correlationId: ValidationHttpAudit.lireChaineOptionnelle(donnees, 'correlationId'),
+      categorieAudit: ValidationHttpAudit.lireChaineOptionnelle(donnees, 'categorieAudit'),
       acteurId: ValidationHttpAudit.lireChaineOptionnelle(donnees, 'acteurId'),
       ressourceId: ValidationHttpAudit.lireChaineOptionnelle(donnees, 'ressourceId'),
       workflowId: ValidationHttpAudit.lireChaineOptionnelle(donnees, 'workflowId'),

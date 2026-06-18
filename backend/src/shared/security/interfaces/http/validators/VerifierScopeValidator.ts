@@ -9,6 +9,7 @@ export class VerifierScopeValidator {
       idUtilisateur: ValidationHttpSecurity.lireChaineRequise(donnees, 'idUtilisateur'),
       idOrganisation: ValidationHttpSecurity.lireChaineOptionnelle(donnees, 'idOrganisation'),
       idEcole: ValidationHttpSecurity.lireChaineOptionnelle(donnees, 'idEcole'),
+      idSection: ValidationHttpSecurity.lireChaineOptionnelle(donnees, 'idSection'),
     };
   }
 }

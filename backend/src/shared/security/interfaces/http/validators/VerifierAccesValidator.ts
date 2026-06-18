@@ -10,6 +10,9 @@ export class VerifierAccesValidator {
       permissionDemandee: ValidationHttpSecurity.lireChaineRequise(donnees, 'permissionDemandee'),
       idOrganisation: ValidationHttpSecurity.lireChaineOptionnelle(donnees, 'idOrganisation'),
       idEcole: ValidationHttpSecurity.lireChaineOptionnelle(donnees, 'idEcole'),
+      idSection: ValidationHttpSecurity.lireChaineOptionnelle(donnees, 'idSection'),
+      idClasse: ValidationHttpSecurity.lireChaineOptionnelle(donnees, 'idClasse'),
+      idAnneeScolaire: ValidationHttpSecurity.lireChaineOptionnelle(donnees, 'idAnneeScolaire'),
       codeRestriction: ValidationHttpSecurity.lireChaineOptionnelle(donnees, 'codeRestriction'),
     };
   }
