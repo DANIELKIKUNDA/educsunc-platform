@@ -6,7 +6,14 @@ import { injecterCommeActeur } from '../helpers/GlobalTestHelpers';
 
 test('workflow complet fiche -> bulletin -> proclamation', async () => {
   const bootstrap = new GlobalTestBootstrap();
-  const titulaire = await bootstrap.creerActeur({ ...ROLE_FIXTURES.TITULAIRE, organisationId: TENANT_FIXTURES.organisationA, ecoleId: TENANT_FIXTURES.ecoleA1, classeId: WORKFLOW_FIXTURES.classeA });
+  const titulaire = await bootstrap.creerActeur({
+    ...ROLE_FIXTURES.ENSEIGNANT,
+    organisationId: TENANT_FIXTURES.organisationA,
+    ecoleId: TENANT_FIXTURES.ecoleA1,
+    classeId: WORKFLOW_FIXTURES.classeA,
+    titulaireClasseId: WORKFLOW_FIXTURES.classeA,
+    titulaireAnneeScolaireId: WORKFLOW_FIXTURES.anneeScolaireId,
+  });
   const serveur = await bootstrap.creerServeur();
   assert.equal((await injecterCommeActeur(serveur, titulaire, { method: 'POST', url: '/bc/bulletins/fiches/encoder' })).statusCode, 200);
   assert.equal((await injecterCommeActeur(serveur, titulaire, { method: 'POST', url: '/bc/bulletins/generer', payload: { idClasse: WORKFLOW_FIXTURES.classeA, idAnneeScolaire: WORKFLOW_FIXTURES.anneeScolaireId } })).statusCode, 200);

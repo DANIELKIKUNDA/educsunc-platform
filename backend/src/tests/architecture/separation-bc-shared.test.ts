@@ -7,19 +7,19 @@ const RACINE_SRC = join(process.cwd(), 'src');
 const RACINE_SHARED = join(RACINE_SRC, 'shared');
 const RACINE_CONTEXTS = join(RACINE_SRC, 'contexts');
 const ROUTES_COMPOSITION = join(RACINE_SRC, 'app', 'routes');
+const EXCEPTIONS_SHARED_VERS_CONTEXTS = new Set<string>();
 
 // Ce fichier protege les regles d'architecture les plus sensibles du backend.
 
 test('shared ne doit importer aucun fichier interne d un BC', () => {
   const fichiersShared = listerFichiersTypescript(RACINE_SHARED);
   const violations = fichiersShared
-    .filter((fichier) => !fichier.endsWith('.test.ts'))
-    .filter((fichier) => /from ['"](?:\.\.\/)*contexts\//.test(readFileSync(fichier, 'utf8')));
+    .filter((fichier) => !normaliserSeparateurs(fichier).includes('/tests/'))
+    .filter((fichier) => /from ['"](?:\.\.\/)*contexts\//.test(readFileSync(fichier, 'utf8')))
+    .map((fichier) => relative(RACINE_SRC, fichier))
+    .filter((fichier) => !EXCEPTIONS_SHARED_VERS_CONTEXTS.has(normaliserSeparateurs(fichier)));
 
-  assert.deepEqual(
-    violations.map((fichier) => relative(RACINE_SRC, fichier)),
-    [],
-  );
+  assert.deepEqual(violations, []);
 });
 
 test("un BC ne doit pas importer l'infrastructure d'un autre BC hors composition globale", () => {

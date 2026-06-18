@@ -1,4 +1,16 @@
-# Placeholder de composition locale.
-version: "3.9"
+services:
+  redis:
+    image: redis:7.4-alpine
+    container_name: educsyn-redis-local
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command:
+      - redis-server
+      - --appendonly
+      - "yes"
+    volumes:
+      - redis-data:/data
 
-services: {}
+volumes:
+  redis-data:

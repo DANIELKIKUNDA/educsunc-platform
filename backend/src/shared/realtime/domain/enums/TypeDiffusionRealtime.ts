@@ -1,0 +1,5 @@
+export enum TypeDiffusionRealtime {
+  UNICAST = 'UNICAST',
+  MULTICAST = 'MULTICAST',
+  BROADCAST_CONTROLE = 'BROADCAST_CONTROLE',
+}

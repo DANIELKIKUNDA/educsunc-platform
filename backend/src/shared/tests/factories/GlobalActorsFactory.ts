@@ -9,6 +9,8 @@ export interface ActeurFixture {
   ecoleId: string;
   classeId?: string;
   coursId?: string;
+  titulaireClasseId?: string;
+  titulaireAnneeScolaireId?: string;
   elevesAutorises?: string[];
 }
 
@@ -23,6 +25,8 @@ export function creerActeurFixture(typeActeur: keyof typeof ROLE_FIXTURES): Acte
         : TENANT_FIXTURES.ecoleA1,
     classeId: WORKFLOW_FIXTURES.classeA,
     coursId: WORKFLOW_FIXTURES.coursMath,
+    titulaireClasseId: typeActeur === 'ENSEIGNANT' ? undefined : undefined,
+    titulaireAnneeScolaireId: undefined,
     elevesAutorises: typeActeur === 'PARENT' ? [WORKFLOW_FIXTURES.parentEnfantA] : undefined,
   };
 }

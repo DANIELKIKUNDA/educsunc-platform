@@ -58,6 +58,8 @@ test('pipeline RequestContext -> AUTH -> SECURITY -> TENANCY enrichit la requete
   affectation.ajouterScope('ECOLE', 'ecole-1');
   const titulariat = creerAffectationTitulariat({
     idUtilisateur: utilisateur.obtenirId(),
+    idOrganisation: 'org-1',
+    idEcole: 'ecole-1',
   });
 
   await securityRepositories.roleRepository.sauvegarder(role);

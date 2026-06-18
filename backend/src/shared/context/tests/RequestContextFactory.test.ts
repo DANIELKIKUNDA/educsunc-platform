@@ -27,6 +27,8 @@ test('RequestContextFactory enrichit progressivement AUTH puis SECURITY', () => 
   const scope = ScopeAcces.creer(new TypeScope('ECOLE'), 'ecole-1');
   const titulariat = AffectationTitulariat.attribuer({
     idUtilisateur: 'u-1',
+    idOrganisation: 'org-1',
+    idEcole: 'ecole-1',
     idClasse: 'classe-1',
     idAnneeScolaire: 'annee-1',
   });

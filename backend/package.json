@@ -5,7 +5,7 @@
   "description": "Socle backend Clean Architecture et DDD pour EducSyn.",
   "scripts": {
     "dev": "tsx watch src/main.ts",
-    "build": "tsc -p tsconfig.json --ignoreDeprecations 6.0",
+    "build": "tsc -p tsconfig.json",
     "start": "tsx src/main.ts",
     "db:migrate:referentiel": "tsx src/scripts/MigrerReferentielAcademique.ts",
     "seed:sections-scolaires": "tsx ../scripts/seed/seed-sections-scolaires.ts",
@@ -16,8 +16,9 @@
     "seed:referentiel-academique": "npm run verifier:donnees-reference && tsx ../scripts/seed/seed-referentiel-academique.ts",
     "verifier:programme-classe": "tsx ../scripts/verification/afficher-programme-classe.ts",
     "verifier:donnees-reference": "tsx ../scripts/verification/valider-donnees-reference-referentiel-academique.ts",
-    "typecheck": "tsc --noEmit -p tsconfig.json --ignoreDeprecations 6.0",
-    "typecheck:strict": "tsc --noEmit -p tsconfig.json --ignoreDeprecations 6.0 --noUnusedLocals --noUnusedParameters",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "typecheck:strict": "tsc --noEmit -p tsconfig.json --noUnusedLocals --noUnusedParameters",
+    "notifications:redis:ping": "tsx src/scripts/notifications/VerifierRedisNotifications.ts",
     "test": "tsx --test src/contexts/referentiel-academique/tests/depot-annee-scolaire-postgres.test.ts src/contexts/referentiel-academique/tests/execution-http-referentiel-academique.test.ts src/contexts/referentiel-academique/tests/migrations-postgres-referentiel-academique.test.ts src/contexts/referentiel-academique/tests/orchestration-annee-scolaire.test.ts src/contexts/referentiel-academique/tests/publier-version-referentiel.test.ts",
     "test:audit": "node scripts/run-shared-audit-tests.cjs",
     "test:global": "node scripts/run-shared-global-tests.cjs",
@@ -25,9 +26,11 @@
     "test:ci": "npm run verifier:donnees-reference && npm run test && npm run test:verification"
   },
   "dependencies": {
+    "bullmq": "^5.77.6",
     "fastify": "^5.8.4",
     "pg": "^8.20.0",
-    "pino": "^10.3.1"
+    "pino": "^10.3.1",
+    "redis": "^6.0.0"
   },
   "devDependencies": {
     "@types/node": "^25.5.0",

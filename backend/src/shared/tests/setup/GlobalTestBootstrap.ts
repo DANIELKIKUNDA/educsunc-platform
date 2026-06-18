@@ -38,7 +38,7 @@ import {
   creerUtilisateurAuth,
 } from 'shared/auth/tests/support/AuthTestSupport';
 import { SecurityFacade } from 'shared/security/application/services/SecurityFacade';
-import { MoteurAutorisation, MoteurRestrictionsMetier, MoteurScope } from 'shared/security/domain';
+import { MoteurAutorisation, MoteurCapacitesEffectives, MoteurRestrictionsMetier, MoteurScope } from 'shared/security/domain';
 import { PermissionCacheService } from 'shared/security/infrastructure';
 import {
   creerAffectationTitulariat,
@@ -70,8 +70,11 @@ export interface ProfilActeurGlobal {
   niveauAcces?: 'PLATEFORME' | 'ORGANISATION' | 'ECOLE';
   organisationId: string;
   ecoleId: string;
+  sectionId?: string;
   classeId?: string;
   coursId?: string;
+  titulaireClasseId?: string;
+  titulaireAnneeScolaireId?: string;
   elevesAutorises?: string[];
   authOfflineAutorisee?: boolean;
 }
@@ -91,10 +94,12 @@ export class GlobalTestBootstrap {
   public readonly securityFacade = new SecurityFacade(
     this.securityRepositories.roleRepository,
     this.securityRepositories.affectationRepository,
+    this.securityRepositories.titulariatRepository,
     new PermissionCacheService(),
     new MoteurAutorisation(),
     new MoteurScope(),
     new MoteurRestrictionsMetier(),
+    new MoteurCapacitesEffectives(),
   );
 
   private readonly loginUseCase: LoginUseCase;
@@ -213,11 +218,15 @@ export class GlobalTestBootstrap {
       niveauAcces: profil.niveauAcces ?? 'ECOLE',
       idOrganisation: profil.organisationId,
       idEcole: profil.ecoleId,
+      idSection: profil.sectionId,
       idClasse: profil.classeId,
       idCours: profil.coursId,
     });
     affectation.ajouterScope('ORGANISATION', profil.organisationId);
     affectation.ajouterScope('ECOLE', profil.ecoleId);
+    if (profil.sectionId) {
+      affectation.ajouterScope('SECTION', profil.sectionId);
+    }
     if (profil.classeId) {
       affectation.ajouterScope('CLASSE', profil.classeId);
     }
@@ -229,11 +238,13 @@ export class GlobalTestBootstrap {
     await this.securityRepositories.roleRepository.sauvegarder(role);
     await this.securityRepositories.affectationRepository.sauvegarder(affectation);
 
-    if (profil.classeId) {
+    if (profil.titulaireClasseId) {
       const titulariat = creerAffectationTitulariat({
         idUtilisateur: utilisateur.obtenirId(),
-        idClasse: profil.classeId,
-        idAnneeScolaire: 'annee-2026',
+        idOrganisation: profil.organisationId,
+        idEcole: profil.ecoleId,
+        idClasse: profil.titulaireClasseId,
+        idAnneeScolaire: profil.titulaireAnneeScolaireId ?? 'annee-2026',
       });
       await this.securityRepositories.titulariatRepository.sauvegarder(titulariat);
     }
@@ -302,6 +313,14 @@ export class GlobalTestBootstrap {
           verifierScope: true,
           codeRestriction: 'INTERDICTION_MODIFICATION_COTES',
           resultat: { action: 'fiche-encodee' },
+        }));
+
+      instance.post('/bc/bulletins/conduite', async (requete, reponse) =>
+        this.executerRouteProtegee(requete, reponse, {
+          permission: 'cotes.write',
+          verifierScope: true,
+          codeRestriction: 'INTERDICTION_MODIFICATION_COTES',
+          resultat: { action: 'conduite-encodee' },
         }));
 
       instance.post('/bc/bulletins/generer', async (requete, reponse) =>
@@ -465,42 +484,18 @@ export class GlobalTestBootstrap {
       assert.ok(requete.context.utilisateurId, 'Utilisateur absent du contexte');
       const utilisateurId = requete.context.utilisateurId;
 
-      const permission = await this.securityFacade.verifierPermission({
+      const corps = (requete.body ?? {}) as { idClasse?: string; idAnneeScolaire?: string };
+      const decision = await this.securityFacade.verifierAcces({
         idUtilisateur: utilisateurId,
         permissionDemandee: options.permission,
+        idOrganisation: options.verifierScope ? requete.context.organisationActiveId : undefined,
+        idEcole: options.verifierScope ? requete.context.ecoleActiveId : undefined,
+        idClasse: options.exigeTitulariat ? corps.idClasse : undefined,
+        idAnneeScolaire: options.exigeTitulariat ? corps.idAnneeScolaire : undefined,
+        codeRestriction: options.codeRestriction,
       });
-      if (!permission.autorise) {
+      if (!decision.autorise) {
         throw new Error('PERMISSION_REFUSED');
-      }
-
-      if (options.verifierScope) {
-        await this.securityFacade.verifierScope({
-          idUtilisateur: utilisateurId,
-          idOrganisation: requete.context.organisationActiveId,
-          idEcole: requete.context.ecoleActiveId,
-        });
-      }
-
-      if (options.codeRestriction) {
-        const restreint = await this.securityFacade.verifierRestriction({
-          idUtilisateur: utilisateurId,
-          codeRestriction: options.codeRestriction,
-        });
-        if (restreint) {
-          throw new Error(options.codeRestriction);
-        }
-      }
-
-      if (options.exigeTitulariat) {
-        const corps = (requete.body ?? {}) as { idClasse?: string; idAnneeScolaire?: string };
-        const autorise = requete.context.titulariats.some(
-          (titulariat: { obtenirIdClasse(): string; obtenirIdAnneeScolaire(): string }) =>
-            titulariat.obtenirIdClasse() === corps.idClasse
-            && titulariat.obtenirIdAnneeScolaire() === corps.idAnneeScolaire,
-        );
-        if (!autorise) {
-          throw new Error('TITULARIAT_REFUSED');
-        }
       }
 
       return reponse.code(200).send(options.resultat);
