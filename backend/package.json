@@ -22,6 +22,7 @@
     "test": "tsx --test src/contexts/referentiel-academique/tests/depot-annee-scolaire-postgres.test.ts src/contexts/referentiel-academique/tests/execution-http-referentiel-academique.test.ts src/contexts/referentiel-academique/tests/migrations-postgres-referentiel-academique.test.ts src/contexts/referentiel-academique/tests/orchestration-annee-scolaire.test.ts src/contexts/referentiel-academique/tests/publier-version-referentiel.test.ts",
     "test:audit": "node scripts/run-shared-audit-tests.cjs",
     "test:global": "node scripts/run-shared-global-tests.cjs",
+    "test:workflows": "node scripts/run-workflow-scenario-tests.cjs",
     "test:verification": "tsx src/contexts/referentiel-academique/tests/VerificationBcReferentielAcademique.ts",
     "test:ci": "npm run verifier:donnees-reference && npm run test && npm run test:verification"
   },

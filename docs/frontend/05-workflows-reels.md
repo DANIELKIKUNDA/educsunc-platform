@@ -14,6 +14,10 @@ Il fixe uniquement :
 - les regles de nommage et de preuve
 - l'ordre officiel de documentation des workflows
 
+La consolidation finale des workflows figes est maintenant centralisee dans :
+
+- [14-cartographie-finale-workflows.md](/C:/Users/MON%20PC/Documents/EducSyn/docs/frontend/14-cartographie-finale-workflows.md)
+
 Ce document doit etre utilise comme gabarit de reference pour toutes les futures documentations de workflows reels.
 
 ## Objet du Document

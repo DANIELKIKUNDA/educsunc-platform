@@ -18,6 +18,7 @@ Il fixe uniquement :
 Ce document devient la base officielle des prochaines phases :
 
 - workflows reels
+- cartographie finale des workflows
 - navigation
 - dashboards
 - pages

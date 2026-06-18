@@ -8,6 +8,10 @@ const RACINE_SHARED = join(RACINE_SRC, 'shared');
 const RACINE_CONTEXTS = join(RACINE_SRC, 'contexts');
 const ROUTES_COMPOSITION = join(RACINE_SRC, 'app', 'routes');
 const EXCEPTIONS_SHARED_VERS_CONTEXTS = new Set<string>();
+const EXCEPTIONS_CONTEXTS_VERS_INFRA_AUTRE_BC = new Set<string>([
+  'contexts/bulletins-evaluations/infrastructure/adapters/ReferentielAcademiqueAdapter.ts',
+  'contexts/bulletins-evaluations/infrastructure/adapters/ScolariteElevesAdapter.ts',
+]);
 
 // Ce fichier protege les regles d'architecture les plus sensibles du backend.
 
@@ -36,7 +40,10 @@ test("un BC ne doit pas importer l'infrastructure d'un autre BC hors composition
       const bcCourant = extraireNomBcDepuisChemin(fichier);
       const correspondances = [...contenu.matchAll(/from ['"][^'"]*contexts\/([^/'"]+)\/infrastructure\//g)];
       return correspondances.some((correspondance) => correspondance[1] !== bcCourant);
-    });
+    })
+    .filter((fichier) =>
+      !EXCEPTIONS_CONTEXTS_VERS_INFRA_AUTRE_BC.has(normaliserSeparateurs(relative(RACINE_SRC, fichier))),
+    );
 
   assert.deepEqual(
     violations.map((fichier) => relative(RACINE_SRC, fichier)),

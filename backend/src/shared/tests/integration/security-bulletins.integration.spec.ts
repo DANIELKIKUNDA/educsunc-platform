@@ -12,7 +12,7 @@ test('SECURITY applique bien les regles d acces sur les bulletins', async () => 
     ecoleId: TENANT_FIXTURES.ecoleA1,
   });
   const titulaire = await bootstrap.creerActeur({
-    ...ROLE_FIXTURES.ENSEIGNANT,
+    ...ROLE_FIXTURES.TITULAIRE,
     organisationId: TENANT_FIXTURES.organisationA,
     ecoleId: TENANT_FIXTURES.ecoleA1,
     classeId: WORKFLOW_FIXTURES.classeA,

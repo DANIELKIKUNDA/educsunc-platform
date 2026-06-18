@@ -151,6 +151,20 @@ export const ROLE_FIXTURES: Record<string, RoleFixture> = {
     niveauAcces: 'ECOLE',
     permissions: ['cotes.read', 'cotes.write', 'bulletins.read', 'referentiel.read', 'eleves.read', 'paiements.read'],
   },
+  TITULAIRE: {
+    codeRole: 'ENSEIGNANT',
+    nomRole: 'Titulaire',
+    niveauAcces: 'ECOLE',
+    permissions: [
+      'cotes.read',
+      'cotes.write',
+      'bulletins.read',
+      'bulletins.generate',
+      'referentiel.read',
+      'eleves.read',
+      'paiements.read',
+    ],
+  },
   PREFET: {
     codeRole: 'PREFET_ETUDES',
     nomRole: 'Prefet des etudes',
