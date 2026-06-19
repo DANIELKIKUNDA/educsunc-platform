@@ -23,15 +23,6 @@ function creerControleurParametresPaiementFactice() {
   };
 }
 
-function creerControleurTarificationFactice() {
-  return {
-    async lister() { return { donnee: [] }; },
-    async creer() { return { donnee: {} }; },
-    async modifier() { return { donnee: {} }; },
-    async desactiver() { return { donnee: {} }; },
-  };
-}
-
 function creerControleurRapportFinancierFactice() {
   return {
     async consulterJournalier() { return { donnee: {} }; },

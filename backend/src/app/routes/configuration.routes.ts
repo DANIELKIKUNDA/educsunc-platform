@@ -31,7 +31,6 @@ import {
   ReloadRuntimeConfigurationUseCase,
   RepositoryConfigurationMemoire,
   RepositoryConfigurationSnapshotMemoire,
-  RepositoryConfigurationVersionMemoire,
   type DependancesRoutesConfiguration,
   type EffectiveConfigurationReadModel,
   type ConfigurationReadModel,
@@ -145,18 +144,12 @@ class EffectiveConfigurationReadModelMemoire implements EffectiveConfigurationRe
         verrouille,
       };
       const overrides = details.overrides
-        .filter((override) => !keyPrefix || cle.startsWith(keyPrefix))
-        .map((override) => ({
+        .filter(() => !keyPrefix || cle.startsWith(keyPrefix))
+        .map((entreeOverride) => ({
           key: ConfigurationKey.creer(cle),
-          scope: override.scope.valeur(),
-          value: override.value.valeur(),
+          scope: ConfigurationScope.creer(entreeOverride.scope.valeur()),
+          value: ConfigurationValue.creer(entreeOverride.value.valeur()),
           verrouille,
-        }))
-        .map((override) => ({
-          key: override.key,
-          scope: ConfigurationScope.creer(override.scope),
-          value: ConfigurationValue.creer(override.value),
-          verrouille: override.verrouille,
         }));
 
       return [base, ...overrides];

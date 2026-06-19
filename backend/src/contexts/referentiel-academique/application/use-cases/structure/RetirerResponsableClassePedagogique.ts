@@ -4,7 +4,6 @@ import { ErreurClassePedagogiqueInvalide } from '../../../domain/exceptions/Erre
 import { ErreurSectionScolaireInvalide } from '../../../domain/exceptions/ErreurSectionScolaireInvalide';
 import { DepotClasseAcademique } from '../../../domain/repositories/DepotClasseAcademique';
 import { AnneeScolaireId } from '../../../domain/value-objects/AnneeScolaireId';
-import { ClasseAcademiqueId } from '../../../domain/value-objects/ClasseAcademiqueId';
 import { ClassePedagogiqueId } from '../../../domain/value-objects/ClassePedagogiqueId';
 import { DepotResponsabiliteClassePedagogique } from '../../../domain/repositories/DepotResponsabiliteClassePedagogique';
 import { DepotSectionScolaire } from '../../../domain/repositories/DepotSectionScolaire';

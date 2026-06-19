@@ -18,7 +18,7 @@ import { AutorisationConsultationStatistiquesPortMemoire, CriteresAnalysePedagog
 test("le use case de consultation du resultat consolide relit la bonne query", async () => {
   const autorisation = new AutorisationConsultationStatistiquesPortMemoire();
   const useCase = new ConsulterResultatEleveUseCase({
-    async executer(idEleve, idAnneeScolaire) {
+    async executer(idEleve, _idAnneeScolaire) {
       return {
         idResultatBulletinEleve: 'resultat-1',
         idEleve,
@@ -133,7 +133,7 @@ test("les analyses de base reutilisent la securite locale et les queries attendu
 
   const consulterEchecsClasseUseCase = new ConsulterEchecsClasseUseCase(
     {
-      async executer(idClassePedagogique, idAnneeScolaire, codeColonne) {
+      async executer(idClassePedagogique, _idAnneeScolaire, codeColonne) {
         return [{
           idEleve: 'eleve-1',
           nomComplet: 'Eleve 1',

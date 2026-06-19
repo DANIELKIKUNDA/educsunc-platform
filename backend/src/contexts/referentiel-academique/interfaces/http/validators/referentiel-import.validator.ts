@@ -204,7 +204,7 @@ export class ValidateurReferentielImportHttp {
       parametres,
       'parametres',
     );
-    const donneesCorps = OutilsValidationHttpReferentielAcademique.obtenirObjet(corps, 'corps');
+    OutilsValidationHttpReferentielAcademique.obtenirObjet(corps, 'corps');
 
     return {
       idVersionReferentielProgramme:

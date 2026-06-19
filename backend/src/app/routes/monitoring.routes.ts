@@ -1,4 +1,4 @@
-import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
+import type { FastifyPluginAsync } from 'fastify';
 import {
   ApplicationAlertMonitoringService,
   ApplicationHealthMonitoringService,

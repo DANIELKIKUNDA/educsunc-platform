@@ -38,7 +38,6 @@ export class ServicePdfRecuPaiement {
     const lignesTexte: LigneTextePdf[] = [];
     const traits: LigneTraitPdf[] = [];
     const margeX = 36;
-    const largeurUtile = largeurPage - margeX * 2;
     const sigle = recu.ecole.sigle ?? recu.ecole.nom;
     const dateIso = recu.dateEmission.toISOString();
     const dateCourte = dateIso.slice(0, 10).split('-').reverse().join('/');
