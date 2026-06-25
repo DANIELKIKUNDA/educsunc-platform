@@ -14,6 +14,7 @@ import RapportFinancierJournalierView from './views/RapportFinancierJournalierVi
 import PaiementsParCaissierView from './views/PaiementsParCaissierView.vue';
 import FondsAnticipesView from './views/FondsAnticipesView.vue';
 import ArrieresEleveView from './views/ArrieresEleveView.vue';
+import ParametresPaiementView from './views/ParametresPaiementView.vue';
 
 export const routesFinances: RouteRecordRaw[] = [
   {
@@ -105,5 +106,11 @@ export const routesFinances: RouteRecordRaw[] = [
     name: 'finances-arrieres-eleve',
     component: ArrieresEleveView,
     meta: { title: 'Arrieres eleve' },
+  },
+  {
+    path: 'finances/parametres',
+    name: 'finances-parametres-paiement',
+    component: ParametresPaiementView,
+    meta: { title: 'Parametres de paiement' },
   },
 ];

@@ -532,6 +532,16 @@
   font-weight: 800;
 }
 
+.finance-toggle-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.85rem 0.95rem;
+  border: 1px solid var(--couleur-bordure);
+  border-radius: 0.95rem;
+  background: rgba(248, 250, 253, 0.96);
+}
+
 .receipt-viewer {
   display: grid;
   gap: 1.25rem;
