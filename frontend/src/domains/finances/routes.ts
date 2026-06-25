@@ -4,6 +4,7 @@ import PerceptionPaiementView from './views/PerceptionPaiementView.vue';
 import OuvertureCaisseView from './views/OuvertureCaisseView.vue';
 import ClotureCaisseView from './views/ClotureCaisseView.vue';
 import CaisseDuJourView from './views/CaisseDuJourView.vue';
+import HistoriquePaiementsEleveView from './views/HistoriquePaiementsEleveView.vue';
 
 export const routesFinances: RouteRecordRaw[] = [
   {
@@ -35,5 +36,11 @@ export const routesFinances: RouteRecordRaw[] = [
     name: 'finances-caisse-du-jour',
     component: CaisseDuJourView,
     meta: { title: 'Caisse du jour' },
+  },
+  {
+    path: 'finances/historiques',
+    name: 'finances-historique-paiements-eleve',
+    component: HistoriquePaiementsEleveView,
+    meta: { title: 'Historique des paiements' },
   },
 ];

@@ -423,3 +423,30 @@
   color: var(--couleur-principale);
   font-weight: 800;
 }
+
+.finance-student-banner--profile {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.finance-summary-grid--kpi {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.finance-status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.finance-status-badge--success {
+  background: rgba(47, 157, 98, 0.12);
+  color: #226a46;
+}
+
+.finance-status-badge--error {
+  background: rgba(196, 74, 55, 0.12);
+  color: #8b2e23;
+}
