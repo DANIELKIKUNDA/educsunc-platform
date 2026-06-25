@@ -13,6 +13,7 @@ import RecusPaiementListView from './views/RecusPaiementListView.vue';
 import RapportFinancierJournalierView from './views/RapportFinancierJournalierView.vue';
 import PaiementsParCaissierView from './views/PaiementsParCaissierView.vue';
 import FondsAnticipesView from './views/FondsAnticipesView.vue';
+import ArrieresEleveView from './views/ArrieresEleveView.vue';
 
 export const routesFinances: RouteRecordRaw[] = [
   {
@@ -98,5 +99,11 @@ export const routesFinances: RouteRecordRaw[] = [
     name: 'finances-fonds-anticipes',
     component: FondsAnticipesView,
     meta: { title: 'Fonds anticipes' },
+  },
+  {
+    path: 'finances/arrieres',
+    name: 'finances-arrieres-eleve',
+    component: ArrieresEleveView,
+    meta: { title: 'Arrieres eleve' },
   },
 ];
