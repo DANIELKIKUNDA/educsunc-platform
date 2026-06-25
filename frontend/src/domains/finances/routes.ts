@@ -12,6 +12,7 @@ import ExonerationsView from './views/ExonerationsView.vue';
 import RecusPaiementListView from './views/RecusPaiementListView.vue';
 import RapportFinancierJournalierView from './views/RapportFinancierJournalierView.vue';
 import PaiementsParCaissierView from './views/PaiementsParCaissierView.vue';
+import FondsAnticipesView from './views/FondsAnticipesView.vue';
 
 export const routesFinances: RouteRecordRaw[] = [
   {
@@ -91,5 +92,11 @@ export const routesFinances: RouteRecordRaw[] = [
     name: 'finances-paiements-par-caissier',
     component: PaiementsParCaissierView,
     meta: { title: 'Paiements par caissier' },
+  },
+  {
+    path: 'finances/rapports/fonds-anticipes',
+    name: 'finances-fonds-anticipes',
+    component: FondsAnticipesView,
+    meta: { title: 'Fonds anticipes' },
   },
 ];
