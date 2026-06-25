@@ -15,6 +15,7 @@ import PaiementsParCaissierView from './views/PaiementsParCaissierView.vue';
 import FondsAnticipesView from './views/FondsAnticipesView.vue';
 import ArrieresEleveView from './views/ArrieresEleveView.vue';
 import ParametresPaiementView from './views/ParametresPaiementView.vue';
+import TarificationView from './views/TarificationView.vue';
 
 export const routesFinances: RouteRecordRaw[] = [
   {
@@ -112,5 +113,11 @@ export const routesFinances: RouteRecordRaw[] = [
     name: 'finances-parametres-paiement',
     component: ParametresPaiementView,
     meta: { title: 'Parametres de paiement' },
+  },
+  {
+    path: 'finances/tarification',
+    name: 'finances-tarification',
+    component: TarificationView,
+    meta: { title: 'Tarification' },
   },
 ];
