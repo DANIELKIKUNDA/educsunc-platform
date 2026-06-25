@@ -15,6 +15,9 @@ export class Ecole extends RacineAgregat<EcoleId> {
   private adresse?: string;
   private telephone?: string;
   private email?: string;
+  private provinceEducationnelle?: string;
+  private ville?: string;
+  private communeOuTerritoire?: string;
   private creeLe: Date;
   private creePar?: string;
   private modifieLe?: Date;
@@ -32,6 +35,9 @@ export class Ecole extends RacineAgregat<EcoleId> {
     adresse?: string,
     telephone?: string,
     email?: string,
+    provinceEducationnelle?: string,
+    ville?: string,
+    communeOuTerritoire?: string,
     creePar?: string,
     actif = true,
     creeLe: Date = new Date(),
@@ -50,6 +56,9 @@ export class Ecole extends RacineAgregat<EcoleId> {
     this.adresse = this.validerTexteOptionnel(adresse);
     this.telephone = this.validerTexteOptionnel(telephone);
     this.email = this.validerEmailOptionnel(email);
+    this.provinceEducationnelle = this.validerTexteOptionnel(provinceEducationnelle);
+    this.ville = this.validerTexteOptionnel(ville);
+    this.communeOuTerritoire = this.validerTexteOptionnel(communeOuTerritoire);
     this.creeLe = this.validerDate(creeLe, 'creeLe');
     this.creePar = this.validerTexteOptionnel(creePar);
     this.modifieLe = this.validerDateOptionnelle(modifieLe, 'modifieLe');
@@ -100,6 +109,48 @@ export class Ecole extends RacineAgregat<EcoleId> {
   // Cette methode retourne l'email de l'ecole si il existe.
   public obtenirEmail(): string | undefined {
     return this.email;
+  }
+
+  // Cette methode retourne la province educationnelle si elle existe.
+  public obtenirProvinceEducationnelle(): string | undefined {
+    return this.provinceEducationnelle;
+  }
+
+  // Cette methode retourne la ville de l'ecole si elle existe.
+  public obtenirVille(): string | undefined {
+    return this.ville;
+  }
+
+  // Cette methode retourne la commune ou le territoire si il existe.
+  public obtenirCommuneOuTerritoire(): string | undefined {
+    return this.communeOuTerritoire;
+  }
+
+  // Cette methode met a jour les informations institutionnelles editables de l'ecole.
+  public mettreAJourInformationsInstitutionnelles(
+    informations: {
+      sigle?: string;
+      adresse?: string;
+      telephone?: string;
+      email?: string;
+      provinceEducationnelle?: string;
+      ville?: string;
+      communeOuTerritoire?: string;
+    },
+    acteur?: string,
+  ): void {
+    this.sigle = this.validerTexteOptionnel(informations.sigle);
+    this.adresse = this.validerTexteOptionnel(informations.adresse);
+    this.telephone = this.validerTexteOptionnel(informations.telephone);
+    this.email = this.validerEmailOptionnel(informations.email);
+    this.provinceEducationnelle = this.validerTexteOptionnel(
+      informations.provinceEducationnelle,
+    );
+    this.ville = this.validerTexteOptionnel(informations.ville);
+    this.communeOuTerritoire = this.validerTexteOptionnel(
+      informations.communeOuTerritoire,
+    );
+    this.marquerModification(acteur);
   }
 
   // Cette methode retourne la date de creation de l'ecole.

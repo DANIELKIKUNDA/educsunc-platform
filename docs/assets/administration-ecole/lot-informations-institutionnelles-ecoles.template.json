@@ -1,0 +1,32 @@
+[
+  {
+    "idEcole": "remplacer-par-id-ecole-1",
+    "sigle": "SIGLE-1",
+    "adresse": "Adresse officielle ecole 1",
+    "telephone": "+243 ...",
+    "email": "contact@ecole1.cd",
+    "provinceEducationnelle": "Province educationnelle",
+    "ville": "Ville",
+    "communeOuTerritoire": "Commune ou territoire"
+  },
+  {
+    "idEcole": "remplacer-par-id-ecole-2",
+    "sigle": "SIGLE-2",
+    "adresse": "Adresse officielle ecole 2",
+    "telephone": "+243 ...",
+    "email": "contact@ecole2.cd",
+    "provinceEducationnelle": "Province educationnelle",
+    "ville": "Ville",
+    "communeOuTerritoire": "Commune ou territoire"
+  },
+  {
+    "idEcole": "remplacer-par-id-ecole-3",
+    "sigle": "SIGLE-3",
+    "adresse": "Adresse officielle ecole 3",
+    "telephone": "+243 ...",
+    "email": "contact@ecole3.cd",
+    "provinceEducationnelle": "Province educationnelle",
+    "ville": "Ville",
+    "communeOuTerritoire": "Commune ou territoire"
+  }
+]

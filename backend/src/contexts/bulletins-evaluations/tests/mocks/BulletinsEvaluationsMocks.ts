@@ -96,7 +96,7 @@ export class CacheMemoire implements CacheBulletinPort, ServiceCache {
 export class PdfPortMemoire implements BulletinPdfPort {
   public dernierBulletin: unknown = null;
 
-  public async genererBulletinPdf(bulletin: never): Promise<{ nomFichier: string; contenu: Buffer; mimeType: string }> {
+  public async genererBulletinPdf(bulletin: unknown): Promise<{ nomFichier: string; contenu: Buffer; mimeType: string }> {
     this.dernierBulletin = bulletin;
     return {
       nomFichier: 'bulletin-test.pdf',
@@ -479,6 +479,8 @@ export class ReferentielAcademiquePortMemoire implements ReferentielAcademiquePo
     ordreAffichage: number;
     estCalculable: boolean;
     aExamen: boolean;
+    domaine?: string;
+    sousDomaine?: string;
   }>> {
     this.derniereReferenceCoursProgramme = referenceProgramme;
 
@@ -490,6 +492,8 @@ export class ReferentielAcademiquePortMemoire implements ReferentielAcademiquePo
         ordreAffichage: 1,
         estCalculable: true,
         aExamen: true,
+        domaine: 'Sciences',
+        sousDomaine: 'Mathematiques',
       },
     ];
   }

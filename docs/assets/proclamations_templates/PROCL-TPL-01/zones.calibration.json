@@ -1,0 +1,174 @@
+{
+  "template": "PROCL-TPL-01",
+  "version": "1.0.0",
+  "formatPage": "A4-PORTRAIT",
+  "repere": {
+    "origine": "BOTTOM_LEFT",
+    "unite": "PDF_POINTS"
+  },
+  "etatCalibration": "PARTIELLEMENT_CALIBRE",
+  "zones": [
+    {
+      "id": "z_institution_nom_ecole",
+      "page": 1,
+      "x": 150,
+      "y": 757,
+      "largeur": 280,
+      "hauteur": 18,
+      "alignement": "center",
+      "statut": "CALIBRE"
+    },
+    {
+      "id": "z_institution_contacts",
+      "page": 1,
+      "x": 120,
+      "y": 712,
+      "largeur": 360,
+      "hauteur": 28,
+      "alignement": "center",
+      "statut": "CALIBRE"
+    },
+    {
+      "id": "z_titre_document",
+      "page": 1,
+      "x": 92,
+      "y": 618,
+      "largeur": 410,
+      "hauteur": 16,
+      "alignement": "center",
+      "statut": "CALIBRE"
+    },
+    {
+      "id": "z_titre_periode",
+      "page": 1,
+      "x": 430,
+      "y": 618,
+      "largeur": 95,
+      "hauteur": 16,
+      "alignement": "center",
+      "statut": "CALIBRE"
+    },
+    {
+      "id": "z_contexte_classe",
+      "page": 1,
+      "x": 112,
+      "y": 590,
+      "largeur": 230,
+      "hauteur": 12,
+      "alignement": "left",
+      "statut": "CALIBRE"
+    },
+    {
+      "id": "z_contexte_section",
+      "page": 1,
+      "x": 398,
+      "y": 590,
+      "largeur": 80,
+      "hauteur": 12,
+      "alignement": "left",
+      "statut": "CALIBRE"
+    },
+    {
+      "id": "z_contexte_titulaire",
+      "page": 1,
+      "x": 117,
+      "y": 564,
+      "largeur": 308,
+      "hauteur": 12,
+      "alignement": "left",
+      "statut": "CALIBRE"
+    },
+    {
+      "id": "z_institution_logo",
+      "page": 1,
+      "x": 268,
+      "y": 646,
+      "largeur": 58,
+      "hauteur": 72,
+      "alignement": "center",
+      "statut": "CALIBRE"
+    },
+    {
+      "id": "z_bloc_non_classes_titre",
+      "page": 2,
+      "x": 208,
+      "y": 470,
+      "largeur": 180,
+      "hauteur": 14,
+      "alignement": "center",
+      "statut": "A_CALIBRER"
+    }
+  ],
+  "tables": [
+    {
+      "id": "t_classement_page_1",
+      "page": 1,
+      "x": 42.825,
+      "y": 390.7,
+      "largeur": 522.75,
+      "hauteur": 368,
+      "hauteurLigne": 26.4,
+      "colonnes": [
+        "place",
+        "nomComplet",
+        "sexe",
+        "maximumGeneral",
+        "totalObtenu",
+        "pourcentage",
+        "observation"
+      ],
+      "statut": "CALIBRE"
+    },
+    {
+      "id": "t_classement_page_2",
+      "page": 2,
+      "x": 42.825,
+      "y": 814,
+      "largeur": 522.75,
+      "hauteur": 160,
+      "hauteurLigne": 26.4,
+      "colonnes": [
+        "place",
+        "nomComplet",
+        "sexe",
+        "maximumGeneral",
+        "totalObtenu",
+        "pourcentage",
+        "observation"
+      ],
+      "statut": "A_CALIBRER"
+    },
+    {
+      "id": "t_statistiques_page_1",
+      "page": 1,
+      "x": 53,
+      "y": 580,
+      "largeur": 489,
+      "hauteur": 133,
+      "hauteurLigne": 19,
+      "colonnes": [
+        "libelle",
+        "filles",
+        "garcons",
+        "total",
+        "pourcentage"
+      ],
+      "statut": "A_CALIBRER"
+    },
+    {
+      "id": "t_non_classes_page_2",
+      "page": 2,
+      "x": 53,
+      "y": 604,
+      "largeur": 510,
+      "hauteur": 150,
+      "hauteurLigne": 22,
+      "colonnes": [
+        "numero",
+        "identite",
+        "motifs"
+      ],
+      "statut": "A_CALIBRER"
+    }
+  ]
+}

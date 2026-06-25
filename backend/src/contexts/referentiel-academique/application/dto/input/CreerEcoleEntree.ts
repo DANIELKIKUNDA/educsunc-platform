@@ -11,4 +11,7 @@ export interface CreerEcoleEntree {
   adresse?: string;
   telephone?: string;
   email?: string;
+  provinceEducationnelle?: string;
+  ville?: string;
+  communeOuTerritoire?: string;
 }

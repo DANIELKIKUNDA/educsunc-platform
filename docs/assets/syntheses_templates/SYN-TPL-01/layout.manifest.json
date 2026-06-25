@@ -1,0 +1,18 @@
+{
+  "template": "SYN-TPL-01",
+  "version": "1.0.0",
+  "pages": [
+    {
+      "numeroPage": 1,
+      "formatPage": "US-LETTER-LANDSCAPE",
+      "backgroundId": "synthese-page-1",
+      "role": "PAGE_1_SECTION"
+    },
+    {
+      "numeroPage": 2,
+      "formatPage": "US-LETTER-LANDSCAPE",
+      "backgroundId": "synthese-page-2",
+      "role": "PAGE_2_SECTION"
+    }
+  ]
+}

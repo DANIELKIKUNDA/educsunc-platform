@@ -1,0 +1,8 @@
+{
+  "template": "PROCL-TPL-01",
+  "backgroundId": "procl-source-master",
+  "version": "1.0.0",
+  "sourcePdfRelativePath": "../../bulletins_sources/LISTE DE PROCLAMATION.pdf",
+  "statutPreparation": "NEUTRALISE_DISPONIBLE",
+  "commentaire": "Le fond maitre PROCL-TPL-01 reprend le modele source officiel de liste de proclamation pour servir de base versionnee au renderer."
+}

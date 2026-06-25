@@ -6,6 +6,7 @@ import {
   DesactiverEcole,
   ListerEcoles,
   ListerEcolesParOrganisation,
+  MettreAJourInformationsInstitutionnellesEcole,
   RenommerEcole,
 } from '../../../application/use-cases/ecoles';
 import {
@@ -24,6 +25,7 @@ export class ControleurEcoles {
   private readonly casUsageListerEcoles: ListerEcoles;
   private readonly casUsageListerEcolesParOrganisation: ListerEcolesParOrganisation;
   private readonly casUsageChangerModeExploitationEcole: ChangerModeExploitationEcole;
+  private readonly casUsageMettreAJourInformationsInstitutionnellesEcole: MettreAJourInformationsInstitutionnellesEcole;
   private readonly casUsageRenommerEcole: RenommerEcole;
   private readonly casUsageActiverEcole: ActiverEcole;
   private readonly casUsageDesactiverEcole: DesactiverEcole;
@@ -36,6 +38,7 @@ export class ControleurEcoles {
     casUsageListerEcoles: ListerEcoles,
     casUsageListerEcolesParOrganisation: ListerEcolesParOrganisation,
     casUsageChangerModeExploitationEcole: ChangerModeExploitationEcole,
+    casUsageMettreAJourInformationsInstitutionnellesEcole: MettreAJourInformationsInstitutionnellesEcole,
     casUsageRenommerEcole: RenommerEcole,
     casUsageActiverEcole: ActiverEcole,
     casUsageDesactiverEcole: DesactiverEcole,
@@ -46,6 +49,8 @@ export class ControleurEcoles {
     this.casUsageListerEcoles = casUsageListerEcoles;
     this.casUsageListerEcolesParOrganisation = casUsageListerEcolesParOrganisation;
     this.casUsageChangerModeExploitationEcole = casUsageChangerModeExploitationEcole;
+    this.casUsageMettreAJourInformationsInstitutionnellesEcole =
+      casUsageMettreAJourInformationsInstitutionnellesEcole;
     this.casUsageRenommerEcole = casUsageRenommerEcole;
     this.casUsageActiverEcole = casUsageActiverEcole;
     this.casUsageDesactiverEcole = casUsageDesactiverEcole;
@@ -145,6 +150,24 @@ export class ControleurEcoles {
       idUtilisateur,
     );
     const sortie = await this.casUsageRenommerEcole.executer(entree);
+
+    return EcolePresenter.presenterEcole(sortie.ecole);
+  }
+
+  // Cette methode traite la mise a jour HTTP des informations institutionnelles d'une ecole.
+  public async mettreAJourInformationsInstitutionnellesEcole(
+    parametres: unknown,
+    corps: unknown,
+    contexte?: RequestContext,
+  ): Promise<ReponseEcoleHttp> {
+    const idUtilisateur = await this.verifierMutationAdministrationEcoles(contexte);
+    const entree = ValidateurEcoleHttp.validerMiseAJourInformationsInstitutionnelles(
+      parametres,
+      corps,
+      idUtilisateur,
+    );
+    const sortie =
+      await this.casUsageMettreAJourInformationsInstitutionnellesEcole.executer(entree);
 
     return EcolePresenter.presenterEcole(sortie.ecole);
   }

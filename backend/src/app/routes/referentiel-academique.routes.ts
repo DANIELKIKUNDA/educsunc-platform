@@ -29,6 +29,7 @@ import {
   DesactiverEcole,
   ListerEcoles,
   ListerEcolesParOrganisation,
+  MettreAJourInformationsInstitutionnellesEcole,
   RenommerEcole,
 } from '../../contexts/referentiel-academique/application/use-cases/ecoles';
 import {
@@ -275,6 +276,7 @@ function composerRoutesReferentielAcademique(): CompositionRoutesReferentielAcad
     new ListerEcoles(depots.depotEcole),
     new ListerEcolesParOrganisation(depots.depotEcole),
     new ChangerModeExploitationEcole(depots.depotEcole),
+    new MettreAJourInformationsInstitutionnellesEcole(depots.depotEcole),
     new RenommerEcole(depots.depotEcole),
     new ActiverEcole(depots.depotEcole),
     new DesactiverEcole(depots.depotEcole),

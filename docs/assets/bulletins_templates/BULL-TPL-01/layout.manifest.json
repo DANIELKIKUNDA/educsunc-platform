@@ -1,0 +1,171 @@
+{
+  "template": "BULL-TPL-01",
+  "version": "2026.06.23-bull-tpl-01",
+  "pages": [
+    {
+      "numeroPage": 1,
+      "formatPage": "A4-PORTRAIT",
+      "background": {
+        "id": "bull-tpl-01/background-master-neutralise",
+        "format": "PDF",
+        "description": "Fond maitre neutralise bulletin trimestriel general",
+        "neutralise": true
+      }
+    }
+  ],
+  "zones": [
+    {
+      "id": "z_institution_pays",
+      "page": 1,
+      "famille": "Z-INSTITUTION",
+      "ancrage": "bande haute centrale",
+      "alignement": "center",
+      "mode": "text",
+      "source": "identiteInstitutionnelle.pays",
+      "politiqueOverflow": "reduce-font",
+      "criticite": "forte"
+    },
+    {
+      "id": "z_institution_ministere",
+      "page": 1,
+      "famille": "Z-INSTITUTION",
+      "ancrage": "sous pays",
+      "alignement": "center",
+      "mode": "text",
+      "source": "identiteInstitutionnelle.ministere",
+      "politiqueOverflow": "reduce-font",
+      "criticite": "forte"
+    },
+    {
+      "id": "z_admin_ecole",
+      "page": 1,
+      "famille": "Z-ADMIN",
+      "ancrage": "ligne ecole",
+      "alignement": "left",
+      "mode": "text",
+      "source": "identiteInstitutionnelle.nomEcole",
+      "politiqueOverflow": "reduce-font",
+      "criticite": "critique"
+    },
+    {
+      "id": "z_admin_code_ecole",
+      "page": 1,
+      "famille": "Z-ADMIN",
+      "ancrage": "case code",
+      "alignement": "left",
+      "mode": "text",
+      "source": "identiteInstitutionnelle.codeEcole",
+      "politiqueOverflow": "truncate",
+      "criticite": "forte"
+    },
+    {
+      "id": "z_eleve_nom_complet",
+      "page": 1,
+      "famille": "Z-ELEVE",
+      "ancrage": "ligne eleve",
+      "alignement": "left",
+      "mode": "text",
+      "source": "identiteEleve.nomComplet",
+      "politiqueOverflow": "reduce-font",
+      "criticite": "critique"
+    },
+    {
+      "id": "z_eleve_sexe",
+      "page": 1,
+      "famille": "Z-ELEVE",
+      "ancrage": "case sexe",
+      "alignement": "center",
+      "mode": "text",
+      "source": "identiteEleve.sexe",
+      "politiqueOverflow": "truncate",
+      "criticite": "forte"
+    },
+    {
+      "id": "z_eleve_classe",
+      "page": 1,
+      "famille": "Z-ELEVE",
+      "ancrage": "ligne classe",
+      "alignement": "left",
+      "mode": "text",
+      "source": "identiteEleve.libelleClasse",
+      "politiqueOverflow": "reduce-font",
+      "criticite": "critique"
+    },
+    {
+      "id": "z_titre_annee_scolaire",
+      "page": 1,
+      "famille": "Z-TITRE",
+      "ancrage": "titre annee",
+      "alignement": "center",
+      "mode": "text",
+      "source": "meta.libelleAnneeScolaire",
+      "politiqueOverflow": "truncate",
+      "criticite": "critique"
+    },
+    {
+      "id": "z_synthese_application",
+      "page": 1,
+      "famille": "Z-SYNTHESE",
+      "ancrage": "case application",
+      "alignement": "center",
+      "mode": "text",
+      "source": "structure.resumeGlobal.application",
+      "politiqueOverflow": "truncate",
+      "criticite": "forte"
+    },
+    {
+      "id": "z_synthese_conduite",
+      "page": 1,
+      "famille": "Z-SYNTHESE",
+      "ancrage": "case conduite",
+      "alignement": "center",
+      "mode": "text",
+      "source": "structure.resumeGlobal.conduite",
+      "politiqueOverflow": "truncate",
+      "criticite": "forte"
+    },
+    {
+      "id": "z_cachet_ecole",
+      "page": 1,
+      "famille": "Z-DECISION-SIGNATURE",
+      "ancrage": "zone sceau ecole",
+      "alignement": "center",
+      "mode": "image",
+      "source": "assets.cachet",
+      "politiqueOverflow": "n/a",
+      "criticite": "forte"
+    }
+  ],
+  "tables": [
+    {
+      "id": "z_table_rows_window",
+      "page": 1,
+      "source": "structure.lignes",
+      "colonnes": [
+        "branche",
+        "t1_max_per",
+        "t1_p1",
+        "t1_p2",
+        "t1_max_ex",
+        "t1_pts_obt_ex",
+        "t1_max_trim",
+        "t1_pts_obt_trim",
+        "t2_p3",
+        "t2_p4",
+        "t2_max_ex",
+        "t2_pts_obt_ex",
+        "t2_max_trim",
+        "t2_pts_obt_trim",
+        "t3_p5",
+        "t3_p6",
+        "t3_max_ex",
+        "t3_pts_obt_ex",
+        "t3_max_trim",
+        "t3_pts_obt_trim",
+        "total_max_pts",
+        "total_pts_obt"
+      ],
+      "hauteurLigne": "FIXE"
+    }
+  ]
+}

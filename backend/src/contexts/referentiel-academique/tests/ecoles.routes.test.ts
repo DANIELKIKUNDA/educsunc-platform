@@ -52,6 +52,14 @@ test('les routes ecoles transmettent le contexte authentifie et n exposent plus 
         appels.push(`renommer:${context.utilisateurId ?? 'none'}`);
         return { donnee: { id: 'ecole-1' } };
       },
+      async mettreAJourInformationsInstitutionnellesEcole(
+        _params: unknown,
+        _body: unknown,
+        context: { utilisateurId?: string },
+      ) {
+        appels.push(`institutionnel:${context.utilisateurId ?? 'none'}`);
+        return { donnee: { id: 'ecole-1' } };
+      },
       async activerEcole(_params: unknown, _body: unknown, context: { utilisateurId?: string }) {
         appels.push(`activer:${context.utilisateurId ?? 'none'}`);
         return { donnee: { id: 'ecole-1' } };
@@ -81,10 +89,28 @@ test('les routes ecoles transmettent le contexte authentifie et n exposent plus 
       nouveauNom: 'Ecole Renommee',
     },
   });
+  const reponseInformationsInstitutionnelles = await serveur.inject({
+    method: 'PATCH',
+    url: '/api/ecoles/ecole-a-1/informations-institutionnelles',
+    payload: {
+      provinceEducationnelle: 'Haut-Katanga 1',
+      ville: 'Lubumbashi',
+      communeOuTerritoire: 'Lubumbashi',
+    },
+  });
 
   assert.equal(reponseCreation.statusCode, 200, reponseCreation.body);
   assert.equal(reponseRenommage.statusCode, 200, reponseRenommage.body);
-  assert.deepEqual(appels, ['creer:user-manager', 'renommer:user-manager']);
+  assert.equal(
+    reponseInformationsInstitutionnelles.statusCode,
+    200,
+    reponseInformationsInstitutionnelles.body,
+  );
+  assert.deepEqual(appels, [
+    'creer:user-manager',
+    'renommer:user-manager',
+    'institutionnel:user-manager',
+  ]);
 
   await serveur.close();
 });

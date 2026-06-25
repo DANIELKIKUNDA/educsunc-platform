@@ -7,6 +7,8 @@ export interface ReferentielAcademiquePort {
   consulterProgrammeNiveau(referenceProgramme: ReferenceProgrammeNiveauDTO): Promise<ProgrammeNiveauDTO | null>;
   listerCoursProgramme(referenceProgramme: ReferenceProgrammeNiveauDTO): Promise<CoursProgrammeDTO[]>;
   listerColonnesAutorisees(typeStructureEvaluation: TypeStructureEvaluation): Promise<CodeColonneBulletin[]>;
+  consulterEcole?(idEcole: string): Promise<EcoleDocumentDTO | null>;
+  consulterAnneeScolaire?(idAnneeScolaire: string): Promise<AnneeScolaireDocumentDTO | null>;
 }
 
 export interface ReferenceProgrammeNiveauDTO {
@@ -24,10 +26,13 @@ export interface CoursReferentielDTO {
 
 export interface ProgrammeNiveauDTO {
   idProgrammeNiveau: string;
+  idClasseAcademique?: string;
   idClassePedagogique?: string;
   typeStructureEvaluation: TypeStructureEvaluation;
   versionReferentielProgramme: string;
   statutProgrammeNiveau: 'BROUILLON' | 'VALIDE' | 'ARCHIVE';
+  estClasseEXETAT?: boolean;
+  estClasseFinaliste?: boolean;
 }
 
 export interface CoursProgrammeDTO {
@@ -37,4 +42,25 @@ export interface CoursProgrammeDTO {
   ordreAffichage: number;
   estCalculable: boolean;
   aExamen: boolean;
+  domaine?: string;
+  sousDomaine?: string;
+}
+
+export interface EcoleDocumentDTO {
+  id: string;
+  code: string;
+  nom: string;
+  sigle?: string;
+  adresse?: string;
+  telephone?: string;
+  email?: string;
+  provinceEducationnelle?: string;
+  ville?: string;
+  communeOuTerritoire?: string;
+}
+
+export interface AnneeScolaireDocumentDTO {
+  id: string;
+  code: string;
+  libelle: string;
 }

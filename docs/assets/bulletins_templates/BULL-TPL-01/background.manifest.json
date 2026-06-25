@@ -1,0 +1,8 @@
+{
+  "template": "BULL-TPL-01",
+  "backgroundId": "bull-tpl-01/background-master-neutralise",
+  "version": "2026.06.23-bull-tpl-01",
+  "sourcePdfRelativePath": "docs/assets/bulletins_sources/Bulletins MINEDUC 24-25 toutes sections par ordre alphabétique.pdf",
+  "statutPreparation": "NEUTRALISE_DISPONIBLE",
+  "commentaire": "Fond maitre neutralise genere a partir de la page source officielle et d'une configuration de rectangles de neutralisation versionnee."
+}

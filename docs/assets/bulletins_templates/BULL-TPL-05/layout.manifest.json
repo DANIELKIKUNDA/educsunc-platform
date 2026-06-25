@@ -1,0 +1,32 @@
+{
+  "template": "BULL-TPL-05",
+  "version": "2026.06.23-bull-tpl-05-v1",
+  "pages": [
+    {
+      "numeroPage": 1,
+      "formatPage": "A4-PORTRAIT",
+      "background": {
+        "id": "bull-tpl-05/background-master-neutralise",
+        "format": "PDF",
+        "description": "Fond maitre neutralise bulletin finaliste 4e humanites branches",
+        "neutralise": true
+      }
+    }
+  ],
+  "zones": [],
+  "tables": [
+    {
+      "id": "z_table_rows_window",
+      "page": 1,
+      "source": "structure.lignes",
+      "colonnes": [
+        "branche",
+        "s1_total",
+        "s2_total",
+        "total_general",
+        "repechage"
+      ],
+      "hauteurLigne": "FIXE"
+    }
+  ]
+}

@@ -4,5 +4,8 @@ import type { StatistiquesProclamationOutput } from './StatistiquesProclamationO
 export interface LigneSyntheseOutput {
   idClassePedagogique: string;
   libelleClasse: string;
+  idSectionScolaire?: string;
+  sectionCode?: string;
+  sectionLibelle?: string;
   statistiques: StatistiquesProclamationOutput;
 }

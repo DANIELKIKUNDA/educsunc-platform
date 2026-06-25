@@ -1,0 +1,8 @@
+{
+  "template": "BULL-TPL-06",
+  "backgroundId": "bull-tpl-06/background-master-neutralise",
+  "version": "2026.06.23-bull-tpl-06-neutralise-v1",
+  "sourcePdfRelativePath": "docs/assets/bulletins_sources/Bulletins MINEDUC 24-25 toutes sections par ordre alphabétique.pdf",
+  "statutPreparation": "NEUTRALISE_DISPONIBLE",
+  "commentaire": "Source 4e humanites finaliste retenue pour le bloc de fin, avec table domaines conservee."
+}

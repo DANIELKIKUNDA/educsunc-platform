@@ -242,6 +242,12 @@ test("attribue le responsable officiel d'une classe pedagogique primaire", async
     'Ecole Test',
     ModeExploitation.SYNC,
     'ET',
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
   );
   const annee = new AnneeScolaire(
     new AnneeScolaireId('annee-1'),
@@ -330,6 +336,12 @@ test('refuse un second responsable actif sur la meme classe pedagogique et la me
     'Ecole Test',
     ModeExploitation.SYNC,
     'ET',
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
   );
   const annee = new AnneeScolaire(
     new AnneeScolaireId('annee-1'),
@@ -413,6 +425,12 @@ test("refuse d'attribuer un responsable de classe a un utilisateur non enseignan
     'Ecole Test',
     ModeExploitation.SYNC,
     'ET',
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
   );
   const annee = new AnneeScolaire(
     new AnneeScolaireId('annee-1'),

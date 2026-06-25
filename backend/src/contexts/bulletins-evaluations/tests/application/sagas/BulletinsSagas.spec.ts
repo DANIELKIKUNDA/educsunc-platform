@@ -7,16 +7,22 @@ import { SagaGenerationBulletin } from 'contexts/bulletins-evaluations/applicati
 import type { BulletinEleveOutput } from 'contexts/bulletins-evaluations/application/dto/output/BulletinEleveOutput';
 import { CodeColonneBulletin } from 'contexts/bulletins-evaluations/domain/value-objects/CodeColonneBulletin';
 import { EtatBulletin } from 'contexts/bulletins-evaluations/domain/value-objects/EtatBulletin';
+import { TypeStructureEvaluation } from 'contexts/bulletins-evaluations/domain/value-objects/TypeStructureEvaluation';
 
 // Ce fichier couvre l'orchestration longue des sagas principales.
 test('la saga de generation enchaine recalcul, classement puis generation', async () => {
   const ordre: string[] = [];
   const sortieBulletin: BulletinEleveOutput = {
     idBulletinEleve: 'bulletin-1',
+    idEcole: 'ecole-1',
     idEleve: 'eleve-1',
     idInscriptionScolaire: 'inscription-1',
     idClassePedagogique: 'classe-1',
     idAnneeScolaire: 'annee-1',
+    idProgrammeNiveau: 'programme-1',
+    versionReferentielProgramme: 'version-ref-1',
+    typeStructureEvaluation: TypeStructureEvaluation.SEMESTRIEL,
+    templateDocumentaireSuggere: 'BULL-TPL-02',
     etatBulletin: EtatBulletin.GENERE,
     versionBulletin: 1,
     lignes: [],

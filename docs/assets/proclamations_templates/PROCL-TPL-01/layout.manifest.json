@@ -1,0 +1,18 @@
+{
+  "template": "PROCL-TPL-01",
+  "version": "1.0.0",
+  "pages": [
+    {
+      "numeroPage": 1,
+      "formatPage": "A4-PORTRAIT",
+      "backgroundId": "procl-page-1",
+      "role": "PAGE_1_CLASSEMENT"
+    },
+    {
+      "numeroPage": 2,
+      "formatPage": "A4-PORTRAIT",
+      "backgroundId": "procl-page-2",
+      "role": "PAGE_2_CLASSEMENT_ET_NON_CLASSES"
+    }
+  ]
+}

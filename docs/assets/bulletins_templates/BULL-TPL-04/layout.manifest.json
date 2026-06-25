@@ -1,0 +1,28 @@
+{
+  "template": "BULL-TPL-04",
+  "version": "2026.06.23-bull-tpl-04",
+  "pages": [
+    {
+      "numeroPage": 1,
+      "formatPage": "A4-PORTRAIT",
+      "background": {
+        "id": "bull-tpl-04/background-master-neutralise",
+        "format": "PDF",
+        "description": "Fond maitre neutralise bulletin enseignement special",
+        "neutralise": true
+      }
+    }
+  ],
+  "zones": [],
+  "tables": [
+    {
+      "id": "z_table_rows_window",
+      "page": 1,
+      "source": "structure.lignes",
+      "colonnes": [
+        "structure-speciale"
+      ],
+      "hauteurLigne": "FIXE"
+    }
+  ]
+}

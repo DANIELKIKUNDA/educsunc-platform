@@ -161,6 +161,7 @@ export function creerLigneBulletin(
     ordreAffichage: 1,
     estCalculable: true,
     aExamen: true,
+    mentionRepechage: undefined,
     ...overrides,
   });
 }

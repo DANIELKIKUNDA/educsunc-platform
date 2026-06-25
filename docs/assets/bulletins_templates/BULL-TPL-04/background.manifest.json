@@ -1,0 +1,8 @@
+{
+  "template": "BULL-TPL-04",
+  "backgroundId": "bull-tpl-04/background-master-neutralise",
+  "version": "2026.06.23-bull-tpl-04",
+  "sourcePdfRelativePath": "docs/assets/bulletins_sources/9.01_BULLETINS MECANIQUE GENERALE.pdf",
+  "statutPreparation": "NEUTRALISATION_EN_ATTENTE",
+  "commentaire": "Source speciale provisoire a confirmer pour le template enseignement special."
+}

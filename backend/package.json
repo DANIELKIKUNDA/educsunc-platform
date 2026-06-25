@@ -7,7 +7,9 @@
     "dev": "tsx watch src/main.ts",
     "build": "tsc -p tsconfig.json",
     "start": "tsx src/main.ts",
+    "bulletins:background:neutralize": "tsx src/scripts/bulletins/GenererBackgroundMasterNeutralise.ts",
     "db:migrate:referentiel": "tsx src/scripts/MigrerReferentielAcademique.ts",
+    "ecoles:backfill:informations-institutionnelles": "tsx src/scripts/MettreAJourInformationsInstitutionnellesEcoles.ts",
     "seed:sections-scolaires": "tsx ../scripts/seed/seed-sections-scolaires.ts",
     "seed:options-etudes": "tsx ../scripts/seed/seed-options-etudes.ts",
     "seed:classes-academiques": "tsx ../scripts/seed/seed-classes-academiques.ts",
@@ -29,6 +31,7 @@
   "dependencies": {
     "bullmq": "^5.77.6",
     "fastify": "^5.8.4",
+    "pdf-lib": "^1.17.1",
     "pg": "^8.20.0",
     "pino": "^10.3.1",
     "redis": "^6.0.0"

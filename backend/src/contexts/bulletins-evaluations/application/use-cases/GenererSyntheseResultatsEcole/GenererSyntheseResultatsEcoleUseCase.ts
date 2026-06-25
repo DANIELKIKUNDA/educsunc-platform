@@ -71,6 +71,9 @@ export class GenererSyntheseResultatsEcoleUseCase {
         return new LigneSyntheseResultatsClasse({
           idClassePedagogique: proclamation.obtenirIdClassePedagogique(),
           libelleClasse: classePedagogique.libelleClasse,
+          idSectionScolaire: classePedagogique.idSectionScolaire,
+          sectionCode: classePedagogique.sectionCode,
+          sectionLibelle: classePedagogique.sectionLibelle,
           statistiques: proclamation.obtenirStatistiquesProclamation()!,
         });
       }));

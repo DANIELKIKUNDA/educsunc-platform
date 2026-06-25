@@ -1,6 +1,7 @@
 import { BlocApplicationConduite } from '../../../domain/entities/BlocApplicationConduite';
 import { LigneBulletinEleve } from '../../../domain/entities/LigneBulletinEleve';
 import type { BulletinEleve } from '../../../domain/aggregates/BulletinEleve';
+import type { DepotFicheCotationEleveCours } from '../../../domain/repositories/DepotFicheCotationEleveCours';
 import type { DepotBulletinEleve } from '../../../domain/repositories/DepotBulletinEleve';
 import type { DepotResultatBulletinEleve } from '../../../domain/repositories/DepotResultatBulletinEleve';
 import type { GenererBulletinEleveInput } from '../../dto/input/GenererBulletinEleveInput';
@@ -17,6 +18,7 @@ import { ServiceAuditBulletin } from '../../services/ServiceAuditBulletin';
 import { ServiceCacheBulletin } from '../../services/ServiceCacheBulletin';
 import { ServiceGenerationBulletin } from '../../services/ServiceGenerationBulletin';
 import { ServiceProjectionLecture } from '../../services/ServiceProjectionLecture';
+import { estColonneTotalBulletin } from '../../../domain/value-objects/CodeColonneBulletin';
 
 // Ce use case orchestre la generation applicative d'un bulletin eleve.
 export class GenererBulletinEleveUseCase {
@@ -33,6 +35,7 @@ export class GenererBulletinEleveUseCase {
     private readonly bulletinPdfPort?: BulletinPdfPort,
     cachePort?: CacheBulletinPort,
     private readonly eventBusPort?: EventBusPort,
+    private readonly depotFicheCotation?: DepotFicheCotationEleveCours,
   ) {
     this.serviceCacheBulletin = new ServiceCacheBulletin(cachePort);
   }
@@ -99,6 +102,7 @@ export class GenererBulletinEleveUseCase {
         );
       }
       const cours = await this.lireCoursProgramme(referenceProgramme);
+      const fichesParCours = await this.lireFichesParCours(input.idEleve, input.idAnneeScolaire);
       const lignes = cours.map((coursProgramme, index) => new LigneBulletinEleve({
         idLigneBulletinEleve: `${bulletin.obtenirId()}-ligne-${index + 1}`,
         idReferentielCours: coursProgramme.idReferentielCours,
@@ -107,6 +111,28 @@ export class GenererBulletinEleveUseCase {
         estCalculable: coursProgramme.estCalculable,
         aExamen: coursProgramme.aExamen,
       }));
+      for (const ligne of lignes) {
+        const fiche = fichesParCours.get(ligne.obtenirIdReferentielCours());
+        if (!fiche) {
+          continue;
+        }
+
+        for (const cote of fiche.obtenirCotesColonnes()) {
+          const codeColonne = cote.obtenirCodeColonne();
+          ligne.definirMaximum(codeColonne, cote.obtenirMaximumColonne());
+
+          if (estColonneTotalBulletin(codeColonne)) {
+            ligne.definirTotal(codeColonne, cote.obtenirCoteObtenue());
+          } else {
+            ligne.definirCote(codeColonne, cote.obtenirCoteObtenue());
+          }
+
+          const style = cote.obtenirStyleAffichage();
+          if (style !== undefined) {
+            ligne.definirStyle(codeColonne, style);
+          }
+        }
+      }
       const blocs = resultat.obtenirApplicationsPeriodes().map((application, index) => new BlocApplicationConduite({
         idBlocApplicationConduite: `${bulletin.obtenirId()}-bloc-${index + 1}`,
         codePeriode: application.obtenirCodePeriode(),
@@ -202,5 +228,17 @@ export class GenererBulletinEleveUseCase {
           : 'Les cours du programme niveau rattache au bulletin sont introuvables.',
       );
     }
+  }
+
+  private async lireFichesParCours(
+    idEleve: string,
+    idAnneeScolaire: string,
+  ): Promise<Map<string, Awaited<ReturnType<NonNullable<DepotFicheCotationEleveCours['listerParEleve']>>>[number]>> {
+    if (!this.depotFicheCotation) {
+      return new Map();
+    }
+
+    const fiches = await this.depotFicheCotation.listerParEleve(idEleve, idAnneeScolaire);
+    return new Map(fiches.map((fiche) => [fiche.obtenirIdReferentielCours(), fiche]));
   }
 }

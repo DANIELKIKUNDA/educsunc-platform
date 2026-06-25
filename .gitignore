@@ -19,6 +19,7 @@ coverage/
 .vite/
 .turbo/
 .tmp/
+tmp/
 backend/.tmp/
 
 # Fichiers systeme

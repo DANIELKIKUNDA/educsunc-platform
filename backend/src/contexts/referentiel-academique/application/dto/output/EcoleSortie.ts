@@ -14,6 +14,9 @@ export interface EcoleSortie {
   adresse?: string;
   telephone?: string;
   email?: string;
+  provinceEducationnelle?: string;
+  ville?: string;
+  communeOuTerritoire?: string;
   creePar?: string;
   modifieLe?: string;
   modifiePar?: string;

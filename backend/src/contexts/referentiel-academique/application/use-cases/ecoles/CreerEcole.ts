@@ -82,6 +82,9 @@ export class CreerEcole implements UseCase<CreerEcoleEntree, SortieCreerEcole> {
       entreeValidee.adresse,
       entreeValidee.telephone,
       entreeValidee.email,
+      entreeValidee.provinceEducationnelle,
+      entreeValidee.ville,
+      entreeValidee.communeOuTerritoire,
       entreeValidee.creePar,
       true,
       horodatageCreation,
@@ -111,6 +114,9 @@ export class CreerEcole implements UseCase<CreerEcoleEntree, SortieCreerEcole> {
       adresse: this.validerTexteOptionnel(entree.adresse),
       telephone: this.validerTexteOptionnel(entree.telephone),
       email: this.validerTexteOptionnel(entree.email),
+      provinceEducationnelle: this.validerTexteOptionnel(entree.provinceEducationnelle),
+      ville: this.validerTexteOptionnel(entree.ville),
+      communeOuTerritoire: this.validerTexteOptionnel(entree.communeOuTerritoire),
     };
   }
 

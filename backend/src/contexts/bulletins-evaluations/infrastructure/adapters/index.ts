@@ -13,3 +13,4 @@ export * from './BulletinConcurrencyAdapter';
 export * from './BulletinProjectionAdapter';
 export * from './BulletinStorageAdapter';
 export * from './BulletinNotificationAdapter';
+export * from './DocumentAssetsEcoleAdapter';

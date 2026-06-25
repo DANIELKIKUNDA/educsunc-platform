@@ -62,6 +62,7 @@ Permettre a l'equipe systeme d'administrer le cycle de vie d'une ecole dans EduS
 - `referentiel.write`
   - creer une ecole
   - changer son mode d'exploitation
+  - mettre a jour ses informations institutionnelles
   - renommer une ecole
   - activer une ecole
   - desactiver une ecole
@@ -80,6 +81,7 @@ Permettre a l'equipe systeme d'administrer le cycle de vie d'une ecole dans EduS
 - `ConsulterEcole`
 - `ListerEcolesParOrganisation`
 - `ChangerModeExploitationEcole`
+- `MettreAJourInformationsInstitutionnellesEcole`
 - `RenommerEcole`
 - `ActiverEcole`
 - `DesactiverEcole`
@@ -91,6 +93,7 @@ Permettre a l'equipe systeme d'administrer le cycle de vie d'une ecole dans EduS
 - `GET /api/ecoles/:id`
 - `GET /api/organisations/:id/ecoles`
 - `POST /api/ecoles/:id/changer-mode`
+- `PATCH /api/ecoles/:id/informations-institutionnelles`
 - `PATCH /api/ecoles/:id/renommer`
 - `POST /api/ecoles/:id/activer`
 - `POST /api/ecoles/:id/desactiver`
@@ -128,6 +131,7 @@ En sortie de ce workflow, le systeme doit pouvoir :
 - creer une nouvelle ecole rattachee a une organisation valide
 - exposer une lecture fiable des ecoles existantes
 - modifier le mode ou le nom d'une ecole
+- completer ou corriger l'identite institutionnelle d'une ecole existante
 - activer ou desactiver une ecole existante
 - tracer l'acteur reel des mutations sans laisser le frontend le declarer librement
 
@@ -143,6 +147,14 @@ En sortie de ce workflow, le systeme doit pouvoir :
 - `Ecole`
 - `Organisation`
 - `ModeExploitation`
+- informations institutionnelles d'ecole :
+  - `sigle`
+  - `adresse`
+  - `telephone`
+  - `email`
+  - `provinceEducationnelle`
+  - `ville`
+  - `communeOuTerritoire`
 
 ### Sources backend
 
@@ -158,6 +170,7 @@ En sortie de ce workflow, le systeme doit pouvoir :
   - [ConsulterEcole.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/referentiel-academique/application/use-cases/ecoles/ConsulterEcole.ts)
   - [ListerEcolesParOrganisation.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/referentiel-academique/application/use-cases/ecoles/ListerEcolesParOrganisation.ts)
   - [ChangerModeExploitationEcole.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/referentiel-academique/application/use-cases/ecoles/ChangerModeExploitationEcole.ts)
+  - [MettreAJourInformationsInstitutionnellesEcole.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/referentiel-academique/application/use-cases/ecoles/MettreAJourInformationsInstitutionnellesEcole.ts)
   - [RenommerEcole.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/referentiel-academique/application/use-cases/ecoles/RenommerEcole.ts)
   - [ActiverEcole.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/referentiel-academique/application/use-cases/ecoles/ActiverEcole.ts)
   - [DesactiverEcole.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/referentiel-academique/application/use-cases/ecoles/DesactiverEcole.ts)
@@ -173,6 +186,11 @@ En sortie de ce workflow, le systeme doit pouvoir :
 - il ne doit pas etre projete comme une simple page reservee a `ADMINISTRATEUR_ECOLE`
 - son UI doit assumer un acteur systeme et une gouvernance structurelle
 - le frontend ne doit plus envoyer `creePar` ni `modifiePar` dans les payloads de ce workflow
+- un script backend de backfill existe maintenant pour les ecoles historiques :
+  - [MettreAJourInformationsInstitutionnellesEcoles.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/scripts/MettreAJourInformationsInstitutionnellesEcoles.ts)
+  - exemple de donnees : [exemple-informations-institutionnelles-ecoles.json](/C:/Users/MON%20PC/Documents/EducSyn/docs/assets/administration-ecole/exemple-informations-institutionnelles-ecoles.json)
+  - lot multi-ecoles : [lot-informations-institutionnelles-ecoles.template.json](/C:/Users/MON%20PC/Documents/EducSyn/docs/assets/administration-ecole/lot-informations-institutionnelles-ecoles.template.json)
+  - mode operatoire : [README-backfill-informations-institutionnelles-ecoles.md](/C:/Users/MON%20PC/Documents/EducSyn/docs/assets/administration-ecole/README-backfill-informations-institutionnelles-ecoles.md)
 
 ### Notes de verrouillage
 

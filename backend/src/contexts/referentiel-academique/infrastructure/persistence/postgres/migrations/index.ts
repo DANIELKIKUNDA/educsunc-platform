@@ -10,6 +10,7 @@ export * from './Migration_008_AjoutClassificationLignesProgramme';
 export * from './Migration_009_ReglesFraisClasses';
 export * from './Migration_010_CategorieTechniqueOptions';
 export * from './Migration_011_ResponsabilitesClassesPedagogiques';
+export * from './Migration_012_LocalisationInstitutionnelleEcoles';
 
 import { MigrationPostgresReferentielAcademique } from './MigrationPostgresReferentielAcademique';
 import { migration001TablesGlobalesReferentielAcademique } from './Migration_001_TablesGlobalesReferentielAcademique';
@@ -23,6 +24,7 @@ import { migration008AjoutClassificationLignesProgramme } from './Migration_008_
 import { migration009ReglesFraisClasses } from './Migration_009_ReglesFraisClasses';
 import { migration010CategorieTechniqueOptions } from './Migration_010_CategorieTechniqueOptions';
 import { migration011ResponsabilitesClassesPedagogiques } from './Migration_011_ResponsabilitesClassesPedagogiques';
+import { migration012LocalisationInstitutionnelleEcoles } from './Migration_012_LocalisationInstitutionnelleEcoles';
 
 // Cette collection ordonne les migrations PostgreSQL du BC Referentiel Academique.
 export const migrationsPostgresReferentielAcademique: readonly MigrationPostgresReferentielAcademique[] = [
@@ -37,4 +39,5 @@ export const migrationsPostgresReferentielAcademique: readonly MigrationPostgres
   migration009ReglesFraisClasses,
   migration010CategorieTechniqueOptions,
   migration011ResponsabilitesClassesPedagogiques,
+  migration012LocalisationInstitutionnelleEcoles,
 ];

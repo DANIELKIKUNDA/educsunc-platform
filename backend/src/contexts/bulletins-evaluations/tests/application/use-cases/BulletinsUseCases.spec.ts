@@ -25,6 +25,7 @@ import { CodePeriodeSimple } from 'contexts/bulletins-evaluations/domain/value-o
 import { EtatProclamation } from 'contexts/bulletins-evaluations/domain/value-objects/EtatProclamation';
 import { HistoriqueModificationCote } from 'contexts/bulletins-evaluations/domain/entities/HistoriqueModificationCote';
 import { SexeEleve } from 'contexts/bulletins-evaluations/domain/value-objects/SexeEleve';
+import { TypeStructureEvaluation } from 'contexts/bulletins-evaluations/domain/value-objects/TypeStructureEvaluation';
 import { TypeProclamation } from 'contexts/bulletins-evaluations/domain/value-objects/TypeProclamation';
 import { TypeSyntheseResultats } from 'contexts/bulletins-evaluations/domain/value-objects/TypeSyntheseResultats';
 import {
@@ -118,6 +119,7 @@ test('les use cases orchestrent transaction, projection et workflow offline', as
     undefined,
     new CacheMemoire(),
     new EventBusMemoire(),
+    depotFiche,
   );
   const sortieBulletin = await generationUseCase.executer({
     idEleve: 'eleve-1',
@@ -129,6 +131,8 @@ test('les use cases orchestrent transaction, projection et workflow offline', as
   });
   assert.equal(sortieBulletin.idEleve, 'eleve-1');
   assert.equal(sortieBulletin.lignes.length, 1);
+  assert.equal(sortieBulletin.lignes[0]?.cotesColonnes[CodeColonneBulletin.P1], 8);
+  assert.equal(sortieBulletin.lignes[0]?.maximaColonnes[CodeColonneBulletin.P1], 10);
   assert.deepEqual(referentielMemoire.derniereReferenceProgrammeConsultee, {
     idProgrammeNiveau: 'programme-1',
     idEcole: 'ecole-1',
@@ -183,10 +187,15 @@ test('la consultation de bulletin reapplique le controle local permission + peri
       async executer() {
         return {
           idBulletinEleve: 'bulletin-1',
+          idEcole: 'ecole-1',
           idEleve: 'eleve-1',
           idInscriptionScolaire: 'inscription-1',
           idClassePedagogique: 'classe-1',
           idAnneeScolaire: 'annee-1',
+          idProgrammeNiveau: 'programme-1',
+          versionReferentielProgramme: 'version-ref-1',
+          typeStructureEvaluation: TypeStructureEvaluation.SEMESTRIEL,
+          templateDocumentaireSuggere: 'BULL-TPL-02',
           etatBulletin: 'GENERE' as never,
           versionBulletin: 1,
           lignes: [],
@@ -238,10 +247,15 @@ test("la consultation de l'historique recharge d'abord le bulletin puis reappliq
       async executerParId(idBulletinEleve: string) {
         return {
           idBulletinEleve,
+          idEcole: 'ecole-1',
           idEleve: 'eleve-1',
           idInscriptionScolaire: 'inscription-1',
           idClassePedagogique: 'classe-1',
           idAnneeScolaire: 'annee-1',
+          idProgrammeNiveau: 'programme-1',
+          versionReferentielProgramme: 'version-ref-1',
+          typeStructureEvaluation: TypeStructureEvaluation.SEMESTRIEL,
+          templateDocumentaireSuggere: 'BULL-TPL-02',
           etatBulletin: 'GENERE' as never,
           versionBulletin: 2,
           lignes: [],
@@ -1324,6 +1338,9 @@ test("l'initialisation et la generation d'une synthese utilisent les proclamatio
         idClassePedagogique,
         libelleClasse: idClassePedagogique === 'classe-1' ? '1re A' : '2e B',
         idEcole: 'ecole-1',
+        idSectionScolaire: idClassePedagogique === 'classe-1' ? 'section-secondaire' : 'section-primaire',
+        sectionCode: idClassePedagogique === 'classe-1' ? 'SECONDAIRE' : 'PRIMAIRE',
+        sectionLibelle: idClassePedagogique === 'classe-1' ? 'Secondaire' : 'Primaire',
       };
     },
     async verifierAbandon() { return null; },
@@ -1384,10 +1401,28 @@ test("l'initialisation et la generation d'une synthese utilisent les proclamatio
   });
 
   assert.deepEqual(
-    sortie.lignes.map((ligne) => ({ idClassePedagogique: ligne.idClassePedagogique, libelleClasse: ligne.libelleClasse })),
+    sortie.lignes.map((ligne) => ({
+      idClassePedagogique: ligne.idClassePedagogique,
+      libelleClasse: ligne.libelleClasse,
+      idSectionScolaire: ligne.idSectionScolaire,
+      sectionCode: ligne.sectionCode,
+      sectionLibelle: ligne.sectionLibelle,
+    })),
     [
-      { idClassePedagogique: 'classe-1', libelleClasse: '1re A' },
-      { idClassePedagogique: 'classe-2', libelleClasse: '2e B' },
+      {
+        idClassePedagogique: 'classe-1',
+        libelleClasse: '1re A',
+        idSectionScolaire: 'section-secondaire',
+        sectionCode: 'SECONDAIRE',
+        sectionLibelle: 'Secondaire',
+      },
+      {
+        idClassePedagogique: 'classe-2',
+        libelleClasse: '2e B',
+        idSectionScolaire: 'section-primaire',
+        sectionCode: 'PRIMAIRE',
+        sectionLibelle: 'Primaire',
+      },
     ],
   );
   assert.equal(sortie.totauxEcole?.classesTotal, 2);
@@ -1623,6 +1658,9 @@ test("la generation d'une synthese verifie localement le droit proclamations.gen
           idClassePedagogique: 'classe-1',
           libelleClasse: '1re A',
           idEcole: 'ecole-1',
+          idSectionScolaire: 'section-secondaire',
+          sectionCode: 'SECONDAIRE',
+          sectionLibelle: 'Secondaire',
         };
       },
       async verifierAbandon() { return null; },
@@ -1692,6 +1730,9 @@ test("la generation d'une synthese refuse un utilisateur non autorise localement
           idClassePedagogique: 'classe-1',
           libelleClasse: '1re A',
           idEcole: 'ecole-1',
+          idSectionScolaire: 'section-secondaire',
+          sectionCode: 'SECONDAIRE',
+          sectionLibelle: 'Secondaire',
         };
       },
       async verifierAbandon() { return null; },

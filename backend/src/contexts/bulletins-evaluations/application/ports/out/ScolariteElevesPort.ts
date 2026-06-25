@@ -13,6 +13,12 @@ export interface EleveBulletinDTO {
   nomComplet: string;
   sexe: SexeEleve;
   idEcole: string;
+  matricule?: string;
+  nom?: string;
+  postNom?: string;
+  prenom?: string;
+  dateNaissance?: string;
+  lieuNaissance?: string;
 }
 
 export interface InscriptionBulletinDTO {
@@ -26,6 +32,9 @@ export interface ClassePedagogiqueBulletinDTO {
   idClassePedagogique: string;
   libelleClasse: string;
   idEcole: string;
+  idSectionScolaire?: string;
+  sectionCode?: string;
+  sectionLibelle?: string;
 }
 
 export interface AbandonEleveDTO {

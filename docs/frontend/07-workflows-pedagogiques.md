@@ -1523,7 +1523,11 @@ En sortie de PED-04, le backend doit produire :
   - contexte colonne
 - la revalidation locale de securite doit reussir sur toutes les classes consolidees
 - la persistance composee de l'application est desormais reelle pour la synthese
-- le PDF de synthese est reel techniquement, meme si sa richesse documentaire peut encore evoluer
+- le PDF de synthese est maintenant un vrai document structure :
+  - regroupement par section
+  - tableau reel par classes
+  - total section
+  - total ecole
 
 ### Evenements importants
 
@@ -1539,6 +1543,9 @@ En sortie de PED-04, le backend doit produire :
 - donnees reelles de `scolarite-eleves` / referentiel amont pour les classes :
   - `idClassePedagogique`
   - `libelleClasse`
+  - `idSectionScolaire`
+  - `sectionCode`
+  - `sectionLibelle`
 
 ### Sources backend
 
@@ -1572,6 +1579,7 @@ En sortie de PED-04, le backend doit produire :
   - bon perimetre ecole + classe + annee scolaire
 - `PED-04` est un workflow aval direct de `PED-03`
 - le backend ne consolide plus aucune classe fictive
+- la synthese transporte maintenant aussi le perimetre sectionnel reel de chaque classe
 
 Projections reelles exposees au frontend :
 
@@ -1588,12 +1596,12 @@ Projections reelles exposees au frontend :
 Limites connues du backend actuel pour PED-04 :
 
 - pas de workflow applicatif distinct pour `valider`, `verrouiller`, `annuler` une synthese
-- le PDF de synthese est reel, mais sa richesse documentaire pourra encore evoluer
+- pas encore de template documentaire calibre pixel par pixel sur un modele source officiel unique
 
 ### Notes de verrouillage
 
 - Le cycle `valider` / `verrouiller` / `annuler` doit-il rester latent dans l'agregat ou ouvrir plus tard de vrais workflows applicatifs ?
-- Le PDF de synthese doit-il devenir un document plus riche visuellement ou la forme actuelle suffit-elle pour le besoin metier ?
+- Le PDF de synthese doit-il un jour etre cale exactement sur un package template officiel source comme les autres documents ?
 
 ### Statut de figement
 

@@ -1,0 +1,8 @@
+{
+  "template": "BULL-TPL-03",
+  "backgroundId": "bull-tpl-03/background-master-neutralise",
+  "version": "2026.06.23-bull-tpl-03-neutralise-v1",
+  "sourcePdfRelativePath": "docs/assets/bulletins_sources/Bulletindetcc.pdf",
+  "statutPreparation": "NEUTRALISE_DISPONIBLE",
+  "commentaire": "Source semestrielle domaines retenue et neutralisee pour la variante par domaines."
+}

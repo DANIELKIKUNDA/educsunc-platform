@@ -21,21 +21,28 @@ class ReferentielAcademiqueLectureRepositoryMemoire
 
     return {
       idProgrammeNiveau: referenceProgramme.idProgrammeNiveau,
+      idClasseAcademique: 'classe-acad-1',
       typeStructureEvaluation: TypeStructureEvaluation.SEMESTRIEL,
       versionReferentielProgramme: 'version-ref-1',
       statutProgrammeNiveau: 'VALIDE' as const,
+      estClasseEXETAT: true,
+      estClasseFinaliste: true,
       lignes: [
         {
           idReferentielCours: 'cours-2',
           ordreAffichage: 2,
           estCalculable: false,
           aExamen: false,
+          domaine: 'Langues',
+          sousDomaine: 'Francais',
         },
         {
           idReferentielCours: 'cours-1',
           ordreAffichage: 1,
           estCalculable: true,
           aExamen: true,
+          domaine: 'Sciences',
+          sousDomaine: 'Maths',
         },
       ],
     };
@@ -61,6 +68,29 @@ class ReferentielAcademiqueLectureRepositoryMemoire
 
     return cours[idReferentielCours] ?? null;
   }
+
+  public async consulterEcole(idEcole: string) {
+    return {
+      id: idEcole,
+      code: 'ECOLE-001',
+      nom: 'College Test',
+      sigle: 'CT',
+      adresse: 'Adresse Test',
+      telephone: '+243000000000',
+      email: 'contact@test.cd',
+      provinceEducationnelle: 'Haut-Katanga 1',
+      ville: 'Lubumbashi',
+      communeOuTerritoire: 'Lubumbashi',
+    };
+  }
+
+  public async consulterAnneeScolaire(idAnneeScolaire: string) {
+    return {
+      id: idAnneeScolaire,
+      code: '2025-2026',
+      libelle: '2025 - 2026',
+    };
+  }
 }
 
 test('l adaptateur referentiel retourne le programme local et ses cours reels', async () => {
@@ -77,9 +107,12 @@ test('l adaptateur referentiel retourne le programme local et ses cours reels', 
   assert.deepEqual(repository.derniereReferenceProgramme, referenceProgramme);
   assert.deepEqual(programme, {
     idProgrammeNiveau: 'programme-1',
+    idClasseAcademique: 'classe-acad-1',
     typeStructureEvaluation: TypeStructureEvaluation.SEMESTRIEL,
     versionReferentielProgramme: 'version-ref-1',
     statutProgrammeNiveau: 'VALIDE',
+    estClasseEXETAT: true,
+    estClasseFinaliste: true,
   });
   assert.deepEqual(cours, [
     {
@@ -89,6 +122,8 @@ test('l adaptateur referentiel retourne le programme local et ses cours reels', 
       ordreAffichage: 1,
       estCalculable: true,
       aExamen: true,
+      domaine: 'Sciences',
+      sousDomaine: 'Maths',
     },
     {
       idReferentielCours: 'cours-2',
@@ -97,6 +132,8 @@ test('l adaptateur referentiel retourne le programme local et ses cours reels', 
       ordreAffichage: 2,
       estCalculable: false,
       aExamen: false,
+      domaine: 'Langues',
+      sousDomaine: 'Francais',
     },
   ]);
 });
@@ -139,4 +176,31 @@ test('l adaptateur referentiel derive les colonnes autorisees selon la structure
     CodeColonneBulletin.TOTAL_T3,
     CodeColonneBulletin.TOTAL_GENERAL,
   ]);
+});
+
+test('l adaptateur referentiel expose aussi l ecole et l annee scolaire documentaires', async () => {
+  const adapter = new ReferentielAcademiqueAdapter(
+    new ReferentielAcademiqueLectureRepositoryMemoire(),
+  );
+
+  const ecole = await adapter.consulterEcole?.('ecole-1');
+  const annee = await adapter.consulterAnneeScolaire?.('annee-1');
+
+  assert.deepEqual(ecole, {
+    id: 'ecole-1',
+    code: 'ECOLE-001',
+    nom: 'College Test',
+    sigle: 'CT',
+    adresse: 'Adresse Test',
+    telephone: '+243000000000',
+    email: 'contact@test.cd',
+    provinceEducationnelle: 'Haut-Katanga 1',
+    ville: 'Lubumbashi',
+    communeOuTerritoire: 'Lubumbashi',
+  });
+  assert.deepEqual(annee, {
+    id: 'annee-1',
+    code: '2025-2026',
+    libelle: '2025 - 2026',
+  });
 });

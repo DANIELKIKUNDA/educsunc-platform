@@ -6,3 +6,4 @@ export * from './ChangerModeExploitationEcole';
 export * from './ConsulterEcole';
 export * from './ListerEcoles';
 export * from './ListerEcolesParOrganisation';
+export * from './MettreAJourInformationsInstitutionnellesEcole';

@@ -1,0 +1,25 @@
+{
+  "template": "BULL-TPL-05",
+  "version": "2026.06.23-bull-tpl-05-neutralisation-v1",
+  "sourcePageIndex": 37,
+  "rectangles": [
+    { "id": "top-id-document", "x": 0.155, "y": 0.093, "largeur": 0.11, "hauteur": 0.022 },
+    { "id": "top-province", "x": 0.315, "y": 0.105, "largeur": 0.485, "hauteur": 0.022 },
+    { "id": "top-ville", "x": 0.155, "y": 0.129, "largeur": 0.645, "hauteur": 0.022 },
+    { "id": "top-commune", "x": 0.255, "y": 0.154, "largeur": 0.545, "hauteur": 0.022 },
+    { "id": "top-ecole", "x": 0.145, "y": 0.178, "largeur": 0.655, "hauteur": 0.022 },
+    { "id": "top-code-ecole", "x": 0.205, "y": 0.203, "largeur": 0.13, "hauteur": 0.022 },
+    { "id": "eleve-identite", "x": 0.14, "y": 0.228, "largeur": 0.605, "hauteur": 0.022 },
+    { "id": "eleve-sexe", "x": 0.86, "y": 0.228, "largeur": 0.075, "hauteur": 0.022 },
+    { "id": "eleve-lieu-naissance", "x": 0.16, "y": 0.253, "largeur": 0.455, "hauteur": 0.022 },
+    { "id": "eleve-date-naissance", "x": 0.695, "y": 0.253, "largeur": 0.195, "hauteur": 0.022 },
+    { "id": "eleve-classe", "x": 0.145, "y": 0.278, "largeur": 0.655, "hauteur": 0.022 },
+    { "id": "eleve-numero-permanent", "x": 0.205, "y": 0.303, "largeur": 0.145, "hauteur": 0.022 },
+    { "id": "titre-annee-scolaire", "x": 0.72, "y": 0.332, "largeur": 0.18, "hauteur": 0.024 },
+    { "id": "tableau-corps", "x": 0.12, "y": 0.426, "largeur": 0.815, "hauteur": 0.37 },
+    { "id": "synthese-application", "x": 0.73, "y": 0.879, "largeur": 0.17, "hauteur": 0.024 },
+    { "id": "synthese-conduite", "x": 0.73, "y": 0.904, "largeur": 0.17, "hauteur": 0.024 },
+    { "id": "signature-ville-date", "x": 0.25, "y": 0.928, "largeur": 0.55, "hauteur": 0.028 },
+    { "id": "cachet-ecole", "x": 0.64, "y": 0.935, "largeur": 0.19, "hauteur": 0.065 }
+  ]
+}

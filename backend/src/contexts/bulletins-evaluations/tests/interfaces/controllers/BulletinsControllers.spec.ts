@@ -5,6 +5,7 @@ import type { ConsulterHistoriqueBulletinUseCase } from 'contexts/bulletins-eval
 import type { GenererBulletinEleveUseCase } from 'contexts/bulletins-evaluations/application/use-cases/GenererBulletinEleve/GenererBulletinEleveUseCase';
 import { BulletinsController } from 'contexts/bulletins-evaluations/interfaces/http/controllers/BulletinsController';
 import { EtatBulletin } from 'contexts/bulletins-evaluations/domain/value-objects/EtatBulletin';
+import { TypeStructureEvaluation } from 'contexts/bulletins-evaluations/domain/value-objects/TypeStructureEvaluation';
 import { PdfPortMemoire } from '../../mocks/BulletinsEvaluationsMocks';
 
 // Ce fichier couvre les controllers HTTP principaux du BC.
@@ -16,10 +17,15 @@ test('le controller bulletins valide, appelle les cas d usage et presente les so
       async executer() {
         return {
           idBulletinEleve: 'bulletin-1',
+          idEcole: 'ecole-1',
           idEleve: 'eleve-1',
           idInscriptionScolaire: 'inscription-1',
           idClassePedagogique: 'classe-1',
           idAnneeScolaire: 'annee-1',
+          idProgrammeNiveau: 'programme-1',
+          versionReferentielProgramme: 'version-ref-1',
+          typeStructureEvaluation: TypeStructureEvaluation.SEMESTRIEL,
+          templateDocumentaireSuggere: 'BULL-TPL-02',
           etatBulletin: EtatBulletin.GENERE,
           versionBulletin: 1,
           lignes: [],
@@ -32,10 +38,15 @@ test('le controller bulletins valide, appelle les cas d usage et presente les so
         consultationEntree = entree as Record<string, unknown>;
         return {
           idBulletinEleve: 'bulletin-1',
+          idEcole: 'ecole-1',
           idEleve: 'eleve-1',
           idInscriptionScolaire: 'inscription-1',
           idClassePedagogique: 'classe-1',
           idAnneeScolaire: 'annee-1',
+          idProgrammeNiveau: 'programme-1',
+          versionReferentielProgramme: 'version-ref-1',
+          typeStructureEvaluation: TypeStructureEvaluation.SEMESTRIEL,
+          templateDocumentaireSuggere: 'BULL-TPL-02',
           etatBulletin: EtatBulletin.GENERE,
           versionBulletin: 1,
           lignes: [],

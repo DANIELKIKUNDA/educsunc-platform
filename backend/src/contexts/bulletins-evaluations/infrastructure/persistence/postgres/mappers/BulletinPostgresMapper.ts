@@ -6,6 +6,7 @@ import type { BulletinEleve } from 'contexts/bulletins-evaluations/domain/aggreg
 import type { BlocApplicationConduite } from 'contexts/bulletins-evaluations/domain/entities/BlocApplicationConduite';
 import type { HistoriqueGenerationBulletin } from 'contexts/bulletins-evaluations/domain/entities/HistoriqueGenerationBulletin';
 import type { LigneBulletinEleve } from 'contexts/bulletins-evaluations/domain/entities/LigneBulletinEleve';
+import { TypeStructureEvaluation } from 'contexts/bulletins-evaluations/domain/value-objects/TypeStructureEvaluation';
 
 // Ce fichier centralise le mapping PostgreSQL des bulletins et de leur historique.
 export class BulletinPostgresMapper {
@@ -17,8 +18,10 @@ export class BulletinPostgresMapper {
       ordreAffichage: ligne.obtenirOrdreAffichage(),
       estCalculable: ligne.obtenirEstCalculable(),
       aExamen: ligne.obtenirAExamen(),
+      mentionRepechage: ligne.obtenirMentionRepechage(),
       cotesColonnes: ligne.obtenirCotesColonnes(),
       totauxColonnes: ligne.obtenirTotauxColonnes(),
+      maximaColonnes: ligne.obtenirMaximaColonnes(),
       stylesColonnes: ligne.obtenirStylesColonnes(),
     };
   }
@@ -46,12 +49,21 @@ export class BulletinPostgresMapper {
 
   // Cette methode transforme l'agregat bulletin en read model complet.
   public static versReadModel(bulletin: BulletinEleve): BulletinEleveReadModel {
+    const typeStructureEvaluation = bulletin.obtenirTypeStructureEvaluation();
+
     return {
       idBulletinEleve: bulletin.obtenirId(),
+      idEcole: bulletin.obtenirIdEcole(),
       idEleve: String(Reflect.get(bulletin, 'idEleve') ?? ''),
       idInscriptionScolaire: String(Reflect.get(bulletin, 'idInscriptionScolaire') ?? ''),
       idClassePedagogique: String(Reflect.get(bulletin, 'idClassePedagogique') ?? ''),
       idAnneeScolaire: String(Reflect.get(bulletin, 'idAnneeScolaire') ?? ''),
+      idProgrammeNiveau: bulletin.obtenirIdProgrammeNiveau(),
+      versionReferentielProgramme: bulletin.obtenirVersionReferentielProgramme(),
+      typeStructureEvaluation,
+      templateDocumentaireSuggere: typeStructureEvaluation === TypeStructureEvaluation.TRIMESTRIEL
+        ? 'BULL-TPL-01'
+        : 'BULL-TPL-02',
       etatBulletin: bulletin.obtenirEtatBulletin(),
       versionBulletin: bulletin.obtenirVersionBulletin(),
       lignes: bulletin.obtenirLignesBulletin().map((ligne) => this.versLigne(ligne)),

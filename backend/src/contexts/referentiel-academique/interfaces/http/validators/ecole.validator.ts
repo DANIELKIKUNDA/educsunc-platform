@@ -4,6 +4,7 @@ import { ConsulterEcoleEntree } from '../../../application/dto/input/ConsulterEc
 import { CreerEcoleEntree } from '../../../application/dto/input/CreerEcoleEntree';
 import { DesactiverEcoleEntree } from '../../../application/dto/input/DesactiverEcoleEntree';
 import { ListerEcolesParOrganisationEntree } from '../../../application/dto/input/ListerEcolesParOrganisationEntree';
+import { MettreAJourInformationsInstitutionnellesEcoleEntree } from '../../../application/dto/input/MettreAJourInformationsInstitutionnellesEcoleEntree';
 import { RenommerEcoleEntree } from '../../../application/dto/input/RenommerEcoleEntree';
 import type { Pagination } from '../../../../../shared/application/Pagination';
 import { ModeExploitation } from '../../../domain/value-objects/ModeExploitation';
@@ -56,6 +57,18 @@ export class ValidateurEcoleHttp {
       email: OutilsValidationHttpReferentielAcademique.lireChaineOptionnelle(
         donnees,
         'email',
+      ),
+      provinceEducationnelle: OutilsValidationHttpReferentielAcademique.lireChaineOptionnelle(
+        donnees,
+        'provinceEducationnelle',
+      ),
+      ville: OutilsValidationHttpReferentielAcademique.lireChaineOptionnelle(
+        donnees,
+        'ville',
+      ),
+      communeOuTerritoire: OutilsValidationHttpReferentielAcademique.lireChaineOptionnelle(
+        donnees,
+        'communeOuTerritoire',
       ),
     };
   }
@@ -174,6 +187,40 @@ export class ValidateurEcoleHttp {
     };
   }
 
+  // Cette methode valide la requete HTTP de mise a jour des informations institutionnelles d'une ecole.
+  public static validerMiseAJourInformationsInstitutionnelles(
+    parametres: unknown,
+    corps: unknown,
+    modifiePar: string,
+  ): MettreAJourInformationsInstitutionnellesEcoleEntree {
+    const donneesParametres = OutilsValidationHttpReferentielAcademique.obtenirObjet(
+      parametres,
+      'parametres',
+    );
+    const donneesCorps = OutilsValidationHttpReferentielAcademique.obtenirObjet(corps, 'corps');
+
+    return {
+      idEcole: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
+        donneesParametres,
+        'id',
+      ),
+      modifiePar,
+      sigle: this.lireChaineOptionnelleSiPresente(donneesCorps, 'sigle'),
+      adresse: this.lireChaineOptionnelleSiPresente(donneesCorps, 'adresse'),
+      telephone: this.lireChaineOptionnelleSiPresente(donneesCorps, 'telephone'),
+      email: this.lireChaineOptionnelleSiPresente(donneesCorps, 'email'),
+      provinceEducationnelle: this.lireChaineOptionnelleSiPresente(
+        donneesCorps,
+        'provinceEducationnelle',
+      ),
+      ville: this.lireChaineOptionnelleSiPresente(donneesCorps, 'ville'),
+      communeOuTerritoire: this.lireChaineOptionnelleSiPresente(
+        donneesCorps,
+        'communeOuTerritoire',
+      ),
+    };
+  }
+
   // Cette methode valide la requete HTTP d'activation d'une ecole.
   public static validerActivation(
     parametres: unknown,
@@ -210,5 +257,16 @@ export class ValidateurEcoleHttp {
       ),
       modifiePar,
     };
+  }
+
+  private static lireChaineOptionnelleSiPresente(
+    donnees: Record<string, unknown>,
+    cle: string,
+  ): string | undefined {
+    if (!Object.prototype.hasOwnProperty.call(donnees, cle)) {
+      return undefined;
+    }
+
+    return OutilsValidationHttpReferentielAcademique.lireChaineOptionnelle(donnees, cle);
   }
 }

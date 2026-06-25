@@ -1,0 +1,8 @@
+{
+  "template": "BULL-TPL-02",
+  "backgroundId": "bull-tpl-02/background-master-neutralise",
+  "version": "2026.06.23-bull-tpl-02-neutralise-v1",
+  "sourcePdfRelativePath": "docs/assets/bulletins_sources/bulletinsCG.pdf",
+  "statutPreparation": "NEUTRALISE_DISPONIBLE",
+  "commentaire": "Source semestrielle branches retenue et neutralisee pour le fond maitre de reference."
+}

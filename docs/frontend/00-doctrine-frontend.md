@@ -18,6 +18,13 @@ Il constitue la source de verite frontend de reference pour toutes les phases su
 - notifications
 - configuration visible cote UI
 
+Les phases de formalisation deja ouvertes sont notamment :
+
+- [04-workflows.md](/C:/Users/MON%20PC/Documents/EducSyn/docs/frontend/04-workflows.md)
+- [05-workflows-reels.md](/C:/Users/MON%20PC/Documents/EducSyn/docs/frontend/05-workflows-reels.md)
+- [14-cartographie-finale-workflows.md](/C:/Users/MON%20PC/Documents/EducSyn/docs/frontend/14-cartographie-finale-workflows.md)
+- [15-navigation-frontend.md](/C:/Users/MON%20PC/Documents/EducSyn/docs/frontend/15-navigation-frontend.md)
+
 Toute decision frontend future doit rester coherente avec cette doctrine, ou bien la mettre a jour explicitement.
 
 ## Positionnement General

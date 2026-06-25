@@ -85,6 +85,9 @@ export interface PersistanceEcolePostgres {
   adresse?: string | null;
   telephone?: string | null;
   email?: string | null;
+  province_educationnelle?: string | null;
+  ville?: string | null;
+  commune_ou_territoire?: string | null;
   cree_le: ValeurDatePostgres;
   cree_par?: string | null;
   modifie_le?: ValeurDatePostgres | null;
@@ -113,6 +116,9 @@ export class MapperEcolePostgres extends BaseMapperPostgresReferentielAcademique
       ligne.adresse ?? undefined,
       ligne.telephone ?? undefined,
       ligne.email ?? undefined,
+      ligne.province_educationnelle ?? undefined,
+      ligne.ville ?? undefined,
+      ligne.commune_ou_territoire ?? undefined,
       ligne.cree_par ?? undefined,
       ligne.actif,
       this.versDate(ligne.cree_le, 'cree_le'),
@@ -135,6 +141,9 @@ export class MapperEcolePostgres extends BaseMapperPostgresReferentielAcademique
       adresse: ecole.obtenirAdresse() ?? null,
       telephone: ecole.obtenirTelephone() ?? null,
       email: ecole.obtenirEmail() ?? null,
+      province_educationnelle: ecole.obtenirProvinceEducationnelle() ?? null,
+      ville: ecole.obtenirVille() ?? null,
+      commune_ou_territoire: ecole.obtenirCommuneOuTerritoire() ?? null,
       cree_le: this.versDatePersistance(ecole.obtenirCreeLe()),
       cree_par: ecole.obtenirCreePar() ?? null,
       modifie_le: this.versDatePersistanceOptionnelle(ecole.obtenirModifieLe()) ?? null,

@@ -14,6 +14,9 @@ export class SyntheseMapper {
       lignes: synthese.obtenirLignesSyntheseResultatsClasse().map((ligne) => ({
         idClassePedagogique: ligne.obtenirIdClassePedagogique(),
         libelleClasse: ligne.obtenirLibelleClasse(),
+        idSectionScolaire: ligne.obtenirIdSectionScolaire(),
+        sectionCode: ligne.obtenirSectionCode(),
+        sectionLibelle: ligne.obtenirSectionLibelle(),
         statistiques: ligne.obtenirStatistiques().obtenirValeurs(),
       })),
       totauxEcole: synthese.obtenirTotauxSyntheseEcole()?.obtenirValeurs(),

@@ -18,8 +18,14 @@ import { PostgresEleveDepot } from 'contexts/scolarite-eleves/infrastructure/per
 import { PostgresInscriptionDepot } from 'contexts/scolarite-eleves/infrastructure/persistence/postgres/depots/PostgresInscriptionDepot';
 import { PostgresParcoursDepot } from 'contexts/scolarite-eleves/infrastructure/persistence/postgres/depots/PostgresParcoursDepot';
 import type { ClientPostgresReferentielAcademique } from 'contexts/referentiel-academique/infrastructure/persistence/postgres/depots/ClientPostgresReferentielAcademique';
-import { DepotClassePedagogiquePostgres } from 'contexts/referentiel-academique/infrastructure/persistence/postgres';
+import {
+  DepotClasseAcademiquePostgres,
+  DepotClassePedagogiquePostgres,
+  DepotSectionScolairePostgres,
+} from 'contexts/referentiel-academique/infrastructure/persistence/postgres';
 import { ClassePedagogiqueId } from 'contexts/referentiel-academique/domain/value-objects/ClassePedagogiqueId';
+import { ClasseAcademiqueId } from 'contexts/referentiel-academique/domain/value-objects/ClasseAcademiqueId';
+import { SectionScolaireId } from 'contexts/referentiel-academique/domain/value-objects/SectionScolaireId';
 
 interface DependancesScolariteElevesAdapter {
   consulterEleve: ConsulterEleve;
@@ -91,10 +97,13 @@ export class ScolariteElevesAdapter implements ScolariteElevesPort {
         ? eleve
         : {
           idEleve: eleve.obtenirId(),
+          matricule: eleve.obtenirMatricule(),
           nom: eleve.obtenirNom(),
           postNom: eleve.obtenirPostNom(),
           prenom: eleve.obtenirPrenom(),
           sexe: eleve.obtenirSexe(),
+          dateNaissance: eleve.obtenirDateNaissance(),
+          lieuNaissance: eleve.obtenirLieuNaissance(),
           idEcole: eleve.obtenirIdEcole(),
         };
       return {
@@ -102,6 +111,12 @@ export class ScolariteElevesAdapter implements ScolariteElevesPort {
         nomComplet: [projection.nom, projection.postNom, projection.prenom].filter(Boolean).join(' '),
         sexe: projection.sexe as SexeEleve,
         idEcole: projection.idEcole,
+        matricule: projection.matricule,
+        nom: projection.nom,
+        postNom: projection.postNom,
+        prenom: projection.prenom,
+        dateNaissance: projection.dateNaissance,
+        lieuNaissance: projection.lieuNaissance,
       };
     } catch {
       return null;
@@ -140,6 +155,8 @@ export class ScolariteElevesAdapter implements ScolariteElevesPort {
 
     try {
       const depotClassePedagogique = new DepotClassePedagogiquePostgres(this.clientLectureReferentiel);
+      const depotClasseAcademique = new DepotClasseAcademiquePostgres(this.clientLectureReferentiel);
+      const depotSectionScolaire = new DepotSectionScolairePostgres(this.clientLectureReferentiel);
       const classePedagogique = await depotClassePedagogique.trouverParId(
         new ClassePedagogiqueId(idClassePedagogique),
       );
@@ -148,10 +165,22 @@ export class ScolariteElevesAdapter implements ScolariteElevesPort {
         return null;
       }
 
+      const classeAcademique = await depotClasseAcademique.trouverParId(
+        new ClasseAcademiqueId(classePedagogique.obtenirClasseAcademiqueId().obtenirValeur()),
+      );
+      const sectionScolaire = classeAcademique === null
+        ? null
+        : await depotSectionScolaire.trouverParId(
+          new SectionScolaireId(classeAcademique.obtenirSectionScolaireId().obtenirValeur()),
+        );
+
       return {
         idClassePedagogique: classePedagogique.obtenirId().obtenirValeur(),
         libelleClasse: classePedagogique.obtenirLibelle(),
         idEcole: classePedagogique.obtenirEcoleId().obtenirValeur(),
+        idSectionScolaire: classeAcademique?.obtenirSectionScolaireId().obtenirValeur(),
+        sectionCode: sectionScolaire?.obtenirCode(),
+        sectionLibelle: sectionScolaire?.obtenirLibelle(),
       };
     } catch {
       return null;

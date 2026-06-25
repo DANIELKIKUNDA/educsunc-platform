@@ -66,6 +66,7 @@ import {
 } from '../../contexts/bulletins-evaluations/interfaces/http/routes';
 import {
   BulletinAuditAdapter,
+  DocumentAssetsEcoleAdapter,
   BulletinEventBusAdapter,
   BulletinPdfAdapter,
   ProclamationPdfAdapter,
@@ -118,14 +119,29 @@ import {
   PostgresStatistiquesEcoleQuery,
   PostgresSyntheseResultatsQuery,
 } from '../../contexts/bulletins-evaluations/infrastructure/persistence/postgres';
-import { PdfBulletinService } from '../../contexts/bulletins-evaluations/infrastructure/services/PdfBulletinService';
+import { PostgresDepotAssetsRecus } from '../../contexts/paiements-facturation/infrastructure/persistence/postgres/depots/PostgresDepotAssetsRecus';
+import { creerInfrastructurePostgresPaiementsFacturation } from '../../contexts/paiements-facturation/infrastructure/persistence/postgres';
+import { PaiementTenantContext } from '../../contexts/paiements-facturation/infrastructure/tenancy/PaiementTenantContext';
+import {
+  BulletinAssetsResolverService,
+  BulletinDocumentContextLoaderService,
+  BulletinDocumentDataBuilderService,
+  PdfBulletinService,
+  ProclamationAssetsResolverService,
+  ProclamationDocumentContextLoaderService,
+  ProclamationDocumentDataBuilderService,
+} from '../../contexts/bulletins-evaluations/infrastructure/services';
 import { PdfProclamationService } from '../../contexts/bulletins-evaluations/infrastructure/services/PdfProclamationService';
-import { PdfSyntheseService } from '../../contexts/bulletins-evaluations/infrastructure/services/PdfSyntheseService';
+import {
+  PdfSyntheseService,
+  SyntheseDocumentContextService,
+} from '../../contexts/bulletins-evaluations/infrastructure/services/PdfSyntheseService';
 import { creerInfrastructurePostgresReferentielAcademique } from '../../contexts/referentiel-academique/infrastructure/persistence/postgres';
 import { creerInfrastructurePostgresScolariteEleves } from '../../contexts/scolarite-eleves/infrastructure/persistence/postgres';
 import { ServiceSynchronisationParDefaut } from '../../shared/infrastructure/sync/SyncService';
 import type { DepotJournalSynchronisation } from '../../shared/infrastructure/sync/SyncLogRepository';
 import { ResolveurConflit } from '../../shared/infrastructure/sync/ConflictResolver';
+import { LocalStorage } from '../../shared/infrastructure/storage/LocalStorage';
 
 // Ce depot memoire suffit ici pour journaliser les synchronisations sans introduire de dependance externe.
 class DepotJournalSynchronisationMemoire implements DepotJournalSynchronisation {
@@ -195,6 +211,10 @@ function composerRoutesBulletinsEvaluations(): CompositionRoutesBulletinsEvaluat
   const infrastructureBulletins = creerInfrastructurePostgresBulletinsEvaluations(undefined, contexteTenant);
   const infrastructureScolarite = creerInfrastructurePostgresScolariteEleves();
   const infrastructureReferentiel = creerInfrastructurePostgresReferentielAcademique();
+  const infrastructurePaiements = creerInfrastructurePostgresPaiementsFacturation(
+    undefined,
+    new PaiementTenantContext(),
+  );
   const journaliseur = new JournaliseurPino();
   const eventBus = new BulletinEventBusAdapter(journaliseur);
   const auditAdapter = new BulletinAuditAdapter(journaliseur);
@@ -214,6 +234,15 @@ function composerRoutesBulletinsEvaluations(): CompositionRoutesBulletinsEvaluat
     infrastructureScolarite.clientLecture,
     infrastructureReferentiel.clientLecture,
   );
+  const stockageAssetsDocumentaires = new LocalStorage();
+  const assetsDocumentairesEcole = new DocumentAssetsEcoleAdapter(
+    new PostgresDepotAssetsRecus(infrastructurePaiements.clientLecture),
+    stockageAssetsDocumentaires,
+  );
+  const documentContextLoader = new BulletinDocumentContextLoaderService(
+    scolariteAdapter,
+    referentielAdapter,
+  );
   const serviceSynchronisation = new ServiceSynchronisationParDefaut(
     journaliseur,
     new DepotJournalSynchronisationMemoire(),
@@ -221,9 +250,37 @@ function composerRoutesBulletinsEvaluations(): CompositionRoutesBulletinsEvaluat
   );
   const syncAdapter = new BulletinSyncAdapter(serviceSynchronisation);
   const serviceAudit = new ServiceAuditBulletin(auditAdapter);
-  const pdfAdapter = new BulletinPdfAdapter(new PdfBulletinService());
-  const proclamationPdfAdapter = new ProclamationPdfAdapter(new PdfProclamationService());
-  const synthesePdfAdapter = new SynthesePdfAdapter(new PdfSyntheseService());
+  const pdfAdapter = new BulletinPdfAdapter(
+    new PdfBulletinService(
+      undefined,
+      new BulletinDocumentDataBuilderService(
+        undefined,
+        new BulletinAssetsResolverService(assetsDocumentairesEcole),
+        documentContextLoader,
+      ),
+    ),
+  );
+  const proclamationDocumentContextLoader = new ProclamationDocumentContextLoaderService(
+    scolariteAdapter,
+    referentielAdapter,
+    sectionClassePedagogiqueAdapter,
+  );
+  const proclamationPdfAdapter = new ProclamationPdfAdapter(
+    new PdfProclamationService(
+      undefined,
+      new ProclamationDocumentDataBuilderService(
+        undefined,
+        new ProclamationAssetsResolverService(assetsDocumentairesEcole),
+        proclamationDocumentContextLoader,
+      ),
+    ),
+  );
+  const synthesePdfAdapter = new SynthesePdfAdapter(
+    new PdfSyntheseService(
+      undefined,
+      new SyntheseDocumentContextService(referentielAdapter),
+    ),
+  );
 
   const depotFicheCotation = new PostgresDepotFicheCotationEleveCours();
   const depotResultat = new PostgresDepotResultatBulletinEleve();

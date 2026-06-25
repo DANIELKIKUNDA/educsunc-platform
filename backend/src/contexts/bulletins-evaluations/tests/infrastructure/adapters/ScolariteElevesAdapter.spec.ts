@@ -92,6 +92,9 @@ test("ScolariteElevesAdapter lit l'identite reelle, l'inscription active et l'ab
         idClassePedagogique,
         libelleClasse: '2e Commerciale',
         idEcole: 'ecole-1',
+        idSectionScolaire: 'section-secondaire',
+        sectionCode: 'SECONDAIRE',
+        sectionLibelle: 'Secondaire',
       };
     },
   });
@@ -106,6 +109,12 @@ test("ScolariteElevesAdapter lit l'identite reelle, l'inscription active et l'ab
     nomComplet: 'Kanku Ilunga Aime',
     sexe: SexeEleve.F,
     idEcole: 'ecole-1',
+    matricule: 'MAT-1',
+    nom: 'Kanku',
+    postNom: 'Ilunga',
+    prenom: 'Aime',
+    dateNaissance: '2010-01-01',
+    lieuNaissance: undefined,
   });
   assert.deepEqual(inscription, {
     idInscriptionScolaire: 'inscription-1',
@@ -117,6 +126,9 @@ test("ScolariteElevesAdapter lit l'identite reelle, l'inscription active et l'ab
     idClassePedagogique: 'classe-1',
     libelleClasse: '2e Commerciale',
     idEcole: 'ecole-1',
+    idSectionScolaire: 'section-secondaire',
+    sectionCode: 'SECONDAIRE',
+    sectionLibelle: 'Secondaire',
   });
   assert.equal(abandon?.idEleve, 'eleve-1');
   assert.equal(abandon?.motifAbandon, 'Abandon confirme');

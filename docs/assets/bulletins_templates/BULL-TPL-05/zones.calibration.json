@@ -1,0 +1,251 @@
+{
+  "template": "BULL-TPL-05",
+  "version": "2026.06.23-bull-tpl-05-calibration-v1",
+  "formatPage": "A4-PORTRAIT",
+  "repere": {
+    "origine": "TOP_LEFT",
+    "unite": "PDF_POINTS"
+  },
+  "etatCalibration": "PARTIELLEMENT_CALIBRE",
+  "zones": [
+    {
+      "id": "z_institution_pays",
+      "page": 1,
+      "x": null,
+      "y": null,
+      "largeur": null,
+      "hauteur": null,
+      "alignement": "center",
+      "statut": "A_CALIBRER"
+    },
+    {
+      "id": "z_institution_ministere",
+      "page": 1,
+      "x": null,
+      "y": null,
+      "largeur": null,
+      "hauteur": null,
+      "alignement": "center",
+      "statut": "A_CALIBRER"
+    },
+    {
+      "id": "z_titre_niveau",
+      "page": 1,
+      "x": 150.0,
+      "y": 279.5,
+      "largeur": 250.0,
+      "hauteur": 20.2,
+      "alignement": "center",
+      "statut": "CALIBRE"
+    },
+    {
+      "id": "z_admin_id_document",
+      "page": 1,
+      "x": 92.3,
+      "y": 78.3,
+      "largeur": 65.5,
+      "hauteur": 18.5,
+      "alignement": "left",
+      "statut": "CALIBRE"
+    },
+    {
+      "id": "z_admin_province",
+      "page": 1,
+      "x": 187.5,
+      "y": 88.4,
+      "largeur": 288.7,
+      "hauteur": 18.5,
+      "alignement": "left",
+      "statut": "CALIBRE"
+    },
+    {
+      "id": "z_admin_ville",
+      "page": 1,
+      "x": 92.3,
+      "y": 108.6,
+      "largeur": 384.0,
+      "hauteur": 18.5,
+      "alignement": "left",
+      "statut": "CALIBRE"
+    },
+    {
+      "id": "z_admin_commune_territoire",
+      "page": 1,
+      "x": 151.8,
+      "y": 129.7,
+      "largeur": 324.4,
+      "hauteur": 18.5,
+      "alignement": "left",
+      "statut": "CALIBRE"
+    },
+    {
+      "id": "z_admin_ecole",
+      "page": 1,
+      "x": 86.3,
+      "y": 149.9,
+      "largeur": 389.9,
+      "hauteur": 18.5,
+      "alignement": "left",
+      "statut": "CALIBRE"
+    },
+    {
+      "id": "z_admin_code_ecole",
+      "page": 1,
+      "x": 122.0,
+      "y": 170.9,
+      "largeur": 77.4,
+      "hauteur": 18.5,
+      "alignement": "left",
+      "statut": "CALIBRE"
+    },
+    {
+      "id": "z_eleve_nom_complet",
+      "page": 1,
+      "x": 83.3,
+      "y": 192.0,
+      "largeur": 360.2,
+      "hauteur": 18.5,
+      "alignement": "left",
+      "statut": "CALIBRE"
+    },
+    {
+      "id": "z_eleve_sexe",
+      "page": 1,
+      "x": 512.0,
+      "y": 192.0,
+      "largeur": 44.6,
+      "hauteur": 18.5,
+      "alignement": "center",
+      "statut": "CALIBRE"
+    },
+    {
+      "id": "z_eleve_lieu_naissance",
+      "page": 1,
+      "x": 95.2,
+      "y": 213.0,
+      "largeur": 270.9,
+      "hauteur": 18.5,
+      "alignement": "left",
+      "statut": "CALIBRE"
+    },
+    {
+      "id": "z_eleve_date_naissance",
+      "page": 1,
+      "x": 413.7,
+      "y": 213.0,
+      "largeur": 116.1,
+      "hauteur": 18.5,
+      "alignement": "center",
+      "statut": "CALIBRE"
+    },
+    {
+      "id": "z_eleve_classe",
+      "page": 1,
+      "x": 86.3,
+      "y": 234.0,
+      "largeur": 389.9,
+      "hauteur": 18.5,
+      "alignement": "left",
+      "statut": "CALIBRE"
+    },
+    {
+      "id": "z_eleve_numero_permanent",
+      "page": 1,
+      "x": 122.0,
+      "y": 255.1,
+      "largeur": 86.3,
+      "hauteur": 18.5,
+      "alignement": "left",
+      "statut": "CALIBRE"
+    },
+    {
+      "id": "z_titre_annee_scolaire",
+      "page": 1,
+      "x": 428.6,
+      "y": 279.5,
+      "largeur": 107.2,
+      "hauteur": 20.2,
+      "alignement": "center",
+      "statut": "CALIBRE"
+    },
+    {
+      "id": "z_synthese_application",
+      "page": 1,
+      "x": 434.6,
+      "y": 740.0,
+      "largeur": 101.2,
+      "hauteur": 20.2,
+      "alignement": "center",
+      "statut": "CALIBRE"
+    },
+    {
+      "id": "z_synthese_conduite",
+      "page": 1,
+      "x": 434.6,
+      "y": 761.1,
+      "largeur": 101.2,
+      "hauteur": 20.2,
+      "alignement": "center",
+      "statut": "CALIBRE"
+    },
+    {
+      "id": "z_signature_date",
+      "page": 1,
+      "x": 332.0,
+      "y": 781.3,
+      "largeur": 144.2,
+      "hauteur": 23.6,
+      "alignement": "center",
+      "statut": "CALIBRE"
+    },
+    {
+      "id": "z_signature_ville",
+      "page": 1,
+      "x": 148.8,
+      "y": 781.3,
+      "largeur": 180.0,
+      "hauteur": 23.6,
+      "alignement": "left",
+      "statut": "CALIBRE"
+    },
+    {
+      "id": "z_legal_reference",
+      "page": 1,
+      "x": 468.0,
+      "y": 775.0,
+      "largeur": 72.0,
+      "hauteur": 11.5,
+      "alignement": "left",
+      "statut": "CALIBRE"
+    },
+    {
+      "id": "z_cachet_ecole",
+      "page": 1,
+      "x": 381.0,
+      "y": 787.2,
+      "largeur": 113.1,
+      "hauteur": 54.7,
+      "alignement": "center",
+      "statut": "CALIBRE"
+    }
+  ],
+  "tables": [
+    {
+      "id": "z_table_rows_window",
+      "page": 1,
+      "x": 71.4,
+      "y": 358.6,
+      "largeur": 485.2,
+      "hauteur": 311.5,
+      "hauteurLigne": 13.5,
+      "colonnes": [
+        "branche",
+        "s1_total",
+        "s2_total",
+        "total_general",
+        "repechage"
+      ],
+      "statut": "CALIBRE"
+    }
+  ]
+}

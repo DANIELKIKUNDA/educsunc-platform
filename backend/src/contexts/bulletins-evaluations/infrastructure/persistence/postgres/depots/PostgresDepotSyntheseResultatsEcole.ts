@@ -25,6 +25,9 @@ interface SyntheseResultatsRow {
 interface LigneSynthesePersisted {
   idClassePedagogique: string;
   libelleClasse: string;
+  idSectionScolaire?: string;
+  sectionCode?: string;
+  sectionLibelle?: string;
   statistiques: StatistiquesProclamationClasseProps;
 }
 
@@ -48,6 +51,9 @@ export class PostgresDepotSyntheseResultatsEcole implements DepotSyntheseResulta
     const lignes = syntheseResultatsEcole.obtenirLignesSyntheseResultatsClasse().map((ligne) => ({
       idClassePedagogique: ligne.obtenirIdClassePedagogique(),
       libelleClasse: ligne.obtenirLibelleClasse(),
+      idSectionScolaire: ligne.obtenirIdSectionScolaire(),
+      sectionCode: ligne.obtenirSectionCode(),
+      sectionLibelle: ligne.obtenirSectionLibelle(),
       statistiques: ligne.obtenirStatistiques().obtenirValeurs(),
     }));
     const totaux = syntheseResultatsEcole.obtenirTotauxSyntheseEcole()?.obtenirValeurs() ?? null;
@@ -176,6 +182,9 @@ export class PostgresDepotSyntheseResultatsEcole implements DepotSyntheseResulta
       lignesSyntheseResultatsClasse: lignesPersisted.map((element) => new LigneSyntheseResultatsClasse({
         idClassePedagogique: element.idClassePedagogique,
         libelleClasse: element.libelleClasse,
+        idSectionScolaire: element.idSectionScolaire,
+        sectionCode: element.sectionCode,
+        sectionLibelle: element.sectionLibelle,
         statistiques: new StatistiquesProclamationClasse(element.statistiques),
       })),
       totauxSyntheseEcole: totauxPersisted === null ? undefined : new TotauxSyntheseEcole(totauxPersisted),

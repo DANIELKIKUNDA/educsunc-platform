@@ -11,7 +11,9 @@ export class LigneBulletinEleve extends Entite<string> {
   private aExamen: boolean;
   private cotesColonnes: Partial<Record<CodeColonneBulletin, number | null>>;
   private totauxColonnes: Partial<Record<CodeColonneBulletin, number | null>>;
+  private maximaColonnes: Partial<Record<CodeColonneBulletin, number | null>>;
   private stylesColonnes: Partial<Record<CodeColonneBulletin, StyleAffichageCote>>;
+  private mentionRepechage?: string;
 
   // Ce constructeur initialise la representation metier d'une ligne du bulletin.
   constructor(params: {
@@ -23,7 +25,9 @@ export class LigneBulletinEleve extends Entite<string> {
     aExamen: boolean;
     cotesColonnes?: Partial<Record<CodeColonneBulletin, number | null>>;
     totauxColonnes?: Partial<Record<CodeColonneBulletin, number | null>>;
+    maximaColonnes?: Partial<Record<CodeColonneBulletin, number | null>>;
     stylesColonnes?: Partial<Record<CodeColonneBulletin, StyleAffichageCote>>;
+    mentionRepechage?: string;
   }) {
     super(params.idLigneBulletinEleve);
     this.idReferentielCours = params.idReferentielCours;
@@ -33,7 +37,9 @@ export class LigneBulletinEleve extends Entite<string> {
     this.aExamen = params.aExamen;
     this.cotesColonnes = { ...(params.cotesColonnes ?? {}) };
     this.totauxColonnes = { ...(params.totauxColonnes ?? {}) };
+    this.maximaColonnes = { ...(params.maximaColonnes ?? {}) };
     this.stylesColonnes = { ...(params.stylesColonnes ?? {}) };
+    this.mentionRepechage = params.mentionRepechage?.trim() || undefined;
   }
 
   // Cette methode expose l'identifiant du cours de reference.
@@ -71,9 +77,19 @@ export class LigneBulletinEleve extends Entite<string> {
     return { ...this.totauxColonnes };
   }
 
+  // Cette methode expose les maxima visibles associes a chaque colonne.
+  public obtenirMaximaColonnes(): Partial<Record<CodeColonneBulletin, number | null>> {
+    return { ...this.maximaColonnes };
+  }
+
   // Cette methode expose les styles visuels de chaque colonne.
   public obtenirStylesColonnes(): Partial<Record<CodeColonneBulletin, StyleAffichageCote>> {
     return { ...this.stylesColonnes };
+  }
+
+  // Cette methode expose la mention documentaire de repechage si elle existe.
+  public obtenirMentionRepechage(): string | undefined {
+    return this.mentionRepechage;
   }
 
   // Cette methode pose une cote visible pour une colonne.
@@ -86,8 +102,18 @@ export class LigneBulletinEleve extends Entite<string> {
     this.totauxColonnes[codeColonne] = valeur;
   }
 
+  // Cette methode pose le maximum visible pour une colonne du bulletin.
+  public definirMaximum(codeColonne: CodeColonneBulletin, valeur: number | null): void {
+    this.maximaColonnes[codeColonne] = valeur;
+  }
+
   // Cette methode memorise le style visuel d'une colonne.
   public definirStyle(codeColonne: CodeColonneBulletin, style: StyleAffichageCote): void {
     this.stylesColonnes[codeColonne] = style;
+  }
+
+  // Cette methode memorise la mention documentaire de repechage d'une ligne.
+  public definirMentionRepechage(mentionRepechage?: string): void {
+    this.mentionRepechage = mentionRepechage?.trim() || undefined;
   }
 }

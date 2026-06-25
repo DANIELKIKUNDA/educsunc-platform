@@ -1,0 +1,8 @@
+{
+  "template": "SYN-TPL-01",
+  "backgroundId": "synthese-source-master",
+  "version": "1.0.0",
+  "sourcePdfRelativePath": "../../bulletins_sources/resultat_synthese.pdf",
+  "statutPreparation": "SOURCE_VERSIONNE",
+  "commentaire": "Le fond maitre SYN-TPL-01 reprend le modele source officiel de synthese des resultats pour servir de base versionnee au futur renderer graphique calibre."
+}
