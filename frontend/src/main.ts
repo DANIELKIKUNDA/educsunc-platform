@@ -1,14 +1,16 @@
+import { createApp } from 'vue';
 import { configurationApplicationFrontend } from './config/app.config';
 import { configurationOffline } from './config/offline.config';
-import { createApp } from 'vue';
 import App from './App.vue';
 import { routeur } from './router';
+import { registerServiceWorker } from './shared/pwa/register-sw';
 import './styles/variables.css';
 import './styles/base.css';
 import './styles/layout.css';
 import './styles/composants.css';
 import './styles/referentiel.css';
 import './styles/animations.css';
+import './styles/shell.css';
 
 // Point d'entree technique du frontend.
 void configurationApplicationFrontend;
@@ -18,3 +20,5 @@ const application = createApp(App);
 
 application.use(routeur);
 application.mount('#app');
+
+registerServiceWorker();

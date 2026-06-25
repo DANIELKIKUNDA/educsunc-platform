@@ -1,0 +1,54 @@
+import type { RouteRecordRaw } from 'vue-router';
+import AuthPlaceholderView from '../app/AuthPlaceholderView.vue';
+import AppShellSwitcher from '../shell/AppShellSwitcher.vue';
+import { routesAcademique } from '../domains/academique/routes';
+import { routesAudit } from '../domains/audit/routes';
+import { routesConfiguration } from '../domains/configuration/routes';
+import { routesFinances } from '../domains/finances/routes';
+import { routesMonitoring } from '../domains/monitoring/routes';
+import { routesNotifications } from '../domains/notifications/routes';
+import { routesPedagogique } from '../domains/pedagogique/routes';
+import { routesScolarite } from '../domains/scolarite/routes';
+import { routesSecurity } from '../domains/security/routes';
+
+export const routesFrontend: RouteRecordRaw[] = [
+  {
+    path: '/',
+    redirect: '/app',
+  },
+  {
+    path: '/connexion',
+    name: 'connexion',
+    component: AuthPlaceholderView,
+    meta: {
+      public: true,
+      title: 'Connexion',
+    },
+  },
+  {
+    path: '/app',
+    component: AppShellSwitcher,
+    meta: {
+      requiresAuth: true,
+    },
+    children: [
+      {
+        path: '',
+        redirect: '/app/finances',
+      },
+      ...routesFinances,
+      ...routesPedagogique,
+      ...routesScolarite,
+      ...routesAcademique,
+      ...routesMonitoring,
+      ...routesAudit,
+      ...routesConfiguration,
+      ...routesNotifications,
+      ...routesSecurity,
+    ],
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    redirect: '/app',
+  },
+];
