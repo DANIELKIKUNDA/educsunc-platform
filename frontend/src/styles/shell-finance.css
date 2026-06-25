@@ -153,6 +153,19 @@
   box-shadow: none;
 }
 
+.finance-secondary-action {
+  display: inline-flex;
+  gap: 0.55rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(196, 74, 55, 0.28);
+  border-radius: 0.95rem;
+  padding: 0.9rem 1.1rem;
+  background: rgba(196, 74, 55, 0.08);
+  color: #8b2e23;
+  font-weight: 900;
+ }
+
 .finance-student-banner,
 .finance-summary-grid {
   display: grid;

@@ -8,6 +8,7 @@ import HistoriquePaiementsEleveView from './views/HistoriquePaiementsEleveView.v
 import SituationFinanciereEleveView from './views/SituationFinanciereEleveView.vue';
 import RecuPaiementView from './views/RecuPaiementView.vue';
 import AnalysePaiementsTypeFraisView from './views/AnalysePaiementsTypeFraisView.vue';
+import ExonerationsView from './views/ExonerationsView.vue';
 
 export const routesFinances: RouteRecordRaw[] = [
   {
@@ -63,5 +64,11 @@ export const routesFinances: RouteRecordRaw[] = [
     name: 'finances-analyse-paiements-type-frais',
     component: AnalysePaiementsTypeFraisView,
     meta: { title: 'Analyse paiements par type de frais' },
+  },
+  {
+    path: 'finances/exonerations',
+    name: 'finances-exonerations',
+    component: ExonerationsView,
+    meta: { title: 'Exonerations' },
   },
 ];
