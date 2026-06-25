@@ -603,6 +603,94 @@
   padding-left: 1.1rem;
 }
 
+.module-home-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.finance-status-strip {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.85rem;
+  align-items: flex-start;
+  margin-top: 1rem;
+  padding: 1rem;
+  border-radius: 1rem;
+}
+
+.finance-status-strip svg {
+  width: 1.2rem;
+  height: 1.2rem;
+  margin-top: 0.1rem;
+}
+
+.finance-status-strip strong {
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.finance-status-strip p {
+  margin: 0;
+  color: inherit;
+}
+
+.finance-status-strip--neutral {
+  background: rgba(45, 95, 159, 0.08);
+  color: #1d416f;
+}
+
+.finance-status-strip--success {
+  background: rgba(47, 157, 98, 0.12);
+  color: #226a46;
+}
+
+.finance-status-strip--error {
+  background: rgba(196, 74, 55, 0.12);
+  color: #8b2e23;
+}
+
+.finance-confirmation-card {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid var(--couleur-bordure);
+  border-radius: 1rem;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(245, 248, 252, 0.96));
+  box-shadow: var(--ombre-carte);
+}
+
+.finance-confirmation-card__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.7rem;
+  border-bottom: 1px dashed rgba(24, 54, 95, 0.16);
+}
+
+.finance-confirmation-card__row:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.finance-confirmation-card__row span {
+  color: var(--couleur-texte-douce);
+  font-size: 0.8rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.finance-confirmation-card__row strong {
+  text-align: right;
+}
+
+.finance-primary-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+  box-shadow: none;
+}
+
 @media (max-width: 959px) {
   .shell-topbar {
     display: none;
@@ -627,7 +715,9 @@
   .section-block__header,
   .finance-form-grid,
   .finance-student-banner,
-  .finance-summary-grid {
+  .finance-summary-grid,
+  .module-home-actions,
+  .finance-confirmation-card__row {
     flex-direction: column;
   }
 
