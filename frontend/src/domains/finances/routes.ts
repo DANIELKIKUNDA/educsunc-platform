@@ -7,6 +7,7 @@ import CaisseDuJourView from './views/CaisseDuJourView.vue';
 import HistoriquePaiementsEleveView from './views/HistoriquePaiementsEleveView.vue';
 import SituationFinanciereEleveView from './views/SituationFinanciereEleveView.vue';
 import RecuPaiementView from './views/RecuPaiementView.vue';
+import AnalysePaiementsTypeFraisView from './views/AnalysePaiementsTypeFraisView.vue';
 
 export const routesFinances: RouteRecordRaw[] = [
   {
@@ -56,5 +57,11 @@ export const routesFinances: RouteRecordRaw[] = [
     name: 'finances-recu-paiement',
     component: RecuPaiementView,
     meta: { title: 'Recu de paiement' },
+  },
+  {
+    path: 'finances/rapports',
+    name: 'finances-analyse-paiements-type-frais',
+    component: AnalysePaiementsTypeFraisView,
+    meta: { title: 'Analyse paiements par type de frais' },
   },
 ];
