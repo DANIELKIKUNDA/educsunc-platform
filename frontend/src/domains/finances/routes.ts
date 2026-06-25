@@ -6,6 +6,7 @@ import ClotureCaisseView from './views/ClotureCaisseView.vue';
 import CaisseDuJourView from './views/CaisseDuJourView.vue';
 import HistoriquePaiementsEleveView from './views/HistoriquePaiementsEleveView.vue';
 import SituationFinanciereEleveView from './views/SituationFinanciereEleveView.vue';
+import RecuPaiementView from './views/RecuPaiementView.vue';
 
 export const routesFinances: RouteRecordRaw[] = [
   {
@@ -49,5 +50,11 @@ export const routesFinances: RouteRecordRaw[] = [
     name: 'finances-situation-financiere-eleve',
     component: SituationFinanciereEleveView,
     meta: { title: 'Situation financiere eleve' },
+  },
+  {
+    path: 'finances/recus/:idRecu',
+    name: 'finances-recu-paiement',
+    component: RecuPaiementView,
+    meta: { title: 'Recu de paiement' },
   },
 ];
