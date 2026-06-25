@@ -11,6 +11,7 @@ import AnalysePaiementsTypeFraisView from './views/AnalysePaiementsTypeFraisView
 import ExonerationsView from './views/ExonerationsView.vue';
 import RecusPaiementListView from './views/RecusPaiementListView.vue';
 import RapportFinancierJournalierView from './views/RapportFinancierJournalierView.vue';
+import PaiementsParCaissierView from './views/PaiementsParCaissierView.vue';
 
 export const routesFinances: RouteRecordRaw[] = [
   {
@@ -84,5 +85,11 @@ export const routesFinances: RouteRecordRaw[] = [
     name: 'finances-rapport-financier-journalier',
     component: RapportFinancierJournalierView,
     meta: { title: 'Rapport financier journalier' },
+  },
+  {
+    path: 'finances/rapports/paiements-par-caissier',
+    name: 'finances-paiements-par-caissier',
+    component: PaiementsParCaissierView,
+    meta: { title: 'Paiements par caissier' },
   },
 ];

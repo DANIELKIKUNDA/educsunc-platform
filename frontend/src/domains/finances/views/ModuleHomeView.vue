@@ -34,6 +34,9 @@
           <RouterLink class="module-quick-access__pill" to="/app/finances/rapports/journalier">
             Ouvrir SCR-PF-011
           </RouterLink>
+          <RouterLink class="module-quick-access__pill" to="/app/finances/rapports/paiements-par-caissier">
+            Ouvrir SCR-PF-012
+          </RouterLink>
           <RouterLink class="module-quick-access__pill module-quick-access__pill--action" to="/app/finances/caisse/ouverture">
             Ouvrir SCR-PF-002
           </RouterLink>
@@ -46,7 +49,7 @@
     <SectionBlock title="Etat du domaine" description="Point d'entree officiel du module finances.">
       <div class="module-home-grid">
         <StatChip label="Priorite" value="Haute" />
-        <StatChip label="Lot en cours" value="SCR-PF-001 a SCR-PF-011" />
+        <StatChip label="Lot en cours" value="SCR-PF-001 a SCR-PF-012" />
         <StatChip label="Perimetre" value="Ecole active" />
       </div>
     </SectionBlock>
