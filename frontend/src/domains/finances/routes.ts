@@ -9,6 +9,7 @@ import SituationFinanciereEleveView from './views/SituationFinanciereEleveView.v
 import RecuPaiementView from './views/RecuPaiementView.vue';
 import AnalysePaiementsTypeFraisView from './views/AnalysePaiementsTypeFraisView.vue';
 import ExonerationsView from './views/ExonerationsView.vue';
+import RecusPaiementListView from './views/RecusPaiementListView.vue';
 
 export const routesFinances: RouteRecordRaw[] = [
   {
@@ -70,5 +71,11 @@ export const routesFinances: RouteRecordRaw[] = [
     name: 'finances-exonerations',
     component: ExonerationsView,
     meta: { title: 'Exonerations' },
+  },
+  {
+    path: 'finances/recus',
+    name: 'finances-recus-liste',
+    component: RecusPaiementListView,
+    meta: { title: 'Recus emis' },
   },
 ];
