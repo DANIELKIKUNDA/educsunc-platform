@@ -3,6 +3,7 @@ import ModuleHomeView from './views/ModuleHomeView.vue';
 import PerceptionPaiementView from './views/PerceptionPaiementView.vue';
 import OuvertureCaisseView from './views/OuvertureCaisseView.vue';
 import ClotureCaisseView from './views/ClotureCaisseView.vue';
+import CaisseDuJourView from './views/CaisseDuJourView.vue';
 
 export const routesFinances: RouteRecordRaw[] = [
   {
@@ -28,5 +29,11 @@ export const routesFinances: RouteRecordRaw[] = [
     name: 'finances-cloture-caisse',
     component: ClotureCaisseView,
     meta: { title: 'Cloture de caisse' },
+  },
+  {
+    path: 'finances/caisse',
+    name: 'finances-caisse-du-jour',
+    component: CaisseDuJourView,
+    meta: { title: 'Caisse du jour' },
   },
 ];
