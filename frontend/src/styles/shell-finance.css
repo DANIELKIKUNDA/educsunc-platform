@@ -450,3 +450,50 @@
   background: rgba(196, 74, 55, 0.12);
   color: #8b2e23;
 }
+
+.finance-status-badge--warning {
+  background: rgba(242, 182, 50, 0.16);
+  color: #8a6114;
+}
+
+.finance-kpi-grid--detail {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.finance-list-card {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid var(--couleur-bordure);
+  border-radius: 1rem;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 253, 0.96));
+  box-shadow: var(--ombre-carte);
+}
+
+.finance-list-card--warning {
+  margin-top: 1rem;
+  background: rgba(242, 182, 50, 0.12);
+}
+
+.finance-list-card__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px dashed rgba(24, 54, 95, 0.12);
+}
+
+.finance-list-card__row:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.finance-list-card__row strong {
+  display: block;
+}
+
+.finance-list-card__row small {
+  color: var(--couleur-texte-douce);
+}
