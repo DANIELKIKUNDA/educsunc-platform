@@ -10,6 +10,7 @@ import RecuPaiementView from './views/RecuPaiementView.vue';
 import AnalysePaiementsTypeFraisView from './views/AnalysePaiementsTypeFraisView.vue';
 import ExonerationsView from './views/ExonerationsView.vue';
 import RecusPaiementListView from './views/RecusPaiementListView.vue';
+import RapportFinancierJournalierView from './views/RapportFinancierJournalierView.vue';
 
 export const routesFinances: RouteRecordRaw[] = [
   {
@@ -77,5 +78,11 @@ export const routesFinances: RouteRecordRaw[] = [
     name: 'finances-recus-liste',
     component: RecusPaiementListView,
     meta: { title: 'Recus emis' },
+  },
+  {
+    path: 'finances/rapports/journalier',
+    name: 'finances-rapport-financier-journalier',
+    component: RapportFinancierJournalierView,
+    meta: { title: 'Rapport financier journalier' },
   },
 ];
