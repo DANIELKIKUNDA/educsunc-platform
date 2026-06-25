@@ -100,7 +100,7 @@ export class PdfProclamationService {
       ligne.observation ?? ligne.statutProclamation,
     ]), tablePage1, fontRegular, [49, 176, 35, 51, 69, 62, 76], 8, true);
 
-    this.dessinerStatistiquesTemplate(page1, documentData, statsTable, fontRegular, fontBold);
+    this.dessinerStatistiquesTemplate(page1, documentData, statsTable, fontRegular);
 
     let reste = lignes.slice(14);
     let pageNonClasses = await addTemplatePage('PAGE_2_CLASSEMENT_ET_NON_CLASSES');
@@ -537,7 +537,6 @@ export class PdfProclamationService {
     documentData: ProclamationDocumentDataReadModel,
     table: ProclamationZoneCalibrationReadModel['tables'][number],
     fontRegular: PDFFontLike,
-    fontBold: PDFFontLike,
   ): void {
     const statistiques = documentData.structure.statistiques;
     if (statistiques === undefined || table.x === null || table.y === null || table.hauteurLigne === null) {

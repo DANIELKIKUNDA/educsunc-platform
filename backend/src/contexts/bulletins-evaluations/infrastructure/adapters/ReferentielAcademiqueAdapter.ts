@@ -24,7 +24,6 @@ import { EcoleId } from 'contexts/referentiel-academique/domain/value-objects/Ec
 import { ContexteExecutionTenantReferentielAcademique } from 'contexts/referentiel-academique/infrastructure/tenancy/ContexteExecutionTenantReferentielAcademique';
 import { ProgrammeNiveauId } from 'contexts/referentiel-academique/domain/value-objects/ProgrammeNiveauId';
 import { ReferentielCoursId } from 'contexts/referentiel-academique/domain/value-objects/ReferentielCoursId';
-import { ClasseAcademiqueId } from 'contexts/referentiel-academique/domain/value-objects/ClasseAcademiqueId';
 import { DepotClasseAcademiquePostgres } from 'contexts/referentiel-academique/infrastructure/persistence/postgres';
 
 interface LigneProgrammeLecture {
