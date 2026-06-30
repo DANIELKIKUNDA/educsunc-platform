@@ -7,5 +7,6 @@ export interface ModifierCoteInput {
   nouvelleCote: number;
   versionAttendue: number;
   idUtilisateur: string;
+  idOrganisation?: string;
   cleIdempotence?: string;
 }

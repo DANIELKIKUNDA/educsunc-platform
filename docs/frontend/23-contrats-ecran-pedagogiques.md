@@ -514,9 +514,9 @@ Permettre l'encodage et la modification de la conduite dans le bon perimetre aut
 
 ### Actions masquees ou interdites
 
-- acces pour `ENSEIGNANT` simple non titulaire
-- acces pour `ADMINISTRATEUR_ECOLE`
-- acces hors section pour `DIRECTEUR_DISCIPLINE`
+- acces interdit pour `ENSEIGNANT` simple non titulaire
+- acces interdit pour `ADMINISTRATEUR_ECOLE`
+- acces interdit hors section pour `DIRECTEUR_DISCIPLINE`
 
 ### Etats obligatoires
 

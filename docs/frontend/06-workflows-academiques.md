@@ -262,7 +262,7 @@ Permettre a l'ecole de creer, consulter, preparer, garantir, activer, basculer, 
 
 ### Acteur principal
 
-`ADMINISTRATEUR_ECOLE`
+`ADMIN_SYSTEME_ECOLE`
 
 ### Acteurs secondaires
 
@@ -494,7 +494,7 @@ Points de transition metier importants observes dans le backend :
 ### Notes de verrouillage
 
 - La granularite fine des permissions backend autour de l'annee scolaire n'est pas exposee comme un sous-ensemble distinct de `referentiel.read` et `referentiel.write` dans les documents de permissions deja figes.
-- Les sources backend lues pour cette phase permettent de retenir `ADMINISTRATEUR_ECOLE` comme acteur principal du workflow, mais elles n'attestent pas encore, au meme niveau de preuve, d'un acteur secondaire officiel pour ce meme workflow.
+- La correction doctrinale retenue pour cette phase remplace `ADMINISTRATEUR_ECOLE` par `ADMIN_SYSTEME_ECOLE` sur les workflows academiques locaux, afin de respecter la separation entre gouvernance ecole non technique et administration systeme locale.
 
 ### Statut de figement
 
@@ -524,7 +524,7 @@ Permettre a l'ecole de construire et maintenir sa structure d'exploitation local
 
 ### Acteur principal
 
-`ADMINISTRATEUR_ECOLE`
+`ADMIN_SYSTEME_ECOLE`
 
 ### Acteurs secondaires
 
@@ -739,7 +739,7 @@ Points de transition metier importants observes dans le backend :
 
 - Le backend conserve volontairement `referentiel.write` comme permission transverse commune a `ACA-08` et `ACA-04`.
 - La separation effective ne repose pas sur la suppression de permissions, mais sur le branchement local des routes, du controleur et du perimetre documentaire.
-- Les sources retenues pour cette phase attestent `ADMINISTRATEUR_ECOLE` comme acteur principal d'`ACA-04`, sans acteur secondaire officiel materialise au meme niveau de preuve.
+- La correction doctrinale retenue pour cette phase remplace `ADMINISTRATEUR_ECOLE` par `ADMIN_SYSTEME_ECOLE` sur `ACA-04`, sans introduire d'acteur secondaire officiel supplementaire.
 
 ### Statut de figement
 
@@ -769,7 +769,7 @@ Permettre a l'ecole d'attribuer, consulter et retirer le responsable officiel d'
 
 ### Acteur principal
 
-`ADMINISTRATEUR_ECOLE`
+`ADMIN_SYSTEME_ECOLE`
 
 ### Acteurs secondaires
 
@@ -1070,7 +1070,7 @@ Permettre a l'ecole de creer, consulter, ajuster, valider et verrouiller son `Ca
 
 ### Acteur principal
 
-`ADMINISTRATEUR_ECOLE`
+`ADMIN_SYSTEME_ECOLE`
 
 ### Acteurs secondaires
 
@@ -1406,7 +1406,7 @@ Permettre a l'ecole d'initialiser, consulter, valider, archiver et lire l'etat l
 
 ### Acteur principal
 
-`ADMINISTRATEUR_ECOLE`
+`ADMIN_SYSTEME_ECOLE`
 
 ### Acteurs secondaires
 

@@ -29,6 +29,11 @@ function creerControleurRapportFinancierFactice() {
     async consulterPaiementsParCaissier() { return { donnee: {} }; },
     async consulterPaiementsParTypeFrais() { return { donnee: {} }; },
     async consulterFondsAnticipes() { return { donnee: {} }; },
+    async consulterRegistreFinancierClasse() { return { donnee: {} }; },
+    async consulterSyntheseFinanciereClasse() { return { donnee: {} }; },
+    async consulterSyntheseFinanciereSection() { return { donnee: {} }; },
+    async consulterSyntheseFinanciereEcole() { return { donnee: {} }; },
+    async consulterSyntheseFinanciereOrganisation() { return { donnee: {} }; },
   };
 }
 
@@ -473,6 +478,346 @@ test("les routes paiements par caissier privilegient l'utilisateur authentifie s
   assert.equal(reponse.statusCode, 200);
   assert.equal(idUtilisateurObserve, 'lecteur-caissier-auth');
   assert.equal(idOrganisationObservee, 'org-auth-5-caissier');
+
+  await serveur.close();
+});
+
+test("les routes registre financier de classe privilegient l'utilisateur authentifie sur le x-user-id fourni", async () => {
+  const serveur = Fastify();
+  const contexteTenant = new PaiementTenantContext();
+  let idUtilisateurObserve: string | undefined;
+  let idOrganisationObservee: string | undefined;
+
+  serveur.addHook('preHandler', async (requete) => {
+    requete.context = {
+      correlationId: 'corr-reg-classe',
+      requestId: 'req-reg-classe',
+      utilisateurId: 'lecteur-registre-auth',
+      organisationActiveId: 'org-auth-registre',
+      ecoleActiveId: 'ecole-auth-registre',
+      permissions: [],
+      restrictions: [],
+      scopes: [],
+      titulariats: [],
+      modeOffline: false,
+    };
+  });
+
+  await serveur.register(creerRoutesPaiementsFacturation({
+    controleurEnregistrerPaiement: { async enregistrer() { return { donnee: {} }; } } as never,
+    controleurConsulterArrieresEleve: { async consulter() { return { donnee: {} }; } } as never,
+    controleurConsulterDetteEleve: { async consulter() { return { donnee: {} }; } } as never,
+    controleurConsulterFraisExigibles: { async consulter() { return { donnee: {} }; } } as never,
+    controleurAnnulerPaiement: { async annuler() { return { donnee: {} }; } } as never,
+    controleurOuvrirCaisse: { async ouvrir() { return { donnee: {} }; } } as never,
+    controleurCloturerCaisse: { async cloturer() { return { donnee: {} }; } } as never,
+    controleurConsulterCaisseJour: { async consulter() { return { donnee: {} }; } } as never,
+    controleurConsulterHistoriquePaiements: { async consulter() { return { donnee: {} }; } } as never,
+    controleurConsulterRapportFinancier: {
+      async consulterJournalier() { return { donnee: {} }; },
+      async consulterPaiementsParCaissier() { return { donnee: {} }; },
+      async consulterPaiementsParTypeFrais() { return { donnee: {} }; },
+      async consulterFondsAnticipes() { return { donnee: {} }; },
+      async consulterRegistreFinancierClasse(_query: unknown, headers: unknown) {
+        const donnees = headers as Record<string, unknown>;
+        idUtilisateurObserve = String(donnees['x-user-id']);
+        idOrganisationObservee = String(donnees['x-organisation-id']);
+        return { donnee: { ok: true } };
+      },
+    } as never,
+    controleurRestituerExcedent: { async restituer() { return { donnee: {} }; } } as never,
+    controleurAssetsRecus: creerControleurAssetsRecusFactice() as never,
+    controleurReimprimerRecu: { async consulter() { return { donnee: {} }; } } as never,
+    contexteTenant,
+  }));
+
+  const reponse = await serveur.inject({
+    method: 'GET',
+    url: '/api/rapports-financiers/registre-classe?idAnneeScolaire=AN-001&idClassePedagogique=CLASSE-001',
+    headers: {
+      'x-user-id': 'spoofed-user',
+      'x-organisation-id': 'spoofed-org',
+      'x-tenant-id': 'spoofed-ecole',
+    },
+  });
+
+  assert.equal(reponse.statusCode, 200);
+  assert.equal(idUtilisateurObserve, 'lecteur-registre-auth');
+  assert.equal(idOrganisationObservee, 'org-auth-registre');
+
+  await serveur.close();
+});
+
+test("les routes synthese financiere de classe privilegient l'utilisateur authentifie sur le x-user-id fourni", async () => {
+  const serveur = Fastify();
+  const contexteTenant = new PaiementTenantContext();
+  let idUtilisateurObserve: string | undefined;
+  let idOrganisationObservee: string | undefined;
+
+  serveur.addHook('preHandler', async (requete) => {
+    requete.context = {
+      correlationId: 'corr-5-synthese',
+      requestId: 'req-5-synthese',
+      utilisateurId: 'lecteur-synthese-auth',
+      organisationActiveId: 'org-auth-synthese',
+      ecoleActiveId: 'ecole-auth-synthese',
+      permissions: [],
+      restrictions: [],
+      scopes: [],
+      titulariats: [],
+      modeOffline: false,
+    };
+  });
+
+  await serveur.register(creerRoutesPaiementsFacturation({
+    controleurEnregistrerPaiement: { async enregistrer() { return { donnee: {} }; } } as never,
+    controleurConsulterArrieresEleve: { async consulter() { return { donnee: {} }; } } as never,
+    controleurConsulterDetteEleve: { async consulter() { return { donnee: {} }; } } as never,
+    controleurConsulterFraisExigibles: { async consulter() { return { donnee: {} }; } } as never,
+    controleurAnnulerPaiement: { async annuler() { return { donnee: {} }; } } as never,
+    controleurOuvrirCaisse: { async ouvrir() { return { donnee: {} }; } } as never,
+    controleurCloturerCaisse: { async cloturer() { return { donnee: {} }; } } as never,
+    controleurConsulterCaisseJour: { async consulter() { return { donnee: {} }; } } as never,
+    controleurConsulterHistoriquePaiements: { async consulter() { return { donnee: {} }; } } as never,
+    controleurConsulterRapportFinancier: {
+      async consulterJournalier() { return { donnee: {} }; },
+      async consulterPaiementsParCaissier() { return { donnee: {} }; },
+      async consulterPaiementsParTypeFrais() { return { donnee: {} }; },
+      async consulterFondsAnticipes() { return { donnee: {} }; },
+      async consulterRegistreFinancierClasse() { return { donnee: {} }; },
+      async consulterSyntheseFinanciereClasse(_query: unknown, headers: unknown) {
+        const donnees = headers as Record<string, unknown>;
+        idUtilisateurObserve = String(donnees['x-user-id']);
+        idOrganisationObservee = String(donnees['x-organisation-id']);
+        return { donnee: { ok: true } };
+      },
+    } as never,
+    controleurRestituerExcedent: { async restituer() { return { donnee: {} }; } } as never,
+    controleurAssetsRecus: creerControleurAssetsRecusFactice() as never,
+    controleurReimprimerRecu: { async consulter() { return { donnee: {} }; } } as never,
+    contexteTenant,
+  }));
+
+  const reponse = await serveur.inject({
+    method: 'GET',
+    url: '/api/rapports-financiers/synthese-classe?idAnneeScolaire=AN-001&idClassePedagogique=CLASSE-001',
+    headers: {
+      'x-user-id': 'spoofed-user',
+      'x-organisation-id': 'spoofed-org',
+      'x-tenant-id': 'spoofed-ecole',
+    },
+  });
+
+  assert.equal(reponse.statusCode, 200);
+  assert.equal(idUtilisateurObserve, 'lecteur-synthese-auth');
+  assert.equal(idOrganisationObservee, 'org-auth-synthese');
+
+  await serveur.close();
+});
+
+test("les routes synthese financiere de section privilegient l'utilisateur authentifie sur le x-user-id fourni", async () => {
+  const serveur = Fastify();
+  const contexteTenant = new PaiementTenantContext();
+  let idUtilisateurObserve: string | undefined;
+  let idOrganisationObservee: string | undefined;
+
+  serveur.addHook('preHandler', async (requete) => {
+    requete.context = {
+      correlationId: 'corr-5-synthese-section',
+      requestId: 'req-5-synthese-section',
+      utilisateurId: 'lecteur-synthese-section-auth',
+      organisationActiveId: 'org-auth-synthese-section',
+      ecoleActiveId: 'ecole-auth-synthese-section',
+      permissions: [],
+      restrictions: [],
+      scopes: [],
+      titulariats: [],
+      modeOffline: false,
+    };
+  });
+
+  await serveur.register(creerRoutesPaiementsFacturation({
+    controleurEnregistrerPaiement: { async enregistrer() { return { donnee: {} }; } } as never,
+    controleurConsulterArrieresEleve: { async consulter() { return { donnee: {} }; } } as never,
+    controleurConsulterDetteEleve: { async consulter() { return { donnee: {} }; } } as never,
+    controleurConsulterFraisExigibles: { async consulter() { return { donnee: {} }; } } as never,
+    controleurAnnulerPaiement: { async annuler() { return { donnee: {} }; } } as never,
+    controleurOuvrirCaisse: { async ouvrir() { return { donnee: {} }; } } as never,
+    controleurCloturerCaisse: { async cloturer() { return { donnee: {} }; } } as never,
+    controleurConsulterCaisseJour: { async consulter() { return { donnee: {} }; } } as never,
+    controleurConsulterHistoriquePaiements: { async consulter() { return { donnee: {} }; } } as never,
+    controleurConsulterRapportFinancier: {
+      async consulterJournalier() { return { donnee: {} }; },
+      async consulterPaiementsParCaissier() { return { donnee: {} }; },
+      async consulterPaiementsParTypeFrais() { return { donnee: {} }; },
+      async consulterFondsAnticipes() { return { donnee: {} }; },
+      async consulterRegistreFinancierClasse() { return { donnee: {} }; },
+      async consulterSyntheseFinanciereClasse() { return { donnee: {} }; },
+      async consulterSyntheseFinanciereSection(_query: unknown, headers: unknown) {
+        const donnees = headers as Record<string, unknown>;
+        idUtilisateurObserve = String(donnees['x-user-id']);
+        idOrganisationObservee = String(donnees['x-organisation-id']);
+        return { donnee: { ok: true } };
+      },
+    } as never,
+    controleurRestituerExcedent: { async restituer() { return { donnee: {} }; } } as never,
+    controleurAssetsRecus: creerControleurAssetsRecusFactice() as never,
+    controleurReimprimerRecu: { async consulter() { return { donnee: {} }; } } as never,
+    contexteTenant,
+  }));
+
+  const reponse = await serveur.inject({
+    method: 'GET',
+    url: '/api/rapports-financiers/synthese-section?idAnneeScolaire=AN-001&idSectionScolaire=SECTION-001',
+    headers: {
+      'x-user-id': 'spoofed-user',
+      'x-organisation-id': 'spoofed-org',
+      'x-tenant-id': 'spoofed-ecole',
+    },
+  });
+
+  assert.equal(reponse.statusCode, 200);
+  assert.equal(idUtilisateurObserve, 'lecteur-synthese-section-auth');
+  assert.equal(idOrganisationObservee, 'org-auth-synthese-section');
+
+  await serveur.close();
+});
+
+test("les routes synthese financiere d ecole privilegient l'utilisateur authentifie sur le x-user-id fourni", async () => {
+  const serveur = Fastify();
+  const contexteTenant = new PaiementTenantContext();
+  let idUtilisateurObserve: string | undefined;
+  let idOrganisationObservee: string | undefined;
+
+  serveur.addHook('preHandler', async (requete) => {
+    requete.context = {
+      correlationId: 'corr-5-synthese-ecole',
+      requestId: 'req-5-synthese-ecole',
+      utilisateurId: 'lecteur-synthese-ecole-auth',
+      organisationActiveId: 'org-auth-synthese-ecole',
+      ecoleActiveId: 'ecole-auth-synthese-ecole',
+      permissions: [],
+      restrictions: [],
+      scopes: [],
+      titulariats: [],
+      modeOffline: false,
+    };
+  });
+
+  await serveur.register(creerRoutesPaiementsFacturation({
+    controleurEnregistrerPaiement: { async enregistrer() { return { donnee: {} }; } } as never,
+    controleurConsulterArrieresEleve: { async consulter() { return { donnee: {} }; } } as never,
+    controleurConsulterDetteEleve: { async consulter() { return { donnee: {} }; } } as never,
+    controleurConsulterFraisExigibles: { async consulter() { return { donnee: {} }; } } as never,
+    controleurAnnulerPaiement: { async annuler() { return { donnee: {} }; } } as never,
+    controleurOuvrirCaisse: { async ouvrir() { return { donnee: {} }; } } as never,
+    controleurCloturerCaisse: { async cloturer() { return { donnee: {} }; } } as never,
+    controleurConsulterCaisseJour: { async consulter() { return { donnee: {} }; } } as never,
+    controleurConsulterHistoriquePaiements: { async consulter() { return { donnee: {} }; } } as never,
+    controleurConsulterRapportFinancier: {
+      async consulterJournalier() { return { donnee: {} }; },
+      async consulterPaiementsParCaissier() { return { donnee: {} }; },
+      async consulterPaiementsParTypeFrais() { return { donnee: {} }; },
+      async consulterFondsAnticipes() { return { donnee: {} }; },
+      async consulterRegistreFinancierClasse() { return { donnee: {} }; },
+      async consulterSyntheseFinanciereClasse() { return { donnee: {} }; },
+      async consulterSyntheseFinanciereSection() { return { donnee: {} }; },
+      async consulterSyntheseFinanciereEcole(_query: unknown, headers: unknown) {
+        const donnees = headers as Record<string, unknown>;
+        idUtilisateurObserve = String(donnees['x-user-id']);
+        idOrganisationObservee = String(donnees['x-organisation-id']);
+        return { donnee: { ok: true } };
+      },
+    } as never,
+    controleurRestituerExcedent: { async restituer() { return { donnee: {} }; } } as never,
+    controleurAssetsRecus: creerControleurAssetsRecusFactice() as never,
+    controleurReimprimerRecu: { async consulter() { return { donnee: {} }; } } as never,
+    contexteTenant,
+  }));
+
+  const reponse = await serveur.inject({
+    method: 'GET',
+    url: '/api/rapports-financiers/synthese-ecole?idAnneeScolaire=AN-001',
+    headers: {
+      'x-user-id': 'spoofed-user',
+      'x-organisation-id': 'spoofed-org',
+      'x-tenant-id': 'spoofed-ecole',
+    },
+  });
+
+  assert.equal(reponse.statusCode, 200);
+  assert.equal(idUtilisateurObserve, 'lecteur-synthese-ecole-auth');
+  assert.equal(idOrganisationObservee, 'org-auth-synthese-ecole');
+
+  await serveur.close();
+});
+
+test("les routes synthese financiere d organisation privilegient l'utilisateur authentifie sur le x-user-id fourni", async () => {
+  const serveur = Fastify();
+  const contexteTenant = new PaiementTenantContext();
+  let idUtilisateurObserve: string | undefined;
+  let idOrganisationObservee: string | undefined;
+
+  serveur.addHook('preHandler', async (requete) => {
+    requete.context = {
+      correlationId: 'corr-5-synthese-organisation',
+      requestId: 'req-5-synthese-organisation',
+      utilisateurId: 'lecteur-synthese-organisation-auth',
+      organisationActiveId: 'org-auth-synthese-organisation',
+      ecoleActiveId: 'ecole-auth-synthese-organisation',
+      permissions: [],
+      restrictions: [],
+      scopes: [],
+      titulariats: [],
+      modeOffline: false,
+    };
+  });
+
+  await serveur.register(creerRoutesPaiementsFacturation({
+    controleurEnregistrerPaiement: { async enregistrer() { return { donnee: {} }; } } as never,
+    controleurConsulterArrieresEleve: { async consulter() { return { donnee: {} }; } } as never,
+    controleurConsulterDetteEleve: { async consulter() { return { donnee: {} }; } } as never,
+    controleurConsulterFraisExigibles: { async consulter() { return { donnee: {} }; } } as never,
+    controleurAnnulerPaiement: { async annuler() { return { donnee: {} }; } } as never,
+    controleurOuvrirCaisse: { async ouvrir() { return { donnee: {} }; } } as never,
+    controleurCloturerCaisse: { async cloturer() { return { donnee: {} }; } } as never,
+    controleurConsulterCaisseJour: { async consulter() { return { donnee: {} }; } } as never,
+    controleurConsulterHistoriquePaiements: { async consulter() { return { donnee: {} }; } } as never,
+    controleurConsulterRapportFinancier: {
+      async consulterJournalier() { return { donnee: {} }; },
+      async consulterPaiementsParCaissier() { return { donnee: {} }; },
+      async consulterPaiementsParTypeFrais() { return { donnee: {} }; },
+      async consulterFondsAnticipes() { return { donnee: {} }; },
+      async consulterRegistreFinancierClasse() { return { donnee: {} }; },
+      async consulterSyntheseFinanciereClasse() { return { donnee: {} }; },
+      async consulterSyntheseFinanciereSection() { return { donnee: {} }; },
+      async consulterSyntheseFinanciereEcole() { return { donnee: {} }; },
+      async consulterSyntheseFinanciereOrganisation(_query: unknown, headers: unknown) {
+        const donnees = headers as Record<string, unknown>;
+        idUtilisateurObserve = String(donnees['x-user-id']);
+        idOrganisationObservee = String(donnees['x-organisation-id']);
+        return { donnee: { ok: true } };
+      },
+    } as never,
+    controleurRestituerExcedent: { async restituer() { return { donnee: {} }; } } as never,
+    controleurAssetsRecus: creerControleurAssetsRecusFactice() as never,
+    controleurReimprimerRecu: { async consulter() { return { donnee: {} }; } } as never,
+    contexteTenant,
+  }));
+
+  const reponse = await serveur.inject({
+    method: 'GET',
+    url: '/api/rapports-financiers/synthese-organisation?idAnneeScolaire=AN-001',
+    headers: {
+      'x-user-id': 'spoofed-user',
+      'x-organisation-id': 'spoofed-org',
+      'x-tenant-id': 'spoofed-ecole',
+    },
+  });
+
+  assert.equal(reponse.statusCode, 200);
+  assert.equal(idUtilisateurObserve, 'lecteur-synthese-organisation-auth');
+  assert.equal(idOrganisationObservee, 'org-auth-synthese-organisation');
 
   await serveur.close();
 });
@@ -1477,6 +1822,75 @@ test("la route exoneration annulation propage le role actif authentifie", async 
 
   assert.equal(reponse.statusCode, 200);
   assert.equal(roleObserve, 'ADMINISTRATEUR_ECOLE');
+
+  await serveur.close();
+});
+
+test("les routes qualification financiere eleve privilegient l'utilisateur authentifie sur le x-user-id fourni", async () => {
+  const serveur = Fastify();
+  const contexteTenant = new PaiementTenantContext();
+  let idUtilisateurObserve: string | undefined;
+  let roleObserve: string | undefined;
+
+  serveur.addHook('preHandler', async (requete) => {
+    requete.context = {
+      correlationId: 'corr-14',
+      requestId: 'req-14',
+      utilisateurId: 'caissier-qualification-auth',
+      organisationActiveId: 'org-auth-14',
+      ecoleActiveId: 'ecole-auth-14',
+      roleActif: 'CAISSIER',
+      permissions: [],
+      restrictions: [],
+      scopes: [],
+      titulariats: [],
+      modeOffline: false,
+    };
+  });
+
+  await serveur.register(creerRoutesPaiementsFacturation({
+    controleurEnregistrerPaiement: { async enregistrer() { return { donnee: {} }; } } as never,
+    controleurQualificationFinanciereEleve: {
+      async activer(_corps: unknown, headers: unknown) {
+        const donnees = headers as Record<string, unknown>;
+        idUtilisateurObserve = String(donnees['x-user-id']);
+        roleObserve = String(donnees['x-role-actif']);
+        return { donnee: { idQualification: 'Q-1' } };
+      },
+      async desactiver() { return { donnee: {} }; },
+      async lister() { return { donnee: [] }; },
+    } as never,
+    controleurConsulterArrieresEleve: { async consulter() { return { donnee: {} }; } } as never,
+    controleurConsulterDetteEleve: { async consulter() { return { donnee: {} }; } } as never,
+    controleurConsulterFraisExigibles: { async consulter() { return { donnee: {} }; } } as never,
+    controleurAnnulerPaiement: { async annuler() { return { donnee: {} }; } } as never,
+    controleurOuvrirCaisse: { async ouvrir() { return { donnee: {} }; } } as never,
+    controleurCloturerCaisse: { async cloturer() { return { donnee: {} }; } } as never,
+    controleurConsulterCaisseJour: { async consulter() { return { donnee: {} }; } } as never,
+    controleurConsulterHistoriquePaiements: { async consulter() { return { donnee: {} }; } } as never,
+    controleurRestituerExcedent: { async restituer() { return { donnee: {} }; } } as never,
+    controleurAssetsRecus: creerControleurAssetsRecusFactice() as never,
+    controleurReimprimerRecu: { async consulter() { return { donnee: {} }; } } as never,
+    contexteTenant,
+  }));
+
+  const reponse = await serveur.inject({
+    method: 'POST',
+    url: '/api/qualifications-financieres-eleves',
+    headers: {
+      'x-user-id': 'spoofed-user',
+      'x-organisation-id': 'spoofed-org',
+      'x-tenant-id': 'spoofed-ecole',
+    },
+    payload: {
+      idEleve: 'ELEVE-001',
+      codeQualification: 'ENFANT_AGENT',
+    },
+  });
+
+  assert.equal(reponse.statusCode, 201);
+  assert.equal(idUtilisateurObserve, 'caissier-qualification-auth');
+  assert.equal(roleObserve, 'CAISSIER');
 
   await serveur.close();
 });

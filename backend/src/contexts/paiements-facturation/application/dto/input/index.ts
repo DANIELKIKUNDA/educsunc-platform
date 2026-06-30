@@ -7,3 +7,4 @@ export * from './RecusEntreeDTO';
 export * from './CaisseEntreeDTO';
 export * from './ExonerationsEntreeDTO';
 export * from './AnnulationsEntreeDTO';
+export * from './QualificationsFinancieresEntreeDTO';

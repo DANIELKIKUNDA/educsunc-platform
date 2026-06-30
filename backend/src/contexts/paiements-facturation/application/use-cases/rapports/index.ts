@@ -2,3 +2,8 @@ export * from './ConsulterRapportFinancierJournalierUseCase';
 export * from './ConsulterPaiementsParCaissierUseCase';
 export * from './ConsulterPaiementsParTypeFraisUseCase';
 export * from './ConsulterFondsAnticipesUseCase';
+export * from './ConsulterRegistreFinancierClasseUseCase';
+export * from './ConsulterSyntheseFinanciereClasseUseCase';
+export * from './ConsulterSyntheseFinanciereSectionUseCase';
+export * from './ConsulterSyntheseFinanciereEcoleUseCase';
+export * from './ConsulterSyntheseFinanciereOrganisationUseCase';

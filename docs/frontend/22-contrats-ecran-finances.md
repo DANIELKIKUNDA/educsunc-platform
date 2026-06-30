@@ -79,7 +79,7 @@ Permettre l'enregistrement d'un paiement autorise dans le bon perimetre, avec pr
 - organisation active
 - ecole active
 - droit reel de perception
-- pour les acteurs delegues : delegation locale explicite sur le type de frais
+- pour les acteurs delegues : `paiements.write` + delegation locale explicite sur le type de frais
 
 ### Donnees attendues
 
@@ -531,6 +531,7 @@ Permettre la lecture synthétique de la situation financiere d'un eleve dans le 
 - dette courante
 - frais exigibles
 - arrieres
+- qualifications financieres eleve si elles existent
 
 ### Donnees affichees
 
@@ -538,11 +539,13 @@ Permettre la lecture synthétique de la situation financiere d'un eleve dans le 
 - liste des obligations
 - frais exigibles
 - alertes de dette
+- qualifications financieres utiles comme `ENFANT_AGENT` lorsque le backend les porte
 
 ### Actions visibles
 
 - consulter le detail
 - basculer vers historique
+- relire les qualifications financieres de l'eleve si l'acteur y est autorise
 
 ### Actions masquees ou interdites
 
@@ -565,10 +568,12 @@ Permettre la lecture synthétique de la situation financiere d'un eleve dans le 
 - carte situation financiere
 - liste obligations
 - bloc frais exigibles
+- bloc qualifications financieres en lecture si present
 
 ### Sources backend
 
 - `PF-06`
+- `PF-AG`
 
 ## Ecran `SCR-PF-007`
 
@@ -764,6 +769,12 @@ Permettre la lecture analytique des paiements agreges par type de frais dans le 
 
 Permettre d'accorder puis d'annuler une exoneration dans le bon perimetre local, avec delegation locale optionnelle et strictement bornee.
 
+Lecture de cadrage :
+
+- cet ecran ne porte pas `AG`
+- `AG` reste une qualification financiere autonome
+- il ne doit jamais etre saisi comme une exoneration
+
 ### Acteur principal
 
 - `ADMINISTRATEUR_ECOLE`
@@ -800,6 +811,7 @@ Permettre d'accorder puis d'annuler une exoneration dans le bon perimetre local,
 ### Actions masquees ou interdites
 
 - pouvoir global d'exoneration pour `SECRETAIRE`
+- toute creation de `AG` depuis ce flux d'exoneration
 
 ### Etats obligatoires
 

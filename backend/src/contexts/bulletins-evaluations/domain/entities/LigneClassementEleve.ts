@@ -5,6 +5,7 @@ import { SexeEleve } from '../value-objects/SexeEleve';
 // Cette entite represente une ligne de classement d'un eleve pour une colonne.
 export class LigneClassementEleve extends Entite<string> {
   private idEleve: string;
+  private nomComplet: string;
   private sexe: SexeEleve;
   private totalObtenu?: number;
   private maximumGeneral?: number;
@@ -16,6 +17,7 @@ export class LigneClassementEleve extends Entite<string> {
   constructor(params: {
     idLigneClassementEleve: string;
     idEleve: string;
+    nomComplet: string;
     sexe: SexeEleve;
     totalObtenu?: number;
     maximumGeneral?: number;
@@ -25,6 +27,7 @@ export class LigneClassementEleve extends Entite<string> {
   }) {
     super(params.idLigneClassementEleve);
     this.idEleve = params.idEleve;
+    this.nomComplet = params.nomComplet;
     this.sexe = params.sexe;
     this.totalObtenu = params.totalObtenu;
     this.maximumGeneral = params.maximumGeneral;
@@ -37,6 +40,11 @@ export class LigneClassementEleve extends Entite<string> {
   // Cette methode expose l'identifiant de l'eleve.
   public obtenirIdEleve(): string {
     return this.idEleve;
+  }
+
+  // Cette methode expose le nom complet affiche de l'eleve.
+  public obtenirNomComplet(): string {
+    return this.nomComplet;
   }
 
   // Cette methode expose le sexe pedagogique utilise pour les statistiques.

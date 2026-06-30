@@ -692,3 +692,215 @@
   color: var(--couleur-encre);
   font-weight: 900;
 }
+
+.finance-form-actions--split,
+.finance-inline-actions,
+.finance-register-actions,
+.finance-register-stats__header,
+.finance-register-mobile-card__header {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.finance-form-actions--split {
+  align-items: center;
+  justify-content: space-between;
+}
+
+.finance-inline-actions {
+  flex-wrap: wrap;
+}
+
+.finance-secondary-soft-action {
+  border: 1px solid var(--couleur-bordure);
+  border-radius: 0.95rem;
+  padding: 0.85rem 1rem;
+  background: #fff;
+  color: var(--couleur-encre);
+  font-weight: 800;
+}
+
+.finance-register-legend {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.finance-register-legend__item,
+.finance-register-mobile-card {
+  padding: 0.95rem 1rem;
+  border: 1px solid var(--couleur-bordure);
+  border-radius: 1rem;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 253, 0.96));
+  box-shadow: var(--ombre-carte);
+}
+
+.finance-register-legend__item strong,
+.finance-register-heading strong,
+.finance-register-student strong,
+.finance-register-mobile-card__header strong {
+  display: block;
+}
+
+.finance-register-legend__item small,
+.finance-register-heading small,
+.finance-register-student small,
+.finance-register-cell small,
+.finance-register-mobile-card small,
+.finance-register-stats__header p {
+  color: var(--couleur-texte-douce);
+}
+
+.finance-register-table-shell,
+.finance-register-stats__table-shell {
+  overflow: auto;
+  border: 1px solid var(--couleur-bordure);
+  border-radius: 1rem;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(244, 248, 253, 0.97));
+  box-shadow: var(--ombre-carte);
+}
+
+.finance-register-table {
+  width: max-content;
+  min-width: 100%;
+  border-collapse: collapse;
+}
+
+.finance-register-table th,
+.finance-register-table td,
+.finance-register-stats__table th,
+.finance-register-stats__table td {
+  padding: 0.8rem;
+  border-bottom: 1px solid rgba(24, 54, 95, 0.08);
+  vertical-align: top;
+}
+
+.finance-register-table thead th,
+.finance-register-stats__table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #edf3fb;
+  color: var(--couleur-encre);
+  font-size: 0.75rem;
+  font-weight: 900;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.finance-register-table__sticky,
+.finance-register-table__sticky-2 {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: #fff;
+}
+
+.finance-register-table__sticky-2 {
+  left: 4.5rem;
+  min-width: 15rem;
+}
+
+.finance-register-table tbody tr:hover td {
+  background: rgba(45, 95, 159, 0.04);
+}
+
+.finance-register-heading {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 8.5rem;
+}
+
+.finance-register-student {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.finance-register-cell {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 8.5rem;
+}
+
+.finance-register-cell--not-due {
+  opacity: 0.78;
+}
+
+.finance-register-token {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  min-width: 2.5rem;
+  padding: 0.22rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.73rem;
+  font-weight: 900;
+}
+
+.finance-register-token--success {
+  background: rgba(47, 157, 98, 0.12);
+  color: #226a46;
+}
+
+.finance-register-token--warning {
+  background: rgba(242, 182, 50, 0.16);
+  color: #8a6114;
+}
+
+.finance-register-token--neutral {
+  background: rgba(45, 95, 159, 0.1);
+  color: #1d416f;
+}
+
+.finance-register-token--muted {
+  background: rgba(16, 40, 68, 0.09);
+  color: #42556d;
+}
+
+.finance-register-actions {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.finance-register-stats {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.finance-register-stats__header {
+  align-items: flex-start;
+}
+
+.finance-register-stats__header svg {
+  width: 1.2rem;
+  height: 1.2rem;
+  margin-top: 0.15rem;
+  color: var(--couleur-principale);
+}
+
+.finance-register-stats__header p {
+  margin: 0.2rem 0 0;
+}
+
+.finance-register-stats__table {
+  width: max-content;
+  min-width: 100%;
+  border-collapse: collapse;
+}
+
+.finance-register-mobile-list,
+.finance-register-mobile-card__body {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.finance-register-mobile-card__header {
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.finance-register-mobile-card__body {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}

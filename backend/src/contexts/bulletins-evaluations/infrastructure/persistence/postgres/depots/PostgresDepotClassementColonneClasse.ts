@@ -21,6 +21,7 @@ interface ClassementColonneClasseRow {
 interface LigneClassementPersisted {
   idLigneClassementEleve: string;
   idEleve: string;
+  nomComplet: string;
   sexe: SexeEleve;
   totalObtenu?: number;
   maximumGeneral?: number;
@@ -49,6 +50,7 @@ export class PostgresDepotClassementColonneClasse implements DepotClassementColo
     const lignes = classementColonneClasse.obtenirLignesClassement().map((ligne) => ({
       idLigneClassementEleve: ligne.obtenirId(),
       idEleve: ligne.obtenirIdEleve(),
+      nomComplet: ligne.obtenirNomComplet(),
       sexe: ligne.obtenirSexe(),
       totalObtenu: ligne.obtenirTotalObtenu(),
       maximumGeneral: ligne.obtenirMaximumGeneral(),
@@ -202,6 +204,7 @@ export class PostgresDepotClassementColonneClasse implements DepotClassementColo
       lignesClassement: lignesPersisted.map((element) => new LigneClassementEleve({
         idLigneClassementEleve: element.idLigneClassementEleve,
         idEleve: element.idEleve,
+        nomComplet: element.nomComplet ?? element.idEleve,
         sexe: element.sexe,
         totalObtenu: element.totalObtenu,
         maximumGeneral: element.maximumGeneral,

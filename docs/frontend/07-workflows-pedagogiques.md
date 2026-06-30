@@ -444,6 +444,10 @@ Limite importante du backend actuel :
 - autorisation locale :
   - [AutorisationGenerationBulletinPort.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/bulletins-evaluations/application/ports/out/AutorisationGenerationBulletinPort.ts)
   - [AutorisationGenerationBulletinAdapter.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/app/adapters/AutorisationGenerationBulletinAdapter.ts)
+- preuves de securite :
+  - [security-generation-pedagogique.integration.spec.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/shared/tests/integration/security-generation-pedagogique.integration.spec.ts)
+  - [security-bulletins.integration.spec.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/shared/tests/integration/security-bulletins.integration.spec.ts)
+  - [security-lecture-bulletins.integration.spec.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/shared/tests/integration/security-lecture-bulletins.integration.spec.ts)
 - PDF :
   - [BulletinPdfPort.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/bulletins-evaluations/application/ports/out/BulletinPdfPort.ts)
   - [BulletinPdfAdapter.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/bulletins-evaluations/infrastructure/adapters/BulletinPdfAdapter.ts)
@@ -1248,9 +1252,11 @@ En sortie de PED-03, le backend doit produire :
 - [GenererProclamationValidator.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/bulletins-evaluations/interfaces/http/validators/GenererProclamationValidator.ts)
 - [ProclamationMapper.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/bulletins-evaluations/application/mappers/ProclamationMapper.ts)
 - [ProclamationClasseOutput.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/bulletins-evaluations/application/dto/output/ProclamationClasseOutput.ts)
+- [AutorisationGenerationProclamationAdapter.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/app/adapters/AutorisationGenerationProclamationAdapter.ts)
 - [ProclamationPdfPort.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/bulletins-evaluations/application/ports/out/ProclamationPdfPort.ts)
 - [ProclamationPdfAdapter.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/bulletins-evaluations/infrastructure/adapters/ProclamationPdfAdapter.ts)
 - [PdfProclamationService.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/bulletins-evaluations/infrastructure/services/PdfProclamationService.ts)
+- [security-generation-pedagogique.integration.spec.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/shared/tests/integration/security-generation-pedagogique.integration.spec.ts)
 
 ### Notes de lecture frontend
 
@@ -1564,6 +1570,7 @@ En sortie de PED-04, le backend doit produire :
 - [syntheses.routes.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/bulletins-evaluations/interfaces/http/routes/syntheses.routes.ts)
 - [SyntheseResultatsController.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/bulletins-evaluations/interfaces/http/controllers/SyntheseResultatsController.ts)
 - [InitialiserSyntheseValidator.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/bulletins-evaluations/interfaces/http/validators/InitialiserSyntheseValidator.ts)
+- [security-generation-pedagogique.integration.spec.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/shared/tests/integration/security-generation-pedagogique.integration.spec.ts)
 
 ### Notes de lecture frontend
 
@@ -1659,18 +1666,16 @@ Lecture officielle de l'acteur :
   - n'est pas atteste comme lecteur des statistiques globales d'ecole
 - `TITULAIRE` effectif
   - peut consulter les statistiques de sa propre classe titulaire pour la bonne annee scolaire
-- `ADMINISTRATEUR_ECOLE`
-  - peut consulter les statistiques globales de son ecole
-  - peut aussi consulter des statistiques de classe par son perimetre global d'ecole
-- `PROMOTEUR_ORGANISATION`
-  - est accepte par la doctrine backend locale comme porteur d'un perimetre global d'organisation/ecole
-  - reste un acteur surtout transverse, pas pedagogique de terrain
+- `DIRECTEUR_DISCIPLINE`
+  - peut consulter les statistiques de classe dans la section secondaire autorisee
+  - n'est pas atteste comme lecteur des statistiques globales d'ecole
 
 Acteurs explicitement non retenus en l'etat des preuves backend :
 
 - `ENSEIGNANT` simple
 - `PARENT`
-- `DIRECTEUR_DISCIPLINE` comme lecteur statistique explicitement prouve
+- `ADMINISTRATEUR_ECOLE`
+- `PROMOTEUR_ORGANISATION`
 - `DIRECTEUR_PRIMAIRE`
 - `DIRECTEUR_MATERNELLE`
 
@@ -1705,13 +1710,11 @@ Lecture classe / non-classes / abandons :
 - bon perimetre metier parmi les suivants :
   - `TITULAIRE` effectif de la bonne classe et de la bonne annee
   - role pedagogique sectionnel avec bonne section resolue depuis la classe
-  - porteur d'un perimetre global d'ecole / organisation
 
 Lecture ecole :
 
 - perimetre global uniquement :
-  - `ADMINISTRATEUR_ECOLE`
-  - `PROMOTEUR_ORGANISATION`
+  - aucun acteur positif officiellement retenu dans l'etat courant des preuves backend
 
 Lecture doctrinale importante :
 
@@ -1719,6 +1722,9 @@ Lecture doctrinale importante :
 - le backend revalide localement le perimetre reel avant chaque lecture statistique
 - `PREFET_ETUDES` et `DIRECTEUR_ETUDES` ne lisent pas l'ecole entiere par simple `bulletins.read`
 - ils doivent respecter leur perimetre sectionnel quand le workflow consulte une classe
+- `DIRECTEUR_DISCIPLINE` n'est lisible positivement ici que parce que la lecture statistique reste effectivement prouvee dans l'etat courant
+- `ADMINISTRATEUR_ECOLE` n'est plus retenu comme lecteur positif du workflow pedagogique apres correction doctrinale
+- `PROMOTEUR_ORGANISATION` n'est pas retenu non plus comme lecteur pedagogique officiellement prouve dans l'etat courant
 
 ### Cas d'utilisation utilises
 
@@ -1982,12 +1988,6 @@ Lecture officielle de l'acteur :
 - `DIRECTEUR_ETUDES`
   - est accepte par la policy locale de consultation sur le meme perimetre sectionnel
   - n'est pas atteste comme acteur de recalcul
-- `ADMINISTRATEUR_ECOLE`
-  - peut consulter par son perimetre global d'ecole dans la logique locale partagee
-  - n'est pas retenu comme acteur pedagogique principal du workflow
-- `PROMOTEUR_ORGANISATION`
-  - peut consulter par son perimetre global organisation/ecole
-  - n'est pas retenu comme acteur pedagogique principal du workflow
 
 Acteurs explicitement non retenus pour le recalcul :
 
@@ -1995,6 +1995,7 @@ Acteurs explicitement non retenus pour le recalcul :
 - `PREFET_ETUDES`
 - `DIRECTEUR_ETUDES`
 - `ADMINISTRATEUR_ECOLE`
+- `PROMOTEUR_ORGANISATION`
 
 ### Preconditions
 
@@ -2539,6 +2540,11 @@ Lecture importante de perimetre :
 Acteurs explicitement exclus du perimetre d'ouverture retenu :
 
 - `ENSEIGNANT` simple non titulaire
+- `ADMINISTRATEUR_ECOLE`
+- `PROMOTEUR_ORGANISATION`
+- `DIRECTEUR_DISCIPLINE`
+- `DIRECTEUR_PRIMAIRE`
+- `DIRECTEUR_MATERNELLE`
 - lecture globale implicite sans perimetre de classe
 
 ### Preconditions

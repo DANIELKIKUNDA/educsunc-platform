@@ -187,7 +187,7 @@ Permettre la consultation et la gestion des eleves dans le bon perimetre local o
 ### Actions masquees ou interdites
 
 - ouverture globale hors perimetre
-- gestion locale par `ADMINISTRATEUR_ECOLE` si non prouve
+- acces interdit pour `ADMINISTRATEUR_ECOLE` tant qu'aucune preuve backend locale ne l'ouvre sur ce workflow
 
 ### Etats obligatoires
 
@@ -338,6 +338,8 @@ Permettre la consultation et la mutation des affectations dans le bon perimetre 
 ### Donnees affichees
 
 - affectation actuelle
+- affectation ciblee par identifiant si necessaire
+- liste reelle des eleves affectes a la classe
 - choix de nouvelle classe si mutation autorisee
 
 ### Actions visibles
@@ -367,6 +369,8 @@ Permettre la consultation et la mutation des affectations dans le bon perimetre 
 ### Composants majeurs attendus
 
 - bloc affectation actuelle
+- bloc lecture d'affectation par identifiant
+- tableau des eleves affectes avec identifiants utiles de mutation
 - selecteur de classe
 - resume de mutation
 
@@ -434,6 +438,7 @@ Permettre les actions reelles de cycle de vie eleve dans le bon perimetre et sel
 - suspendre
 - abandonner
 - transferer
+- reintegrer si le workflow local l expose
 - reactiver
 - declarer deces
 
@@ -441,6 +446,7 @@ Permettre les actions reelles de cycle de vie eleve dans le bon perimetre et sel
 
 - actions hors bloc autorise de l'acteur courant
 - autre chose que suspension pour `DIRECTEUR_DISCIPLINE`
+- suspension masquee pour `CAISSIER`
 - suspension hors section pour acteurs sectionnels
 
 ### Etats obligatoires
@@ -469,7 +475,7 @@ Permettre les actions reelles de cycle de vie eleve dans le bon perimetre et sel
 
 ### Sources backend
 
-- `SCO-05`
+- `SCO-02`
 
 ## Ecran `SCR-SCO-006`
 
@@ -514,13 +520,13 @@ Permettre l'encodage d'une suspension dans le bon perimetre disciplinaire ou ped
 
 - eleve cible
 - statut courant
-- justification ou motif de suspension
+- version attendue de l'eleve cible
 
 ### Donnees affichees
 
 - resume eleve
-- motif
 - confirmation d'action
+- historique recent si disponible
 
 ### Actions visibles
 
@@ -547,12 +553,12 @@ Permettre l'encodage d'une suspension dans le bon perimetre disciplinaire ou ped
 ### Composants majeurs attendus
 
 - resume eleve
-- formulaire motif
+- controle de version attendue
 - confirmation
 
 ### Sources backend
 
-- `SCO-06`
+- `SCO-02`
 
 ## Verdict
 

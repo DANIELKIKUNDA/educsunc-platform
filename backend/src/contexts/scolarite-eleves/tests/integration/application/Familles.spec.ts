@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { Eleve } from '../../../domain/aggregates/Eleve';
 import { Famille } from '../../../domain/aggregates/Famille';
 import type { DepotFamille } from '../../../domain/repositories/DepotFamille';
+import type { DepotEleve } from '../../../domain/repositories/DepotEleve';
+import { EcoleProvenance } from '../../../domain/value-objects/EcoleProvenance';
 import { LienParente } from '../../../domain/value-objects/LienParente';
 import { AjouterResponsableFamille } from '../../../application/use-cases/familles/AjouterResponsableFamille';
 import { ConsulterFamille } from '../../../application/use-cases/familles/ConsulterFamille';
@@ -13,6 +16,7 @@ import { ModifierFamille } from '../../../application/use-cases/familles/Modifie
 import { ModifierResponsableFamille } from '../../../application/use-cases/familles/ModifierResponsableFamille';
 import { RetirerResponsableFamille } from '../../../application/use-cases/familles/RetirerResponsableFamille';
 import type { AutorisationFamillePort } from '../../../application/ports';
+import { ResponsableFamille } from '../../../domain/entities/ResponsableFamille';
 
 class DepotFamilleMemoire implements DepotFamille {
   public readonly familles = new Map<string, Famille>();
@@ -64,13 +68,62 @@ class AutorisationFamilleMemoire implements AutorisationFamillePort {
   }
 }
 
+class DepotEleveMemoire implements DepotEleve {
+  public readonly eleves = new Map<string, Eleve>();
+
+  public async sauvegarder(eleve: Eleve): Promise<void> {
+    this.eleves.set(eleve.obtenirId(), eleve);
+  }
+
+  public async trouverParId(idEleve: string): Promise<Eleve | null> { return this.eleves.get(idEleve) ?? null; }
+  public async trouverParMatricule(idEcole: string, matricule: string): Promise<Eleve | null> {
+    return [...this.eleves.values()].find((eleve) => eleve.obtenirIdEcole() === idEcole && eleve.obtenirMatricule() === matricule) ?? null;
+  }
+  public async listerParEcole(idEcole: string): Promise<Eleve[]> {
+    return [...this.eleves.values()].filter((eleve) => eleve.obtenirIdEcole() === idEcole);
+  }
+  public async listerParOrganisation(idOrganisation: string): Promise<Eleve[]> {
+    return [...this.eleves.values()].filter((eleve) => eleve.obtenirIdOrganisation() === idOrganisation);
+  }
+  public async rechercherParIdentite(): Promise<Eleve[]> { return [...this.eleves.values()]; }
+  public async existeMatriculeDansEcole(): Promise<boolean> { return false; }
+  public async existeDoublonProbable(): Promise<boolean> { return false; }
+  public async trouverParFamille(idFamille: string): Promise<Eleve[]> {
+    return [...this.eleves.values()].filter((eleve) => eleve.obtenirIdFamille() === idFamille);
+  }
+}
+
+function creerEleveMemoire(params: {
+  idEleve: string;
+  idFamille?: string;
+  nom?: string;
+  postNom?: string;
+  prenom?: string;
+}): Eleve {
+  return Eleve.creer({
+    idEleve: params.idEleve,
+    idOrganisation: 'org-1',
+    idEcole: 'ecole-1',
+    matricule: `MAT-${params.idEleve}`,
+    nom: params.nom ?? 'Eleve',
+    postNom: params.postNom ?? 'Test',
+    prenom: params.prenom,
+    sexe: 'F' as any,
+    dateNaissance: '2012-01-01',
+    ecoleProvenance: EcoleProvenance.externe('Institut Source'),
+    idFamille: params.idFamille,
+    creePar: 'user-1',
+  });
+}
+
 test('Familles reapplique l autorisation locale sur creation et lectures', async () => {
   const depot = new DepotFamilleMemoire();
+  const depotEleve = new DepotEleveMemoire();
   const autorisation = new AutorisationFamilleMemoire();
 
   const creer = new CreerFamille(depot, autorisation);
-  const consulter = new ConsulterFamille(depot, autorisation);
-  const lister = new ListerFamilles(depot, autorisation);
+  const consulter = new ConsulterFamille(depot, depotEleve, autorisation);
+  const lister = new ListerFamilles(depot, depotEleve, autorisation);
   const evaluer = new EvaluerFamilleNombreuse(depot, autorisation);
 
   await creer.executer({
@@ -82,6 +135,12 @@ test('Familles reapplique l autorisation locale sur creation et lectures', async
     nomFamille: 'Famille Mbuyi',
     telephonePrincipal: '0990000000',
   });
+  await depotEleve.sauvegarder(creerEleveMemoire({
+    idEleve: 'eleve-1',
+    idFamille: 'famille-1',
+    nom: 'Josias',
+    postNom: 'Mukuta',
+  }));
 
   const famille = await consulter.executer({
     idFamille: 'famille-1',
@@ -104,6 +163,8 @@ test('Familles reapplique l autorisation locale sur creation et lectures', async
   });
 
   assert.equal(famille.famille.idFamille, 'famille-1');
+  assert.equal(famille.famille.elevesLies?.length, 1);
+  assert.equal(famille.famille.nombreElevesActifs, 3);
   assert.equal(familles.total, 1);
   assert.equal(eligibilite.eligible, true);
   assert.deepEqual(
@@ -199,4 +260,90 @@ test('Familles reapplique l autorisation locale sur responsables et mutation', a
     autorisation.appels.map((appel) => appel.type),
     ['mutation', 'mutation', 'mutation', 'mutation', 'mutation'],
   );
+});
+
+test('ListerFamilles filtre par nom de famille, responsable et eleve rattache', async () => {
+  const depot = new DepotFamilleMemoire();
+  const depotEleve = new DepotEleveMemoire();
+  const autorisation = new AutorisationFamilleMemoire();
+  const lister = new ListerFamilles(depot, depotEleve, autorisation);
+
+  const familleA = Famille.creer({
+    idFamille: 'famille-a',
+    idOrganisation: 'org-1',
+    idEcole: 'ecole-1',
+    codeFamille: 'FAM-001',
+    nomFamille: 'Famille Mukuta',
+    telephonePrincipal: '0990000000',
+    responsables: [],
+    creePar: 'user-1',
+  });
+  familleA.ajouterResponsable(
+    ResponsableFamille.creer({
+      idResponsableFamille: 'resp-a',
+      nomComplet: 'Parent Alpha',
+      telephone: '0811111111',
+      lienParente: LienParente.PERE,
+      estPrincipal: true,
+    }),
+    'user-1',
+  );
+
+  const familleB = Famille.creer({
+    idFamille: 'famille-b',
+    idOrganisation: 'org-1',
+    idEcole: 'ecole-1',
+    codeFamille: 'FAM-002',
+    nomFamille: 'Famille Kalala',
+    telephonePrincipal: '0880000000',
+    responsables: [],
+    creePar: 'user-1',
+  });
+
+  await depot.sauvegarder(familleA);
+  await depot.sauvegarder(familleB);
+  await depotEleve.sauvegarder(creerEleveMemoire({
+    idEleve: 'eleve-a',
+    idFamille: 'famille-a',
+    nom: 'Josias',
+    postNom: 'Mukuta',
+  }));
+  await depotEleve.sauvegarder(creerEleveMemoire({
+    idEleve: 'eleve-b',
+    idFamille: 'famille-b',
+    nom: 'Sarah',
+    postNom: 'Kalala',
+  }));
+
+  const parNomFamille = await lister.executer({
+    idOrganisation: 'org-1',
+    idEcole: 'ecole-1',
+    idUtilisateur: 'user-1',
+    page: 1,
+    taillePage: 25,
+    nomFamille: 'mukuta',
+  });
+  const parResponsable = await lister.executer({
+    idOrganisation: 'org-1',
+    idEcole: 'ecole-1',
+    idUtilisateur: 'user-1',
+    page: 1,
+    taillePage: 25,
+    nomResponsable: 'alpha',
+  });
+  const parEleve = await lister.executer({
+    idOrganisation: 'org-1',
+    idEcole: 'ecole-1',
+    idUtilisateur: 'user-1',
+    page: 1,
+    taillePage: 25,
+    nomEleve: 'josias',
+  });
+
+  assert.equal(parNomFamille.total, 1);
+  assert.equal(parNomFamille.donnees[0]?.idFamille, 'famille-a');
+  assert.equal(parResponsable.total, 1);
+  assert.equal(parResponsable.donnees[0]?.idFamille, 'famille-a');
+  assert.equal(parEleve.total, 1);
+  assert.equal(parEleve.donnees[0]?.idFamille, 'famille-a');
 });

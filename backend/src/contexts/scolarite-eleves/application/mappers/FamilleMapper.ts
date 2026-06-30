@@ -1,5 +1,7 @@
 import { Famille } from '../../domain/aggregates/Famille';
+import { Eleve } from '../../domain/aggregates/Eleve';
 import { FamilleSortieDTO } from '../dto/output/FamilleSortieDTO';
+import { EleveMapper } from './EleveMapper';
 import { ResponsableFamilleMapper } from './ResponsableFamilleMapper';
 
 // Ce fichier transforme l'agregat Famille en DTO applicatif.
@@ -8,7 +10,10 @@ import { ResponsableFamilleMapper } from './ResponsableFamilleMapper';
  */
 export class FamilleMapper {
   /** Transforme une famille en DTO. */
-  public static versSortie(famille: Famille): FamilleSortieDTO {
+  public static versSortie(
+    famille: Famille,
+    options?: { elevesLies?: Eleve[]; nombreElevesActifs?: number },
+  ): FamilleSortieDTO {
     const proprietes = famille.versProprietes();
 
     return {
@@ -21,6 +26,8 @@ export class FamilleMapper {
       telephonePrincipal: proprietes.telephonePrincipal,
       email: proprietes.email,
       responsables: proprietes.responsables.map(ResponsableFamilleMapper.versSortie),
+      elevesLies: options?.elevesLies?.map(EleveMapper.versSortie),
+      nombreElevesActifs: options?.nombreElevesActifs,
       version: proprietes.version,
     };
   }

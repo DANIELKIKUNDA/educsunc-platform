@@ -71,6 +71,7 @@ export class RecalculerClassementClasseUseCase {
         return new LigneClassementEleve({
           idLigneClassementEleve: `${classement.obtenirId()}-${index + 1}`,
           idEleve: resultat.obtenirIdEleve(),
+          nomComplet: eleve?.nomComplet ?? resultat.obtenirIdEleve(),
           sexe: eleve?.sexe ?? SexeEleve.M,
           totalObtenu: colonne?.obtenirTotalObtenu(),
           maximumGeneral: colonne?.obtenirMaximumGeneral(),

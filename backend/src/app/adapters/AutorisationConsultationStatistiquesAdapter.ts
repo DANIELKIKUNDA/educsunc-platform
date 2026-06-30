@@ -201,16 +201,11 @@ export class AutorisationConsultationStatistiquesAdapter
   }
 
   private async estPorteurPerimetreGlobal(
-    idUtilisateur: string,
-    idOrganisation: string | undefined,
-    idEcole: string,
+    _idUtilisateur: string,
+    _idOrganisation: string | undefined,
+    _idEcole: string,
   ): Promise<boolean> {
-    return this.estRoleActifDansPerimetre(
-      idUtilisateur,
-      idOrganisation,
-      idEcole,
-      ['ADMINISTRATEUR_ECOLE', 'PROMOTEUR_ORGANISATION'],
-    );
+    return false;
   }
 
   private async estSuperviseurPedagogiqueDeSection(

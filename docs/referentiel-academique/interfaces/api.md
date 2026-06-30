@@ -71,6 +71,13 @@ Notes de securite backend :
 - `POST /api/annees-scolaires/:id/cloturer` : cloturer une annee scolaire.
 - `POST /api/annees-scolaires/:id/archiver` : archiver une annee scolaire.
 
+Notes de securite backend :
+
+- ces routes restent aujourd hui bornees techniquement par le contexte tenant et les cles `idEcole`
+- la lecture doctrinale corrigee du module local est : `ADMIN_SYSTEME_ECOLE` comme acteur d exploitation cible
+- `ADMINISTRATEUR_ECOLE` ne doit plus etre lu comme acteur principal naturel de ces workflows academiques locaux
+- cette correction aligne la couche frontend et documentaire avec la separation entre gouvernance ecole non technique et administration systeme locale
+
 ## Structure scolaire
 
 - `POST /api/sections-scolaires` : creer une section scolaire.
@@ -83,6 +90,12 @@ Notes de securite backend :
 - `POST /api/classes-pedagogiques/:id/desactiver` : desactiver une classe pedagogique.
 - `POST /api/classes-pedagogiques/:id/archiver` : archiver une classe pedagogique.
 - `GET /api/options-etudes` : lister les options d'etudes.
+
+Notes de securite backend :
+
+- le socle officiel `sections-scolaires`, `classes-academiques` et `options-etudes` reste un espace plateforme distinct
+- la structure scolaire locale `classes-pedagogiques` doit etre lue, cote exploitation, sous `ADMIN_SYSTEME_ECOLE`
+- `ADMINISTRATEUR_ECOLE` ne doit plus etre retenu comme acteur principal naturel des mutations de structure locale
 
 ## Referentiels officiels
 
@@ -128,6 +141,12 @@ Notes de securite backend :
 - `POST /api/programmes-niveau/:id/archiver` : archiver un programme niveau.
 - `GET /api/programmes-niveau` : lister les programmes niveau d'une ecole et d'une annee.
 
+Notes de securite backend :
+
+- ces routes restent aujourd hui bornees par tenant et par ecole via `idEcole`
+- la lecture metier corrigee retient `ADMIN_SYSTEME_ECOLE` comme acteur principal cible des programmes niveau locaux
+- `ADMINISTRATEUR_ECOLE` ne doit pas etre relu ici comme administrateur systeme local par simple gouvernance ecole
+
 ## Calendriers academiques
 
 - `POST /api/calendriers-academiques` : creer un calendrier academique. Route idempotente.
@@ -135,6 +154,12 @@ Notes de securite backend :
 - `POST /api/calendriers-academiques/:id/valider` : valider un calendrier academique.
 - `POST /api/calendriers-academiques/:id/verrouiller` : verrouiller un calendrier academique.
 - `GET /api/calendriers-academiques/:id` : consulter un calendrier academique.
+
+Notes de securite backend :
+
+- ces routes sont des workflows academiques locaux de cadrage structurel et temporel
+- la lecture doctrinale corrigee retient `ADMIN_SYSTEME_ECOLE` comme acteur principal cible
+- `ADMINISTRATEUR_ECOLE` ne doit plus etre projete comme proprietaire naturel du calendrier academique local
 
 ## Migrations de referentiel
 

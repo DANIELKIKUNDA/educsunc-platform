@@ -759,6 +759,47 @@ Permettre la lecture et la capture de traces dans la gouvernance monitoring plat
 
 Le module `Monitoring` dispose maintenant d'un premier noyau de contrats d'ecran reels couvrant ses espaces principaux de lecture, pilotage et mutation plateforme.
 
+## Statut d'implementation frontend au 30/06/2026
+
+Les contrats `SCR-MON-001` a `SCR-MON-009` sont maintenant materialises en frontend reel, sans deviation par rapport aux workflows `MON-*` deja figes.
+
+### Routes frontend reelles
+
+- `SCR-MON-001` : `/app/monitoring/etat-systeme`
+- `SCR-MON-002` : `/app/monitoring/dashboard`
+- `SCR-MON-003` : `/app/monitoring/observabilite`
+- `SCR-MON-004` : `/app/monitoring/sante`
+- `SCR-MON-005` : `/app/monitoring/incidents`
+- `SCR-MON-006` : `/app/monitoring/alertes`
+- `SCR-MON-007` : `/app/monitoring/diagnostics`
+- `SCR-MON-008` : `/app/monitoring/capacite`
+- `SCR-MON-009` : `/app/monitoring/traces`
+
+### Fichiers d'implementation reels
+
+- [routes.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/monitoring/routes.ts)
+- [ModuleHomeView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/monitoring/views/ModuleHomeView.vue)
+- [MonitoringOverviewView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/monitoring/views/MonitoringOverviewView.vue)
+- [MonitoringIncidentsView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/monitoring/views/MonitoringIncidentsView.vue)
+- [MonitoringAlertsView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/monitoring/views/MonitoringAlertsView.vue)
+- [MonitoringDiagnosticsView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/monitoring/views/MonitoringDiagnosticsView.vue)
+- [MonitoringCapacityView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/monitoring/views/MonitoringCapacityView.vue)
+- [MonitoringTracesView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/monitoring/views/MonitoringTracesView.vue)
+- [monitoring.api.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/monitoring/services/monitoring.api.ts)
+- [monitoring.store.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/monitoring/stores/monitoring.store.ts)
+- [monitoring.model.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/monitoring/models/monitoring.model.ts)
+- [monitoring.mapper.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/monitoring/mappers/monitoring.mapper.ts)
+
+### Verification technique
+
+- `npm run build` frontend : OK
+
+### Verdict de cloture
+
+- aucun ecran `monitoring` documente n'est reste au stade theorique
+- aucune dette bloquante de branchement frontend n'est relevee sur `monitoring`
+- la documentation et l'implementation reelle sont maintenant synchronisees
+
 La suite la plus propre devient :
 
 - ouvrir le lot suivant sur `Audit`

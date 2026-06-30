@@ -3,7 +3,7 @@
     <PageHeader
       eyebrow="SCR-PF-004"
       title="Caisse du jour"
-      description="Centre de travail de lecture pour consulter la caisse du jour dans le bon perimetre local ou organisationnel."
+      description="Lecture synthétique de la caisse journalière réellement exposée par le backend, dans le bon périmètre."
     >
       <template #actions>
         <RouterLink class="module-quick-access__pill module-quick-access__pill--action" to="/app/finances">
@@ -14,8 +14,8 @@
     </PageHeader>
 
     <SectionBlock
-      title="Cadre d'acces visible"
-      description="La lecture de caisse est autorisee a certains acteurs, mais aucune mutation locale n'est exposee aux simples lecteurs."
+      title="Cadre d'accès visible"
+      description="Cet écran reste purement consultatif. Les ouvertures, clôtures et paiements restent sur leurs workflows dédiés."
     >
       <div class="finance-hero-strip">
         <div class="finance-hero-strip__lead">
@@ -46,176 +46,154 @@
       <template v-if="uiState === 'loading'">
         <LoadingState
           title="Chargement de la caisse du jour"
-          message="Preparation du resume de caisse, des KPIs et de la liste des operations."
+          message="Lecture de la synthèse journalière réelle pour la date choisie."
+        />
+      </template>
+
+      <template v-else-if="uiState === 'technical-error'">
+        <ErrorState
+          title="Caisse du jour indisponible"
+          :message="technicalErrorMessage"
         />
       </template>
 
       <template v-else>
         <ErrorState
           v-if="!isAuthorized"
-          title="Lecture non autorisee"
-          message="Cette vue est reservee au caissier, a l'administrateur ecole ou aux acteurs organisationnels autorises."
+          title="Lecture non autorisée"
+          message="Cette vue est réservée au caissier, à l'administrateur école et aux acteurs organisationnels autorisés."
         />
 
-        <div class="finance-kpi-grid">
-          <div class="finance-kpi-card">
-            <small>Statut caisse</small>
-            <strong>{{ workbench.status }}</strong>
-            <span>{{ workbench.dateLabel }}</span>
-          </div>
-          <div class="finance-kpi-card">
-            <small>Total collecte</small>
-            <strong>{{ formatCurrency(workbench.totalCollected) }}</strong>
-            <span>{{ filteredOperations.length }} operations visibles</span>
-          </div>
-          <div class="finance-kpi-card">
-            <small>Poste de caisse</small>
-            <strong>{{ workbench.schoolCashDeskLabel }}</strong>
-            <span>{{ accessScopeLabel }}</span>
-          </div>
-        </div>
-
-        <div class="finance-form-grid">
+        <template v-else-if="cashDay">
           <SectionBlock
-            title="Filtres de lecture"
-            description="La lecture peut etre restreinte par jour, acteur et type de frais sans ouvrir de mutation de caisse."
+            title="Filtre journalier"
+            description="La date pilote la lecture. Le backend restitue une synthèse consolidée de la caisse demandée."
           >
             <div class="finance-form-stack">
-              <div class="finance-filter-grid">
+              <div class="finance-filter-grid finance-filter-grid--wide">
                 <label class="finance-field">
-                  <span>Jour</span>
-                  <select v-model="selectedDay">
-                    <option v-for="day in availableDays" :key="day" :value="day">
-                      {{ day }}
-                    </option>
-                  </select>
-                </label>
-
-                <label class="finance-field">
-                  <span>Acteur</span>
-                  <select v-model="selectedActor">
-                    <option value="">Tous les acteurs</option>
-                    <option v-for="actor in availableActors" :key="actor" :value="actor">
-                      {{ actor }}
-                    </option>
-                  </select>
-                </label>
-
-                <label class="finance-field">
-                  <span>Type de frais</span>
-                  <select v-model="selectedType">
-                    <option value="">Tous les types</option>
-                    <option v-for="type in availableTypes" :key="type" :value="type">
-                      {{ type }}
-                    </option>
-                  </select>
+                  <span>Date</span>
+                  <input v-model="selectedDate" type="date" />
                 </label>
               </div>
 
               <div class="finance-guard-panel">
                 <div class="finance-guard-panel__header">
                   <ShieldCheck />
-                  <strong>Regles visibles</strong>
+                  <strong>Règles visibles</strong>
                 </div>
                 <ul>
-                  <li>Les lecteurs non caissiers ne voient aucune action de mutation locale.</li>
-                  <li>`CAISSIER` et `ADMINISTRATEUR_ECOLE` restent limites a la meme ecole.</li>
-                  <li>`GESTIONNAIRE_ORGANISATION` et `PROMOTEUR_ORGANISATION` lisent dans la meme organisation.</li>
+                  <li>`CAISSIER` et `ADMINISTRATEUR_ECOLE` lisent dans la même école.</li>
+                  <li>`GESTIONNAIRE_ORGANISATION` et `PROMOTEUR_ORGANISATION` lisent dans la même organisation.</li>
+                  <li>Cette route expose une synthèse de caisse, pas la liste détaillée des opérations individuelles.</li>
                 </ul>
               </div>
             </div>
           </SectionBlock>
 
-          <SectionBlock
-            title="Indicateurs de caisse"
-            description="Lecture rapide de la repartition du jour avant l'analyse detaillee des operations."
-          >
-            <div class="finance-summary-grid">
-              <div>
-                <small>Recus emis</small>
-                <strong>{{ workbench.receiptsCount }}</strong>
-              </div>
-              <div>
-                <small>Especes</small>
-                <strong>{{ formatCurrency(workbench.cashAmount) }}</strong>
-              </div>
-              <div>
-                <small>Mobile Money</small>
-                <strong>{{ formatCurrency(workbench.mobileMoneyAmount) }}</strong>
-              </div>
-              <div>
-                <small>Virement</small>
-                <strong>{{ formatCurrency(workbench.transferAmount) }}</strong>
-              </div>
+          <div class="finance-kpi-grid finance-kpi-grid--detail">
+            <div class="finance-kpi-card">
+              <small>Statut</small>
+              <strong>{{ cashDay.status }}</strong>
+              <span>{{ cashDay.dateLabel }}</span>
             </div>
-          </SectionBlock>
-        </div>
-
-        <SectionBlock
-          title="Operations du jour"
-          description="Chaque ligne reste consultative et permet la relecture precise d'une operation de caisse."
-        >
-          <EmptyState
-            v-if="filteredOperations.length === 0"
-            title="Aucune operation visible"
-            message="Aucune operation ne correspond aux filtres courants pour la caisse du jour."
-          />
-
-          <div v-else class="finance-table-shell">
-            <table class="finance-table">
-              <thead>
-                <tr>
-                  <th>Heure</th>
-                  <th>Recu</th>
-                  <th>Eleve</th>
-                  <th>Classe</th>
-                  <th>Type de frais</th>
-                  <th>Mode</th>
-                  <th>Montant</th>
-                  <th>Acteur</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="operation in filteredOperations" :key="operation.id">
-                  <td>{{ operation.heure }}</td>
-                  <td>{{ operation.numeroRecu }}</td>
-                  <td>{{ operation.eleve }}</td>
-                  <td>{{ operation.classe }}</td>
-                  <td>{{ operation.typeFrais }}</td>
-                  <td>{{ operation.modePaiement }}</td>
-                  <td>{{ formatCurrency(operation.montant) }}</td>
-                  <td>{{ operation.acteur }}</td>
-                  <td>
-                    <button class="finance-link-action" type="button" @click="selectOperation(operation.id)">
-                      Consulter
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+            <div class="finance-kpi-card">
+              <small>Total encaissé</small>
+              <strong>{{ formatCurrency(cashDay.totalEncaisse) }}</strong>
+              <span>Montant consolidé du jour</span>
+            </div>
+            <div class="finance-kpi-card">
+              <small>Disponible réel</small>
+              <strong>{{ formatCurrency(cashDay.disponibleReel) }}</strong>
+              <span>Solde journalier exploitable</span>
+            </div>
+            <div class="finance-kpi-card">
+              <small>Poste de caisse</small>
+              <strong>{{ cashDay.cashDeskLabel }}</strong>
+              <span>{{ accessScopeLabel }}</span>
+            </div>
           </div>
 
-          <div v-if="selectedOperation" class="finance-status-strip finance-status-strip--neutral">
-            <ReceiptText />
+          <div class="finance-summary-grid finance-summary-grid--quad">
             <div>
-              <strong>Detail operation</strong>
-              <p>
-                {{ selectedOperation.numeroRecu }} · {{ selectedOperation.eleve }} ·
-                {{ selectedOperation.typeFrais }} · {{ formatCurrency(selectedOperation.montant) }}.
-              </p>
+              <small>Espèces</small>
+              <strong>{{ formatCurrency(cashDay.totalCash) }}</strong>
+            </div>
+            <div>
+              <small>Mobile Money</small>
+              <strong>{{ formatCurrency(cashDay.totalMobileMoney) }}</strong>
+            </div>
+            <div>
+              <small>Fonds anticipés</small>
+              <strong>{{ formatCurrency(cashDay.totalFondsAnticipes) }}</strong>
+            </div>
+            <div>
+              <small>Fonds consommés</small>
+              <strong>{{ formatCurrency(cashDay.totalFondsConsommes) }}</strong>
             </div>
           </div>
-        </SectionBlock>
+
+          <div class="finance-form-grid">
+            <SectionBlock
+              title="Ventilation par caissier"
+              description="Répartition journalière réellement fournie par le backend."
+            >
+              <EmptyState
+                v-if="cashDay.totalsByCashier.length === 0"
+                title="Aucune ventilation caissier"
+                message="Le backend n'a retourné aucune ligne de répartition par caissier pour cette date."
+              />
+
+              <div v-else class="finance-list-card">
+                <div
+                  v-for="line in cashDay.totalsByCashier"
+                  :key="line.cashierId"
+                  class="finance-list-card__row"
+                >
+                  <div>
+                    <strong>{{ line.cashierLabel }}</strong>
+                    <small>{{ line.cashierId }}</small>
+                  </div>
+                  <strong>{{ formatCurrency(line.total) }}</strong>
+                </div>
+              </div>
+            </SectionBlock>
+
+            <SectionBlock
+              title="Ventilation par type de frais"
+              description="Répartition des encaissements selon les types réellement exposés par la route de caisse."
+            >
+              <EmptyState
+                v-if="cashDay.totalsByFeeType.length === 0"
+                title="Aucune ventilation type de frais"
+                message="Le backend n'a retourné aucune ligne de répartition par type de frais pour cette date."
+              />
+
+              <div v-else class="finance-list-card">
+                <div
+                  v-for="line in cashDay.totalsByFeeType"
+                  :key="line.feeType"
+                  class="finance-list-card__row"
+                >
+                  <div>
+                    <strong>{{ line.feeType }}</strong>
+                    <small>Encaissement consolidé</small>
+                  </div>
+                  <strong>{{ formatCurrency(line.total) }}</strong>
+                </div>
+              </div>
+            </SectionBlock>
+          </div>
+        </template>
       </template>
     </AccessBoundary>
   </PageContainer>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { RouterLink } from 'vue-router';
-import { ArrowLeft, ReceiptText, ShieldCheck, WalletCards } from 'lucide-vue-next';
+import { ArrowLeft, ShieldCheck, WalletCards } from 'lucide-vue-next';
 import PageContainer from '../../../shared/layout/PageContainer.vue';
 import PageHeader from '../../../shared/layout/PageHeader.vue';
 import SectionBlock from '../../../shared/layout/SectionBlock.vue';
@@ -227,29 +205,50 @@ import ErrorState from '../../../shared/ui/ErrorState.vue';
 import EmptyState from '../../../shared/ui/EmptyState.vue';
 import { activeContextStore } from '../../../shared/session/active-context.store';
 import { sessionStore } from '../../../shared/auth/session.store';
-import { authorizedCashWorkbenchActors, dailyCashWorkbench } from '../data/caisse-du-jour.demo';
+import { useCashDayStore } from '../stores/cash-day.store';
+
+const authorizedCashWorkbenchActors = [
+  'CAISSIER',
+  'ADMINISTRATEUR_ECOLE',
+  'GESTIONNAIRE_ORGANISATION',
+  'PROMOTEUR_ORGANISATION',
+] as const;
 
 const context = activeContextStore.state;
 const session = sessionStore.state;
-const workbench = ref({ ...dailyCashWorkbench });
-const uiState = ref<'loading' | 'idle' | 'technical-error'>('idle');
-const selectedDay = ref(workbench.value.dateLabel);
-const selectedActor = ref('');
-const selectedType = ref('');
-const selectedOperationId = ref('');
+const cashDayStore = useCashDayStore();
+const selectedDate = ref(new Date().toISOString().slice(0, 10));
 
-const isAuthorized = computed(() => authorizedCashWorkbenchActors.includes(session.actorCode as never));
+const isAuthorized = computed(() =>
+  authorizedCashWorkbenchActors.includes(session.actorCode as (typeof authorizedCashWorkbenchActors)[number]),
+);
+const cashDay = computed(() => cashDayStore.state.cashDay);
+const technicalErrorMessage = computed(() =>
+  cashDayStore.state.errorMessage
+  ?? 'Le backend n a pas pu restituer la caisse du jour.',
+);
+const uiState = computed<'loading' | 'idle' | 'technical-error'>(() => {
+  if (cashDayStore.state.status === 'loading') {
+    return 'loading';
+  }
+
+  if (cashDayStore.state.status === 'error') {
+    return 'technical-error';
+  }
+
+  return 'idle';
+});
 
 const perimeterMessage = computed(() => {
   switch (session.actorCode) {
     case 'CAISSIER':
     case 'ADMINISTRATEUR_ECOLE':
-      return `Lecture de caisse bornee a l ecole active: ${context.schoolName}.`;
+      return `Lecture de caisse bornée à l école active: ${context.schoolName}.`;
     case 'GESTIONNAIRE_ORGANISATION':
     case 'PROMOTEUR_ORGANISATION':
-      return `Lecture de caisse bornee a l organisation active: ${context.organizationName}.`;
+      return `Lecture de caisse bornée à l organisation active: ${context.organizationName}.`;
     default:
-      return `Session visible: ${session.actorLabel}. Cette vue n est pas ouverte a cet acteur.`;
+      return `Session visible: ${session.actorLabel}. Cette vue n est pas ouverte à cet acteur.`;
   }
 });
 
@@ -258,31 +257,23 @@ const accessScopeLabel = computed(() => {
     return 'Lecture organisationnelle';
   }
 
-  return 'Lecture ecole active';
+  return 'Lecture école active';
 });
 
-const availableDays = computed(() => [workbench.value.dateLabel]);
-const availableActors = computed(() => [...new Set(workbench.value.operations.map((operation) => operation.acteur))]);
-const availableTypes = computed(() => [...new Set(workbench.value.operations.map((operation) => operation.typeFrais))]);
-
-const filteredOperations = computed(() =>
-  workbench.value.operations.filter((operation) => {
-    const matchesDay = selectedDay.value === workbench.value.dateLabel;
-    const matchesActor = selectedActor.value === '' || operation.acteur === selectedActor.value;
-    const matchesType = selectedType.value === '' || operation.typeFrais === selectedType.value;
-    return matchesDay && matchesActor && matchesType;
-  }),
-);
-
-const selectedOperation = computed(() =>
-  filteredOperations.value.find((operation) => operation.id === selectedOperationId.value) ?? null,
-);
-
 function formatCurrency(value: number): string {
-  return new Intl.NumberFormat('fr-FR').format(value) + ' FC';
+  return `${new Intl.NumberFormat('fr-FR').format(value)} FC`;
 }
 
-function selectOperation(operationId: string): void {
-  selectedOperationId.value = operationId;
-}
+watch(
+  () => [selectedDate.value, isAuthorized.value],
+  async () => {
+    if (!isAuthorized.value) {
+      cashDayStore.reinitialiser();
+      return;
+    }
+
+    await cashDayStore.charger(selectedDate.value);
+  },
+  { immediate: true },
+);
 </script>

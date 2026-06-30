@@ -41,7 +41,14 @@ export class ValidateurFamillesHttp {
 
   /** Valide la liste des familles. */
   public static validerListe(query: unknown, headers: unknown) {
-    return { ...OutilsValidationHttpScolarite.lireContexteUtilisateurRequis(headers, false), ...OutilsValidationHttpScolarite.lirePagination(query) };
+    const donnees = OutilsValidationHttpScolarite.obtenirObjet(query, 'query');
+    return {
+      ...OutilsValidationHttpScolarite.lireContexteUtilisateurRequis(headers, false),
+      ...OutilsValidationHttpScolarite.lirePagination(query),
+      nomFamille: OutilsValidationHttpScolarite.lireChaineOptionnelle(donnees, 'nomFamille'),
+      nomResponsable: OutilsValidationHttpScolarite.lireChaineOptionnelle(donnees, 'nomResponsable'),
+      nomEleve: OutilsValidationHttpScolarite.lireChaineOptionnelle(donnees, 'nomEleve'),
+    };
   }
 
   /** Valide l'ajout ou la modification d'un responsable. */

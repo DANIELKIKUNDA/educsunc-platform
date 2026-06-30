@@ -43,234 +43,275 @@
     </SectionBlock>
 
     <AccessBoundary capability="module.finances.access">
-      <div class="finance-kpi-grid">
-        <div class="finance-kpi-card">
-          <small>Acteur visible</small>
-          <strong>{{ session.actorCode }}</strong>
-          <span>Priorite au percepteur reel</span>
-        </div>
-        <div class="finance-kpi-card">
-          <small>Perimetre actif</small>
-          <strong>{{ context.schoolName }}</strong>
-          <span>{{ context.sectionName }} · {{ context.schoolYearLabel }}</span>
-        </div>
-        <div class="finance-kpi-card">
-          <small>Mode d'ecran</small>
-          <strong>Action de caisse</strong>
-          <span>SCR-PF-001</span>
-        </div>
-      </div>
+      <template v-if="uiState === 'loading-student' || uiState === 'submitting'">
+        <LoadingState
+          :title="uiState === 'submitting' ? 'Enregistrement du paiement' : 'Verification de l eleve'"
+          :message="uiState === 'submitting'
+            ? 'Application de la perception autorisee et generation des recus.'
+            : 'Lecture de l eleve cible et de ses frais exigibles.'"
+        />
+      </template>
 
-      <div class="finance-form-grid">
-        <SectionBlock
-          title="Verification eleve"
-          description="Identifier l'eleve cible avant toute perception."
-        >
-          <div class="finance-form-stack">
-            <label class="finance-field">
-              <span>Eleve cible</span>
-              <select v-model="selectedStudentId">
-                <option value="">Choisir un eleve</option>
-                <option
-                  v-for="student in students"
-                  :key="student.id"
-                  :value="student.id"
-                >
-                  {{ student.fullName }} - {{ student.classe }}
-                </option>
-              </select>
-            </label>
-
-            <button class="finance-primary-action" type="button" @click="verifyStudent">
-              <Search />
-              <span>Verifier l'eleve</span>
-            </button>
-
-            <ErrorState
-              v-if="uiState === 'student-not-found'"
-              title="Eleve introuvable"
-              message="Selectionner un eleve valide avant de preparer la perception."
-            />
-
-            <div v-if="selectedStudent" class="finance-student-banner">
-              <div>
-                <small>Code eleve</small>
-                <strong>
-                  <BadgeCheck />
-                  <span>{{ selectedStudent.matricule }}</span>
-                </strong>
-              </div>
-              <div>
-                <small>Eleve</small>
-                <strong>{{ selectedStudent.fullName }}</strong>
-              </div>
-              <div>
-                <small>Classe</small>
-                <strong>{{ selectedStudent.classe }}</strong>
-              </div>
-              <div>
-                <small>Section</small>
-                <strong>{{ selectedStudent.section }}</strong>
-              </div>
-            </div>
+      <template v-else>
+        <div class="finance-kpi-grid">
+          <div class="finance-kpi-card">
+            <small>Acteur visible</small>
+            <strong>{{ session.actorCode }}</strong>
+            <span>Priorite au percepteur reel</span>
           </div>
-        </SectionBlock>
+          <div class="finance-kpi-card">
+            <small>Perimetre actif</small>
+            <strong>{{ context.schoolName }}</strong>
+            <span>{{ context.sectionName }} | {{ context.schoolYearLabel }}</span>
+          </div>
+          <div class="finance-kpi-card">
+            <small>Mode d'ecran</small>
+            <strong>Action de caisse</strong>
+            <span>SCR-PF-001</span>
+          </div>
+        </div>
 
-        <SectionBlock
-          title="Frais exigibles"
-          description="Le frontend n'affiche que les frais encore exigibles pour l'eleve cible."
-        >
-          <template v-if="selectedStudent && availableObligations.length > 0">
-            <div class="finance-obligation-list">
-              <button
-                v-for="obligation in availableObligations"
-                :key="obligation.id"
-                type="button"
-                class="finance-obligation-card"
-                :class="{ 'finance-obligation-card--active': selectedObligation?.id === obligation.id }"
-                @click="pickObligation(obligation.id)"
-              >
-                <div class="finance-obligation-card__body">
-                  <div class="finance-obligation-card__marker">
-                    <ReceiptText />
-                  </div>
-                  <strong>{{ obligation.libelle }}</strong>
-                  <small>{{ obligation.typeFrais }}</small>
+        <div class="finance-form-grid">
+          <SectionBlock
+            title="Verification eleve"
+            description="Identifier l'eleve cible avant toute perception."
+          >
+            <div class="finance-form-stack">
+              <label class="finance-field">
+                <span>Id eleve</span>
+                <input v-model="studentIdInput" type="text" placeholder="Ex: ELEVE-001" />
+              </label>
+
+              <div class="finance-form-actions">
+                <button class="finance-primary-action" type="button" @click="verifyStudent">
+                  <Search />
+                  <span>Verifier l'eleve</span>
+                </button>
+              </div>
+
+              <ErrorState
+                v-if="uiState === 'missing-student'"
+                title="Eleve cible manquant"
+                message="Renseignez un idEleve reel avant de preparer la perception."
+              />
+
+              <ErrorState
+                v-else-if="uiState === 'technical-error'"
+                title="Lecture technique indisponible"
+                :message="technicalErrorMessage"
+              />
+
+              <div v-if="profile" class="finance-student-banner">
+                <div>
+                  <small>Code eleve</small>
+                  <strong>
+                    <BadgeCheck />
+                    <span>{{ profile.matricule }}</span>
+                  </strong>
                 </div>
-                <div class="finance-obligation-card__meta">
-                  <span>{{ formatCurrency(obligation.montantExigible) }}</span>
-                  <small>
-                    {{ obligation.delegationAutorisee ? 'Delegation locale possible' : 'Naturel caisse uniquement' }}
-                  </small>
+                <div>
+                  <small>Eleve</small>
+                  <strong>{{ profile.fullName }}</strong>
                 </div>
-              </button>
+                <div>
+                  <small>Classe</small>
+                  <strong>{{ profile.classe }}</strong>
+                </div>
+                <div>
+                  <small>Section</small>
+                  <strong>{{ profile.section }}</strong>
+                </div>
+              </div>
             </div>
-          </template>
+          </SectionBlock>
 
-          <EmptyState
-            v-else-if="selectedStudent && availableObligations.length === 0"
-            title="Aucun frais exigible"
-            message="Cet eleve n'a actuellement aucun frais exigible dans le perimetre visible."
-          />
-
-          <LoadingState
-            v-else
-            title="Contexte eleve attendu"
-            message="Verifier l'eleve pour charger ses obligations financieres exigibles."
-          />
-        </SectionBlock>
-      </div>
-
-      <div class="finance-form-grid">
-        <SectionBlock
-          title="Formulaire de perception"
-          description="Saisir uniquement une operation autorisee dans le bon perimetre."
-        >
-          <div class="finance-form-stack">
-            <label class="finance-field">
-              <span>Type de frais</span>
-              <select v-model="selectedObligationId">
-                <option value="">Choisir un frais</option>
-                <option
+          <SectionBlock
+            title="Frais exigibles"
+            description="Le frontend n'affiche que les frais encore exigibles pour l'eleve cible."
+          >
+            <template v-if="profile && availableObligations.length > 0">
+              <div class="finance-obligation-list">
+                <button
                   v-for="obligation in availableObligations"
                   :key="obligation.id"
-                  :value="obligation.id"
+                  type="button"
+                  class="finance-obligation-card"
+                  :class="{ 'finance-obligation-card--active': selectedObligation?.id === obligation.id }"
+                  @click="pickObligation(obligation.id)"
                 >
-                  {{ obligation.libelle }}
-                </option>
-              </select>
-            </label>
-
-            <label class="finance-field">
-              <span>Montant</span>
-              <input v-model="amountInput" type="number" min="0" step="1000" />
-            </label>
-
-            <label class="finance-field">
-              <span>Mode de paiement</span>
-              <select v-model="paymentMode">
-                <option value="">Choisir un mode</option>
-                <option v-for="mode in paymentModes" :key="mode" :value="mode">
-                  {{ mode }}
-                </option>
-              </select>
-            </label>
-
-            <div class="finance-form-actions">
-              <button class="finance-primary-action" type="button" @click="submitPayment">
-                <CheckCircle2 />
-                <span>Enregistrer le paiement</span>
-              </button>
-            </div>
-
-            <ErrorState
-              v-if="uiState === 'type-forbidden'"
-              title="Type de frais interdit"
-              message="Ce type de frais n'est pas percevable dans le perimetre visible ou par l'acteur courant."
-            />
-
-            <ErrorState
-              v-else-if="uiState === 'technical-error'"
-              title="Erreur technique"
-              message="La perception n'a pas pu etre finalisee dans cette simulation de socle."
-            />
-
-            <div v-else-if="uiState === 'success'" class="finance-success-panel">
-              <div class="finance-success-panel__icon">
-                <CircleCheckBig />
+                  <div class="finance-obligation-card__body">
+                    <div class="finance-obligation-card__marker">
+                      <ReceiptText />
+                    </div>
+                    <strong>{{ obligation.libelle }}</strong>
+                    <small>{{ obligation.typeFrais }}</small>
+                  </div>
+                  <div class="finance-obligation-card__meta">
+                    <span>{{ formatCurrency(obligation.montantExigible) }}</span>
+                    <small>
+                      {{ obligation.paiementPartielAutorise ? 'Paiement partiel autorise' : 'Paiement integral attendu' }}
+                    </small>
+                  </div>
+                </button>
               </div>
-              <strong>Succes d'enregistrement</strong>
-              <p>
-                Paiement prepare pour {{ selectedStudent?.fullName }} sur
-                {{ selectedObligation?.libelle }}.
-              </p>
+            </template>
+
+            <EmptyState
+              v-else-if="profile && availableObligations.length === 0"
+              title="Aucun frais exigible"
+              message="Cet eleve n'a actuellement aucun frais exigible dans le perimetre visible."
+            />
+
+            <LoadingState
+              v-else
+              title="Contexte eleve attendu"
+              message="Verifier l'eleve pour charger ses obligations financieres exigibles."
+            />
+          </SectionBlock>
+        </div>
+
+        <div class="finance-form-grid">
+          <SectionBlock
+            title="Formulaire de perception"
+            description="Saisir uniquement une operation autorisee dans le bon perimetre."
+          >
+            <div class="finance-form-stack">
+              <label class="finance-field">
+                <span>Type de frais</span>
+                <select v-model="selectedObligationId">
+                  <option value="">Choisir un frais</option>
+                  <option
+                    v-for="obligation in availableObligations"
+                    :key="obligation.id"
+                    :value="obligation.id"
+                  >
+                    {{ obligation.libelle }}
+                  </option>
+                </select>
+              </label>
+
+              <label class="finance-field">
+                <span>Montant</span>
+                <input v-model="amountInput" type="number" min="0" step="1000" />
+              </label>
+
+              <label class="finance-field">
+                <span>Mode de paiement</span>
+                <select v-model="paymentMode">
+                  <option value="">Choisir un mode</option>
+                  <option v-for="mode in paymentRegistrationModeOptions" :key="mode.value" :value="mode.value">
+                    {{ mode.label }}
+                  </option>
+                </select>
+              </label>
+
+              <div class="finance-form-actions">
+                <button class="finance-primary-action" type="button" @click="submitPayment">
+                  <CheckCircle2 />
+                  <span>Enregistrer le paiement</span>
+                </button>
+              </div>
+
+              <ErrorState
+                v-if="uiState === 'missing-form'"
+                title="Formulaire incomplet"
+                message="Selectionner un frais reel, un montant et un mode de paiement avant de soumettre."
+              />
+
+              <div v-else-if="result" class="finance-success-panel">
+                <div class="finance-success-panel__icon">
+                  <CircleCheckBig />
+                </div>
+                <strong>Paiement enregistre</strong>
+                <p>
+                  Paiement {{ result.idPaiement }} enregistre pour {{ profile?.fullName }}
+                  sur {{ result.typeFraisDeclare }}.
+                </p>
+              </div>
             </div>
-          </div>
-        </SectionBlock>
+          </SectionBlock>
+
+          <SectionBlock
+            title="Recapitulatif d'operation"
+            description="Le percepteur doit pouvoir relire clairement l'operation avant validation."
+          >
+            <div class="finance-summary-grid">
+              <div>
+                <small>Eleve</small>
+                <strong>{{ profile?.fullName ?? '-' }}</strong>
+              </div>
+              <div>
+                <small>Frais</small>
+                <strong>{{ selectedObligation?.libelle ?? '-' }}</strong>
+              </div>
+              <div>
+                <small>Montant saisi</small>
+                <strong>{{ amountInput ? formatCurrency(Number(amountInput)) : '-' }}</strong>
+              </div>
+              <div>
+                <small>Mode</small>
+                <strong>{{ selectedModeLabel }}</strong>
+              </div>
+            </div>
+
+            <div class="finance-guard-panel">
+              <div class="finance-guard-panel__header">
+                <ShieldCheck />
+                <strong>Controles visibles</strong>
+              </div>
+              <ul>
+                <li>Perception restreinte a l'ecole active.</li>
+                <li>Les acteurs delegues ne voient pas un statut de caissier universel.</li>
+                <li>Le backend garde la verite sur les types de frais autorises et la delegation reelle.</li>
+              </ul>
+            </div>
+          </SectionBlock>
+        </div>
 
         <SectionBlock
-          title="Recapitulatif d'operation"
-          description="Le percepteur doit pouvoir relire clairement l'operation avant validation."
+          v-if="result"
+          title="Sortie backend"
+          description="Le backend retourne le paiement enregistre, ses recus et une restitution eventuelle."
         >
-          <div class="finance-summary-grid">
-            <div>
-              <small>Eleve</small>
-              <strong>{{ selectedStudent?.fullName ?? '-' }}</strong>
+          <div class="finance-list-card">
+            <div class="finance-list-card__row">
+              <div>
+                <strong>Paiement</strong>
+                <small>{{ result.statutPaiement }} | {{ result.modePaiement }}</small>
+              </div>
+              <strong>{{ formatCurrency(result.montantTotal) }}</strong>
             </div>
-            <div>
-              <small>Frais</small>
-              <strong>{{ selectedObligation?.libelle ?? '-' }}</strong>
+            <div
+              v-for="receipt in result.receipts"
+              :key="receipt.id"
+              class="finance-list-card__row"
+            >
+              <div>
+                <strong>{{ receipt.numeroRecu }}</strong>
+                <small>{{ receipt.libelle }} | {{ receipt.dateEmission }}</small>
+              </div>
+              <strong>{{ formatCurrency(receipt.montant) }}</strong>
             </div>
-            <div>
-              <small>Montant saisi</small>
-              <strong>{{ amountInput ? formatCurrency(Number(amountInput)) : '-' }}</strong>
+            <div
+              v-if="result.restitution"
+              class="finance-list-card__row"
+            >
+              <div>
+                <strong>Restitution</strong>
+                <small>{{ result.restitution.raison }}</small>
+              </div>
+              <strong>{{ formatCurrency(result.restitution.montant) }}</strong>
             </div>
-            <div>
-              <small>Mode</small>
-              <strong>{{ paymentMode || '-' }}</strong>
-            </div>
-          </div>
-
-          <div class="finance-guard-panel">
-            <div class="finance-guard-panel__header">
-              <ShieldCheck />
-              <strong>Controles visibles</strong>
-            </div>
-            <ul>
-              <li>Perception restreinte a l'ecole active.</li>
-              <li>Les acteurs delegues ne voient pas un statut de caissier universel.</li>
-              <li>`FRAIS_MINERVAL` reste reserve au percepteur naturel quand requis.</li>
-            </ul>
           </div>
         </SectionBlock>
-      </div>
+      </template>
     </AccessBoundary>
   </PageContainer>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { RouterLink } from 'vue-router';
+import { RouterLink, useRoute } from 'vue-router';
 import {
   ArrowLeft,
   BadgeCheck,
@@ -292,33 +333,48 @@ import LoadingState from '../../../shared/ui/LoadingState.vue';
 import AccessBoundary from '../../../shared/permissions/AccessBoundary.vue';
 import { sessionStore } from '../../../shared/auth/session.store';
 import { activeContextStore } from '../../../shared/session/active-context.store';
-import { paymentModes, studentPaymentContexts } from '../data/perception-paiement.demo';
+import {
+  authorizedPaymentRegistrationActors,
+  paymentRegistrationModeOptions,
+} from '../models/payment-registration.model';
+import { usePaymentRegistrationStore } from '../stores/payment-registration.store';
 
 type UiState =
   | 'idle'
-  | 'student-not-found'
-  | 'type-forbidden'
-  | 'technical-error'
-  | 'success';
+  | 'loading-student'
+  | 'submitting'
+  | 'missing-student'
+  | 'missing-form'
+  | 'technical-error';
 
+const route = useRoute();
 const session = sessionStore.state;
 const context = activeContextStore.state;
-const students = studentPaymentContexts;
+const paymentRegistrationStore = usePaymentRegistrationStore();
 
-const selectedStudentId = ref('');
+const studentIdInput = ref(lireParametreTexte(route.query.idEleve) ?? '');
 const selectedObligationId = ref('');
 const amountInput = ref('');
 const paymentMode = ref('');
 const uiState = ref<UiState>('idle');
 
-const selectedStudent = computed(() =>
-  students.find((student) => student.id === selectedStudentId.value),
+const isAuthorized = computed(() =>
+  authorizedPaymentRegistrationActors.includes(session.actorCode as never),
 );
-
-const availableObligations = computed(() => selectedStudent.value?.obligations ?? []);
+const profile = computed(() => paymentRegistrationStore.state.profile);
+const availableObligations = computed(() => paymentRegistrationStore.state.obligations);
+const result = computed(() => paymentRegistrationStore.state.result);
+const technicalErrorMessage = computed(() =>
+  paymentRegistrationStore.state.errorMessage
+  ?? 'La perception n a pas pu etre finalisee.',
+);
 
 const selectedObligation = computed(() =>
   availableObligations.value.find((obligation) => obligation.id === selectedObligationId.value),
+);
+
+const selectedModeLabel = computed(() =>
+  paymentRegistrationModeOptions.find((mode) => mode.value === paymentMode.value)?.label ?? '-',
 );
 
 const perimeterMessage = computed(() => {
@@ -336,16 +392,31 @@ const perimeterMessage = computed(() => {
   }
 });
 
-function verifyStudent(): void {
-  if (selectedStudent.value === undefined) {
-    uiState.value = 'student-not-found';
+function lireParametreTexte(valeur: unknown): string | undefined {
+  return typeof valeur === 'string' && valeur.trim().length > 0 ? valeur.trim() : undefined;
+}
+
+async function verifyStudent(): Promise<void> {
+  if (studentIdInput.value.trim().length === 0) {
+    uiState.value = 'missing-student';
     return;
   }
 
-  uiState.value = 'idle';
+  uiState.value = 'loading-student';
   selectedObligationId.value = '';
   amountInput.value = '';
   paymentMode.value = '';
+
+  await paymentRegistrationStore.chargerEleve({
+    idEleve: studentIdInput.value.trim(),
+    classe: lireParametreTexte(route.query.classe),
+    section: lireParametreTexte(route.query.section),
+    anneeScolaire: lireParametreTexte(route.query.anneeScolaire),
+  });
+
+  uiState.value = paymentRegistrationStore.state.status === 'error'
+    ? 'technical-error'
+    : 'idle';
 }
 
 function pickObligation(obligationId: string): void {
@@ -355,23 +426,33 @@ function pickObligation(obligationId: string): void {
   uiState.value = 'idle';
 }
 
-function submitPayment(): void {
-  if (selectedStudent.value === undefined) {
-    uiState.value = 'student-not-found';
+async function submitPayment(): Promise<void> {
+  if (profile.value === null) {
+    uiState.value = 'missing-student';
     return;
   }
 
-  if (selectedObligation.value === undefined || paymentMode.value.length === 0 || amountInput.value.length === 0) {
-    uiState.value = 'technical-error';
+  if (
+    selectedObligation.value === undefined
+    || paymentMode.value.length === 0
+    || amountInput.value.length === 0
+  ) {
+    uiState.value = 'missing-form';
     return;
   }
 
-  if (selectedObligation.value.minervalNaturelOnly === true && session.actorCode !== 'CAISSIER') {
-    uiState.value = 'type-forbidden';
-    return;
-  }
+  uiState.value = 'submitting';
 
-  uiState.value = 'success';
+  await paymentRegistrationStore.soumettrePaiement({
+    idEleve: profile.value.id,
+    typeFraisDeclare: selectedObligation.value.typeFrais,
+    montant: amountInput.value,
+    modePaiement: paymentMode.value as 'CASH' | 'MOBILE_MONEY' | 'BANQUE',
+  });
+
+  uiState.value = paymentRegistrationStore.state.status === 'error'
+    ? 'technical-error'
+    : 'idle';
 }
 
 function formatCurrency(amount: number): string {

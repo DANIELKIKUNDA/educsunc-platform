@@ -138,14 +138,17 @@ test('SECURITY limite la lecture de bulletin au titulaire reel et au superviseur
     idAnneeScolaire: WORKFLOW_FIXTURES.anneeScolaireId,
   }));
 
-  await assert.doesNotReject(() => adaptateur.verifierLectureBulletin({
-    idUtilisateur: administrateur.utilisateurId,
-    idOrganisation: TENANT_FIXTURES.organisationA,
-    idEcole: TENANT_FIXTURES.ecoleA1,
-    idEleve: WORKFLOW_FIXTURES.eleveA,
-    idClassePedagogique: WORKFLOW_FIXTURES.classeA,
-    idAnneeScolaire: WORKFLOW_FIXTURES.anneeScolaireId,
-  }));
+  await assert.rejects(
+    () => adaptateur.verifierLectureBulletin({
+      idUtilisateur: administrateur.utilisateurId,
+      idOrganisation: TENANT_FIXTURES.organisationA,
+      idEcole: TENANT_FIXTURES.ecoleA1,
+      idEleve: WORKFLOW_FIXTURES.eleveA,
+      idClassePedagogique: WORKFLOW_FIXTURES.classeA,
+      idAnneeScolaire: WORKFLOW_FIXTURES.anneeScolaireId,
+    }),
+    /pas autorise/i,
+  );
 
   await assert.rejects(
     () => adaptateur.verifierLectureBulletin({

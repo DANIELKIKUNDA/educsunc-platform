@@ -14,3 +14,4 @@ export * from './PostgresDepotPlanAnticipationFrais';
 export * from './PostgresDepotRecuPaiement';
 export * from './PostgresDepotRecuPaiementOfficiel';
 export * from './PostgresDepotRestitution';
+export * from './PostgresDepotQualificationFinanciereEleve';

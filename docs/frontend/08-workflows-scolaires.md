@@ -214,9 +214,24 @@ Gerer les affectations de classe
 
 - `AffecterEleveAClasse`
 - `ChangerEleveDeClasse`
+- `ConsulterAffectationClasse`
 - `DesactiverAffectationClasse`
 - `ConsulterAffectationActive`
 - `ListerElevesParClasse`
+
+### Routes reelles exposees
+
+- `POST /api/affectations-classes`
+- `POST /api/affectations-classes/:id/changer-classe`
+- `POST /api/affectations-classes/:id/desactiver`
+- `GET /api/affectations-classes/active/:idInscription`
+- `GET /api/affectations-classes/:id`
+- `GET /api/classes-pedagogiques/:id/eleves`
+
+### Notes de contrat
+
+- `GET /api/affectations-classes/:id` relit maintenant une vraie affectation par son identifiant permanent
+- `GET /api/classes-pedagogiques/:id/eleves` retourne maintenant les eleves reels de la classe enrichis par leurs identifiants d'inscription et d'affectation actifs, au lieu d'un DTO d'affectation ambigu
 
 ### Sources backend
 

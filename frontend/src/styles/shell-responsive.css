@@ -25,14 +25,27 @@
   .finance-summary-grid,
   .module-home-actions,
   .finance-confirmation-card__row,
-  .finance-filter-grid {
+  .finance-filter-grid,
+  .finance-form-actions--split,
+  .finance-register-mobile-card__header {
     flex-direction: column;
   }
 
   .finance-form-grid,
   .finance-student-banner,
   .finance-summary-grid,
-  .finance-filter-grid {
+  .finance-filter-grid,
+  .finance-register-mobile-card__body,
+  .finance-register-legend {
     grid-template-columns: 1fr;
+  }
+
+  .finance-inline-actions {
+    width: 100%;
+  }
+
+  .finance-secondary-soft-action,
+  .finance-primary-action {
+    width: 100%;
   }
 }

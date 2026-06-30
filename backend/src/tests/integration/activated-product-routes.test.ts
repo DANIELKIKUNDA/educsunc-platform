@@ -34,6 +34,18 @@ test('la route produit paiements expose la consultation de dette eleve', async (
       async consulterPaiementsParTypeFrais() {
         return { donnee: { lignes: [] } };
       },
+      async consulterSyntheseFinanciereClasse() {
+        return { donnee: { lignes: [] } };
+      },
+      async consulterSyntheseFinanciereSection() {
+        return { donnee: { lignes: [] } };
+      },
+      async consulterSyntheseFinanciereEcole() {
+        return { donnee: { lignes: [] } };
+      },
+      async consulterSyntheseFinanciereOrganisation() {
+        return { donnee: { lignes: [] } };
+      },
     } as never,
     controleurRestituerExcedent: { async restituer() { return { donnee: { restitution: true } }; } } as never,
     controleurAssetsRecus: {
@@ -85,6 +97,21 @@ test('la route produit paiements expose la lecture paiements par caissier', asyn
       },
       async consulterPaiementsParTypeFrais() {
         return { donnee: { idEcole: 'ecole-1', lignes: [] } };
+      },
+      async consulterRegistreFinancierClasse() {
+        return { donnee: { idEcole: 'ecole-1', lignes: [], colonnes: [], statistiquesParColonne: [] } };
+      },
+      async consulterSyntheseFinanciereClasse() {
+        return { donnee: { idEcole: 'ecole-1', lignes: [] } };
+      },
+      async consulterSyntheseFinanciereSection() {
+        return { donnee: { idEcole: 'ecole-1', lignes: [] } };
+      },
+      async consulterSyntheseFinanciereEcole() {
+        return { donnee: { idEcole: 'ecole-1', lignes: [] } };
+      },
+      async consulterSyntheseFinanciereOrganisation() {
+        return { donnee: { idOrganisation: 'org-1', lignes: [] } };
       },
     } as never,
     controleurRestituerExcedent: { async restituer() { return { donnee: { restitution: true } }; } } as never,
@@ -527,6 +554,302 @@ test('la route produit paiements expose la lecture paiements par type de frais',
 
   assert.equal(reponse.statusCode, 200, reponse.body);
   assert.equal(reponse.json().donnee.idEcole, 'ecole-1');
+
+  await serveur.close();
+});
+
+test('la route produit paiements expose la lecture du registre financier de classe', async () => {
+  const serveur = Fastify();
+  const contexteTenant = new PaiementTenantContext();
+
+  await serveur.register(creerRoutesPaiementsFacturation({
+    controleurEnregistrerPaiement: { async enregistrer() { return { donnee: { idPaiement: 'pay-1' } }; } } as never,
+    controleurConsulterArrieresEleve: { async consulter() { return { donnee: { idEleve: 'eleve-1', totalArrieres: { montant: 500, devise: 'CDF' } } }; } } as never,
+    controleurConsulterDetteEleve: { async consulter() { return { donnee: { idEleve: 'eleve-1' } }; } } as never,
+    controleurConsulterFraisExigibles: { async consulter() { return { donnee: [] }; } } as never,
+    controleurAnnulerPaiement: { async annuler() { return { donnee: { annule: true } }; } } as never,
+    controleurOuvrirCaisse: { async ouvrir() { return { donnee: { ouverte: true } }; } } as never,
+    controleurCloturerCaisse: { async cloturer() { return { donnee: { cloturee: true } }; } } as never,
+    controleurConsulterCaisseJour: { async consulter() { return { donnee: { ouverte: true } }; } } as never,
+    controleurConsulterHistoriquePaiements: { async consulter() { return { donnee: [] }; } } as never,
+    controleurConsulterRapportFinancier: {
+      async consulterJournalier() { return { donnee: { periode: '2026-09-01' } }; },
+      async consulterPaiementsParCaissier() { return { donnee: { idEcole: 'ecole-1', lignes: [] } }; },
+      async consulterPaiementsParTypeFrais() { return { donnee: { idEcole: 'ecole-1', lignes: [] } }; },
+      async consulterFondsAnticipes() { return { donnee: { idEcole: 'ecole-1', lignes: [] } }; },
+      async consulterRegistreFinancierClasse() {
+        return { donnee: { idEcole: 'ecole-1', idClassePedagogique: 'classe-1', colonnes: [], lignes: [], statistiquesParColonne: [] } };
+      },
+    } as never,
+    controleurRestituerExcedent: { async restituer() { return { donnee: { restitution: true } }; } } as never,
+    controleurAssetsRecus: {
+      async consulterIdentiteEcole() { return { donnee: {} }; },
+      async configurerIdentiteEcole() { return { donnee: {} }; },
+      async consulterSignature() { return { donnee: {} }; },
+      async configurerSignature() { return { donnee: {} }; },
+      async telechargerLogo() { return { nomFichier: 'logo.png', mimeType: 'image/png', contenu: Buffer.from('x') }; },
+      async telechargerCachet() { return { nomFichier: 'cachet.png', mimeType: 'image/png', contenu: Buffer.from('x') }; },
+      async telechargerSignature() { return { nomFichier: 'signature.png', mimeType: 'image/png', contenu: Buffer.from('x') }; },
+    } as never,
+    controleurReimprimerRecu: { async consulter() { return { donnee: { idRecu: 'recu-1' } }; } } as never,
+    contexteTenant,
+  }));
+
+  const reponse = await serveur.inject({
+    method: 'GET',
+    url: '/api/rapports-financiers/registre-classe?idAnneeScolaire=AN-001&idClassePedagogique=CLASSE-001',
+    headers: {
+      'x-organisation-id': 'org-1',
+      'x-tenant-id': 'ecole-1',
+    },
+  });
+
+  assert.equal(reponse.statusCode, 200, reponse.body);
+  assert.equal(reponse.json().donnee.idClassePedagogique, 'classe-1');
+
+  await serveur.close();
+});
+
+test('la route produit paiements expose la lecture de la synthese financiere de classe', async () => {
+  const serveur = Fastify();
+  const contexteTenant = new PaiementTenantContext();
+
+  await serveur.register(creerRoutesPaiementsFacturation({
+    controleurEnregistrerPaiement: { async enregistrer() { return { donnee: { idPaiement: 'pay-1' } }; } } as never,
+    controleurConsulterArrieresEleve: { async consulter() { return { donnee: { idEleve: 'eleve-1', totalArrieres: { montant: 500, devise: 'CDF' } } }; } } as never,
+    controleurConsulterDetteEleve: { async consulter() { return { donnee: { idEleve: 'eleve-1' } }; } } as never,
+    controleurConsulterFraisExigibles: { async consulter() { return { donnee: [] }; } } as never,
+    controleurAnnulerPaiement: { async annuler() { return { donnee: { annule: true } }; } } as never,
+    controleurOuvrirCaisse: { async ouvrir() { return { donnee: { ouverte: true } }; } } as never,
+    controleurCloturerCaisse: { async cloturer() { return { donnee: { cloturee: true } }; } } as never,
+    controleurConsulterCaisseJour: { async consulter() { return { donnee: { ouverte: true } }; } } as never,
+    controleurConsulterHistoriquePaiements: { async consulter() { return { donnee: [] }; } } as never,
+    controleurConsulterRapportFinancier: {
+      async consulterJournalier() { return { donnee: { periode: '2026-09-01' } }; },
+      async consulterPaiementsParCaissier() { return { donnee: { idEcole: 'ecole-1', lignes: [] } }; },
+      async consulterPaiementsParTypeFrais() { return { donnee: { idEcole: 'ecole-1', lignes: [] } }; },
+      async consulterFondsAnticipes() { return { donnee: { idEcole: 'ecole-1', lignes: [] } }; },
+      async consulterRegistreFinancierClasse() {
+        return { donnee: { idEcole: 'ecole-1', idClassePedagogique: 'classe-1', colonnes: [], lignes: [], statistiquesParColonne: [] } };
+      },
+      async consulterSyntheseFinanciereClasse() {
+        return { donnee: { idEcole: 'ecole-1', idClassePedagogique: 'classe-1', lignes: [], situationActuelle: { effectifTotal: 0 } } };
+      },
+    } as never,
+    controleurRestituerExcedent: { async restituer() { return { donnee: { restitution: true } }; } } as never,
+    controleurAssetsRecus: {
+      async consulterIdentiteEcole() { return { donnee: {} }; },
+      async configurerIdentiteEcole() { return { donnee: {} }; },
+      async consulterSignature() { return { donnee: {} }; },
+      async configurerSignature() { return { donnee: {} }; },
+      async telechargerLogo() { return { nomFichier: 'logo.png', mimeType: 'image/png', contenu: Buffer.from('x') }; },
+      async telechargerCachet() { return { nomFichier: 'cachet.png', mimeType: 'image/png', contenu: Buffer.from('x') }; },
+      async telechargerSignature() { return { nomFichier: 'signature.png', mimeType: 'image/png', contenu: Buffer.from('x') }; },
+    } as never,
+    controleurReimprimerRecu: { async consulter() { return { donnee: { idRecu: 'recu-1' } }; } } as never,
+    contexteTenant,
+  }));
+
+  const reponse = await serveur.inject({
+    method: 'GET',
+    url: '/api/rapports-financiers/synthese-classe?idAnneeScolaire=AN-001&idClassePedagogique=CLASSE-001',
+    headers: {
+      'x-organisation-id': 'org-1',
+      'x-tenant-id': 'ecole-1',
+    },
+  });
+
+  assert.equal(reponse.statusCode, 200, reponse.body);
+  assert.equal(reponse.json().donnee.idClassePedagogique, 'classe-1');
+
+  await serveur.close();
+});
+
+test('la route produit paiements expose la lecture de la synthese financiere de section', async () => {
+  const serveur = Fastify();
+  const contexteTenant = new PaiementTenantContext();
+
+  await serveur.register(creerRoutesPaiementsFacturation({
+    controleurEnregistrerPaiement: { async enregistrer() { return { donnee: { idPaiement: 'pay-1' } }; } } as never,
+    controleurConsulterArrieresEleve: { async consulter() { return { donnee: { idEleve: 'eleve-1', totalArrieres: { montant: 500, devise: 'CDF' } } }; } } as never,
+    controleurConsulterDetteEleve: { async consulter() { return { donnee: { idEleve: 'eleve-1' } }; } } as never,
+    controleurConsulterFraisExigibles: { async consulter() { return { donnee: [] }; } } as never,
+    controleurAnnulerPaiement: { async annuler() { return { donnee: { annule: true } }; } } as never,
+    controleurOuvrirCaisse: { async ouvrir() { return { donnee: { ouverte: true } }; } } as never,
+    controleurCloturerCaisse: { async cloturer() { return { donnee: { cloturee: true } }; } } as never,
+    controleurConsulterCaisseJour: { async consulter() { return { donnee: { ouverte: true } }; } } as never,
+    controleurConsulterHistoriquePaiements: { async consulter() { return { donnee: [] }; } } as never,
+    controleurConsulterRapportFinancier: {
+      async consulterJournalier() { return { donnee: { periode: '2026-09-01' } }; },
+      async consulterPaiementsParCaissier() { return { donnee: { idEcole: 'ecole-1', lignes: [] } }; },
+      async consulterPaiementsParTypeFrais() { return { donnee: { idEcole: 'ecole-1', lignes: [] } }; },
+      async consulterFondsAnticipes() { return { donnee: { idEcole: 'ecole-1', lignes: [] } }; },
+      async consulterRegistreFinancierClasse() {
+        return { donnee: { idEcole: 'ecole-1', idClassePedagogique: 'classe-1', colonnes: [], lignes: [], statistiquesParColonne: [] } };
+      },
+      async consulterSyntheseFinanciereClasse() {
+        return { donnee: { idEcole: 'ecole-1', idClassePedagogique: 'classe-1', lignes: [], situationActuelle: { effectifTotal: 0 } } };
+      },
+      async consulterSyntheseFinanciereSection() {
+        return { donnee: { idEcole: 'ecole-1', idSectionScolaire: 'section-1', lignes: [], totalGeneralSection: { effectifTotal: 0 } } };
+      },
+      async consulterSyntheseFinanciereEcole() {
+        return { donnee: { idEcole: 'ecole-1', lignes: [], totalGeneralEcole: { effectifTotal: 0 } } };
+      },
+      async consulterSyntheseFinanciereOrganisation() {
+        return { donnee: { idOrganisation: 'org-1', lignes: [], totalGeneralOrganisation: { effectifTotal: 0 } } };
+      },
+    } as never,
+    controleurRestituerExcedent: { async restituer() { return { donnee: { restitution: true } }; } } as never,
+    controleurAssetsRecus: {
+      async consulterIdentiteEcole() { return { donnee: {} }; },
+      async configurerIdentiteEcole() { return { donnee: {} }; },
+      async consulterSignature() { return { donnee: {} }; },
+      async configurerSignature() { return { donnee: {} }; },
+      async telechargerLogo() { return { nomFichier: 'logo.png', mimeType: 'image/png', contenu: Buffer.from('x') }; },
+      async telechargerCachet() { return { nomFichier: 'cachet.png', mimeType: 'image/png', contenu: Buffer.from('x') }; },
+      async telechargerSignature() { return { nomFichier: 'signature.png', mimeType: 'image/png', contenu: Buffer.from('x') }; },
+    } as never,
+    controleurReimprimerRecu: { async consulter() { return { donnee: { idRecu: 'recu-1' } }; } } as never,
+    contexteTenant,
+  }));
+
+  const reponse = await serveur.inject({
+    method: 'GET',
+    url: '/api/rapports-financiers/synthese-section?idAnneeScolaire=AN-001&idSectionScolaire=SECTION-001',
+    headers: {
+      'x-organisation-id': 'org-1',
+      'x-tenant-id': 'ecole-1',
+    },
+  });
+
+  assert.equal(reponse.statusCode, 200, reponse.body);
+  assert.equal(reponse.json().donnee.idSectionScolaire, 'section-1');
+
+  await serveur.close();
+});
+
+test('la route produit paiements expose la lecture de la synthese financiere d ecole', async () => {
+  const serveur = Fastify();
+  const contexteTenant = new PaiementTenantContext();
+
+  await serveur.register(creerRoutesPaiementsFacturation({
+    controleurEnregistrerPaiement: { async enregistrer() { return { donnee: { idPaiement: 'pay-1' } }; } } as never,
+    controleurConsulterArrieresEleve: { async consulter() { return { donnee: { idEleve: 'eleve-1', totalArrieres: { montant: 500, devise: 'CDF' } } }; } } as never,
+    controleurConsulterDetteEleve: { async consulter() { return { donnee: { idEleve: 'eleve-1' } }; } } as never,
+    controleurConsulterFraisExigibles: { async consulter() { return { donnee: [] }; } } as never,
+    controleurAnnulerPaiement: { async annuler() { return { donnee: { annule: true } }; } } as never,
+    controleurOuvrirCaisse: { async ouvrir() { return { donnee: { ouverte: true } }; } } as never,
+    controleurCloturerCaisse: { async cloturer() { return { donnee: { cloturee: true } }; } } as never,
+    controleurConsulterCaisseJour: { async consulter() { return { donnee: { ouverte: true } }; } } as never,
+    controleurConsulterHistoriquePaiements: { async consulter() { return { donnee: [] }; } } as never,
+    controleurConsulterRapportFinancier: {
+      async consulterJournalier() { return { donnee: { periode: '2026-09-01' } }; },
+      async consulterPaiementsParCaissier() { return { donnee: { idEcole: 'ecole-1', lignes: [] } }; },
+      async consulterPaiementsParTypeFrais() { return { donnee: { idEcole: 'ecole-1', lignes: [] } }; },
+      async consulterFondsAnticipes() { return { donnee: { idEcole: 'ecole-1', lignes: [] } }; },
+      async consulterRegistreFinancierClasse() {
+        return { donnee: { idEcole: 'ecole-1', idClassePedagogique: 'classe-1', colonnes: [], lignes: [], statistiquesParColonne: [] } };
+      },
+      async consulterSyntheseFinanciereClasse() {
+        return { donnee: { idEcole: 'ecole-1', idClassePedagogique: 'classe-1', lignes: [], situationActuelle: { effectifTotal: 0 } } };
+      },
+      async consulterSyntheseFinanciereSection() {
+        return { donnee: { idEcole: 'ecole-1', idSectionScolaire: 'section-1', lignes: [], totalGeneralSection: { effectifTotal: 0 } } };
+      },
+      async consulterSyntheseFinanciereEcole() {
+        return { donnee: { idEcole: 'ecole-1', lignes: [], totalGeneralEcole: { effectifTotal: 0 } } };
+      },
+    } as never,
+    controleurRestituerExcedent: { async restituer() { return { donnee: { restitution: true } }; } } as never,
+    controleurAssetsRecus: {
+      async consulterIdentiteEcole() { return { donnee: {} }; },
+      async configurerIdentiteEcole() { return { donnee: {} }; },
+      async consulterSignature() { return { donnee: {} }; },
+      async configurerSignature() { return { donnee: {} }; },
+      async telechargerLogo() { return { nomFichier: 'logo.png', mimeType: 'image/png', contenu: Buffer.from('x') }; },
+      async telechargerCachet() { return { nomFichier: 'cachet.png', mimeType: 'image/png', contenu: Buffer.from('x') }; },
+      async telechargerSignature() { return { nomFichier: 'signature.png', mimeType: 'image/png', contenu: Buffer.from('x') }; },
+    } as never,
+    controleurReimprimerRecu: { async consulter() { return { donnee: { idRecu: 'recu-1' } }; } } as never,
+    contexteTenant,
+  }));
+
+  const reponse = await serveur.inject({
+    method: 'GET',
+    url: '/api/rapports-financiers/synthese-ecole?idAnneeScolaire=AN-001',
+    headers: {
+      'x-organisation-id': 'org-1',
+      'x-tenant-id': 'ecole-1',
+    },
+  });
+
+  assert.equal(reponse.statusCode, 200, reponse.body);
+  assert.equal(reponse.json().donnee.idEcole, 'ecole-1');
+
+  await serveur.close();
+});
+
+test('la route produit paiements expose la lecture de la synthese financiere d organisation', async () => {
+  const serveur = Fastify();
+  const contexteTenant = new PaiementTenantContext();
+
+  await serveur.register(creerRoutesPaiementsFacturation({
+    controleurEnregistrerPaiement: { async enregistrer() { return { donnee: { idPaiement: 'pay-1' } }; } } as never,
+    controleurConsulterArrieresEleve: { async consulter() { return { donnee: { idEleve: 'eleve-1', totalArrieres: { montant: 500, devise: 'CDF' } } }; } } as never,
+    controleurConsulterDetteEleve: { async consulter() { return { donnee: { idEleve: 'eleve-1' } }; } } as never,
+    controleurConsulterFraisExigibles: { async consulter() { return { donnee: [] }; } } as never,
+    controleurAnnulerPaiement: { async annuler() { return { donnee: { annule: true } }; } } as never,
+    controleurOuvrirCaisse: { async ouvrir() { return { donnee: { ouverte: true } }; } } as never,
+    controleurCloturerCaisse: { async cloturer() { return { donnee: { cloturee: true } }; } } as never,
+    controleurConsulterCaisseJour: { async consulter() { return { donnee: { ouverte: true } }; } } as never,
+    controleurConsulterHistoriquePaiements: { async consulter() { return { donnee: [] }; } } as never,
+    controleurConsulterRapportFinancier: {
+      async consulterJournalier() { return { donnee: { periode: '2026-09-01' } }; },
+      async consulterPaiementsParCaissier() { return { donnee: { idEcole: 'ecole-1', lignes: [] } }; },
+      async consulterPaiementsParTypeFrais() { return { donnee: { idEcole: 'ecole-1', lignes: [] } }; },
+      async consulterFondsAnticipes() { return { donnee: { idEcole: 'ecole-1', lignes: [] } }; },
+      async consulterRegistreFinancierClasse() {
+        return { donnee: { idEcole: 'ecole-1', idClassePedagogique: 'classe-1', colonnes: [], lignes: [], statistiquesParColonne: [] } };
+      },
+      async consulterSyntheseFinanciereClasse() {
+        return { donnee: { idEcole: 'ecole-1', idClassePedagogique: 'classe-1', lignes: [], situationActuelle: { effectifTotal: 0 } } };
+      },
+      async consulterSyntheseFinanciereSection() {
+        return { donnee: { idEcole: 'ecole-1', idSectionScolaire: 'section-1', lignes: [], totalGeneralSection: { effectifTotal: 0 } } };
+      },
+      async consulterSyntheseFinanciereEcole() {
+        return { donnee: { idEcole: 'ecole-1', lignes: [], totalGeneralEcole: { effectifTotal: 0 } } };
+      },
+      async consulterSyntheseFinanciereOrganisation() {
+        return { donnee: { idOrganisation: 'org-1', lignes: [], totalGeneralOrganisation: { effectifTotal: 0 } } };
+      },
+    } as never,
+    controleurRestituerExcedent: { async restituer() { return { donnee: { restitution: true } }; } } as never,
+    controleurAssetsRecus: {
+      async consulterIdentiteEcole() { return { donnee: {} }; },
+      async configurerIdentiteEcole() { return { donnee: {} }; },
+      async consulterSignature() { return { donnee: {} }; },
+      async configurerSignature() { return { donnee: {} }; },
+      async telechargerLogo() { return { nomFichier: 'logo.png', mimeType: 'image/png', contenu: Buffer.from('x') }; },
+      async telechargerCachet() { return { nomFichier: 'cachet.png', mimeType: 'image/png', contenu: Buffer.from('x') }; },
+      async telechargerSignature() { return { nomFichier: 'signature.png', mimeType: 'image/png', contenu: Buffer.from('x') }; },
+    } as never,
+    controleurReimprimerRecu: { async consulter() { return { donnee: { idRecu: 'recu-1' } }; } } as never,
+    contexteTenant,
+  }));
+
+  const reponse = await serveur.inject({
+    method: 'GET',
+    url: '/api/rapports-financiers/synthese-organisation?idAnneeScolaire=AN-001',
+    headers: {
+      'x-organisation-id': 'org-1',
+      'x-tenant-id': 'ecole-1',
+    },
+  });
+
+  assert.equal(reponse.statusCode, 200, reponse.body);
+  assert.equal(reponse.json().donnee.idOrganisation, 'org-1');
 
   await serveur.close();
 });

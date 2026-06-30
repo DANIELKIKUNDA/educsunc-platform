@@ -15,6 +15,7 @@ import {
   EnregistrerPaiementController,
   OuvrirCaisseController,
   ParametresPaiementController,
+  QualificationFinanciereEleveController,
   RestituerExcedentController,
   TarificationController,
 } from '../controllers';
@@ -39,6 +40,7 @@ export interface DependancesRoutesPaiementsFacturation {
   controleurConsulterHistoriquePaiements: ConsulterHistoriquePaiementsController;
   controleurConsulterRecusPaiement?: ConsulterRecusPaiementController;
   controleurConsulterRapportFinancier?: ConsulterRapportFinancierController;
+  controleurQualificationFinanciereEleve?: QualificationFinanciereEleveController;
   controleurRestituerExcedent: RestituerExcedentController;
   controleurReimprimerRecu: ReimprimerRecuController;
   contexteTenant?: PaiementTenantContext;
@@ -175,6 +177,41 @@ export const creerRoutesPaiementsFacturation = (
         ) ?? Promise.reject(new Error('La gestion des exonerations nest pas configuree.')),
     ));
 
+  serveur.post('/api/qualifications-financieres-eleves', (requete, reponse) =>
+    executer(
+      requete,
+      reponse,
+      (headersEffectifs) =>
+        dependances.controleurQualificationFinanciereEleve?.activer(
+          requete.body,
+          headersEffectifs,
+        ) ?? Promise.reject(new Error('La gestion des qualifications financieres eleves nest pas configuree.')),
+      201,
+    ));
+
+  serveur.post('/api/qualifications-financieres-eleves/:idQualification/desactivation', (requete, reponse) =>
+    executer(
+      requete,
+      reponse,
+      (headersEffectifs) =>
+        dependances.controleurQualificationFinanciereEleve?.desactiver(
+          requete.params,
+          requete.body,
+          headersEffectifs,
+        ) ?? Promise.reject(new Error('La gestion des qualifications financieres eleves nest pas configuree.')),
+    ));
+
+  serveur.get('/api/eleves/:idEleve/qualifications-financieres', (requete, reponse) =>
+    executer(
+      requete,
+      reponse,
+      (headersEffectifs) =>
+        dependances.controleurQualificationFinanciereEleve?.lister(
+          requete.params,
+          headersEffectifs,
+        ) ?? Promise.reject(new Error('La consultation des qualifications financieres eleves nest pas configuree.')),
+    ));
+
   serveur.get('/api/eleves/:idEleve/dette', (requete, reponse) =>
     executer(
       requete,
@@ -261,6 +298,61 @@ export const creerRoutesPaiementsFacturation = (
           requete.query,
           headersEffectifs,
         ) ?? Promise.reject(new Error('La consultation des fonds anticipes nest pas configuree.')),
+    ));
+
+  serveur.get('/api/rapports-financiers/registre-classe', (requete, reponse) =>
+    executer(
+      requete,
+      reponse,
+      (headersEffectifs) =>
+        dependances.controleurConsulterRapportFinancier?.consulterRegistreFinancierClasse(
+          requete.query,
+          headersEffectifs,
+        ) ?? Promise.reject(new Error('La consultation du registre financier de classe nest pas configuree.')),
+    ));
+
+  serveur.get('/api/rapports-financiers/synthese-classe', (requete, reponse) =>
+    executer(
+      requete,
+      reponse,
+      (headersEffectifs) =>
+        dependances.controleurConsulterRapportFinancier?.consulterSyntheseFinanciereClasse(
+          requete.query,
+          headersEffectifs,
+        ) ?? Promise.reject(new Error('La consultation de la synthese financiere de classe nest pas configuree.')),
+    ));
+
+  serveur.get('/api/rapports-financiers/synthese-section', (requete, reponse) =>
+    executer(
+      requete,
+      reponse,
+      (headersEffectifs) =>
+        dependances.controleurConsulterRapportFinancier?.consulterSyntheseFinanciereSection(
+          requete.query,
+          headersEffectifs,
+        ) ?? Promise.reject(new Error('La consultation de la synthese financiere de section nest pas configuree.')),
+    ));
+
+  serveur.get('/api/rapports-financiers/synthese-ecole', (requete, reponse) =>
+    executer(
+      requete,
+      reponse,
+      (headersEffectifs) =>
+        dependances.controleurConsulterRapportFinancier?.consulterSyntheseFinanciereEcole(
+          requete.query,
+          headersEffectifs,
+        ) ?? Promise.reject(new Error('La consultation de la synthese financiere d ecole nest pas configuree.')),
+    ));
+
+  serveur.get('/api/rapports-financiers/synthese-organisation', (requete, reponse) =>
+    executer(
+      requete,
+      reponse,
+      (headersEffectifs) =>
+        dependances.controleurConsulterRapportFinancier?.consulterSyntheseFinanciereOrganisation(
+          requete.query,
+          headersEffectifs,
+        ) ?? Promise.reject(new Error('La consultation de la synthese financiere d organisation nest pas configuree.')),
     ));
 
   serveur.post('/api/paiements/:idPaiement/annulation', (requete, reponse) =>

@@ -9,4 +9,8 @@ export interface AutorisationRapportFinancierPort {
     idOrganisation: string;
     idEcole: string;
   }): Promise<void>;
+  verifierConsultationSyntheseFinanciereOrganisation(params: {
+    idUtilisateur: string;
+    idOrganisation: string;
+  }): Promise<void>;
 }

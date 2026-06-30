@@ -14,6 +14,7 @@ import {
   AjouterResponsableFamille,
   AnnulerInscriptionScolaire,
   ChangerEleveDeClasse,
+  ConsulterAffectationClasse,
   ConsulterAffectationActive,
   ConsulterEleve,
   ConsulterFamille,
@@ -224,8 +225,8 @@ function composerRoutesScolariteEleves(): CompositionRoutesScolariteEleves {
   const controleurFamilles = new ControleurFamilles(
     new CreerFamille(depots.depotFamille, autorisationFamille),
     new ModifierFamille(depots.depotFamille, autorisationFamille, serviceConcurrence),
-    new ConsulterFamille(depots.depotFamille, autorisationFamille),
-    new ListerFamilles(depots.depotFamille, autorisationFamille),
+    new ConsulterFamille(depots.depotFamille, depots.depotEleve, autorisationFamille),
+    new ListerFamilles(depots.depotFamille, depots.depotEleve, autorisationFamille),
     new AjouterResponsableFamille(depots.depotFamille, autorisationFamille, serviceConcurrence),
     new ModifierResponsableFamille(depots.depotFamille, autorisationFamille, serviceConcurrence),
     new RetirerResponsableFamille(depots.depotFamille, autorisationFamille, serviceConcurrence),
@@ -278,7 +279,13 @@ function composerRoutesScolariteEleves(): CompositionRoutesScolariteEleves {
       eventBus,
     ),
     new ConsulterAffectationActive(depots.depotAffectation, autorisationAffectationClasse),
-    new ListerElevesParClasse(depots.depotAffectation, autorisationAffectationClasse),
+    new ConsulterAffectationClasse(depots.depotAffectation, autorisationAffectationClasse),
+    new ListerElevesParClasse(
+      depots.depotAffectation,
+      depots.depotInscription,
+      depots.depotEleve,
+      autorisationAffectationClasse,
+    ),
     new DesactiverAffectationClasse(depots.depotAffectation, autorisationAffectationClasse),
   );
 

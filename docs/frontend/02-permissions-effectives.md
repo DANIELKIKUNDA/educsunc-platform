@@ -307,6 +307,8 @@ Portee reelle :
 - pour `PF-13`, le backend reapplique `paiements.read` pour la consultation des paiements agregees par type de frais
 - pour `PF-14`, le backend reapplique `paiements.read` pour la consultation des fonds anticipes
 - pour `PF-15`, le backend reapplique `paiements.read` pour la consultation des arrieres d'un eleve
+- pour `PF-AG`, le backend reapplique maintenant `paiements.write` pour activer ou desactiver une qualification financiere eleve comme `ENFANT_AGENT` dans sa propre ecole
+- pour `PF-AG`, le backend reapplique maintenant `paiements.read` pour relire les qualifications financieres d'un eleve dans sa propre ecole
 - pour `AUD-02`, le backend reapplique maintenant `audit.finance.read` pour la consultation de l'audit administratif et financier de sa propre ecole
 - les frais mensuels `FRAIS_MINERVAL` restent reserves a ce canal naturel ou a un `ADMINISTRATEUR_ECOLE` deja porteur de `paiements.write`
 
@@ -358,6 +360,7 @@ Portee reelle :
 - pour `PF-12`, elle autorise aussi la consultation des paiements par caissier dans sa propre ecole
 - pour `PF-13`, elle autorise aussi la consultation des paiements par type de frais dans sa propre ecole
 - pour `PF-18`, elle autorise aussi la gestion des exonerations dans sa propre ecole
+- pour `PF-AG`, elle autorise aussi la gestion et la lecture des qualifications financieres d'un eleve dans sa propre ecole
 - pour `AUD-02`, elle autorise aussi la consultation de l'audit administratif et financier dans sa propre ecole
 
 Note doctrinale importante pour PED-02 :
@@ -386,6 +389,7 @@ Portee reelle :
 - pour `PF-05`, cette portee ouvre maintenant la consultation de l'historique des paiements d'un eleve dans les ecoles de l'organisation
 - pour `PF-06`, cette portee ouvre maintenant la consultation de la situation financiere d'un eleve dans les ecoles de l'organisation
 - pour `PF-18`, cette portee ouvre maintenant la gestion des exonerations dans les ecoles de l'organisation
+- pour `PF-AG`, cette portee ouvre maintenant la lecture des qualifications financieres eleve dans les ecoles de l'organisation
 
 ### `PROMOTEUR_ORGANISATION`
 
@@ -407,6 +411,7 @@ Portee reelle :
 - pour `PF-05`, cette portee ouvre maintenant la consultation de l'historique des paiements d'un eleve dans les ecoles de l'organisation
 - pour `PF-06`, cette portee ouvre maintenant la consultation de la situation financiere d'un eleve dans les ecoles de l'organisation
 - pour `PF-18`, cette portee ouvre maintenant la gestion des exonerations dans les ecoles de l'organisation
+- pour `PF-AG`, cette portee ouvre maintenant la lecture des qualifications financieres eleve dans les ecoles de l'organisation
 
 ### `SECRETAIRE`
 
@@ -531,6 +536,11 @@ Restrictions explicites :
 - pour `PF-14`, la lecture pedagogique est reduite aux eleves visibles de leur perimetre reel
 - pour `PF-15`, ces memes acteurs pedagogiques ne lisent les arrieres d'un eleve que si l'ecole les autorise explicitement
 - pour `PF-15`, cette lecture reste bornee a l'eleve effectivement visible dans leur perimetre reel
+- pour `VF-01`, `CAISSIER` et `ADMINISTRATEUR_ECOLE` lisent le registre financier de classe dans leur propre ecole
+- pour `VF-01`, `GESTIONNAIRE_ORGANISATION` et `PROMOTEUR_ORGANISATION` lisent le registre financier de classe dans les ecoles de leur organisation
+- pour `VF-01`, `TITULAIRE` ne lit le registre que sur sa classe titulaire effective et sa propre annee scolaire
+- pour `VF-01`, `PREFET_ETUDES`, `DIRECTEUR_ETUDES`, `DIRECTEUR_PRIMAIRE` et `DIRECTEUR_MATERNELLE` ne lisent ce registre que si l'ecole les autorise explicitement
+- pour `VF-01`, cette delegation pedagogique ne donne jamais une vue globale ecole : elle reste bornee a la section reelle de l'acteur et refuse explicitement une autre classe
 - `utilisateurs.write`
 - `utilisateurs.read`
 

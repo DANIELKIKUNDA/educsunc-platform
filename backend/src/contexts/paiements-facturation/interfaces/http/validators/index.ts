@@ -8,3 +8,4 @@ export * from './EnregistrerPaiementValidator';
 export * from './AnnulerPaiementValidator';
 export * from './RestituerExcedentValidator';
 export * from './ReimprimerRecuValidator';
+export * from './QualificationFinanciereEleveValidator';

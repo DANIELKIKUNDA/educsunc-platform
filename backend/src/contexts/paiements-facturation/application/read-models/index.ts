@@ -8,3 +8,8 @@ export * from './PaiementsParCaissierReadModel';
 export * from './PaiementsParTypeFraisReadModel';
 export * from './FondsAnticipesReadModel';
 export * from './RecusPaiementReadModel';
+export * from './RegistreFinancierClasseReadModel';
+export * from './SyntheseFinanciereClasseReadModel';
+export * from './SyntheseFinanciereSectionReadModel';
+export * from './SyntheseFinanciereEcoleReadModel';
+export * from './SyntheseFinanciereOrganisationReadModel';

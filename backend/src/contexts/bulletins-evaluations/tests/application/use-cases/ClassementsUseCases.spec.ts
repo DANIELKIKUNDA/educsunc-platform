@@ -19,7 +19,16 @@ test("la consultation d'un classement verifie localement le perimetre puis relit
           idClassePedagogique,
           idAnneeScolaire,
           codeColonne: codeColonne as CodeColonneBulletin,
-          lignes: [],
+          lignes: [{
+            idEleve: 'eleve-1',
+            nomComplet: 'Eleve 1',
+            sexe: 'M' as never,
+            totalObtenu: 120,
+            maximumGeneral: 200,
+            pourcentage: 60,
+            rang: 1,
+            estNonClasse: false,
+          }],
         };
       },
     },
@@ -36,6 +45,7 @@ test("la consultation d'un classement verifie localement le perimetre puis relit
   });
 
   assert.equal(sortie.idClassementColonneClasse, 'classement-1');
+  assert.equal(sortie.lignes[0]?.nomComplet, 'Eleve 1');
   assert.deepEqual(autorisation.dernierContexteConsultation, {
     idUtilisateur: 'user-1',
     idOrganisation: 'org-1',
@@ -127,6 +137,7 @@ test("le recalcul cree automatiquement le classement au premier passage et verif
   assert.equal(sortie.idClassePedagogique, 'classe-1');
   assert.equal(classementSauvegarde.obtenirId(), 'classement-classe-1-annee-1-TOTAL_GENERAL');
   assert.equal(classementSauvegarde.obtenirLignesClassement()[0]?.obtenirIdEleve(), 'eleve-2');
+  assert.equal(classementSauvegarde.obtenirLignesClassement()[0]?.obtenirNomComplet(), 'eleve-2');
   assert.deepEqual(autorisation.dernierContexteRecalcul, {
     idUtilisateur: 'titulaire-1',
     idOrganisation: 'org-1',
@@ -145,7 +156,16 @@ test("la consultation et le recalcul d'un classement refusent un utilisateur non
           idClassePedagogique: 'classe-1',
           idAnneeScolaire: 'annee-1',
           codeColonne: CodeColonneBulletin.TOTAL_GENERAL,
-          lignes: [],
+          lignes: [{
+            idEleve: 'eleve-1',
+            nomComplet: 'Eleve 1',
+            sexe: 'M' as never,
+            totalObtenu: 120,
+            maximumGeneral: 200,
+            pourcentage: 60,
+            rang: 1,
+            estNonClasse: false,
+          }],
         };
       },
     },

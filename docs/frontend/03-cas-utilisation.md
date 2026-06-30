@@ -1211,6 +1211,22 @@ Lecture doctrinale officielle :
   - `TITULAIRE`, `PREFET_ETUDES`, `DIRECTEUR_ETUDES`, `DIRECTEUR_PRIMAIRE`, `DIRECTEUR_MATERNELLE` ne lisent que si l'ecole les autorise et seulement dans leur perimetre pedagogique reel
   - la lecture est calculee sur les repartitions anticipees reelles et non sur un total ecole non filtrable
 
+### 13 bis. Consulter le registre financier de classe
+
+- BC : `paiements-facturation`
+- origine de preuve :
+  - route `GET /api/rapports-financiers/registre-classe`
+  - [ConsulterRegistreFinancierClasseUseCase.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/paiements-facturation/application/use-cases/rapports/ConsulterRegistreFinancierClasseUseCase.ts)
+  - [RegistreFinancierClasseQueryRepository.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/paiements-facturation/infrastructure/persistence/postgres/queries/RegistreFinancierClasseQueryRepository.ts)
+  - [AutorisationRegistreFinancierClasseAdapter.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/app/adapters/AutorisationRegistreFinancierClasseAdapter.ts)
+  - [security-registre-financier-classe-paiements.integration.spec.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/shared/tests/integration/security-registre-financier-classe-paiements.integration.spec.ts)
+- contraintes importantes :
+  - permission `paiements.read`
+  - `CAISSIER`, `ADMINISTRATEUR_ECOLE`, `GESTIONNAIRE_ORGANISATION`, `PROMOTEUR_ORGANISATION` lisent selon leur perimetre naturel
+  - `TITULAIRE` ne lit que sa classe titulaire et sa propre annee scolaire
+  - `PREFET_ETUDES`, `DIRECTEUR_ETUDES`, `DIRECTEUR_PRIMAIRE`, `DIRECTEUR_MATERNELLE` ne lisent que si l'ecole les autorise et seulement dans leur section reelle
+  - la lecture renvoie un vrai registre par eleve avec colonnes mensuelles, tranches Etat, inscription et statistiques integrees par colonne
+
 ### 14. Consulter les arrieres d'un eleve
 
 - BC : `paiements-facturation`
@@ -1293,9 +1309,24 @@ Lecture doctrinale officielle :
   - [GererAssetsRecusUseCase.spec.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/paiements-facturation/tests/application/use-cases/GererAssetsRecusUseCase.spec.ts)
 - contraintes importantes :
   - acteur reel `CAISSIER`
+- bonne organisation
+- bonne ecole
+- signature reservee au percepteur reel
+
+### 14. Gerer la qualification financiere `ENFANT_AGENT` d'un eleve de son ecole
+
+- BC : `paiements-facturation`
+- origine de preuve :
+  - routes `POST /api/qualifications-financieres-eleves`, `POST /api/qualifications-financieres-eleves/:idQualification/desactivation` et `GET /api/eleves/:idEleve/qualifications-financieres`
+  - [AutorisationQualificationFinanciereEleveAdapter.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/app/adapters/AutorisationQualificationFinanciereEleveAdapter.ts)
+  - [QualificationsFinancieresEleveUseCases.spec.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/paiements-facturation/tests/application/use-cases/QualificationsFinancieresEleveUseCases.spec.ts)
+- contraintes importantes :
+  - acteur reel `CAISSIER`
+  - permission effective `paiements.write` pour activer et desactiver
+  - permission effective `paiements.read` pour relire
   - bonne organisation
   - bonne ecole
-  - signature reservee au percepteur reel
+  - `ENFANT_AGENT` est une qualification autonome, distincte des exonerations
 
 ## `ADMINISTRATEUR_ECOLE`
 
@@ -1440,10 +1471,24 @@ Lecture doctrinale officielle :
   - [AutorisationExonerationAdapter.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/app/adapters/AutorisationExonerationAdapter.ts)
   - [security-exonerations-paiements-facturation.integration.spec.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/shared/tests/integration/security-exonerations-paiements-facturation.integration.spec.ts)
 - contraintes importantes :
-  - permission effective `paiements.write`
+- permission effective `paiements.write`
+- bonne organisation
+- bonne ecole
+- gestion uniquement dans le perimetre d'ecole
+
+### 12. Gerer les qualifications financieres d'un eleve de son ecole
+
+- BC : `paiements-facturation`
+- origine de preuve :
+  - routes `POST /api/qualifications-financieres-eleves`, `POST /api/qualifications-financieres-eleves/:idQualification/desactivation` et `GET /api/eleves/:idEleve/qualifications-financieres`
+  - [AutorisationQualificationFinanciereEleveAdapter.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/app/adapters/AutorisationQualificationFinanciereEleveAdapter.ts)
+  - [QualificationsFinancieresEleveUseCases.spec.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/paiements-facturation/tests/application/use-cases/QualificationsFinancieresEleveUseCases.spec.ts)
+- contraintes importantes :
+  - permission effective `paiements.write` pour activer et desactiver
+  - permission effective `paiements.read` pour relire
   - bonne organisation
   - bonne ecole
-  - gestion uniquement dans le perimetre d'ecole
+  - `ENFANT_AGENT` reste une qualification autonome, distincte des exonerations
 
 ## `GESTIONNAIRE_ORGANISATION`
 
@@ -1494,10 +1539,22 @@ Lecture doctrinale officielle :
   - [AutorisationExonerationAdapter.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/app/adapters/AutorisationExonerationAdapter.ts)
   - [security-exonerations-paiements-facturation.integration.spec.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/shared/tests/integration/security-exonerations-paiements-facturation.integration.spec.ts)
 - contraintes importantes :
+- permission `paiements.read`
+- bonne organisation
+- supervision organisationnelle
+- gestion bornee aux ecoles de l'organisation
+
+### 5. Consulter les qualifications financieres d'un eleve d'une ecole de son organisation
+
+- BC : `paiements-facturation`
+- origine de preuve :
+  - route `GET /api/eleves/:idEleve/qualifications-financieres`
+  - [AutorisationQualificationFinanciereEleveAdapter.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/app/adapters/AutorisationQualificationFinanciereEleveAdapter.ts)
+- contraintes importantes :
   - permission `paiements.read`
   - bonne organisation
   - supervision organisationnelle
-  - gestion bornee aux ecoles de l'organisation
+  - lecture uniquement
 
 ## `PROMOTEUR_ORGANISATION`
 
@@ -1568,10 +1625,22 @@ Lecture doctrinale officielle :
   - [AutorisationExonerationAdapter.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/app/adapters/AutorisationExonerationAdapter.ts)
   - [security-exonerations-paiements-facturation.integration.spec.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/shared/tests/integration/security-exonerations-paiements-facturation.integration.spec.ts)
 - contraintes importantes :
+- permission `paiements.read`
+- bonne organisation
+- supervision organisationnelle
+- gestion bornee aux ecoles de l'organisation
+
+### 7. Consulter les qualifications financieres d'un eleve d'une ecole de son organisation
+
+- BC : `paiements-facturation`
+- origine de preuve :
+  - route `GET /api/eleves/:idEleve/qualifications-financieres`
+  - [AutorisationQualificationFinanciereEleveAdapter.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/app/adapters/AutorisationQualificationFinanciereEleveAdapter.ts)
+- contraintes importantes :
   - permission `paiements.read`
   - bonne organisation
   - supervision organisationnelle
-  - gestion bornee aux ecoles de l'organisation
+  - lecture uniquement
 
 ## `SECRETAIRE`
 

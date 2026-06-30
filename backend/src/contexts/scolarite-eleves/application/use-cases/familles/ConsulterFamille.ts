@@ -1,4 +1,5 @@
 import { UseCase } from '../../../../../shared/application/UseCase';
+import { DepotEleve } from '../../../domain/repositories/DepotEleve';
 import { DepotFamille } from '../../../domain/repositories/DepotFamille';
 import { FamilleSortieDTO } from '../../dto/output/FamilleSortieDTO';
 import { ErreurRessourceIntrouvable } from '../../exceptions/ErreurRessourceIntrouvable';
@@ -18,6 +19,7 @@ export interface SortieConsulterFamille { famille: FamilleSortieDTO }
 export class ConsulterFamille implements UseCase<ConsulterFamilleEntree, SortieConsulterFamille> {
   constructor(
     private readonly depotFamille: DepotFamille,
+    private readonly depotEleve: DepotEleve,
     private readonly autorisationFamille?: AutorisationFamillePort,
   ) {}
 
@@ -35,6 +37,16 @@ export class ConsulterFamille implements UseCase<ConsulterFamilleEntree, SortieC
       throw new ErreurRessourceIntrouvable('Famille introuvable.');
     }
 
-    return { famille: FamilleMapper.versSortie(famille) };
+    const [elevesLies, nombreElevesActifs] = await Promise.all([
+      this.depotEleve.trouverParFamille(entree.idFamille),
+      this.depotFamille.compterElevesActifsDeFamille(entree.idFamille),
+    ]);
+
+    return {
+      famille: FamilleMapper.versSortie(famille, {
+        elevesLies,
+        nombreElevesActifs,
+      }),
+    };
   }
 }

@@ -100,6 +100,7 @@ export function creerLigneClassement(
   return new LigneClassementEleve({
     idLigneClassementEleve: creerIdentifiant('ligne-classement'),
     idEleve: creerIdentifiant('eleve'),
+    nomComplet: 'Eleve Test',
     sexe: SexeEleve.M,
     totalObtenu: 140,
     maximumGeneral: 200,

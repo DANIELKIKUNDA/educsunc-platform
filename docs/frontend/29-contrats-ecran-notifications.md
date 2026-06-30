@@ -4,6 +4,13 @@
 
 Ce document ouvre les contrats d'ecran reels du module `Notifications`.
 
+Statut d'implementation frontend au `30/06/2026` :
+
+- routes frontend reelles branchees
+- vues `SCR-NOTIF-001` a `SCR-NOTIF-005` materialisees
+- services, store, models et mappers dedies ajoutes dans `frontend/src/domains/notifications`
+- build frontend validee apres branchement
+
 Il couvre les workflows deja figes :
 
 - `NOTIF-01`
@@ -136,6 +143,12 @@ Permettre l'emission de notifications locales d'ecole dans le perimetre autorise
 
 - `NOTIF-01`
 
+### Implementation frontend reelle
+
+- route: `/app/notifications/ecole/envoyer`
+- vue: [NotificationsSchoolComposeView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/notifications/views/NotificationsSchoolComposeView.vue)
+- definition de route: [routes.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/notifications/routes.ts)
+
 ## Ecran `SCR-NOTIF-002`
 
 ### Page parente
@@ -228,6 +241,14 @@ Permettre la lecture unifiee des notifications locales manuelles et automatiques
 
 - `NOTIF-01`
 
+### Implementation frontend reelle
+
+- routes:
+  - `/app/notifications/ecole`
+  - `/app/notifications/ecole/:idNotification`
+- vue: [NotificationsSchoolCenterView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/notifications/views/NotificationsSchoolCenterView.vue)
+- definition de route: [routes.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/notifications/routes.ts)
+
 ## Ecran `SCR-NOTIF-003`
 
 ### Page parente
@@ -318,6 +339,14 @@ Permettre l'exploitation technique locale des notifications en echec ou a rejoue
 ### Sources backend
 
 - `NOTIF-01`
+
+### Implementation frontend reelle
+
+- routes:
+  - `/app/notifications/ecole/operations`
+  - `/app/notifications/ecole/dead-letter`
+- vue: [NotificationsSchoolOperationsView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/notifications/views/NotificationsSchoolOperationsView.vue)
+- definition de route: [routes.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/notifications/routes.ts)
 
 ## Ecran `SCR-NOTIF-004`
 
@@ -411,6 +440,14 @@ Permettre la supervision consolidee des notifications d'une organisation et de s
 
 - `NOTIF-02`
 
+### Implementation frontend reelle
+
+- routes:
+  - `/app/notifications/organisation`
+  - `/app/notifications/organisation/escalades`
+- vue: [NotificationsOrganizationView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/notifications/views/NotificationsOrganizationView.vue)
+- definition de route: [routes.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/notifications/routes.ts)
+
 ## Ecran `SCR-NOTIF-005`
 
 ### Page parente
@@ -495,9 +532,29 @@ Permettre un test controle de publication temps reel au niveau organisationnel.
 
 - `NOTIF-02`
 
+### Implementation frontend reelle
+
+- route: `/app/notifications/organisation/realtime`
+- vue: [NotificationsOrganizationRealtimeView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/notifications/views/NotificationsOrganizationRealtimeView.vue)
+- definition de route: [routes.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/notifications/routes.ts)
+
 ## Verdict
 
 Le module `Notifications` dispose maintenant d'une premiere couche officielle de contrats d'ecran frontend, alignee sur la separation deja figee entre ecole locale, exploitation technique locale et supervision organisationnelle.
+
+La materialisation frontend reelle est maintenant en place dans :
+
+- [frontend/src/domains/notifications/routes.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/notifications/routes.ts)
+- [frontend/src/domains/notifications/views/ModuleHomeView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/notifications/views/ModuleHomeView.vue)
+- [frontend/src/domains/notifications/views/NotificationsSchoolComposeView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/notifications/views/NotificationsSchoolComposeView.vue)
+- [frontend/src/domains/notifications/views/NotificationsSchoolCenterView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/notifications/views/NotificationsSchoolCenterView.vue)
+- [frontend/src/domains/notifications/views/NotificationsSchoolOperationsView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/notifications/views/NotificationsSchoolOperationsView.vue)
+- [frontend/src/domains/notifications/views/NotificationsOrganizationView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/notifications/views/NotificationsOrganizationView.vue)
+- [frontend/src/domains/notifications/views/NotificationsOrganizationRealtimeView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/notifications/views/NotificationsOrganizationRealtimeView.vue)
+- [frontend/src/domains/notifications/services/notifications.api.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/notifications/services/notifications.api.ts)
+- [frontend/src/domains/notifications/stores/notifications.store.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/notifications/stores/notifications.store.ts)
+- [frontend/src/domains/notifications/models/notifications.model.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/notifications/models/notifications.model.ts)
+- [frontend/src/domains/notifications/mappers/notifications.mapper.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/notifications/mappers/notifications.mapper.ts)
 
 La regle de protection a conserver est la suivante :
 

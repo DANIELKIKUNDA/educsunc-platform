@@ -9,6 +9,7 @@ export class ClassementPostgresMapper {
   public static versLigne(ligne: LigneClassementEleve): LigneClassementOutput {
     return {
       idEleve: ligne.obtenirIdEleve(),
+      nomComplet: ligne.obtenirNomComplet(),
       sexe: ligne.obtenirSexe(),
       totalObtenu: ligne.obtenirTotalObtenu(),
       maximumGeneral: ligne.obtenirMaximumGeneral(),

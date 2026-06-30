@@ -141,34 +141,6 @@ export class AutorisationLectureBulletinAdapter implements AutorisationLectureBu
       return;
     }
 
-    if (await this.estRoleActifDansPerimetre(
-      params.idUtilisateur,
-      params.idOrganisation,
-      params.idEcole,
-      ['ADMINISTRATEUR_ECOLE'],
-    )) {
-      await this.securityFacade.verifierAcces({
-        idUtilisateur: params.idUtilisateur,
-        permissionDemandee: 'bulletins.read',
-        idOrganisation: params.idOrganisation,
-        idEcole: params.idEcole,
-      });
-      return;
-    }
-
-    if (await this.estRoleActifDansOrganisation(
-      params.idUtilisateur,
-      params.idOrganisation,
-      ['PROMOTEUR_ORGANISATION'],
-    )) {
-      await this.securityFacade.verifierAcces({
-        idUtilisateur: params.idUtilisateur,
-        permissionDemandee: 'bulletins.read',
-        idOrganisation: params.idOrganisation,
-      });
-      return;
-    }
-
     const section = await this.resoudreSectionClasse({
       idOrganisation: params.idOrganisation,
       idEcole: params.idEcole,
@@ -329,30 +301,4 @@ export class AutorisationLectureBulletinAdapter implements AutorisationLectureBu
     return false;
   }
 
-  private async estRoleActifDansOrganisation(
-    idUtilisateur: string,
-    idOrganisation: string | undefined,
-    codesRolesAutorises: readonly string[],
-  ): Promise<boolean> {
-    if (idOrganisation === undefined) {
-      return false;
-    }
-
-    const affectations = await this.affectationRepository.listerActivesParUtilisateur(idUtilisateur);
-
-    for (const affectation of affectations) {
-      if (affectation.obtenirIdOrganisation() !== idOrganisation) {
-        continue;
-      }
-
-      const role = await this.roleRepository.trouverParId(affectation.obtenirIdRole());
-      const codeRole = role?.obtenirCodeRole().obtenirValeur();
-
-      if (codeRole !== undefined && codesRolesAutorises.includes(codeRole)) {
-        return true;
-      }
-    }
-
-    return false;
-  }
 }

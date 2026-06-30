@@ -99,7 +99,7 @@ Lecture officielle :
 
 - `paiements.write` pour le `CAISSIER`
 - `paiements.write` pour `ADMINISTRATEUR_ECOLE`
-- `paiements.read` + delegation ecole par type de frais + section reelle pour :
+- `paiements.write` + delegation ecole par type de frais + section reelle pour :
   - `PREFET_ETUDES`
   - `DIRECTEUR_PRIMAIRE`
   - `DIRECTEUR_MATERNELLE`
@@ -1115,7 +1115,7 @@ Lecture officielle :
 ### Permissions effectives requises
 
 - `paiements.write` pour `CAISSIER` et `ADMINISTRATEUR_ECOLE`
-- lecture doctrinale de perception deleguee pour `PREFET_ETUDES`, `DIRECTEUR_PRIMAIRE` et `DIRECTEUR_MATERNELLE`
+- `paiements.write` + delegation locale par type de frais + section reelle pour `PREFET_ETUDES`, `DIRECTEUR_PRIMAIRE` et `DIRECTEUR_MATERNELLE`
 
 Lecture officielle :
 
@@ -1194,7 +1194,7 @@ Lecture officielle :
 ### Permissions effectives requises
 
 - `paiements.write` pour `CAISSIER` et `ADMINISTRATEUR_ECOLE`
-- lecture doctrinale de perception deleguee pour `PREFET_ETUDES`, `DIRECTEUR_PRIMAIRE` et `DIRECTEUR_MATERNELLE`
+- `paiements.write` + delegation locale par type de frais + section reelle pour `PREFET_ETUDES`, `DIRECTEUR_PRIMAIRE` et `DIRECTEUR_MATERNELLE`
 
 Lecture officielle :
 
@@ -1618,6 +1618,277 @@ Justification technique :
 - les tests cibles du use case, de la route, du produit et de la securite locale sont verts
 
 ## Workflow PF-14
+
+## Workflow PF-AG
+
+`PF-AG`
+
+Gerer la qualification financiere `ENFANT_AGENT`
+
+### Intention metier
+
+Permettre de porter proprement le statut financier `AG` comme qualification autonome d'un eleve, distincte d'une exoneration, puis de l'activer, le desactiver et le relire dans le bon perimetre.
+
+### Routes backend reelles
+
+- `POST /api/qualifications-financieres-eleves`
+- `POST /api/qualifications-financieres-eleves/:idQualification/desactivation`
+- `GET /api/eleves/:idEleve/qualifications-financieres`
+
+### Acteur principal reel
+
+- `CAISSIER`
+
+### Acteurs secondaires reels
+
+- `ADMINISTRATEUR_ECOLE`
+- `GESTIONNAIRE_ORGANISATION` en lecture
+- `PROMOTEUR_ORGANISATION` en lecture
+
+### Doctrine de securite appliquee
+
+- mutation : `paiements.write` + meme organisation + meme ecole
+- lecture locale : `paiements.read` + meme organisation + meme ecole
+- lecture organisationnelle : `paiements.read` + meme organisation
+- `ENFANT_AGENT` reste une qualification autonome
+- aucune reutilisation abusive des exonerations pour produire `AG`
+
+### Sources backend
+
+- route HTTP : [paiements-facturation.routes.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/paiements-facturation/interfaces/http/routes/paiements-facturation.routes.ts)
+- composition : [paiements-facturation.routes.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/app/routes/paiements-facturation.routes.ts)
+- controleur : [QualificationFinanciereEleveController.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/paiements-facturation/interfaces/http/controllers/QualificationFinanciereEleveController.ts)
+- use cases :
+  - [ActiverQualificationFinanciereEleveUseCase.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/paiements-facturation/application/use-cases/qualifications-financieres/ActiverQualificationFinanciereEleveUseCase.ts)
+  - [DesactiverQualificationFinanciereEleveUseCase.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/paiements-facturation/application/use-cases/qualifications-financieres/DesactiverQualificationFinanciereEleveUseCase.ts)
+  - [ListerQualificationsFinancieresEleveUseCase.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/paiements-facturation/application/use-cases/qualifications-financieres/ListerQualificationsFinancieresEleveUseCase.ts)
+- autorisation : [AutorisationQualificationFinanciereEleveAdapter.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/app/adapters/AutorisationQualificationFinanciereEleveAdapter.ts)
+- persistance :
+  - [QualificationFinanciereEleve.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/paiements-facturation/domain/aggregates/QualificationFinanciereEleve.ts)
+  - [PostgresDepotQualificationFinanciereEleve.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/paiements-facturation/infrastructure/persistence/postgres/depots/PostgresDepotQualificationFinanciereEleve.ts)
+  - [Migration_018_CreateQualificationsFinancieresEleves.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/paiements-facturation/infrastructure/persistence/postgres/migrations/Migration_018_CreateQualificationsFinancieresEleves.ts)
+- tests :
+  - [QualificationsFinancieresEleveUseCases.spec.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/paiements-facturation/tests/application/use-cases/QualificationsFinancieresEleveUseCases.spec.ts)
+  - [PaiementsRoutes.spec.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/paiements-facturation/tests/interfaces/routes/PaiementsRoutes.spec.ts)
+
+### Etat technique
+
+- `AG` est maintenant industrialise comme qualification backend autonome
+- le registre financier de classe lit cette qualification sans la confondre avec `ENFANT_PROMOTEUR`
+- le workflow ne remplace ni l'exoneration, ni la prise en charge, ni la famille nombreuse
+- il fournit seulement le support officiel du statut `AG`
+
+## Source backend VF-01
+
+`VF-01`
+
+Consulter le registre financier de classe
+
+### Intention metier
+
+Exposer une vraie source backend pour le registre financier de classe, afin que les vues `MF-01` a `MF-05` derivent d'un moteur commun au lieu de recalculs frontend divergents.
+
+### Route backend reelle
+
+- `GET /api/rapports-financiers/registre-classe`
+
+### Doctrine de securite appliquee
+
+- permission `paiements.read`
+- `CAISSIER`, `ADMINISTRATEUR_ECOLE` : meme ecole
+- `GESTIONNAIRE_ORGANISATION`, `PROMOTEUR_ORGANISATION` : meme organisation
+- `TITULAIRE` : meme classe titulaire + meme annee scolaire
+- `PREFET_ETUDES`, `DIRECTEUR_ETUDES`, `DIRECTEUR_PRIMAIRE`, `DIRECTEUR_MATERNELLE` : meme section reelle seulement si l'ecole a active la delegation pedagogique
+
+### Sources backend
+
+- route HTTP : [paiements-facturation.routes.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/paiements-facturation/interfaces/http/routes/paiements-facturation.routes.ts)
+- composition : [paiements-facturation.routes.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/app/routes/paiements-facturation.routes.ts)
+- controleur : [ConsulterRapportFinancierController.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/paiements-facturation/interfaces/http/controllers/ConsulterRapportFinancierController.ts)
+- use case : [ConsulterRegistreFinancierClasseUseCase.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/paiements-facturation/application/use-cases/rapports/ConsulterRegistreFinancierClasseUseCase.ts)
+- repository de lecture : [RegistreFinancierClasseQueryRepository.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/paiements-facturation/infrastructure/persistence/postgres/queries/RegistreFinancierClasseQueryRepository.ts)
+- autorisation locale : [AutorisationRegistreFinancierClasseAdapter.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/app/adapters/AutorisationRegistreFinancierClasseAdapter.ts)
+- tests :
+  - [ConsulterRegistreFinancierClasseUseCase.spec.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/paiements-facturation/tests/application/use-cases/ConsulterRegistreFinancierClasseUseCase.spec.ts)
+  - [PaiementsRoutes.spec.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/paiements-facturation/tests/interfaces/routes/PaiementsRoutes.spec.ts)
+  - [security-registre-financier-classe-paiements.integration.spec.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/shared/tests/integration/security-registre-financier-classe-paiements.integration.spec.ts)
+
+### Etat technique
+
+- le backend expose maintenant le registre par classe avec colonnes mensuelles, tranches Etat, inscription et statistiques par colonne
+- les montants attendus sont calcules sur la partie reellement exigible apres exoneration
+- `AG`, `FN`, `PC`, `EX`, `EX50`, `AB`, `TR`, `DC` sont portes lorsqu'ils sont materialisables par les donnees backend actuelles
+- `AG` est porte par une qualification financiere eleve autonome `ENFANT_AGENT`, distincte des exonerations comme `ENFANT_PROMOTEUR`
+- la qualification `ENFANT_AGENT` peut maintenant etre activee, desactivee et relue via un workflow backend dedie, sans detour par les exonerations
+
+## Source backend VF-02
+
+`VF-02`
+
+Consulter la synthese financiere d'une classe
+
+### Intention metier
+
+Exposer une vraie source backend de synthese mensuelle par classe, derivee du moteur `VF-01`, pour eviter tout recalcul frontend divergent.
+
+### Route backend reelle
+
+- `GET /api/rapports-financiers/synthese-classe`
+
+### Doctrine de securite appliquee
+
+- identique a `VF-01`
+- permission `paiements.read`
+- `CAISSIER`, `ADMINISTRATEUR_ECOLE` : meme ecole
+- `GESTIONNAIRE_ORGANISATION`, `PROMOTEUR_ORGANISATION` : meme organisation
+- `TITULAIRE` : meme classe titulaire + meme annee scolaire
+- `PREFET_ETUDES`, `DIRECTEUR_ETUDES`, `DIRECTEUR_PRIMAIRE`, `DIRECTEUR_MATERNELLE` : meme section reelle seulement si l'ecole a active la delegation pedagogique
+
+### Sources backend
+
+- route HTTP : [paiements-facturation.routes.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/paiements-facturation/interfaces/http/routes/paiements-facturation.routes.ts)
+- composition : [paiements-facturation.routes.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/app/routes/paiements-facturation.routes.ts)
+- controleur : [ConsulterRapportFinancierController.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/paiements-facturation/interfaces/http/controllers/ConsulterRapportFinancierController.ts)
+- use case : [ConsulterSyntheseFinanciereClasseUseCase.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/paiements-facturation/application/use-cases/rapports/ConsulterSyntheseFinanciereClasseUseCase.ts)
+- repository de lecture : [SyntheseFinanciereClasseQueryRepository.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/paiements-facturation/infrastructure/persistence/postgres/queries/SyntheseFinanciereClasseQueryRepository.ts)
+- source amont : [RegistreFinancierClasseQueryRepository.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/paiements-facturation/infrastructure/persistence/postgres/queries/RegistreFinancierClasseQueryRepository.ts)
+- autorisation locale reutilisee : [AutorisationRegistreFinancierClasseAdapter.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/app/adapters/AutorisationRegistreFinancierClasseAdapter.ts)
+- tests :
+  - [ConsulterSyntheseFinanciereClasseUseCase.spec.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/paiements-facturation/tests/application/use-cases/ConsulterSyntheseFinanciereClasseUseCase.spec.ts)
+  - [SyntheseFinanciereClasseQueryRepository.spec.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/paiements-facturation/tests/infrastructure/queries/SyntheseFinanciereClasseQueryRepository.spec.ts)
+  - [PaiementsRoutes.spec.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/paiements-facturation/tests/interfaces/routes/PaiementsRoutes.spec.ts)
+
+### Etat technique
+
+- `VF-02` est maintenant branche sur une vraie route backend
+- la synthese mensuelle derive du registre officiel `VF-01`
+- les statuts `AG`, `EX`, `EX50`, `FN`, `PC`, `AB`, `TR`, `DC` restent portes par le meme moteur source
+
+## Source backend VF-03
+
+`VF-03`
+
+Consulter la synthese financiere d'une section
+
+### Intention metier
+
+Comparer les classes d'une section a partir d'une vraie projection backend, heritee de `VF-02` puis de `VF-01`, sans calcul parallele dans le frontend.
+
+### Route backend reelle
+
+- `GET /api/rapports-financiers/synthese-section`
+
+### Doctrine de securite appliquee
+
+- permission `paiements.read`
+- `CAISSIER`, `ADMINISTRATEUR_ECOLE` : meme ecole
+- `GESTIONNAIRE_ORGANISATION`, `PROMOTEUR_ORGANISATION` : meme organisation
+- `PREFET_ETUDES` : meme section secondaire seulement
+- `DIRECTEUR_PRIMAIRE` : meme section primaire seulement
+- `DIRECTEUR_MATERNELLE` : meme section maternelle seulement
+
+### Sources backend
+
+- route HTTP : [paiements-facturation.routes.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/paiements-facturation/interfaces/http/routes/paiements-facturation.routes.ts)
+- composition : [paiements-facturation.routes.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/app/routes/paiements-facturation.routes.ts)
+- controleur : [ConsulterRapportFinancierController.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/paiements-facturation/interfaces/http/controllers/ConsulterRapportFinancierController.ts)
+- use case : [ConsulterSyntheseFinanciereSectionUseCase.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/paiements-facturation/application/use-cases/rapports/ConsulterSyntheseFinanciereSectionUseCase.ts)
+- repository de lecture : [SyntheseFinanciereSectionQueryRepository.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/paiements-facturation/infrastructure/persistence/postgres/queries/SyntheseFinanciereSectionQueryRepository.ts)
+- source amont : [SyntheseFinanciereClasseQueryRepository.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/paiements-facturation/infrastructure/persistence/postgres/queries/SyntheseFinanciereClasseQueryRepository.ts)
+- autorisation locale : [AutorisationSyntheseFinanciereSectionAdapter.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/app/adapters/AutorisationSyntheseFinanciereSectionAdapter.ts)
+- tests :
+  - [ConsulterSyntheseFinanciereSectionUseCase.spec.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/paiements-facturation/tests/application/use-cases/ConsulterSyntheseFinanciereSectionUseCase.spec.ts)
+  - [SyntheseFinanciereSectionQueryRepository.spec.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/paiements-facturation/tests/infrastructure/queries/SyntheseFinanciereSectionQueryRepository.spec.ts)
+  - [security-synthese-financiere-section-paiements.integration.spec.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/shared/tests/integration/security-synthese-financiere-section-paiements.integration.spec.ts)
+
+### Etat technique
+
+- `VF-03` est maintenant branche sur une vraie route backend
+- la synthese sectionnelle consolide les classes d'une section reelle
+- le detail reste ouvrable vers `VF-02` puis `VF-01`
+
+## Source backend VF-04
+
+`VF-04`
+
+Consulter la synthese financiere d'une ecole
+
+### Intention metier
+
+Comparer les sections d'une ecole a partir d'une vraie projection backend, heritee de `VF-03`, `VF-02` puis `VF-01`, sans recalcul parallele dans le frontend.
+
+### Route backend reelle
+
+- `GET /api/rapports-financiers/synthese-ecole`
+
+### Doctrine de securite appliquee
+
+- permission `paiements.read`
+- `CAISSIER`, `ADMINISTRATEUR_ECOLE` : meme ecole
+- `GESTIONNAIRE_ORGANISATION`, `PROMOTEUR_ORGANISATION` : meme organisation
+
+### Sources backend
+
+- route HTTP : [paiements-facturation.routes.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/paiements-facturation/interfaces/http/routes/paiements-facturation.routes.ts)
+- composition : [paiements-facturation.routes.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/app/routes/paiements-facturation.routes.ts)
+- controleur : [ConsulterRapportFinancierController.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/paiements-facturation/interfaces/http/controllers/ConsulterRapportFinancierController.ts)
+- use case : [ConsulterSyntheseFinanciereEcoleUseCase.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/paiements-facturation/application/use-cases/rapports/ConsulterSyntheseFinanciereEcoleUseCase.ts)
+- repository de lecture : [SyntheseFinanciereEcoleQueryRepository.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/paiements-facturation/infrastructure/persistence/postgres/queries/SyntheseFinanciereEcoleQueryRepository.ts)
+
+### Preuves de tests
+
+- use case : [ConsulterSyntheseFinanciereEcoleUseCase.spec.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/paiements-facturation/tests/application/use-cases/ConsulterSyntheseFinanciereEcoleUseCase.spec.ts)
+- repository : [SyntheseFinanciereEcoleQueryRepository.spec.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/paiements-facturation/tests/infrastructure/queries/SyntheseFinanciereEcoleQueryRepository.spec.ts)
+- routes HTTP : [PaiementsRoutes.spec.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/paiements-facturation/tests/interfaces/routes/PaiementsRoutes.spec.ts)
+- activation produit : [activated-product-routes.test.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/tests/integration/activated-product-routes.test.ts)
+
+### Verdict technique
+
+- `VF-04` est maintenant branche sur une vraie route backend
+- la synthese ecole consolide les sections reelles de l ecole
+- le detail reste ouvrable vers `VF-03`, puis `VF-02`, puis `VF-01`
+
+## Source backend VF-05
+
+`VF-05`
+
+Consulter la synthese financiere d'une organisation
+
+### Intention metier
+
+Comparer les ecoles d'une organisation a partir d'une vraie projection backend, heritee de `VF-04`, `VF-03`, `VF-02` puis `VF-01`, sans recalcul parallele dans le frontend.
+
+### Route backend reelle
+
+- `GET /api/rapports-financiers/synthese-organisation`
+
+### Doctrine de securite appliquee
+
+- permission `paiements.read`
+- `GESTIONNAIRE_ORGANISATION`, `PROMOTEUR_ORGANISATION` : meme organisation uniquement
+- aucun acteur ecole n est promu implicitement lecteur organisationnel
+
+### Sources backend
+
+- route HTTP : [paiements-facturation.routes.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/paiements-facturation/interfaces/http/routes/paiements-facturation.routes.ts)
+- composition : [paiements-facturation.routes.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/app/routes/paiements-facturation.routes.ts)
+- controleur : [ConsulterRapportFinancierController.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/paiements-facturation/interfaces/http/controllers/ConsulterRapportFinancierController.ts)
+- use case : [ConsulterSyntheseFinanciereOrganisationUseCase.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/paiements-facturation/application/use-cases/rapports/ConsulterSyntheseFinanciereOrganisationUseCase.ts)
+- repository de lecture : [SyntheseFinanciereOrganisationQueryRepository.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/paiements-facturation/infrastructure/persistence/postgres/queries/SyntheseFinanciereOrganisationQueryRepository.ts)
+- autorisation : [AutorisationRapportFinancierAdapter.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/app/adapters/AutorisationRapportFinancierAdapter.ts)
+
+### Preuves de tests
+
+- use case : [ConsulterSyntheseFinanciereOrganisationUseCase.spec.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/paiements-facturation/tests/application/use-cases/ConsulterSyntheseFinanciereOrganisationUseCase.spec.ts)
+- repository : [SyntheseFinanciereOrganisationQueryRepository.spec.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/paiements-facturation/tests/infrastructure/queries/SyntheseFinanciereOrganisationQueryRepository.spec.ts)
+- routes HTTP : [PaiementsRoutes.spec.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/contexts/paiements-facturation/tests/interfaces/routes/PaiementsRoutes.spec.ts)
+- activation produit : [activated-product-routes.test.ts](/C:/Users/MON%20PC/Documents/EducSyn/backend/src/tests/integration/activated-product-routes.test.ts)
+
+### Verdict technique
+
+- `VF-05` est maintenant branche sur une vraie route backend
+- la synthese organisation consolide les ecoles reelles de l organisation
+- le detail reste ouvrable vers `VF-04`, puis `VF-03`, puis `VF-02`, puis `VF-01`
 
 `PF-14`
 

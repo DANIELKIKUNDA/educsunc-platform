@@ -4,6 +4,13 @@
 
 Ce document ouvre les contrats d'ecran reels du module `Security`.
 
+Statut d'implementation frontend au `30/06/2026` :
+
+- routes frontend reelles branchees
+- vues `SCR-SEC-001` a `SCR-SEC-004` materialisees
+- services, store, models et mappers dedies ajoutes dans `frontend/src/domains/security`
+- build frontend validee apres branchement
+
 Il couvre les workflows deja figes :
 
 - `SEC-01`
@@ -141,6 +148,14 @@ Permettre la gouvernance plateforme des roles, permissions et restrictions secur
 
 - `SEC-01`
 
+### Implementation frontend reelle
+
+- routes:
+  - `/app/security/roles`
+  - `/app/security/roles/:codeRole`
+- vue: [SecurityRolesView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/security/views/SecurityRolesView.vue)
+- definition de route: [routes.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/security/routes.ts)
+
 ## Ecran `SCR-SEC-002`
 
 ### Page parente
@@ -238,6 +253,15 @@ Permettre la gouvernance transverse des affectations utilisateurs, de leurs scop
 
 - `SEC-02`
 
+### Implementation frontend reelle
+
+- routes:
+  - `/app/security/affectations`
+  - `/app/security/affectations/utilisateurs/:idUtilisateur`
+  - `/app/security/titulariats`
+- vue: [SecurityAssignmentsView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/security/views/SecurityAssignmentsView.vue)
+- definition de route: [routes.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/security/routes.ts)
+
 ## Ecran `SCR-SEC-003`
 
 ### Page parente
@@ -326,6 +350,12 @@ Permettre le diagnostic transverse des permissions, scopes, restrictions et acce
 ### Sources backend
 
 - `SEC-03`
+
+### Implementation frontend reelle
+
+- route: `/app/security/verifications`
+- vue: [SecurityChecksView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/security/views/SecurityChecksView.vue)
+- definition de route: [routes.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/security/routes.ts)
 
 ## Ecran `SCR-SEC-004`
 
@@ -416,9 +446,28 @@ Permettre la lecture transverse des journaux security, des refus et des acces co
 
 - `SEC-04`
 
+### Implementation frontend reelle
+
+- route: `/app/security/audit`
+- vue: [SecurityAuditView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/security/views/SecurityAuditView.vue)
+- definition de route: [routes.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/security/routes.ts)
+
 ## Verdict
 
 Le module `Security` dispose maintenant d'une premiere couche officielle de contrats d'ecran frontend, alignee sur sa vraie nature de gouvernance et de diagnostic plateforme.
+
+La materialisation frontend reelle est maintenant en place dans :
+
+- [frontend/src/domains/security/routes.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/security/routes.ts)
+- [frontend/src/domains/security/views/ModuleHomeView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/security/views/ModuleHomeView.vue)
+- [frontend/src/domains/security/views/SecurityRolesView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/security/views/SecurityRolesView.vue)
+- [frontend/src/domains/security/views/SecurityAssignmentsView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/security/views/SecurityAssignmentsView.vue)
+- [frontend/src/domains/security/views/SecurityChecksView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/security/views/SecurityChecksView.vue)
+- [frontend/src/domains/security/views/SecurityAuditView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/security/views/SecurityAuditView.vue)
+- [frontend/src/domains/security/services/security.api.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/security/services/security.api.ts)
+- [frontend/src/domains/security/stores/security.store.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/security/stores/security.store.ts)
+- [frontend/src/domains/security/models/security.model.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/security/models/security.model.ts)
+- [frontend/src/domains/security/mappers/security.mapper.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/security/mappers/security.mapper.ts)
 
 La regle de protection a conserver est la suivante :
 

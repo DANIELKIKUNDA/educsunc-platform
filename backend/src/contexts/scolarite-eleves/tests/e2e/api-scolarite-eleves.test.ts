@@ -40,7 +40,7 @@ test('API POST /api/eleves cree un eleve via le controleur', async () => {
     ),
     controleurFamilles: new ControleurFamilles(casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({})),
     controleurInscriptions: new ControleurInscriptionsScolaires(casUsage({ inscription: {} }), casUsage({}), casUsage({ inscription: {} }), casUsage({ inscription: {} }), casUsage({ inscription: {} }), casUsage([]), casUsage([])),
-    controleurAffectations: new ControleurAffectationsClasses(casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage([]), casUsage(undefined)),
+    controleurAffectations: new ControleurAffectationsClasses(casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage([]), casUsage(undefined)),
     controleurCycleVie: new ControleurCycleVieEleves(casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} })),
     controleurParcours: new ControleurParcoursEleves(casUsage({ parcours: {} }), casUsage([]), casUsage([]), casUsage({ parcours: {} })),
     controleurOrganisation: new ControleurScolariteOrganisation(casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage([]), casUsage({ idOrganisation: 'org' }), casUsage([])),
@@ -109,7 +109,7 @@ test('API POST /api/inscriptions-scolaires/complete valide le payload compose', 
     ),
     controleurFamilles: new ControleurFamilles(casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({})),
     controleurInscriptions: new ControleurInscriptionsScolaires(casUsage({ inscription: {} }), casUsageComplet, casUsage({ inscription: {} }), casUsage({ inscription: {} }), casUsage({ inscription: {} }), casUsage([]), casUsage([])),
-    controleurAffectations: new ControleurAffectationsClasses(casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage([]), casUsage(undefined)),
+    controleurAffectations: new ControleurAffectationsClasses(casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage([]), casUsage(undefined)),
     controleurCycleVie: new ControleurCycleVieEleves(casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} })),
     controleurParcours: new ControleurParcoursEleves(casUsage({ parcours: {} }), casUsage([]), casUsage([]), casUsage({ parcours: {} })),
     controleurOrganisation: new ControleurScolariteOrganisation(casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage([]), casUsage({ idOrganisation: 'org' }), casUsage([])),
@@ -238,7 +238,7 @@ test('API POST /api/inscriptions-scolaires/complete transporte la meme cle idemp
     ),
     controleurFamilles: new ControleurFamilles(casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({})),
     controleurInscriptions: new ControleurInscriptionsScolaires(casUsage({ inscription: {} }), casUsageComplet, casUsage({ inscription: {} }), casUsage({ inscription: {} }), casUsage({ inscription: {} }), casUsage([]), casUsage([])),
-    controleurAffectations: new ControleurAffectationsClasses(casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage([]), casUsage(undefined)),
+    controleurAffectations: new ControleurAffectationsClasses(casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage([]), casUsage(undefined)),
     controleurCycleVie: new ControleurCycleVieEleves(casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} })),
     controleurParcours: new ControleurParcoursEleves(casUsage({ parcours: {} }), casUsage([]), casUsage([]), casUsage({ parcours: {} })),
     controleurOrganisation: new ControleurScolariteOrganisation(casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage([]), casUsage({ idOrganisation: 'org' }), casUsage([])),
@@ -319,7 +319,7 @@ test('API POST /api/eleves/:id/abandon route bien vers le controleur cycle de vi
     ),
     controleurFamilles: new ControleurFamilles(casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({})),
     controleurInscriptions: new ControleurInscriptionsScolaires(casUsage({ inscription: {} }), casUsage({}), casUsage({ inscription: {} }), casUsage({ inscription: {} }), casUsage({ inscription: {} }), casUsage([]), casUsage([])),
-    controleurAffectations: new ControleurAffectationsClasses(casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage([]), casUsage(undefined)),
+    controleurAffectations: new ControleurAffectationsClasses(casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage([]), casUsage(undefined)),
     controleurCycleVie: new ControleurCycleVieEleves(casCycleVie, casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} })),
     controleurParcours: new ControleurParcoursEleves(casUsage({ parcours: {} }), casUsage([]), casUsage([]), casUsage({ parcours: {} })),
     controleurOrganisation: new ControleurScolariteOrganisation(casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage([]), casUsage({ idOrganisation: 'org' }), casUsage([])),
@@ -379,7 +379,7 @@ test('API POST /api/eleves/:id/deces passe par le controleur cycle de vie', asyn
     ),
     controleurFamilles: new ControleurFamilles(casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({})),
     controleurInscriptions: new ControleurInscriptionsScolaires(casUsage({ inscription: {} }), casUsage({}), casUsage({ inscription: {} }), casUsage({ inscription: {} }), casUsage({ inscription: {} }), casUsage([]), casUsage([])),
-    controleurAffectations: new ControleurAffectationsClasses(casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage([]), casUsage(undefined)),
+    controleurAffectations: new ControleurAffectationsClasses(casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage([]), casUsage(undefined)),
     controleurCycleVie: new ControleurCycleVieEleves(casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casDeces),
     controleurParcours: new ControleurParcoursEleves(casUsage({ parcours: {} }), casUsage([]), casUsage([]), casUsage({ parcours: {} })),
     controleurOrganisation: new ControleurScolariteOrganisation(casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage([]), casUsage({ idOrganisation: 'org' }), casUsage([])),
@@ -430,7 +430,7 @@ test('API POST /api/affectations-classes transporte le contexte utilisateur au c
     controleurEleves: new ControleurEleves(casUsage({ eleve: { idEleve: 'eleve-1', matricule: 'EL-1' } }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} })),
     controleurFamilles: new ControleurFamilles(casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({})),
     controleurInscriptions: new ControleurInscriptionsScolaires(casUsage({ inscription: {} }), casUsage({}), casUsage({ inscription: {} }), casUsage({ inscription: {} }), casUsage({ inscription: {} }), casUsage([]), casUsage([])),
-    controleurAffectations: new ControleurAffectationsClasses(casAffectation, casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage([]), casUsage(undefined)),
+    controleurAffectations: new ControleurAffectationsClasses(casAffectation, casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage([]), casUsage(undefined)),
     controleurCycleVie: new ControleurCycleVieEleves(casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} })),
     controleurParcours: new ControleurParcoursEleves(casUsage({ parcours: {} }), casUsage([]), casUsage([]), casUsage({ parcours: {} })),
     controleurOrganisation: new ControleurScolariteOrganisation(casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage([]), casUsage({ idOrganisation: 'org' }), casUsage([])),
@@ -492,7 +492,7 @@ test('API POST /api/familles transporte le contexte utilisateur au controleur', 
     controleurEleves: new ControleurEleves(casUsage({ eleve: { idEleve: 'eleve-1', matricule: 'EL-1' } }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} })),
     controleurFamilles: new ControleurFamilles(casFamille, casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({})),
     controleurInscriptions: new ControleurInscriptionsScolaires(casUsage({ inscription: {} }), casUsage({}), casUsage({ inscription: {} }), casUsage({ inscription: {} }), casUsage({ inscription: {} }), casUsage([]), casUsage([])),
-    controleurAffectations: new ControleurAffectationsClasses(casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage([]), casUsage(undefined)),
+    controleurAffectations: new ControleurAffectationsClasses(casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage([]), casUsage(undefined)),
     controleurCycleVie: new ControleurCycleVieEleves(casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} })),
     controleurParcours: new ControleurParcoursEleves(casUsage({ parcours: {} }), casUsage([]), casUsage([]), casUsage({ parcours: {} })),
     controleurOrganisation: new ControleurScolariteOrganisation(casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage([]), casUsage({ idOrganisation: 'org' }), casUsage([])),
@@ -555,7 +555,7 @@ test('API GET /api/eleves/:id transporte le contexte utilisateur au controleur',
     controleurEleves: new ControleurEleves(casUsage({ eleve: {} }), casUsage({ eleve: {} }), casEleve, casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} })),
     controleurFamilles: new ControleurFamilles(casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({})),
     controleurInscriptions: new ControleurInscriptionsScolaires(casUsage({ inscription: {} }), casUsage({}), casUsage({ inscription: {} }), casUsage({ inscription: {} }), casUsage({ inscription: {} }), casUsage([]), casUsage([])),
-    controleurAffectations: new ControleurAffectationsClasses(casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage([]), casUsage(undefined)),
+    controleurAffectations: new ControleurAffectationsClasses(casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage([]), casUsage(undefined)),
     controleurCycleVie: new ControleurCycleVieEleves(casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} })),
     controleurParcours: new ControleurParcoursEleves(casUsage({ parcours: {} }), casUsage([]), casUsage([]), casUsage({ parcours: {} })),
     controleurOrganisation: new ControleurScolariteOrganisation(casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage([]), casUsage({ idOrganisation: 'org' }), casUsage([])),
@@ -606,7 +606,7 @@ test('API POST /api/eleves/:id/rattacher-famille transporte le contexte utilisat
     controleurEleves: new ControleurEleves(casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casRattachement, casUsage({ eleve: {} }), casUsage({ eleve: {} })),
     controleurFamilles: new ControleurFamilles(casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({})),
     controleurInscriptions: new ControleurInscriptionsScolaires(casUsage({ inscription: {} }), casUsage({}), casUsage({ inscription: {} }), casUsage({ inscription: {} }), casUsage({ inscription: {} }), casUsage([]), casUsage([])),
-    controleurAffectations: new ControleurAffectationsClasses(casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage([]), casUsage(undefined)),
+    controleurAffectations: new ControleurAffectationsClasses(casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage([]), casUsage(undefined)),
     controleurCycleVie: new ControleurCycleVieEleves(casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} })),
     controleurParcours: new ControleurParcoursEleves(casUsage({ parcours: {} }), casUsage([]), casUsage([]), casUsage({ parcours: {} })),
     controleurOrganisation: new ControleurScolariteOrganisation(casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage([]), casUsage({ idOrganisation: 'org' }), casUsage([])),
@@ -663,7 +663,7 @@ test('API GET /api/familles/:id transporte le contexte utilisateur au controleur
     controleurEleves: new ControleurEleves(casUsage({ eleve: { idEleve: 'eleve-1', matricule: 'EL-1' } }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} })),
     controleurFamilles: new ControleurFamilles(casUsage({ famille: {} }), casUsage({ famille: {} }), casFamille, casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({})),
     controleurInscriptions: new ControleurInscriptionsScolaires(casUsage({ inscription: {} }), casUsage({}), casUsage({ inscription: {} }), casUsage({ inscription: {} }), casUsage({ inscription: {} }), casUsage([]), casUsage([])),
-    controleurAffectations: new ControleurAffectationsClasses(casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage([]), casUsage(undefined)),
+    controleurAffectations: new ControleurAffectationsClasses(casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage([]), casUsage(undefined)),
     controleurCycleVie: new ControleurCycleVieEleves(casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} })),
     controleurParcours: new ControleurParcoursEleves(casUsage({ parcours: {} }), casUsage([]), casUsage([]), casUsage({ parcours: {} })),
     controleurOrganisation: new ControleurScolariteOrganisation(casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage([]), casUsage({ idOrganisation: 'org' }), casUsage([])),
@@ -714,7 +714,7 @@ test('API GET /api/affectations-classes/active/:idInscription transporte le cont
     controleurEleves: new ControleurEleves(casUsage({ eleve: { idEleve: 'eleve-1', matricule: 'EL-1' } }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} })),
     controleurFamilles: new ControleurFamilles(casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({})),
     controleurInscriptions: new ControleurInscriptionsScolaires(casUsage({ inscription: {} }), casUsage({}), casUsage({ inscription: {} }), casUsage({ inscription: {} }), casUsage({ inscription: {} }), casUsage([]), casUsage([])),
-    controleurAffectations: new ControleurAffectationsClasses(casUsage({ affectation: {} }), casUsage({ affectation: {} }), casConsultation, casUsage([]), casUsage(undefined)),
+    controleurAffectations: new ControleurAffectationsClasses(casUsage({ affectation: {} }), casUsage({ affectation: {} }), casConsultation, casUsage({ affectation: {} }), casUsage([]), casUsage(undefined)),
     controleurCycleVie: new ControleurCycleVieEleves(casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} })),
     controleurParcours: new ControleurParcoursEleves(casUsage({ parcours: {} }), casUsage([]), casUsage([]), casUsage({ parcours: {} })),
     controleurOrganisation: new ControleurScolariteOrganisation(casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage([]), casUsage({ idOrganisation: 'org' }), casUsage([])),
@@ -736,6 +736,111 @@ test('API GET /api/affectations-classes/active/:idInscription transporte le cont
     idEcole: 'ecole-1',
     idUtilisateur: 'user-1',
     idempotencyKey: undefined,
+  });
+  await app.close();
+});
+
+test('API GET /api/affectations-classes/:id transporte l identifiant d affectation au controleur dedie', async () => {
+  const app = Fastify();
+  let chargeUtile: unknown;
+  const casConsultationParId = {
+    executer: async (entree: unknown) => {
+      chargeUtile = entree;
+      return { affectation: { idAffectationClasse: 'affectation-1' } };
+    },
+  };
+  app.addHook('onRequest', async (requete) => {
+    (requete as typeof requete & { context: unknown }).context = {
+      requestId: 'req-1',
+      utilisateurId: 'user-1',
+      permissions: [],
+      scopes: [],
+      restrictions: [],
+      titulariats: [],
+      modeOffline: false,
+    };
+  });
+
+  await app.register(creerRoutesScolariteEleves({
+    controleurEleves: new ControleurEleves(casUsage({ eleve: { idEleve: 'eleve-1', matricule: 'EL-1' } }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} })),
+    controleurFamilles: new ControleurFamilles(casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({})),
+    controleurInscriptions: new ControleurInscriptionsScolaires(casUsage({ inscription: {} }), casUsage({}), casUsage({ inscription: {} }), casUsage({ inscription: {} }), casUsage({ inscription: {} }), casUsage([]), casUsage([])),
+    controleurAffectations: new ControleurAffectationsClasses(casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage({ affectation: {} }), casConsultationParId, casUsage([]), casUsage(undefined)),
+    controleurCycleVie: new ControleurCycleVieEleves(casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} })),
+    controleurParcours: new ControleurParcoursEleves(casUsage({ parcours: {} }), casUsage([]), casUsage([]), casUsage({ parcours: {} })),
+    controleurOrganisation: new ControleurScolariteOrganisation(casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage([]), casUsage({ idOrganisation: 'org' }), casUsage([])),
+  }));
+
+  const reponse = await app.inject({
+    method: 'GET',
+    url: '/api/affectations-classes/affectation-1',
+    headers: {
+      'x-organisation-id': 'org-1',
+      'x-tenant-id': 'ecole-1',
+    },
+  });
+
+  assert.equal(reponse.statusCode, 200);
+  assert.deepEqual(chargeUtile, {
+    idAffectationClasse: 'affectation-1',
+    idOrganisation: 'org-1',
+    idEcole: 'ecole-1',
+    idUtilisateur: 'user-1',
+    idempotencyKey: undefined,
+  });
+  await app.close();
+});
+
+test('API GET /api/classes-pedagogiques/:id/eleves transporte le contexte utilisateur au controleur', async () => {
+  const app = Fastify();
+  let chargeUtile: unknown;
+  const casListeClasse = {
+    executer: async (entree: unknown) => {
+      chargeUtile = entree;
+      return [{ idEleve: 'eleve-1', idInscriptionScolaire: 'inscription-1' }];
+    },
+  };
+  app.addHook('onRequest', async (requete) => {
+    (requete as typeof requete & { context: unknown }).context = {
+      requestId: 'req-1',
+      utilisateurId: 'user-1',
+      permissions: [],
+      scopes: [],
+      restrictions: [],
+      titulariats: [],
+      modeOffline: false,
+    };
+  });
+
+  await app.register(creerRoutesScolariteEleves({
+    controleurEleves: new ControleurEleves(casUsage({ eleve: { idEleve: 'eleve-1', matricule: 'EL-1' } }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} })),
+    controleurFamilles: new ControleurFamilles(casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({})),
+    controleurInscriptions: new ControleurInscriptionsScolaires(casUsage({ inscription: {} }), casUsage({}), casUsage({ inscription: {} }), casUsage({ inscription: {} }), casUsage({ inscription: {} }), casUsage([]), casUsage([])),
+    controleurAffectations: new ControleurAffectationsClasses(casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage({ affectation: {} }), casListeClasse, casUsage(undefined)),
+    controleurCycleVie: new ControleurCycleVieEleves(casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} })),
+    controleurParcours: new ControleurParcoursEleves(casUsage({ parcours: {} }), casUsage([]), casUsage([]), casUsage({ parcours: {} })),
+    controleurOrganisation: new ControleurScolariteOrganisation(casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage([]), casUsage({ idOrganisation: 'org' }), casUsage([])),
+  }));
+
+  const reponse = await app.inject({
+    method: 'GET',
+    url: '/api/classes-pedagogiques/classe-1/eleves',
+    headers: {
+      'x-organisation-id': 'org-1',
+      'x-tenant-id': 'ecole-1',
+    },
+  });
+
+  assert.equal(reponse.statusCode, 200);
+  assert.deepEqual(chargeUtile, {
+    idClassePedagogique: 'classe-1',
+    idOrganisation: 'org-1',
+    idEcole: 'ecole-1',
+    idUtilisateur: 'user-1',
+    idempotencyKey: undefined,
+  });
+  assert.deepEqual(reponse.json(), {
+    donnees: [{ idEleve: 'eleve-1', idInscriptionScolaire: 'inscription-1' }],
   });
   await app.close();
 });
@@ -774,7 +879,7 @@ test('API GET /api/eleves/:id/parcours transporte le contexte utilisateur au con
     ),
     controleurFamilles: new ControleurFamilles(casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({})),
     controleurInscriptions: new ControleurInscriptionsScolaires(casUsage({ inscription: {} }), casUsage({}), casUsage({ inscription: {} }), casUsage({ inscription: {} }), casUsage({ inscription: {} }), casUsage([]), casUsage([])),
-    controleurAffectations: new ControleurAffectationsClasses(casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage([]), casUsage(undefined)),
+    controleurAffectations: new ControleurAffectationsClasses(casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage([]), casUsage(undefined)),
     controleurCycleVie: new ControleurCycleVieEleves(casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} })),
     controleurParcours: new ControleurParcoursEleves(casParcours, casUsage([]), casUsage([]), casUsage({ parcours: {} })),
     controleurOrganisation: new ControleurScolariteOrganisation(casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage([]), casUsage({ idOrganisation: 'org' }), casUsage([])),
@@ -834,7 +939,7 @@ test('API GET /api/parcours/evenements/par-annee/:idAnnee transporte le contexte
     ),
     controleurFamilles: new ControleurFamilles(casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({})),
     controleurInscriptions: new ControleurInscriptionsScolaires(casUsage({ inscription: {} }), casUsage({}), casUsage({ inscription: {} }), casUsage({ inscription: {} }), casUsage({ inscription: {} }), casUsage([]), casUsage([])),
-    controleurAffectations: new ControleurAffectationsClasses(casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage([]), casUsage(undefined)),
+    controleurAffectations: new ControleurAffectationsClasses(casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage([]), casUsage(undefined)),
     controleurCycleVie: new ControleurCycleVieEleves(casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} })),
     controleurParcours: new ControleurParcoursEleves(casUsage({ parcours: {} }), casUsage([]), casParAnnee, casUsage({ parcours: {} })),
     controleurOrganisation: new ControleurScolariteOrganisation(casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage([]), casUsage({ idOrganisation: 'org' }), casUsage([])),
@@ -875,7 +980,7 @@ test('API POST /api/eleves/:id/parcours/reconstruire n est plus exposee publique
     ),
     controleurFamilles: new ControleurFamilles(casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({})),
     controleurInscriptions: new ControleurInscriptionsScolaires(casUsage({ inscription: {} }), casUsage({}), casUsage({ inscription: {} }), casUsage({ inscription: {} }), casUsage({ inscription: {} }), casUsage([]), casUsage([])),
-    controleurAffectations: new ControleurAffectationsClasses(casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage([]), casUsage(undefined)),
+    controleurAffectations: new ControleurAffectationsClasses(casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage([]), casUsage(undefined)),
     controleurCycleVie: new ControleurCycleVieEleves(casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} })),
     controleurParcours: new ControleurParcoursEleves(casUsage({ parcours: {} }), casUsage([]), casUsage([]), casUsage({ parcours: {} })),
     controleurOrganisation: new ControleurScolariteOrganisation(casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage([]), casUsage({ idOrganisation: 'org' }), casUsage([])),
@@ -915,7 +1020,7 @@ test('API GET /api/organisations/:idOrganisation/scolarite/eleves transporte le 
     controleurEleves: new ControleurEleves(casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} })),
     controleurFamilles: new ControleurFamilles(casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({})),
     controleurInscriptions: new ControleurInscriptionsScolaires(casUsage({ inscription: {} }), casUsage({}), casUsage({ inscription: {} }), casUsage({ inscription: {} }), casUsage({ inscription: {} }), casUsage([]), casUsage([])),
-    controleurAffectations: new ControleurAffectationsClasses(casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage([]), casUsage(undefined)),
+    controleurAffectations: new ControleurAffectationsClasses(casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage([]), casUsage(undefined)),
     controleurCycleVie: new ControleurCycleVieEleves(casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} })),
     controleurParcours: new ControleurParcoursEleves(casUsage({ parcours: {} }), casUsage([]), casUsage([]), casUsage({ parcours: {} })),
     controleurOrganisation: new ControleurScolariteOrganisation(casOrganisation, casUsage([]), casUsage({ idOrganisation: 'org' }), casUsage([])),
@@ -968,7 +1073,7 @@ test('API GET /api/organisations/:idOrganisation/scolarite/inscriptions transpor
     controleurEleves: new ControleurEleves(casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} })),
     controleurFamilles: new ControleurFamilles(casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({})),
     controleurInscriptions: new ControleurInscriptionsScolaires(casUsage({ inscription: {} }), casUsage({}), casUsage({ inscription: {} }), casUsage({ inscription: {} }), casUsage({ inscription: {} }), casUsage([]), casUsage([])),
-    controleurAffectations: new ControleurAffectationsClasses(casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage([]), casUsage(undefined)),
+    controleurAffectations: new ControleurAffectationsClasses(casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage([]), casUsage(undefined)),
     controleurCycleVie: new ControleurCycleVieEleves(casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} })),
     controleurParcours: new ControleurParcoursEleves(casUsage({ parcours: {} }), casUsage([]), casUsage([]), casUsage({ parcours: {} })),
     controleurOrganisation: new ControleurScolariteOrganisation(casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casOrganisation, casUsage({ idOrganisation: 'org' }), casUsage([])),
@@ -1028,7 +1133,7 @@ test('API GET /api/organisations/:idOrganisation/scolarite/synthese transporte l
     controleurEleves: new ControleurEleves(casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} })),
     controleurFamilles: new ControleurFamilles(casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({})),
     controleurInscriptions: new ControleurInscriptionsScolaires(casUsage({ inscription: {} }), casUsage({}), casUsage({ inscription: {} }), casUsage({ inscription: {} }), casUsage({ inscription: {} }), casUsage([]), casUsage([])),
-    controleurAffectations: new ControleurAffectationsClasses(casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage([]), casUsage(undefined)),
+    controleurAffectations: new ControleurAffectationsClasses(casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage([]), casUsage(undefined)),
     controleurCycleVie: new ControleurCycleVieEleves(casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} })),
     controleurParcours: new ControleurParcoursEleves(casUsage({ parcours: {} }), casUsage([]), casUsage([]), casUsage({ parcours: {} })),
     controleurOrganisation: new ControleurScolariteOrganisation(casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage([]), casOrganisation, casUsage([])),
@@ -1081,7 +1186,7 @@ test('API GET /api/organisations/:idOrganisation/scolarite/alertes transporte le
     controleurEleves: new ControleurEleves(casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} })),
     controleurFamilles: new ControleurFamilles(casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({ famille: {} }), casUsage({})),
     controleurInscriptions: new ControleurInscriptionsScolaires(casUsage({ inscription: {} }), casUsage({}), casUsage({ inscription: {} }), casUsage({ inscription: {} }), casUsage({ inscription: {} }), casUsage([]), casUsage([])),
-    controleurAffectations: new ControleurAffectationsClasses(casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage([]), casUsage(undefined)),
+    controleurAffectations: new ControleurAffectationsClasses(casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage({ affectation: {} }), casUsage([]), casUsage(undefined)),
     controleurCycleVie: new ControleurCycleVieEleves(casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} }), casUsage({ eleve: {} })),
     controleurParcours: new ControleurParcoursEleves(casUsage({ parcours: {} }), casUsage([]), casUsage([]), casUsage({ parcours: {} })),
     controleurOrganisation: new ControleurScolariteOrganisation(casUsage({ donnees: [], total: 0, page: 1, taillePage: 25 }), casUsage([]), casUsage({ idOrganisation: 'org-1' }), casOrganisation),

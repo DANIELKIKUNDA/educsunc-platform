@@ -304,6 +304,7 @@ Statut de navigation :
 
 Modules visibles prioritaires :
 
+- `Academique`
 - `Administration ecole`
 - `Configuration`
 - `Audit`
@@ -319,6 +320,11 @@ Centres de travail prioritaires :
 
 Pages d'entree candidates :
 
+- pilotage des annees scolaires locales
+- gestion des classes pedagogiques
+- gestion des responsables officiels de classe
+- gestion du calendrier academique local
+- gestion du programme niveau local
 - gestion technique locale
 - configuration modules ecole
 - branding et signataires
@@ -332,6 +338,7 @@ Exclusions :
 
 Sources :
 
+- [06-workflows-academiques.md](/C:/Users/MON%20PC/Documents/EducSyn/docs/frontend/06-workflows-academiques.md)
 - [10-workflows-administration-ecole.md](/C:/Users/MON%20PC/Documents/EducSyn/docs/frontend/10-workflows-administration-ecole.md)
 - [13-workflows-transverses.md](/C:/Users/MON%20PC/Documents/EducSyn/docs/frontend/13-workflows-transverses.md)
 

@@ -11,5 +11,10 @@ export const creerFichesCotationRoutes = (
   serveur.get('/fiches-cotation/:idFicheCotationEleveCours', (requete, reponse) =>
     executerRouteBulletin(requete, reponse, () => dependances.fichesCotationController.consulterParId(requete.params), dependances.contexteTenant));
   serveur.get('/fiches-cotation/classe/:classeId', (requete, reponse) =>
-    executerRouteBulletin(requete, reponse, () => dependances.fichesCotationController.consulterParClasse(), dependances.contexteTenant));
+    executerRouteBulletin(
+      requete,
+      reponse,
+      () => dependances.fichesCotationController.consulterParClasse(requete.params, requete.query, requete.headers),
+      dependances.contexteTenant,
+    ));
 };

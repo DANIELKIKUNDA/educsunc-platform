@@ -46,7 +46,21 @@
       <template v-if="uiState === 'loading'">
         <LoadingState
           title="Chargement de l'historique"
-          message="Preparation de l'identite eleve et de l'historique des paiements."
+          message="Preparation de l'identite eleve et de l'historique reel des paiements."
+        />
+      </template>
+
+      <template v-else-if="uiState === 'missing-student'">
+        <ErrorState
+          title="Eleve cible manquant"
+          message="Ajoutez un idEleve dans la route pour ouvrir un historique reel de paiements."
+        />
+      </template>
+
+      <template v-else-if="uiState === 'technical-error'">
+        <ErrorState
+          title="Lecture technique indisponible"
+          :message="technicalErrorMessage"
         />
       </template>
 
@@ -57,7 +71,7 @@
           message="Cette vue est reservee aux acteurs financiers ou delegues officiellement dans le bon perimetre."
         />
 
-        <div class="finance-form-grid">
+        <div v-else-if="profile" class="finance-form-grid">
           <SectionBlock
             title="Bandeau eleve"
             description="L'identite de l'eleve et son contexte scolaire restent visibles pendant toute la lecture."
@@ -83,10 +97,6 @@
                 <small>Sexe</small>
                 <strong>{{ profile.sexe }}</strong>
               </div>
-              <div>
-                <small>Responsable</small>
-                <strong>{{ profile.responsable }}</strong>
-              </div>
             </div>
           </SectionBlock>
 
@@ -97,7 +107,7 @@
             <div class="finance-summary-grid finance-summary-grid--kpi">
               <div>
                 <small>Total paye</small>
-                <strong>{{ formatCurrency(profile.totalPaye) }}</strong>
+                <strong>{{ formatCurrency(totalPaye) }}</strong>
               </div>
               <div>
                 <small>Nombre de paiements</small>
@@ -105,7 +115,7 @@
               </div>
               <div>
                 <small>Dernier paiement</small>
-                <strong>{{ profile.dernierPaiementLabel }}</strong>
+                <strong>{{ dernierPaiementLabel }}</strong>
               </div>
               <div>
                 <small>Annee scolaire</small>
@@ -116,8 +126,9 @@
         </div>
 
         <SectionBlock
+          v-if="profile"
           title="Filtres de l'historique"
-          description="La lecture peut etre affinee par type de frais, mode de paiement et percepteur."
+          description="La lecture peut etre affinee par type de frais, mode de paiement et statut reel du backend."
         >
           <div class="finance-form-stack">
             <div class="finance-filter-grid">
@@ -142,11 +153,11 @@
               </label>
 
               <label class="finance-field">
-                <span>Percepteur</span>
-                <select v-model="selectedCollector">
-                  <option value="">Tous les percepteurs</option>
-                  <option v-for="collector in availableCollectors" :key="collector" :value="collector">
-                    {{ collector }}
+                <span>Statut</span>
+                <select v-model="selectedStatus">
+                  <option value="">Tous les statuts</option>
+                  <option v-for="status in availableStatuses" :key="status" :value="status">
+                    {{ status }}
                   </option>
                 </select>
               </label>
@@ -167,6 +178,7 @@
         </SectionBlock>
 
         <SectionBlock
+          v-if="profile"
           title="Historique des paiements"
           description="La table garde une lecture chronologique claire avec acces au detail de chaque paiement."
         >
@@ -182,12 +194,10 @@
                 <tr>
                   <th>Date</th>
                   <th>Heure</th>
-                  <th>Recu</th>
+                  <th>Paiement</th>
                   <th>Type de frais</th>
-                  <th>Libelle</th>
                   <th>Mode</th>
                   <th>Montant</th>
-                  <th>Percepteur</th>
                   <th>Statut</th>
                   <th>Action</th>
                 </tr>
@@ -196,12 +206,10 @@
                 <tr v-for="entry in filteredEntries" :key="entry.id">
                   <td>{{ entry.date }}</td>
                   <td>{{ entry.heure }}</td>
-                  <td>{{ entry.numeroRecu }}</td>
+                  <td>{{ entry.id }}</td>
                   <td>{{ entry.typeFrais }}</td>
-                  <td>{{ entry.libelle }}</td>
                   <td>{{ entry.modePaiement }}</td>
                   <td>{{ formatCurrency(entry.montant) }}</td>
-                  <td>{{ entry.percepteur }}</td>
                   <td>
                     <span class="finance-status-badge" :class="entry.statut === 'VALIDE' ? 'finance-status-badge--success' : 'finance-status-badge--error'">
                       {{ entry.statut }}
@@ -222,9 +230,9 @@
             <div>
               <strong>Detail paiement</strong>
               <p>
-                {{ selectedEntry.numeroRecu }} · {{ selectedEntry.libelle }} ·
-                {{ formatCurrency(selectedEntry.montant) }} · {{ selectedEntry.modePaiement }} ·
-                percu par {{ selectedEntry.percepteur }}.
+                {{ selectedEntry.id }} | {{ selectedEntry.typeFrais }} |
+                {{ formatCurrency(selectedEntry.montant) }} | {{ selectedEntry.modePaiement }} |
+                statut {{ selectedEntry.statut }}.
               </p>
             </div>
           </div>
@@ -235,8 +243,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import { RouterLink } from 'vue-router';
+import { computed, ref, watch } from 'vue';
+import { RouterLink, useRoute } from 'vue-router';
 import { ArrowLeft, ReceiptText, ShieldCheck } from 'lucide-vue-next';
 import PageContainer from '../../../shared/layout/PageContainer.vue';
 import PageHeader from '../../../shared/layout/PageHeader.vue';
@@ -249,18 +257,43 @@ import ErrorState from '../../../shared/ui/ErrorState.vue';
 import EmptyState from '../../../shared/ui/EmptyState.vue';
 import { activeContextStore } from '../../../shared/session/active-context.store';
 import { sessionStore } from '../../../shared/auth/session.store';
-import { authorizedPaymentHistoryActors, studentPaymentHistoryProfile } from '../data/historique-paiements-eleve.demo';
+import { authorizedPaymentHistoryActors } from '../models/payment-history.model';
+import { usePaymentHistoryStore } from '../stores/payment-history.store';
 
+const route = useRoute();
 const context = activeContextStore.state;
 const session = sessionStore.state;
-const profile = ref({ ...studentPaymentHistoryProfile });
-const uiState = ref<'loading' | 'idle' | 'technical-error'>('idle');
+const paymentHistoryStore = usePaymentHistoryStore();
 const selectedType = ref('');
 const selectedMode = ref('');
-const selectedCollector = ref('');
+const selectedStatus = ref('');
 const selectedEntryId = ref('');
 
 const isAuthorized = computed(() => authorizedPaymentHistoryActors.includes(session.actorCode as never));
+const profile = computed(() => paymentHistoryStore.state.profile);
+const entries = computed(() => paymentHistoryStore.state.entries);
+const technicalErrorMessage = computed(() =>
+  paymentHistoryStore.state.errorMessage
+  ?? 'Le backend n a pas pu restituer l historique des paiements pour cet eleve.',
+);
+
+const uiState = computed<'loading' | 'idle' | 'missing-student' | 'technical-error'>(() => {
+  const idEleve = lireIdEleveRoute();
+
+  if (!idEleve) {
+    return 'missing-student';
+  }
+
+  if (paymentHistoryStore.state.status === 'loading') {
+    return 'loading';
+  }
+
+  if (paymentHistoryStore.state.status === 'error') {
+    return 'technical-error';
+  }
+
+  return 'idle';
+});
 
 const perimeterMessage = computed(() => {
   switch (session.actorCode) {
@@ -284,28 +317,76 @@ const perimeterMessage = computed(() => {
   }
 });
 
-const availableTypes = computed(() => [...new Set(profile.value.entries.map((entry) => entry.typeFrais))]);
-const availableModes = computed(() => [...new Set(profile.value.entries.map((entry) => entry.modePaiement))]);
-const availableCollectors = computed(() => [...new Set(profile.value.entries.map((entry) => entry.percepteur))]);
+const availableTypes = computed(() => [...new Set(entries.value.map((entry) => entry.typeFrais))]);
+const availableModes = computed(() => [...new Set(entries.value.map((entry) => entry.modePaiement))]);
+const availableStatuses = computed(() => [...new Set(entries.value.map((entry) => entry.statut))]);
 
 const filteredEntries = computed(() =>
-  profile.value.entries.filter((entry) => {
+  entries.value.filter((entry) => {
     const matchesType = selectedType.value === '' || entry.typeFrais === selectedType.value;
     const matchesMode = selectedMode.value === '' || entry.modePaiement === selectedMode.value;
-    const matchesCollector = selectedCollector.value === '' || entry.percepteur === selectedCollector.value;
-    return matchesType && matchesMode && matchesCollector;
+    const matchesStatus = selectedStatus.value === '' || entry.statut === selectedStatus.value;
+
+    return matchesType && matchesMode && matchesStatus;
   }),
 );
+
+const totalPaye = computed(() =>
+  filteredEntries.value.reduce((total, entry) => total + entry.montant, 0),
+);
+
+const dernierPaiementLabel = computed(() => {
+  const premier = filteredEntries.value[0];
+
+  if (!premier) {
+    return 'Aucun paiement';
+  }
+
+  return `${premier.date} a ${premier.heure}`;
+});
 
 const selectedEntry = computed(() =>
   filteredEntries.value.find((entry) => entry.id === selectedEntryId.value) ?? null,
 );
 
 function formatCurrency(value: number): string {
-  return new Intl.NumberFormat('fr-FR').format(value) + ' FC';
+  return `${new Intl.NumberFormat('fr-FR').format(value)} FC`;
 }
 
 function selectEntry(entryId: string): void {
   selectedEntryId.value = entryId;
 }
+
+function lireParametreTexte(valeur: unknown): string | undefined {
+  return typeof valeur === 'string' && valeur.trim().length > 0 ? valeur.trim() : undefined;
+}
+
+function lireIdEleveRoute(): string | undefined {
+  return lireParametreTexte(route.params.idEleve) ?? lireParametreTexte(route.query.idEleve);
+}
+
+watch(
+  () => route.fullPath,
+  async () => {
+    const idEleve = lireIdEleveRoute();
+
+    selectedEntryId.value = '';
+    selectedType.value = '';
+    selectedMode.value = '';
+    selectedStatus.value = '';
+
+    if (!idEleve || !isAuthorized.value) {
+      paymentHistoryStore.reinitialiser();
+      return;
+    }
+
+    await paymentHistoryStore.charger({
+      idEleve,
+      anneeScolaire: lireParametreTexte(route.query.anneeScolaire),
+      classe: lireParametreTexte(route.query.classe),
+      section: lireParametreTexte(route.query.section),
+    });
+  },
+  { immediate: true },
+);
 </script>

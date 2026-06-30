@@ -17,4 +17,5 @@ export * from './Migration_014_AddConsultationHistoriqueDelegueeParametresPaieme
 export * from './Migration_015_IndustrialiserRecusOfficiels';
 export * from './Migration_016_AssetsDocumentairesRecus';
 export * from './Migration_017_AddExonerationDelegueeParametresPaiement';
+export * from './Migration_018_CreateQualificationsFinancieresEleves';
 export * from './MigrateurPostgresPaiementsFacturation';

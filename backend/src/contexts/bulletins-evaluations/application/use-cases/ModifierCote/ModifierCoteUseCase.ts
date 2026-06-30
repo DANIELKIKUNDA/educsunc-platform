@@ -4,6 +4,7 @@ import { PolicyFenetreEncodageCotes } from '../../../domain/policies/PolicyFenet
 import type { ModifierCoteInput } from '../../dto/input/ModifierCoteInput';
 import type { FicheCotationOutput } from '../../dto/output/FicheCotationOutput';
 import { ApplicationException } from '../../exceptions/ApplicationException';
+import type { AutorisationEncodageCotesPort } from '../../ports/out/AutorisationEncodageCotesPort';
 import type { ClockPort } from '../../ports/out/ClockPort';
 import type { EventBusPort } from '../../ports/out/EventBusPort';
 import type { FenetreEncodageCalendrierPort } from '../../ports/out/FenetreEncodageCalendrierPort';
@@ -29,6 +30,7 @@ export class ModifierCoteUseCase {
     private readonly fenetreEncodageCalendrierPort?: FenetreEncodageCalendrierPort,
     private readonly clockPort: ClockPort = horlogeSysteme,
     private readonly policyFenetreEncodageCotes = new PolicyFenetreEncodageCotes(),
+    private readonly autorisationEncodageCotesPort?: AutorisationEncodageCotesPort,
   ) {}
 
   // Cette methode execute la modification complete de la cote.
@@ -38,6 +40,15 @@ export class ModifierCoteUseCase {
       if (fiche === null) {
         throw new ApplicationException('La fiche de cotation demandee est introuvable.', 'BULLETINS_FICHE_INTROUVABLE');
       }
+
+      await this.autorisationEncodageCotesPort?.verifierEncodageCotes({
+        idUtilisateur: input.idUtilisateur,
+        idOrganisation: input.idOrganisation,
+        idEcole: fiche.obtenirIdEcole(),
+        idClassePedagogique: fiche.obtenirIdClassePedagogique(),
+        idReferentielCours: fiche.obtenirIdReferentielCours(),
+        idAnneeScolaire: fiche.obtenirIdAnneeScolaire(),
+      });
 
       this.serviceValidationConcurrence.verifier(input.versionAttendue, fiche.obtenirVersion());
       if (this.fenetreEncodageCalendrierPort) {

@@ -4,6 +4,7 @@ export * from './FamilleSortieDTO';
 export * from './ResponsableFamilleSortieDTO';
 export * from './InscriptionScolaireSortieDTO';
 export * from './AffectationClasseSortieDTO';
+export * from './EleveAffecteClasseSortieDTO';
 export * from './ParcoursEleveSortieDTO';
 export * from './EvenementParcoursSortieDTO';
 export * from './FamilleNombreuseSortieDTO';

@@ -40,6 +40,7 @@ test('les entites protegeent leurs invariants et transitions', () => {
   assert.throws(() => new LigneClassementEleve({
     idLigneClassementEleve: 'lc1',
     idEleve: 'eleve-1',
+    nomComplet: 'Eleve Test',
     sexe: SexeEleve.M,
     estNonClasse: false,
   }), ErreurClassementImpossible);

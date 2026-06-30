@@ -1,0 +1,233 @@
+.audit-actions,
+.audit-actions-row,
+.audit-tabs,
+.audit-filter-row,
+.audit-detail-grid,
+.audit-context-grid,
+.audit-kpi-grid,
+.audit-hero-strip,
+.audit-module-grid,
+.audit-module-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.audit-pill,
+.audit-inline-link,
+.audit-secondary-action,
+.audit-primary-action,
+.audit-tab {
+  border: 1px solid rgba(17, 40, 63, 0.14);
+  background: #fff;
+  color: #11283f;
+  border-radius: 999px;
+  padding: 0.75rem 1rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.audit-primary-action,
+.audit-tab--active,
+.audit-pill--action {
+  background: linear-gradient(135deg, #0f3d56, #1b7895);
+  border-color: transparent;
+  color: #fff;
+}
+
+.audit-primary-action:disabled,
+.audit-secondary-action:disabled,
+.audit-pill:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.audit-hero-strip {
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.audit-hero-strip__lead {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.audit-hero-strip__icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, #0f3d56, #1b7895);
+  color: #fff;
+}
+
+.audit-hero-strip__label {
+  margin: 0 0 0.25rem;
+  color: #5d7385;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.audit-info-banner,
+.audit-detail-panel,
+.audit-empty-inline,
+.audit-guard-panel {
+  border: 1px solid rgba(17, 40, 63, 0.08);
+  border-radius: 24px;
+  background: linear-gradient(180deg, rgba(239, 246, 250, 0.96), rgba(255, 255, 255, 0.98));
+  padding: 1rem 1.1rem;
+}
+
+.audit-info-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.audit-context-grid,
+.audit-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+.audit-kpi-card,
+.audit-detail-card,
+.audit-home-card {
+  border-radius: 24px;
+  border: 1px solid rgba(17, 40, 63, 0.08);
+  background: #fff;
+  box-shadow: 0 18px 45px rgba(17, 40, 63, 0.08);
+  padding: 1rem;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.audit-home-card {
+  text-decoration: none;
+  color: inherit;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.audit-home-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 22px 50px rgba(17, 40, 63, 0.12);
+}
+
+.audit-filter-grid,
+.audit-detail-grid,
+.audit-table-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.audit-field {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.audit-field--full {
+  grid-column: 1 / -1;
+}
+
+.audit-field input,
+.audit-field select {
+  border-radius: 16px;
+  border: 1px solid rgba(17, 40, 63, 0.16);
+  padding: 0.8rem 0.9rem;
+  background: #fbfdff;
+}
+
+.audit-table-shell {
+  overflow: auto;
+  border-radius: 22px;
+  border: 1px solid rgba(17, 40, 63, 0.08);
+  background: #fff;
+}
+
+.audit-table {
+  width: 100%;
+  min-width: 860px;
+  border-collapse: collapse;
+}
+
+.audit-table th,
+.audit-table td {
+  padding: 0.9rem 1rem;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid rgba(17, 40, 63, 0.08);
+}
+
+.audit-table th {
+  background: #edf4f8;
+  font-size: 0.85rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.audit-status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: rgba(17, 40, 63, 0.08);
+  color: #11283f;
+}
+
+.audit-status-badge--success {
+  background: rgba(39, 136, 88, 0.12);
+  color: #0b6b3c;
+}
+
+.audit-status-badge--warning {
+  background: rgba(175, 98, 23, 0.15);
+  color: #965308;
+}
+
+.audit-detail-panel pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 0.78rem;
+  color: #365066;
+}
+
+.audit-guard-panel ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.audit-timeline-list {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.audit-timeline-item {
+  border-left: 3px solid rgba(27, 120, 149, 0.35);
+  padding: 0.2rem 0 0.2rem 1rem;
+  display: grid;
+  gap: 0.25rem;
+}
+
+.audit-module-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+@media (max-width: 960px) {
+  .audit-hero-strip {
+    flex-direction: column;
+  }
+}

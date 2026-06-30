@@ -1,4 +1,5 @@
 import { ResponsableFamilleSortieDTO } from './ResponsableFamilleSortieDTO';
+import { EleveSortieDTO } from './EleveSortieDTO';
 
 // Ce fichier definit la sortie applicative d'une famille.
 export interface FamilleSortieDTO {
@@ -11,5 +12,7 @@ export interface FamilleSortieDTO {
   telephonePrincipal: string;
   email?: string;
   responsables: ResponsableFamilleSortieDTO[];
+  elevesLies?: EleveSortieDTO[];
+  nombreElevesActifs?: number;
   version: number;
 }

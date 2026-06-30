@@ -10,12 +10,19 @@ test("les routes conduite exposent l'encodage et les lectures associees", async 
 
   await serveur.register(creerConduiteRoutes({
     conduiteApplicationController: {
+      async consulterConduiteClasse() { return { donnee: { lignes: [] } }; },
       async encoder() { return { donnee: { ok: true } }; },
       async consulterConduite() { return { donnee: [] }; },
       async consulterApplication() { return { donnee: [] }; },
     } as never,
     contexteTenant,
   } as never));
+
+  assert.equal((await serveur.inject({
+    method: 'GET',
+    url: '/conduite/classe?idClassePedagogique=classe-1&idAnneeScolaire=annee-1',
+    headers: { 'x-tenant-id': 'ecole-1', 'x-user-id': 'user-1' },
+  })).statusCode, 200);
 
   assert.equal((await serveur.inject({
     method: 'POST',

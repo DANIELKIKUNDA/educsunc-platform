@@ -339,7 +339,7 @@ La version mobile doit empiler :
 
 ### Acteurs autorises
 
-- `ADMINISTRATEUR_ECOLE`
+- `ADMIN_SYSTEME_ECOLE`
 
 ### Contraintes de perimetre
 
@@ -420,7 +420,7 @@ La version mobile doit passer par :
 
 ### Acteurs autorises
 
-- `ADMINISTRATEUR_ECOLE`
+- `ADMIN_SYSTEME_ECOLE`
 
 ### Contraintes de perimetre
 
@@ -499,7 +499,7 @@ La version mobile doit afficher :
 
 ### Acteurs autorises
 
-- `ADMINISTRATEUR_ECOLE`
+- `ADMIN_SYSTEME_ECOLE`
 
 ### Contraintes de perimetre
 
@@ -585,7 +585,7 @@ La version mobile doit passer par :
 
 ### Acteurs autorises
 
-- `ADMINISTRATEUR_ECOLE`
+- `ADMIN_SYSTEME_ECOLE`
 
 ### Contraintes de perimetre
 
@@ -673,7 +673,7 @@ La version mobile doit assumer :
 
 ### Acteurs autorises
 
-- `ADMINISTRATEUR_ECOLE`
+- `ADMIN_SYSTEME_ECOLE`
 
 ### Contraintes de perimetre
 

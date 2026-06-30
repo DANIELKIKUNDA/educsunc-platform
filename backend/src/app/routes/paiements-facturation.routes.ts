@@ -9,6 +9,11 @@ import {
   AnnulerExonerationUseCase,
 } from '../../contexts/paiements-facturation/application/use-cases/exonerations';
 import {
+  ActiverQualificationFinanciereEleveUseCase,
+  DesactiverQualificationFinanciereEleveUseCase,
+  ListerQualificationsFinancieresEleveUseCase,
+} from '../../contexts/paiements-facturation/application/use-cases/qualifications-financieres';
+import {
   CloturerCaisseJourUseCase,
   ConsulterCaisseJourUseCase,
   OuvrirCaisseJourUseCase,
@@ -23,6 +28,11 @@ import {
   ConsulterFondsAnticipesUseCase,
   ConsulterPaiementsParCaissierUseCase,
   ConsulterPaiementsParTypeFraisUseCase,
+  ConsulterRegistreFinancierClasseUseCase,
+  ConsulterSyntheseFinanciereClasseUseCase,
+  ConsulterSyntheseFinanciereEcoleUseCase,
+  ConsulterSyntheseFinanciereOrganisationUseCase,
+  ConsulterSyntheseFinanciereSectionUseCase,
   ConsulterRapportFinancierJournalierUseCase,
 } from '../../contexts/paiements-facturation/application/use-cases/rapports';
 import {
@@ -51,6 +61,7 @@ import {
   ExonerationController,
   OuvrirCaisseController,
   ParametresPaiementController,
+  QualificationFinanciereEleveController,
   ReimprimerRecuController,
   RestituerExcedentController,
   TarificationController,
@@ -83,6 +94,7 @@ import {
   PostgresDepotObligationFinanciere,
   PostgresDepotPaiement,
   PostgresDepotParametresPaiementEcole,
+  PostgresDepotQualificationFinanciereEleve,
   PostgresDepotRecuPaiement,
   PostgresDepotRecuPaiementOfficiel,
   PostgresDepotRestitution,
@@ -92,6 +104,11 @@ import {
   PaiementsParTypeFraisQueryRepository,
   RapportFinancierQueryRepository,
   RecusPaiementQueryRepository,
+  RegistreFinancierClasseQueryRepository,
+  SyntheseFinanciereClasseQueryRepository,
+  SyntheseFinanciereEcoleQueryRepository,
+  SyntheseFinanciereOrganisationQueryRepository,
+  SyntheseFinanciereSectionQueryRepository,
   MigrateurPostgresPaiementsFacturation,
   creerInfrastructurePostgresPaiementsFacturation,
 } from '../../contexts/paiements-facturation/infrastructure/persistence/postgres';
@@ -121,13 +138,17 @@ import { AutorisationReimpressionRecuAdapter } from '../adapters/AutorisationRei
 import { AutorisationSituationFinanciereEleveAdapter } from '../adapters/AutorisationSituationFinanciereEleveAdapter';
 import { AutorisationRapportFinancierAdapter } from '../adapters/AutorisationRapportFinancierAdapter';
 import { AutorisationPaiementsParTypeFraisAdapter } from '../adapters/AutorisationPaiementsParTypeFraisAdapter';
+import { AutorisationRegistreFinancierClasseAdapter } from '../adapters/AutorisationRegistreFinancierClasseAdapter';
+import { AutorisationSyntheseFinanciereSectionAdapter } from '../adapters/AutorisationSyntheseFinanciereSectionAdapter';
 import { AutorisationExonerationAdapter } from '../adapters/AutorisationExonerationAdapter';
+import { AutorisationQualificationFinanciereEleveAdapter } from '../adapters/AutorisationQualificationFinanciereEleveAdapter';
 import { SharedDomainEventBusAdapter } from '../adapters/SharedDomainEventBusAdapter';
 
 // Ce fichier compose le BC Paiements & Facturation sans encore le rendre actif globalement.
 interface DepotsPaiementsFacturation {
   depotObligationFinanciere: PostgresDepotObligationFinanciere;
   depotExoneration: PostgresDepotExoneration;
+  depotQualificationFinanciereEleve: PostgresDepotQualificationFinanciereEleve;
   depotPaiement: PostgresDepotPaiement;
   depotParametresPaiementEcole: PostgresDepotParametresPaiementEcole;
   depotGrilleTarification: PostgresDepotGrilleTarification;
@@ -145,6 +166,11 @@ interface DepotsPaiementsFacturation {
   paiementsParTypeFrais: PaiementsParTypeFraisQueryRepository;
   fondsAnticipes: FondsAnticipesQueryRepository;
   recusPaiement: RecusPaiementQueryRepository;
+  registreFinancierClasse: RegistreFinancierClasseQueryRepository;
+  syntheseFinanciereClasse: SyntheseFinanciereClasseQueryRepository;
+  syntheseFinanciereSection: SyntheseFinanciereSectionQueryRepository;
+  syntheseFinanciereEcole: SyntheseFinanciereEcoleQueryRepository;
+  syntheseFinanciereOrganisation: SyntheseFinanciereOrganisationQueryRepository;
 }
 
 interface CompositionRoutesPaiementsFacturation {
@@ -155,6 +181,7 @@ interface CompositionRoutesPaiementsFacturation {
   dependancesRoutes: DependancesRoutesPaiementsFacturation;
   autorisationPerceptionPaiement: AutorisationPerceptionPaiementAdapter;
   autorisationExoneration: AutorisationExonerationAdapter;
+  autorisationQualificationFinanciereEleve: AutorisationQualificationFinanciereEleveAdapter;
   autorisationAnnulationPaiement: AutorisationAnnulationPaiementAdapter;
   autorisationRestitutionPaiement: AutorisationRestitutionPaiementAdapter;
   autorisationConsultationRecus: AutorisationConsultationRecusAdapter;
@@ -163,14 +190,34 @@ interface CompositionRoutesPaiementsFacturation {
   autorisationSituationFinanciereEleve: AutorisationSituationFinanciereEleveAdapter;
   autorisationRapportFinancier: AutorisationRapportFinancierAdapter;
   autorisationPaiementsParTypeFrais: AutorisationPaiementsParTypeFraisAdapter;
+  autorisationRegistreFinancierClasse: AutorisationRegistreFinancierClasseAdapter;
+  autorisationSyntheseFinanciereSection: AutorisationSyntheseFinanciereSectionAdapter;
 }
 
 // Cette fonction instancie les depots PostgreSQL du BC Paiements avec un tenant commun.
 function creerDepotsPaiementsFacturation(
   infrastructure: InfrastructurePostgresPaiementsFacturation,
+  infrastructureScolarite: InfrastructurePostgresScolariteEleves,
+  infrastructureReferentiel: InfrastructurePostgresReferentielAcademique,
   contexteTenant: PaiementTenantContext,
 ): DepotsPaiementsFacturation {
   const { clientLecture, uniteDeTravail } = infrastructure;
+  const registreFinancierClasse = new RegistreFinancierClasseQueryRepository(
+    clientLecture,
+    infrastructureScolarite.clientLecture,
+    infrastructureReferentiel.clientLecture,
+  );
+  const syntheseFinanciereClasse = new SyntheseFinanciereClasseQueryRepository(
+    registreFinancierClasse,
+  );
+  const syntheseFinanciereSection = new SyntheseFinanciereSectionQueryRepository(
+    infrastructureReferentiel.clientLecture,
+    syntheseFinanciereClasse,
+  );
+  const syntheseFinanciereEcole = new SyntheseFinanciereEcoleQueryRepository(
+    infrastructureReferentiel.clientLecture,
+    syntheseFinanciereSection,
+  );
 
   return {
     depotObligationFinanciere: new PostgresDepotObligationFinanciere(
@@ -179,6 +226,11 @@ function creerDepotsPaiementsFacturation(
       contexteTenant,
     ),
     depotExoneration: new PostgresDepotExoneration(
+      clientLecture,
+      uniteDeTravail,
+      contexteTenant,
+    ),
+    depotQualificationFinanciereEleve: new PostgresDepotQualificationFinanciereEleve(
       clientLecture,
       uniteDeTravail,
       contexteTenant,
@@ -236,6 +288,14 @@ function creerDepotsPaiementsFacturation(
     paiementsParTypeFrais: new PaiementsParTypeFraisQueryRepository(clientLecture),
     fondsAnticipes: new FondsAnticipesQueryRepository(clientLecture),
     recusPaiement: new RecusPaiementQueryRepository(clientLecture),
+    registreFinancierClasse,
+    syntheseFinanciereClasse,
+    syntheseFinanciereSection,
+    syntheseFinanciereEcole,
+    syntheseFinanciereOrganisation: new SyntheseFinanciereOrganisationQueryRepository(
+      infrastructureReferentiel.clientLecture,
+      syntheseFinanciereEcole,
+    ),
   };
 }
 
@@ -251,7 +311,12 @@ function composerRoutesPaiementsFacturation(): CompositionRoutesPaiementsFactura
   const migrateurPaiements = new MigrateurPostgresPaiementsFacturation(
     infrastructurePaiements.pool,
   );
-  const depots = creerDepotsPaiementsFacturation(infrastructurePaiements, contexteTenant);
+  const depots = creerDepotsPaiementsFacturation(
+    infrastructurePaiements,
+    infrastructureScolarite,
+    infrastructureReferentiel,
+    contexteTenant,
+  );
   const auditAdapter = new AuditAdapter();
   const depotUtilisateurAuth = new PostgresUtilisateurAuthRepository();
   const scolariteElevesAdapter = new ScolariteElevesAdapter(
@@ -279,6 +344,7 @@ function composerRoutesPaiementsFacturation(): CompositionRoutesPaiementsFactura
   );
   const autorisationPerceptionPaiement = new AutorisationPerceptionPaiementAdapter();
   const autorisationExoneration = new AutorisationExonerationAdapter();
+  const autorisationQualificationFinanciereEleve = new AutorisationQualificationFinanciereEleveAdapter();
   const autorisationAnnulationPaiement = new AutorisationAnnulationPaiementAdapter();
   const autorisationRestitutionPaiement = new AutorisationRestitutionPaiementAdapter();
   const autorisationConsultationRecus = new AutorisationConsultationRecusAdapter();
@@ -288,6 +354,8 @@ function composerRoutesPaiementsFacturation(): CompositionRoutesPaiementsFactura
   const autorisationSituationFinanciereEleve = new AutorisationSituationFinanciereEleveAdapter();
   const autorisationRapportFinancier = new AutorisationRapportFinancierAdapter();
   const autorisationPaiementsParTypeFrais = new AutorisationPaiementsParTypeFraisAdapter();
+  const autorisationRegistreFinancierClasse = new AutorisationRegistreFinancierClasseAdapter();
+  const autorisationSyntheseFinanciereSection = new AutorisationSyntheseFinanciereSectionAdapter();
   const eventBus = new SharedDomainEventBusAdapter();
 
   const controleurEnregistrerPaiement = new EnregistrerPaiementController(
@@ -363,6 +431,21 @@ function composerRoutesPaiementsFacturation(): CompositionRoutesPaiementsFactura
     ),
   );
 
+  const controleurQualificationFinanciereEleve = new QualificationFinanciereEleveController(
+    new ActiverQualificationFinanciereEleveUseCase(
+      depots.depotQualificationFinanciereEleve,
+      autorisationQualificationFinanciereEleve,
+    ),
+    new DesactiverQualificationFinanciereEleveUseCase(
+      depots.depotQualificationFinanciereEleve,
+      autorisationQualificationFinanciereEleve,
+    ),
+    new ListerQualificationsFinancieresEleveUseCase(
+      depots.depotQualificationFinanciereEleve,
+      autorisationQualificationFinanciereEleve,
+    ),
+  );
+
   const controleurOuvrirCaisse = new OuvrirCaisseController(
     new OuvrirCaisseJourUseCase(
       depots.depotCaisseJour,
@@ -422,6 +505,26 @@ function composerRoutesPaiementsFacturation(): CompositionRoutesPaiementsFactura
     new ConsulterFondsAnticipesUseCase(
       depots.fondsAnticipes,
       autorisationPaiementsParTypeFrais,
+    ),
+    new ConsulterRegistreFinancierClasseUseCase(
+      depots.registreFinancierClasse,
+      autorisationRegistreFinancierClasse,
+    ),
+    new ConsulterSyntheseFinanciereClasseUseCase(
+      depots.syntheseFinanciereClasse,
+      autorisationRegistreFinancierClasse,
+    ),
+    new ConsulterSyntheseFinanciereSectionUseCase(
+      depots.syntheseFinanciereSection,
+      autorisationSyntheseFinanciereSection,
+    ),
+    new ConsulterSyntheseFinanciereEcoleUseCase(
+      depots.syntheseFinanciereEcole,
+      autorisationRapportFinancier,
+    ),
+    new ConsulterSyntheseFinanciereOrganisationUseCase(
+      depots.syntheseFinanciereOrganisation,
+      autorisationRapportFinancier,
     ),
   );
 
@@ -493,6 +596,7 @@ function composerRoutesPaiementsFacturation(): CompositionRoutesPaiementsFactura
     migrateurPaiements,
     autorisationPerceptionPaiement,
     autorisationExoneration,
+    autorisationQualificationFinanciereEleve,
     autorisationAnnulationPaiement,
     autorisationRestitutionPaiement,
     autorisationConsultationRecus,
@@ -501,6 +605,8 @@ function composerRoutesPaiementsFacturation(): CompositionRoutesPaiementsFactura
     autorisationSituationFinanciereEleve,
     autorisationRapportFinancier,
     autorisationPaiementsParTypeFrais,
+    autorisationRegistreFinancierClasse,
+    autorisationSyntheseFinanciereSection,
     dependancesRoutes: {
       controleurEnregistrerPaiement,
       controleurConsulterArrieresEleve,
@@ -508,6 +614,7 @@ function composerRoutesPaiementsFacturation(): CompositionRoutesPaiementsFactura
       controleurConsulterFraisExigibles,
       controleurAnnulerPaiement,
       controleurExoneration,
+      controleurQualificationFinanciereEleve,
       controleurAssetsRecus,
       controleurParametresPaiement,
       controleurTarification,
@@ -538,6 +645,7 @@ export const routePaiementsFacturation: PluginRoutesPaiementsFacturation = Objec
     serveur.addHook('onClose', async () => {
       await composition.autorisationPerceptionPaiement.fermer();
       await composition.autorisationExoneration.fermer();
+      await composition.autorisationQualificationFinanciereEleve.fermer();
       await composition.autorisationAnnulationPaiement.fermer();
       await composition.autorisationRestitutionPaiement.fermer();
       await composition.autorisationConsultationRecus.fermer();

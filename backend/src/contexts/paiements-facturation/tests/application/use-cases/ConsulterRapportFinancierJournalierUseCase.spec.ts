@@ -54,6 +54,8 @@ class AutorisationRapportMemoire implements AutorisationRapportFinancierPort {
   }): Promise<void> {
     this.appelsParCaissier.push(params);
   }
+
+  public async verifierConsultationSyntheseFinanciereOrganisation(): Promise<void> {}
 }
 
 test('ConsulterRapportFinancierJournalier reapplique l autorisation locale et filtre par ecole', async () => {

@@ -5,3 +5,4 @@ export * from './DettesSortieDTO';
 export * from './PaiementsSortieDTO';
 export * from './CaisseSortieDTO';
 export * from './ExonerationsSortieDTO';
+export * from './QualificationsFinancieresSortieDTO';

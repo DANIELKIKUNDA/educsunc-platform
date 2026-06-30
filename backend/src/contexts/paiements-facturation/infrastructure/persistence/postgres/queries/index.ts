@@ -9,3 +9,8 @@ export * from './PaiementsParTypeFraisQueryRepository';
 export * from './ArrieresEleveQueryRepository';
 export * from './FondsAnticipesQueryRepository';
 export * from './RecusPaiementQueryRepository';
+export * from './RegistreFinancierClasseQueryRepository';
+export * from './SyntheseFinanciereClasseQueryRepository';
+export * from './SyntheseFinanciereSectionQueryRepository';
+export * from './SyntheseFinanciereEcoleQueryRepository';
+export * from './SyntheseFinanciereOrganisationQueryRepository';

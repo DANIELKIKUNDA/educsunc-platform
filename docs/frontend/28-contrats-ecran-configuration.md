@@ -4,6 +4,13 @@
 
 Ce document ouvre les contrats d'ecran reels du module `Configuration`.
 
+Statut d'implementation frontend au `30/06/2026` :
+
+- routes frontend reelles branchees
+- vues `SCR-CFG-001` a `SCR-CFG-006` materialisees
+- services, stores, models et mappers dedies ajoutes dans `frontend/src/domains/configuration`
+- build frontend validee apres branchement
+
 Il couvre les workflows deja figes :
 
 - `CFG-03`
@@ -155,6 +162,12 @@ Permettre le pilotage des configurations runtime globales, avec leur cycle de vi
 
 - `CFG-PLAT-01`
 
+### Implementation frontend reelle
+
+- route: `/app/configuration/plateforme/runtime`
+- vue: [ConfigurationWorkspaceView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/configuration/views/ConfigurationWorkspaceView.vue)
+- definition de route: [routes.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/configuration/routes.ts)
+
 ## Ecran `SCR-CFG-002`
 
 ### Page parente
@@ -256,6 +269,15 @@ Permettre a l'organisation de gerer ses politiques communes et les modules autor
 - `CFG-03`
 - `CFG-ORG-01`
 
+### Implementation frontend reelle
+
+- routes:
+  - `/app/configuration/organisation`
+  - `/app/configuration/organisation/modules`
+- vue: [ConfigurationOrganizationView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/configuration/views/ConfigurationOrganizationView.vue)
+- vue mutualisee: [ConfigurationWorkspaceView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/configuration/views/ConfigurationWorkspaceView.vue)
+- definition de route: [routes.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/configuration/routes.ts)
+
 ## Ecran `SCR-CFG-003`
 
 ### Page parente
@@ -346,6 +368,13 @@ Permettre a l'ecole de gerer ses modules actifs dans le cadre autorise par l'org
 - `CFG-04`
 - `CFG-05`
 - `CFG-ECOLE-SYS-01`
+
+### Implementation frontend reelle
+
+- route: `/app/configuration/ecole/modules`
+- vue: [ConfigurationSchoolModulesView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/configuration/views/ConfigurationSchoolModulesView.vue)
+- vue mutualisee: [ConfigurationWorkspaceView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/configuration/views/ConfigurationWorkspaceView.vue)
+- definition de route: [routes.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/configuration/routes.ts)
 
 ## Ecran `SCR-CFG-004`
 
@@ -441,6 +470,13 @@ Permettre la gestion de l'identite documentaire locale de l'ecole.
 ### Sources backend
 
 - `CFG-ECOLE-METIER-01`
+
+### Implementation frontend reelle
+
+- route: `/app/configuration/ecole/branding`
+- vue: [ConfigurationSchoolBrandingView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/configuration/views/ConfigurationSchoolBrandingView.vue)
+- vue mutualisee: [ConfigurationWorkspaceView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/configuration/views/ConfigurationWorkspaceView.vue)
+- definition de route: [routes.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/configuration/routes.ts)
 
 ## Ecran `SCR-CFG-005`
 
@@ -539,6 +575,13 @@ Permettre le parametrage local des templates, quotas et options de communication
 
 - `CFG-ECOLE-METIER-02`
 
+### Implementation frontend reelle
+
+- route: `/app/configuration/ecole/notifications`
+- vue: [ConfigurationSchoolNotificationsView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/configuration/views/ConfigurationSchoolNotificationsView.vue)
+- vue mutualisee: [ConfigurationWorkspaceView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/configuration/views/ConfigurationWorkspaceView.vue)
+- definition de route: [routes.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/configuration/routes.ts)
+
 ## Ecran `SCR-CFG-006`
 
 ### Page parente
@@ -625,9 +668,32 @@ Permettre a l'utilisateur final de gerer ses preferences personnelles autorisees
 
 - `CFG-USER-01`
 
+### Implementation frontend reelle
+
+- routes:
+  - `/app/moi/preferences`
+  - `/app/configuration/utilisateur/preferences`
+- vue: [ConfigurationUserPreferencesView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/configuration/views/ConfigurationUserPreferencesView.vue)
+- vue mutualisee: [ConfigurationWorkspaceView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/configuration/views/ConfigurationWorkspaceView.vue)
+- definition de route: [routes.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/configuration/routes.ts)
+
 ## Verdict
 
 Le module `Configuration` dispose maintenant d'une premiere couche officielle de contrats d'ecran frontend, alignee sur la doctrine deja figee par niveau proprietaire.
+
+La materialisation frontend reelle est maintenant en place dans :
+
+- [frontend/src/domains/configuration/routes.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/configuration/routes.ts)
+- [frontend/src/domains/configuration/views/ModuleHomeView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/configuration/views/ModuleHomeView.vue)
+- [frontend/src/domains/configuration/views/ConfigurationWorkspaceView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/configuration/views/ConfigurationWorkspaceView.vue)
+- [frontend/src/domains/configuration/views/ConfigurationOrganizationView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/configuration/views/ConfigurationOrganizationView.vue)
+- [frontend/src/domains/configuration/views/ConfigurationSchoolModulesView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/configuration/views/ConfigurationSchoolModulesView.vue)
+- [frontend/src/domains/configuration/views/ConfigurationSchoolBrandingView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/configuration/views/ConfigurationSchoolBrandingView.vue)
+- [frontend/src/domains/configuration/views/ConfigurationSchoolNotificationsView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/configuration/views/ConfigurationSchoolNotificationsView.vue)
+- [frontend/src/domains/configuration/views/ConfigurationUserPreferencesView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/configuration/views/ConfigurationUserPreferencesView.vue)
+- [frontend/src/domains/configuration/services/configuration.api.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/configuration/services/configuration.api.ts)
+- [frontend/src/domains/configuration/stores/configuration-center.store.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/configuration/stores/configuration-center.store.ts)
+- [frontend/src/domains/configuration/stores/configuration-modules.store.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/configuration/stores/configuration-modules.store.ts)
 
 La regle de protection a conserver est la suivante :
 

@@ -5,6 +5,7 @@ export * from './PostgresAuditConduiteQuery';
 export * from './PostgresBulletinEleveQuery';
 export * from './PostgresClassementClasseQuery';
 export * from './PostgresComparatifClassesQuery';
+export * from './PostgresConduiteClasseQuery';
 export * from './PostgresCoursProblematiqueQuery';
 export * from './PostgresDiagnosticEchecQuery';
 export * from './PostgresEchecsClasseQuery';

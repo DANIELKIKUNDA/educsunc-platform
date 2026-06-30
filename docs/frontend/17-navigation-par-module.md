@@ -65,11 +65,13 @@ La navigation par module sera lue selon ce canevas :
 Niveau proprietaire :
 
 - plateforme
+- ecole pour l'exploitation academique locale
 
 Acteurs positifs :
 
 - `MANAGER_SYSTEME`
 - `OPERATEUR_SYSTEME` seulement sur delegations explicites
+- `ADMIN_SYSTEME_ECOLE` pour `ACA-03` a `ACA-07`
 
 Workflows rattaches :
 
@@ -89,6 +91,11 @@ Sections legitimement ouvrables :
 - activation
 - comparaisons
 - migrations
+- annees scolaires locales
+- classes pedagogiques
+- responsables de classe
+- calendrier academique local
+- programmes niveau locaux
 
 Pages d'entree candidates :
 
@@ -98,10 +105,15 @@ Pages d'entree candidates :
 - comparer deux versions
 - lire le referentiel officiel
 - executer la migration referentielle
+- piloter les annees scolaires locales
+- administrer les classes pedagogiques
+- gerer le responsable officiel d une classe pedagogique
+- cadrer le calendrier academique local
+- piloter le programme niveau local
 
 Exclusions :
 
-- pas de navigation ecole locale
+- pas de projection de `ACA-03` a `ACA-07` sur `ADMINISTRATEUR_ECOLE`
 - pas de projection comme module de saisie pedagogique
 
 Sources :

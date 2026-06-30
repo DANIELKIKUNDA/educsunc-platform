@@ -186,6 +186,7 @@ Structure recommandee :
 
 - `PED-04`
 - [SCR-PED-001](/C:/Users/MON%20PC/Documents/EducSyn/docs/frontend/23-contrats-ecran-pedagogiques.md#L42)
+- [48-specification-mp-01-fiche-cotation-electronique.md](/C:/Users/MON%20PC/Documents/EducSyn/docs/frontend/48-specification-mp-01-fiche-cotation-electronique.md)
 
 ### Relations avec les contrats d'ecran
 

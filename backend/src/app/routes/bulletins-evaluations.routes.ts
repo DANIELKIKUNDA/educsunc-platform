@@ -7,6 +7,7 @@ import {
   ConsulterAbandonsUseCase,
   ConsulterClassementClasseUseCase,
   ConsulterComparatifClassesUseCase,
+  ConsulterConduiteClasseUseCase,
   ConsulterCoursProblematiqueUseCase,
   ConsulterDiagnosticsResultatUseCase,
   ConsulterEchecsClasseUseCase,
@@ -17,6 +18,7 @@ import {
   ConsulterDeliberationClasseUseCase,
   ConsulterSecondeSessionClasseUseCase,
   ConsulterFicheCotationUseCase,
+  ConsulterFichesCotationClasseCoursUseCase,
   ConsulterHistoriqueBulletinUseCase,
   ConsulterNonClassesUseCase,
   ConsulterProclamationClasseUseCase,
@@ -80,6 +82,7 @@ import { AutorisationAuditPedagogiqueAdapter } from '../adapters/AutorisationAud
 import { AutorisationClassementAdapter } from '../adapters/AutorisationClassementAdapter';
 import { AutorisationConduiteAdapter } from '../adapters/AutorisationConduiteAdapter';
 import { AutorisationConsultationStatistiquesAdapter } from '../adapters/AutorisationConsultationStatistiquesAdapter';
+import { AutorisationEncodageCotesAdapter } from '../adapters/AutorisationEncodageCotesAdapter';
 import { AutorisationGenerationProclamationAdapter } from '../adapters/AutorisationGenerationProclamationAdapter';
 import { AutorisationGenerationSyntheseAdapter } from '../adapters/AutorisationGenerationSyntheseAdapter';
 import { AutorisationLectureBulletinAdapter } from '../adapters/AutorisationLectureBulletinAdapter';
@@ -94,6 +97,7 @@ import {
   PostgresBulletinEleveQuery,
   PostgresClassementClasseQuery,
   PostgresComparatifClassesQuery,
+  PostgresConduiteClasseQuery,
   PostgresCoursProblematiqueQuery,
   PostgresDepotBulletinEleve,
   PostgresDepotClassementColonneClasse,
@@ -198,6 +202,7 @@ interface CompositionRoutesBulletinsEvaluations {
   autorisationConduiteAdapter: AutorisationConduiteAdapter;
   autorisationGenerationProclamationAdapter: AutorisationGenerationProclamationAdapter;
   autorisationConsultationStatistiquesAdapter: AutorisationConsultationStatistiquesAdapter;
+  autorisationEncodageCotesAdapter: AutorisationEncodageCotesAdapter;
   autorisationGenerationSyntheseAdapter: AutorisationGenerationSyntheseAdapter;
   autorisationLectureBulletinAdapter: AutorisationLectureBulletinAdapter;
   criteresAnalysePedagogiqueAdapter: CriteresAnalysePedagogiqueAdapter;
@@ -225,6 +230,7 @@ function composerRoutesBulletinsEvaluations(): CompositionRoutesBulletinsEvaluat
   const autorisationConduiteAdapter = new AutorisationConduiteAdapter();
   const autorisationGenerationProclamationAdapter = new AutorisationGenerationProclamationAdapter();
   const autorisationConsultationStatistiquesAdapter = new AutorisationConsultationStatistiquesAdapter();
+  const autorisationEncodageCotesAdapter = new AutorisationEncodageCotesAdapter();
   const autorisationGenerationSyntheseAdapter = new AutorisationGenerationSyntheseAdapter();
   const autorisationLectureBulletinAdapter = new AutorisationLectureBulletinAdapter();
   const criteresAnalysePedagogiqueAdapter = new CriteresAnalysePedagogiqueAdapter();
@@ -300,6 +306,9 @@ function composerRoutesBulletinsEvaluations(): CompositionRoutesBulletinsEvaluat
     undefined,
     eventBus,
     fenetreEncodageCalendrierAdapter,
+    undefined,
+    undefined,
+    autorisationEncodageCotesAdapter,
   );
   const modifierCoteUseCase = new ModifierCoteUseCase(
     depotFicheCotation,
@@ -310,6 +319,9 @@ function composerRoutesBulletinsEvaluations(): CompositionRoutesBulletinsEvaluat
     undefined,
     eventBus,
     fenetreEncodageCalendrierAdapter,
+    undefined,
+    undefined,
+    autorisationEncodageCotesAdapter,
   );
   const viderCoteUseCase = new ViderCoteUseCase(
     depotFicheCotation,
@@ -320,9 +332,17 @@ function composerRoutesBulletinsEvaluations(): CompositionRoutesBulletinsEvaluat
     undefined,
     eventBus,
     fenetreEncodageCalendrierAdapter,
+    undefined,
+    undefined,
+    autorisationEncodageCotesAdapter,
   );
   const corrigerCoteUseCase = new CorrigerCoteUseCase(modifierCoteUseCase, viderCoteUseCase);
   const consulterFicheCotationUseCase = new ConsulterFicheCotationUseCase(new PostgresFicheCotationQuery());
+  const consulterFichesCotationClasseCoursUseCase = new ConsulterFichesCotationClasseCoursUseCase(
+    depotFicheCotation,
+    autorisationEncodageCotesAdapter,
+    scolariteAdapter,
+  );
   void corrigerCoteUseCase;
 
   const recalculerResultatEleveUseCase = new RecalculerResultatEleveUseCase(
@@ -488,6 +508,10 @@ function composerRoutesBulletinsEvaluations(): CompositionRoutesBulletinsEvaluat
     comparatifClassesQuery,
     autorisationConsultationStatistiquesAdapter,
   );
+  const consulterConduiteClasseUseCase = new ConsulterConduiteClasseUseCase(
+    new PostgresConduiteClasseQuery(depotResultat, scolariteAdapter),
+    autorisationConduiteAdapter,
+  );
   const consulterClassementClasseUseCase = new ConsulterClassementClasseUseCase(
     new PostgresClassementClasseQuery(depotClassement),
     autorisationClassementAdapter,
@@ -533,7 +557,10 @@ function composerRoutesBulletinsEvaluations(): CompositionRoutesBulletinsEvaluat
     modifierCoteUseCase,
     viderCoteUseCase,
   );
-  const fichesCotationController = new FichesCotationController(consulterFicheCotationUseCase);
+  const fichesCotationController = new FichesCotationController(
+    consulterFicheCotationUseCase,
+    consulterFichesCotationClasseCoursUseCase,
+  );
   const resultatsBulletinController = new ResultatsBulletinController(
     consulterResultatEleveUseCase,
     consulterDiagnosticsResultatUseCase,
@@ -572,6 +599,7 @@ function composerRoutesBulletinsEvaluations(): CompositionRoutesBulletinsEvaluat
   );
   const conduiteApplicationController = new ConduiteApplicationController(
     encoderConduiteUseCase,
+    consulterConduiteClasseUseCase,
     consulterResultatEleveUseCase,
     declarerNonClasseUseCase,
     declarerAbandonUseCase,
@@ -623,6 +651,7 @@ function composerRoutesBulletinsEvaluations(): CompositionRoutesBulletinsEvaluat
     autorisationConduiteAdapter,
     autorisationGenerationProclamationAdapter,
     autorisationConsultationStatistiquesAdapter,
+    autorisationEncodageCotesAdapter,
     autorisationGenerationSyntheseAdapter,
     autorisationLectureBulletinAdapter,
     criteresAnalysePedagogiqueAdapter,
@@ -666,6 +695,7 @@ export const routeBulletinsEvaluations: PluginRoutesBulletinsEvaluations = Objec
       await composition.autorisationConduiteAdapter.fermer();
       await composition.autorisationGenerationProclamationAdapter.fermer();
       await composition.autorisationConsultationStatistiquesAdapter.fermer();
+      await composition.autorisationEncodageCotesAdapter.fermer();
       await composition.autorisationGenerationSyntheseAdapter.fermer();
       await composition.autorisationLectureBulletinAdapter.fermer();
       await composition.criteresAnalysePedagogiqueAdapter.fermer();

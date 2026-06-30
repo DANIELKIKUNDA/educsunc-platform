@@ -46,7 +46,14 @@
       <template v-if="effectiveState === 'loading'">
         <LoadingState
           title="Preparation de la cloture"
-          message="Verification de l'etat de la caisse du jour et de la synthese d'encaissements."
+          message="Verification de l'etat reel de la caisse du jour et de la synthese d'encaissements."
+        />
+      </template>
+
+      <template v-else-if="effectiveState === 'technical-error'">
+        <ErrorState
+          title="Cloture indisponible"
+          :message="technicalErrorMessage"
         />
       </template>
 
@@ -57,163 +64,163 @@
           message="Seul le caissier actif dans la bonne ecole peut cloturer la caisse du jour."
         />
 
-        <div class="finance-kpi-grid">
-          <div class="finance-kpi-card">
-            <small>Etat du jour</small>
-            <strong>{{ cashClosing.status }}</strong>
-            <span>{{ cashClosing.dateLabel }}</span>
-          </div>
-          <div class="finance-kpi-card">
-            <small>Encaissements du jour</small>
-            <strong>{{ formatCurrency(cashClosing.totalCollected) }}</strong>
-            <span>{{ cashClosing.operationsCount }} operations</span>
-          </div>
-          <div class="finance-kpi-card">
-            <small>Fenetre de cloture</small>
-            <strong>{{ cashClosing.closingWindowLabel }}</strong>
-            <span>Meme organisation, meme ecole</span>
-          </div>
-        </div>
-
-        <div class="finance-form-grid">
-          <SectionBlock
-            title="Etat de la caisse du jour"
-            description="La cloture ne doit partir que d'une caisse deja ouverte."
-          >
-            <div class="finance-summary-grid">
-              <div>
-                <small>Date du jour</small>
-                <strong>{{ cashClosing.dateLabel }}</strong>
-              </div>
-              <div>
-                <small>Statut</small>
-                <strong>{{ cashClosing.status }}</strong>
-              </div>
-              <div>
-                <small>Ouverte a</small>
-                <strong>{{ cashClosing.openedAtLabel ?? 'Non disponible' }}</strong>
-              </div>
-              <div>
-                <small>Ouverte par</small>
-                <strong>{{ cashClosing.openedByLabel ?? 'Non disponible' }}</strong>
-              </div>
+        <template v-else-if="cashClosing">
+          <div class="finance-kpi-grid">
+            <div class="finance-kpi-card">
+              <small>Etat du jour</small>
+              <strong>{{ cashClosing.status }}</strong>
+              <span>{{ cashClosing.dateLabel }}</span>
             </div>
+            <div class="finance-kpi-card">
+              <small>Encaissements du jour</small>
+              <strong>{{ formatCurrency(cashClosing.totalEncaisse) }}</strong>
+              <span>Caisse {{ cashClosing.id }}</span>
+            </div>
+            <div class="finance-kpi-card">
+              <small>Disponible reel</small>
+              <strong>{{ formatCurrency(cashClosing.disponibleReel) }}</strong>
+              <span>Etat renvoye par le backend</span>
+            </div>
+          </div>
 
-            <div class="finance-status-strip" :class="financeStatusClass">
-              <component :is="financeStatusIcon" />
-              <div>
-                <strong>{{ financeStatusTitle }}</strong>
-                <p>{{ financeStatusMessage }}</p>
+          <div class="finance-form-grid">
+            <SectionBlock
+              title="Etat de la caisse du jour"
+              description="La cloture ne doit partir que d'une caisse deja ouverte."
+            >
+              <div class="finance-summary-grid">
+                <div>
+                  <small>Date du jour</small>
+                  <strong>{{ cashClosing.dateLabel }}</strong>
+                </div>
+                <div>
+                  <small>Statut</small>
+                  <strong>{{ cashClosing.status }}</strong>
+                </div>
+                <div>
+                  <small>Id caisse</small>
+                  <strong>{{ cashClosing.id }}</strong>
+                </div>
+                <div>
+                  <small>Total encaisse</small>
+                  <strong>{{ formatCurrency(cashClosing.totalEncaisse) }}</strong>
+                </div>
+              </div>
+
+              <div class="finance-status-strip" :class="financeStatusClass">
+                <component :is="financeStatusIcon" />
+                <div>
+                  <strong>{{ financeStatusTitle }}</strong>
+                  <p>{{ financeStatusMessage }}</p>
+                </div>
+              </div>
+            </SectionBlock>
+
+            <SectionBlock
+              title="Resume des encaissements"
+              description="Le caissier relit la synthese du jour avant de verrouiller la caisse."
+            >
+              <div class="finance-summary-grid">
+                <div>
+                  <small>Total cash</small>
+                  <strong>{{ formatCurrency(cashClosing.totalCash) }}</strong>
+                </div>
+                <div>
+                  <small>Total mobile money</small>
+                  <strong>{{ formatCurrency(cashClosing.totalMobileMoney) }}</strong>
+                </div>
+                <div>
+                  <small>Fonds anticipes</small>
+                  <strong>{{ formatCurrency(cashClosing.totalFondsAnticipes) }}</strong>
+                </div>
+                <div>
+                  <small>Fonds consommes</small>
+                  <strong>{{ formatCurrency(cashClosing.totalFondsConsommes) }}</strong>
+                </div>
+              </div>
+            </SectionBlock>
+          </div>
+
+          <SectionBlock
+            title="Confirmation de cloture"
+            description="Une seule action visible pour cloturer la caisse du jour apres verification du resume."
+          >
+            <div class="finance-form-stack">
+              <div class="finance-confirmation-card">
+                <div class="finance-confirmation-card__row">
+                  <span>Acteur courant</span>
+                  <strong>{{ session.displayName }} ({{ session.actorCode }})</strong>
+                </div>
+                <div class="finance-confirmation-card__row">
+                  <span>Poste de caisse</span>
+                  <strong>{{ cashClosing.cashDeskLabel }}</strong>
+                </div>
+                <div class="finance-confirmation-card__row">
+                  <span>Montant total du jour</span>
+                  <strong>{{ formatCurrency(cashClosing.totalEncaisse) }}</strong>
+                </div>
+                <div class="finance-confirmation-card__row">
+                  <span>Date backend</span>
+                  <strong>{{ cashClosing.date }}</strong>
+                </div>
+              </div>
+
+              <div class="finance-filter-grid finance-filter-grid--wide">
+                <label class="finance-field">
+                  <span>Montant physique declare</span>
+                  <input v-model="montantPhysiqueDeclare" type="number" min="0" step="1000" placeholder="Optionnel" />
+                </label>
+
+                <label class="finance-field">
+                  <span>Observation</span>
+                  <input v-model="observation" type="text" placeholder="Optionnel" />
+                </label>
+              </div>
+
+              <div class="finance-form-actions">
+                <button
+                  class="finance-primary-action"
+                  type="button"
+                  :disabled="effectiveState === 'cash-not-open' || effectiveState === 'success'"
+                  @click="closeCashRegister"
+                >
+                  <Lock />
+                  <span>Cloturer la caisse</span>
+                </button>
+              </div>
+
+              <div v-if="effectiveState === 'success'" class="finance-success-panel">
+                <div class="finance-success-panel__icon">
+                  <CircleCheckBig />
+                </div>
+                <strong>Cloture enregistree</strong>
+                <p>
+                  La caisse du {{ cashClosing.dateLabel }} est maintenant cloturee pour
+                  {{ context.schoolName }}.
+                </p>
+              </div>
+
+              <div class="finance-guard-panel">
+                <div class="finance-guard-panel__header">
+                  <ShieldCheck />
+                  <strong>Restrictions visibles</strong>
+                </div>
+                <ul>
+                  <li>Cloture reservee au seul acteur `CAISSIER`.</li>
+                  <li>Cloture possible uniquement si la caisse du jour est deja ouverte.</li>
+                  <li>`ADMINISTRATEUR_ECOLE` ne peut jamais cloturer implicitement la caisse.</li>
+                </ul>
               </div>
             </div>
           </SectionBlock>
-
-          <SectionBlock
-            title="Resume des encaissements"
-            description="Le caissier relit la synthese du jour avant de verrouiller la caisse."
-          >
-            <div class="finance-summary-grid">
-              <div>
-                <small>Operations</small>
-                <strong>{{ cashClosing.operationsCount }}</strong>
-              </div>
-              <div>
-                <small>Recus emis</small>
-                <strong>{{ cashClosing.receiptsCount }}</strong>
-              </div>
-              <div>
-                <small>Especes</small>
-                <strong>{{ formatCurrency(cashClosing.cashAmount) }}</strong>
-              </div>
-              <div>
-                <small>Mobile Money</small>
-                <strong>{{ formatCurrency(cashClosing.mobileMoneyAmount) }}</strong>
-              </div>
-              <div>
-                <small>Virement</small>
-                <strong>{{ formatCurrency(cashClosing.transferAmount) }}</strong>
-              </div>
-              <div>
-                <small>Total collecte</small>
-                <strong>{{ formatCurrency(cashClosing.totalCollected) }}</strong>
-              </div>
-            </div>
-          </SectionBlock>
-        </div>
-
-        <SectionBlock
-          title="Confirmation de cloture"
-          description="Une seule action visible pour cloturer la caisse du jour apres verification du resume."
-        >
-          <div class="finance-form-stack">
-            <div class="finance-confirmation-card">
-              <div class="finance-confirmation-card__row">
-                <span>Acteur courant</span>
-                <strong>{{ session.displayName }} ({{ session.actorCode }})</strong>
-              </div>
-              <div class="finance-confirmation-card__row">
-                <span>Poste de caisse</span>
-                <strong>{{ cashClosing.schoolCashDeskLabel }}</strong>
-              </div>
-              <div class="finance-confirmation-card__row">
-                <span>Montant total du jour</span>
-                <strong>{{ formatCurrency(cashClosing.totalCollected) }}</strong>
-              </div>
-              <div class="finance-confirmation-card__row">
-                <span>Fenetre recommandee</span>
-                <strong>{{ cashClosing.closingWindowLabel }}</strong>
-              </div>
-            </div>
-
-            <div class="finance-form-actions">
-              <button
-                class="finance-primary-action"
-                type="button"
-                :disabled="effectiveState === 'cash-not-open' || effectiveState === 'not-authorized' || effectiveState === 'success'"
-                @click="closeCashRegister"
-              >
-                <Lock />
-                <span>Cloturer la caisse</span>
-              </button>
-            </div>
-
-            <div v-if="effectiveState === 'success'" class="finance-success-panel">
-              <div class="finance-success-panel__icon">
-                <CircleCheckBig />
-              </div>
-              <strong>Cloture enregistree</strong>
-              <p>
-                La caisse du {{ cashClosing.dateLabel }} est maintenant cloturee pour
-                {{ context.schoolName }}.
-              </p>
-            </div>
-
-            <ErrorState
-              v-else-if="effectiveState === 'technical-error'"
-              title="Erreur technique"
-              message="La cloture n'a pas pu etre finalisee dans cette simulation de socle."
-            />
-
-            <div class="finance-guard-panel">
-              <div class="finance-guard-panel__header">
-                <ShieldCheck />
-                <strong>Restrictions visibles</strong>
-              </div>
-              <ul>
-                <li>Cloture reservee au seul acteur `CAISSIER`.</li>
-                <li>Cloture possible uniquement si la caisse du jour est deja ouverte.</li>
-                <li>`ADMINISTRATEUR_ECOLE` ne peut jamais cloturer implicitement la caisse.</li>
-              </ul>
-            </div>
-          </div>
-        </SectionBlock>
+        </template>
       </template>
     </AccessBoundary>
   </PageContainer>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { RouterLink } from 'vue-router';
 import {
   ArrowLeft,
@@ -234,25 +241,23 @@ import LoadingState from '../../../shared/ui/LoadingState.vue';
 import ErrorState from '../../../shared/ui/ErrorState.vue';
 import { activeContextStore } from '../../../shared/session/active-context.store';
 import { sessionStore } from '../../../shared/auth/session.store';
-import { dailyCashClosingSummary } from '../data/cloture-caisse.demo';
-
-type CashClosingUiState =
-  | 'idle'
-  | 'loading'
-  | 'cash-not-open'
-  | 'not-authorized'
-  | 'success'
-  | 'technical-error';
+import { useCashClosingStore } from '../stores/cash-closing.store';
 
 const context = activeContextStore.state;
 const session = sessionStore.state;
-const cashClosing = ref({ ...dailyCashClosingSummary });
-const uiState = ref<CashClosingUiState>('idle');
+const cashClosingStore = useCashClosingStore();
+const montantPhysiqueDeclare = ref('');
+const observation = ref('');
 
+const cashClosing = computed(() => cashClosingStore.state.cashDay);
 const isAuthorized = computed(() => session.actorCode === 'CAISSIER');
+const technicalErrorMessage = computed(() =>
+  cashClosingStore.state.errorMessage
+  ?? 'La cloture de caisse n a pas pu etre finalisee.',
+);
 
-const effectiveState = computed<CashClosingUiState>(() => {
-  if (uiState.value === 'loading') {
+const effectiveState = computed<'loading' | 'cash-not-open' | 'not-authorized' | 'success' | 'technical-error' | 'idle'>(() => {
+  if (cashClosingStore.state.status === 'loading' || cashClosingStore.state.status === 'closing') {
     return 'loading';
   }
 
@@ -260,15 +265,15 @@ const effectiveState = computed<CashClosingUiState>(() => {
     return 'not-authorized';
   }
 
-  if (uiState.value === 'success') {
-    return 'success';
-  }
-
-  if (uiState.value === 'technical-error') {
+  if (cashClosingStore.state.status === 'error') {
     return 'technical-error';
   }
 
-  if (cashClosing.value.status !== 'OUVERTE') {
+  if (cashClosingStore.state.status === 'closed') {
+    return 'success';
+  }
+
+  if (cashClosing.value?.status !== 'OUVERTE') {
     return 'cash-not-open';
   }
 
@@ -325,7 +330,7 @@ const financeStatusMessage = computed(() => {
     case 'cash-not-open':
       return 'La cloture reste impossible tant que la caisse du jour n a pas ete ouverte.';
     case 'success':
-      return `Cloture enregistree pour ${cashClosing.value.schoolCashDeskLabel} avec un total de ${formatCurrency(cashClosing.value.totalCollected)}.`;
+      return `Cloture enregistree pour la caisse ${cashClosing.value?.id}.`;
     case 'technical-error':
       return 'Le poste de caisse doit etre reverifie avant toute nouvelle tentative de cloture.';
     default:
@@ -333,29 +338,36 @@ const financeStatusMessage = computed(() => {
   }
 });
 
+function lireDateJourIso(): string {
+  const maintenant = new Date();
+  const annee = maintenant.getFullYear();
+  const mois = String(maintenant.getMonth() + 1).padStart(2, '0');
+  const jour = String(maintenant.getDate()).padStart(2, '0');
+  return `${annee}-${mois}-${jour}`;
+}
+
 function formatCurrency(value: number): string {
   return new Intl.NumberFormat('fr-FR').format(value) + ' FC';
 }
 
 async function closeCashRegister(): Promise<void> {
-  if (!isAuthorized.value) {
-    uiState.value = 'not-authorized';
+  if (!cashClosing.value) {
     return;
   }
 
-  if (cashClosing.value.status !== 'OUVERTE') {
-    uiState.value = 'cash-not-open';
-    return;
-  }
-
-  uiState.value = 'loading';
-
-  await new Promise((resolve) => window.setTimeout(resolve, 450));
-
-  cashClosing.value = {
-    ...cashClosing.value,
-    status: 'FERMEE',
-  };
-  uiState.value = 'success';
+  await cashClosingStore.cloturer({
+    idCaisseJour: cashClosing.value.id,
+    montantPhysiqueDeclare: montantPhysiqueDeclare.value,
+    observation: observation.value,
+  });
 }
+
+onMounted(async () => {
+  if (!isAuthorized.value) {
+    cashClosingStore.reinitialiser();
+    return;
+  }
+
+  await cashClosingStore.charger(lireDateJourIso());
+});
 </script>

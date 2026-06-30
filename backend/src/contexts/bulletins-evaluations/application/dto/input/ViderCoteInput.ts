@@ -6,5 +6,6 @@ export interface ViderCoteInput {
   codeColonne: CodeColonneBulletin;
   versionAttendue: number;
   idUtilisateur: string;
+  idOrganisation?: string;
   cleIdempotence?: string;
 }

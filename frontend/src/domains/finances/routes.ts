@@ -1,123 +1,142 @@
 import type { RouteRecordRaw } from 'vue-router';
-import ModuleHomeView from './views/ModuleHomeView.vue';
-import PerceptionPaiementView from './views/PerceptionPaiementView.vue';
-import OuvertureCaisseView from './views/OuvertureCaisseView.vue';
-import ClotureCaisseView from './views/ClotureCaisseView.vue';
-import CaisseDuJourView from './views/CaisseDuJourView.vue';
-import HistoriquePaiementsEleveView from './views/HistoriquePaiementsEleveView.vue';
-import SituationFinanciereEleveView from './views/SituationFinanciereEleveView.vue';
-import RecuPaiementView from './views/RecuPaiementView.vue';
-import AnalysePaiementsTypeFraisView from './views/AnalysePaiementsTypeFraisView.vue';
-import ExonerationsView from './views/ExonerationsView.vue';
-import RecusPaiementListView from './views/RecusPaiementListView.vue';
-import RapportFinancierJournalierView from './views/RapportFinancierJournalierView.vue';
-import PaiementsParCaissierView from './views/PaiementsParCaissierView.vue';
-import FondsAnticipesView from './views/FondsAnticipesView.vue';
-import ArrieresEleveView from './views/ArrieresEleveView.vue';
-import ParametresPaiementView from './views/ParametresPaiementView.vue';
-import TarificationView from './views/TarificationView.vue';
 
 export const routesFinances: RouteRecordRaw[] = [
   {
     path: 'finances',
     name: 'finances-home',
-    component: ModuleHomeView,
+    component: () => import('./views/ModuleHomeView.vue'),
     meta: { title: 'Finances' },
   },
   {
     path: 'finances/paiements/enregistrer',
     name: 'finances-perception-paiement',
-    component: PerceptionPaiementView,
+    component: () => import('./views/PerceptionPaiementView.vue'),
     meta: { title: 'Perception de paiement' },
   },
   {
     path: 'finances/caisse/ouverture',
     name: 'finances-ouverture-caisse',
-    component: OuvertureCaisseView,
+    component: () => import('./views/OuvertureCaisseView.vue'),
     meta: { title: 'Ouverture de caisse' },
   },
   {
     path: 'finances/caisse/cloture',
     name: 'finances-cloture-caisse',
-    component: ClotureCaisseView,
+    component: () => import('./views/ClotureCaisseView.vue'),
     meta: { title: 'Cloture de caisse' },
   },
   {
     path: 'finances/caisse',
     name: 'finances-caisse-du-jour',
-    component: CaisseDuJourView,
+    component: () => import('./views/CaisseDuJourView.vue'),
     meta: { title: 'Caisse du jour' },
   },
   {
-    path: 'finances/historiques',
+    path: 'finances/historiques/:idEleve?',
     name: 'finances-historique-paiements-eleve',
-    component: HistoriquePaiementsEleveView,
+    component: () => import('./views/HistoriquePaiementsEleveView.vue'),
     meta: { title: 'Historique des paiements' },
   },
   {
-    path: 'finances/dettes',
+    path: 'finances/dettes/:idEleve?',
     name: 'finances-situation-financiere-eleve',
-    component: SituationFinanciereEleveView,
+    component: () => import('./views/SituationFinanciereEleveView.vue'),
     meta: { title: 'Situation financiere eleve' },
   },
   {
     path: 'finances/recus/:idRecu',
     name: 'finances-recu-paiement',
-    component: RecuPaiementView,
+    component: () => import('./views/RecuPaiementView.vue'),
     meta: { title: 'Recu de paiement' },
+  },
+  {
+    path: 'finances/paiements/restitution',
+    name: 'finances-restitution-excedent',
+    component: () => import('./views/RestitutionExcedentView.vue'),
+    meta: { title: 'Restitution d excedent' },
+  },
+  {
+    path: 'finances/registre-classe',
+    name: 'finances-registre-financier-classe',
+    component: () => import('./views/RegistreFinancierClasseView.vue'),
+    meta: { title: 'Registre financier de classe' },
+  },
+  {
+    path: 'finances/synthese-classe',
+    name: 'finances-synthese-financiere-classe',
+    component: () => import('./views/SyntheseFinanciereClasseView.vue'),
+    meta: { title: 'Synthese financiere de classe' },
+  },
+  {
+    path: 'finances/synthese-section',
+    name: 'finances-synthese-financiere-section',
+    component: () => import('./views/SyntheseFinanciereSectionView.vue'),
+    meta: { title: 'Synthese financiere de section' },
+  },
+  {
+    path: 'finances/synthese-ecole',
+    name: 'finances-synthese-financiere-ecole',
+    component: () => import('./views/SyntheseFinanciereEcoleView.vue'),
+    meta: { title: 'Synthese financiere d ecole' },
+  },
+  {
+    path: 'finances/synthese-organisation',
+    name: 'finances-synthese-financiere-organisation',
+    component: () => import('./views/SyntheseFinanciereOrganisationView.vue'),
+    meta: { title: 'Synthese financiere d organisation' },
   },
   {
     path: 'finances/rapports',
     name: 'finances-analyse-paiements-type-frais',
-    component: AnalysePaiementsTypeFraisView,
+    component: () => import('./views/AnalysePaiementsTypeFraisView.vue'),
     meta: { title: 'Analyse paiements par type de frais' },
   },
   {
     path: 'finances/exonerations',
     name: 'finances-exonerations',
-    component: ExonerationsView,
+    component: () => import('./views/ExonerationsView.vue'),
     meta: { title: 'Exonerations' },
   },
   {
     path: 'finances/recus',
     name: 'finances-recus-liste',
-    component: RecusPaiementListView,
+    component: () => import('./views/RecusPaiementListView.vue'),
     meta: { title: 'Recus emis' },
   },
   {
     path: 'finances/rapports/journalier',
     name: 'finances-rapport-financier-journalier',
-    component: RapportFinancierJournalierView,
+    component: () => import('./views/RapportFinancierJournalierView.vue'),
     meta: { title: 'Rapport financier journalier' },
   },
   {
     path: 'finances/rapports/paiements-par-caissier',
     name: 'finances-paiements-par-caissier',
-    component: PaiementsParCaissierView,
+    component: () => import('./views/PaiementsParCaissierView.vue'),
     meta: { title: 'Paiements par caissier' },
   },
   {
     path: 'finances/rapports/fonds-anticipes',
     name: 'finances-fonds-anticipes',
-    component: FondsAnticipesView,
+    component: () => import('./views/FondsAnticipesView.vue'),
     meta: { title: 'Fonds anticipes' },
   },
   {
-    path: 'finances/arrieres',
+    path: 'finances/arrieres/:idEleve?',
     name: 'finances-arrieres-eleve',
-    component: ArrieresEleveView,
+    component: () => import('./views/ArrieresEleveView.vue'),
     meta: { title: 'Arrieres eleve' },
   },
   {
     path: 'finances/parametres',
     name: 'finances-parametres-paiement',
-    component: ParametresPaiementView,
+    component: () => import('./views/ParametresPaiementView.vue'),
     meta: { title: 'Parametres de paiement' },
   },
   {
     path: 'finances/tarification',
     name: 'finances-tarification',
-    component: TarificationView,
+    component: () => import('./views/TarificationView.vue'),
     meta: { title: 'Tarification' },
   },
 ];

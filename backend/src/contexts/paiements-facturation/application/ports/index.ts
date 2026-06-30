@@ -16,3 +16,6 @@ export * from './AutorisationAnnulationPaiementPort';
 export * from './AutorisationRestitutionPaiementPort';
 export * from './AutorisationReimpressionRecuPort';
 export * from './AutorisationConsultationRecusPort';
+export * from './AutorisationRegistreFinancierClassePort';
+export * from './AutorisationSyntheseFinanciereSectionPort';
+export * from './AutorisationQualificationFinanciereElevePort';

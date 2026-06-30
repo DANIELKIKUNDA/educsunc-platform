@@ -46,7 +46,14 @@
       <template v-if="uiState === 'loading'">
         <LoadingState
           title="Chargement du rapport journalier"
-          message="Preparation de la synthese journaliere et des regroupements utiles."
+          message="Preparation de la synthese journaliere reelle pour la date choisie."
+        />
+      </template>
+
+      <template v-else-if="uiState === 'technical-error'">
+        <ErrorState
+          title="Rapport technique indisponible"
+          :message="technicalErrorMessage"
         />
       </template>
 
@@ -57,132 +64,92 @@
           message="Cette vue de rapport est reservee aux lecteurs financiers autorises dans leur perimetre."
         />
 
-        <SectionBlock
-          title="Filtres journaliers"
-          description="La date pilote le rapport. Les regroupements restent purement consultatifs."
-        >
-          <div class="finance-form-stack">
-            <div class="finance-filter-grid finance-filter-grid--wide">
-              <label class="finance-field">
-                <span>Date</span>
-                <input v-model="selectedDate" type="date" />
-              </label>
-
-              <label class="finance-field">
-                <span>Regroupement visible</span>
-                <select v-model="selectedGrouping">
-                  <option value="TYPE">Par type de frais</option>
-                  <option value="CANAL">Par canal</option>
-                </select>
-              </label>
-            </div>
-
-            <div class="finance-guard-panel">
-              <div class="finance-guard-panel__header">
-                <ShieldCheck />
-                <strong>Regles visibles</strong>
-              </div>
-              <ul>
-                <li>`CAISSIER` et `ADMINISTRATEUR_ECOLE` lisent dans la meme ecole.</li>
-                <li>`GESTIONNAIRE_ORGANISATION` et `PROMOTEUR_ORGANISATION` lisent dans la meme organisation.</li>
-                <li>Aucune mutation de caisse ne part de cet ecran de rapport.</li>
-              </ul>
-            </div>
-          </div>
-        </SectionBlock>
-
-        <div class="finance-kpi-grid finance-kpi-grid--detail">
-          <div class="finance-kpi-card">
-            <small>Total du jour</small>
-            <strong>{{ formatCurrency(report.totalJour) }}</strong>
-            <span>Encaissements visibles sur la date</span>
-          </div>
-          <div class="finance-kpi-card">
-            <small>Operations</small>
-            <strong>{{ report.nombreOperations }}</strong>
-            <span>Volume journalier</span>
-          </div>
-          <div class="finance-kpi-card">
-            <small>Panier moyen</small>
-            <strong>{{ formatCurrency(report.panierMoyen) }}</strong>
-            <span>Moyenne par operation</span>
-          </div>
-        </div>
-
-        <div class="finance-form-grid">
+        <template v-else-if="report">
           <SectionBlock
-            title="Repartitions"
-            description="Lecture rapide des regroupements journaliers utiles."
+            title="Filtres journaliers"
+            description="La date pilote le rapport. Les totaux restent purement consultatifs."
+          >
+            <div class="finance-form-stack">
+              <div class="finance-filter-grid finance-filter-grid--wide">
+                <label class="finance-field">
+                  <span>Date</span>
+                  <input v-model="selectedDate" type="date" />
+                </label>
+              </div>
+
+              <div class="finance-guard-panel">
+                <div class="finance-guard-panel__header">
+                  <ShieldCheck />
+                  <strong>Regles visibles</strong>
+                </div>
+                <ul>
+                  <li>`CAISSIER` et `ADMINISTRATEUR_ECOLE` lisent dans la meme ecole.</li>
+                  <li>`GESTIONNAIRE_ORGANISATION` et `PROMOTEUR_ORGANISATION` lisent dans la meme organisation.</li>
+                  <li>Aucune mutation de caisse ne part de cet ecran de rapport.</li>
+                </ul>
+              </div>
+            </div>
+          </SectionBlock>
+
+          <div class="finance-kpi-grid finance-kpi-grid--detail">
+            <div class="finance-kpi-card">
+              <small>Total encaisse</small>
+              <strong>{{ formatCurrency(report.totalEncaisse) }}</strong>
+              <span>Encaissements journaliers reels</span>
+            </div>
+            <div class="finance-kpi-card">
+              <small>Total consomme</small>
+              <strong>{{ formatCurrency(report.totalConsomme) }}</strong>
+              <span>Encaissement net apres annulations et restitutions</span>
+            </div>
+            <div class="finance-kpi-card">
+              <small>Total restitue</small>
+              <strong>{{ formatCurrency(report.totalRestitue) }}</strong>
+              <span>Restitutions du jour</span>
+            </div>
+            <div class="finance-kpi-card">
+              <small>Total annule</small>
+              <strong>{{ formatCurrency(report.totalAnnule) }}</strong>
+              <span>Annulations relues sur la caisse du jour</span>
+            </div>
+          </div>
+
+          <SectionBlock
+            title="Synthese journaliere"
+            description="Le backend actuel expose une synthese consolidee de la journee, sans repartitions secondaires par canal ou type."
           >
             <div class="finance-list-card">
-              <div
-                v-for="row in currentRows"
-                :key="row.id"
-                class="finance-list-card__row"
-              >
+              <div class="finance-list-card__row">
                 <div>
-                  <strong>{{ row.regroupement }}</strong>
-                  <small>{{ row.operations }} operations · {{ row.part }}%</small>
+                  <strong>Periode</strong>
+                  <small>Date effectivement lue par le backend</small>
                 </div>
-                <strong>{{ formatCurrency(row.montant) }}</strong>
+                <strong>{{ report.dateLabel }}</strong>
+              </div>
+              <div class="finance-list-card__row">
+                <div>
+                  <strong>Total anticipe</strong>
+                  <small>Valeur exposee par le backend journalier courant</small>
+                </div>
+                <strong>{{ formatCurrency(report.totalAnticipe) }}</strong>
+              </div>
+              <div class="finance-list-card__row">
+                <div>
+                  <strong>Net journalier</strong>
+                  <small>Total consomme utilisable apres corrections du jour</small>
+                </div>
+                <strong>{{ formatCurrency(report.totalConsomme) }}</strong>
               </div>
             </div>
           </SectionBlock>
-
-          <SectionBlock
-            title="Tableau resume"
-            description="Le tableau garde la vue comparative principale sur la date choisie."
-          >
-            <div class="finance-table-shell">
-              <table class="finance-table">
-                <thead>
-                  <tr>
-                    <th>Regroupement</th>
-                    <th>Operations</th>
-                    <th>Montant</th>
-                    <th>Part</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="row in currentRows" :key="row.id">
-                    <td>{{ row.regroupement }}</td>
-                    <td>{{ row.operations }}</td>
-                    <td>{{ formatCurrency(row.montant) }}</td>
-                    <td>
-                      <span class="finance-status-badge" :class="repartitionClass(row.part)">
-                        {{ row.part }}%
-                      </span>
-                    </td>
-                    <td>
-                      <button class="finance-link-action" type="button" @click="selectedRowId = row.id">
-                        Ouvrir detail
-                      </button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            <div v-if="selectedRow" class="finance-status-strip finance-status-strip--neutral">
-              <CalendarRange />
-              <div>
-                <strong>Detail regroupement</strong>
-                <p>
-                  {{ selectedRow.regroupement }} · {{ selectedRow.operations }} operations ·
-                  {{ formatCurrency(selectedRow.montant) }} · part {{ selectedRow.part }}%.
-                </p>
-              </div>
-            </div>
-          </SectionBlock>
-        </div>
+        </template>
       </template>
     </AccessBoundary>
   </PageContainer>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { RouterLink } from 'vue-router';
 import { ArrowLeft, CalendarRange, ShieldCheck } from 'lucide-vue-next';
 import PageContainer from '../../../shared/layout/PageContainer.vue';
@@ -197,20 +164,33 @@ import { activeContextStore } from '../../../shared/session/active-context.store
 import { sessionStore } from '../../../shared/auth/session.store';
 import {
   authorizedDailyFinancialReportActors,
-  dailyFinancialReportViewModel,
-} from '../data/rapport-financier-journalier.demo';
+} from '../models/daily-financial-report.model';
+import { useDailyFinancialReportStore } from '../stores/daily-financial-report.store';
 
 const context = activeContextStore.state;
 const session = sessionStore.state;
-const report = ref({ ...dailyFinancialReportViewModel });
-const uiState = ref<'loading' | 'idle' | 'technical-error'>('idle');
-const selectedDate = ref(report.value.dateLabel);
-const selectedGrouping = ref<'TYPE' | 'CANAL'>('TYPE');
-const selectedRowId = ref('');
+const reportStore = useDailyFinancialReportStore();
+const selectedDate = ref(new Date().toISOString().slice(0, 10));
 
 const isAuthorized = computed(() =>
   authorizedDailyFinancialReportActors.includes(session.actorCode as never),
 );
+const report = computed(() => reportStore.state.report);
+const technicalErrorMessage = computed(() =>
+  reportStore.state.errorMessage
+  ?? 'Le backend n a pas pu restituer le rapport financier journalier.',
+);
+const uiState = computed<'loading' | 'idle' | 'technical-error'>(() => {
+  if (reportStore.state.status === 'loading') {
+    return 'loading';
+  }
+
+  if (reportStore.state.status === 'error') {
+    return 'technical-error';
+  }
+
+  return 'idle';
+});
 
 const perimeterMessage = computed(() => {
   switch (session.actorCode) {
@@ -225,25 +205,20 @@ const perimeterMessage = computed(() => {
   }
 });
 
-const currentRows = computed(() =>
-  selectedGrouping.value === 'TYPE' ? report.value.rowsByType : report.value.rowsByChannel,
-);
-
-const selectedRow = computed(() => currentRows.value.find((row) => row.id === selectedRowId.value) ?? null);
-
 function formatCurrency(value: number): string {
-  return new Intl.NumberFormat('fr-FR').format(value) + ' FC';
+  return `${new Intl.NumberFormat('fr-FR').format(value)} FC`;
 }
 
-function repartitionClass(part: number): string {
-  if (part >= 35) {
-    return 'finance-status-badge--success';
-  }
+watch(
+  () => [selectedDate.value, isAuthorized.value],
+  async () => {
+    if (!isAuthorized.value) {
+      reportStore.reinitialiser();
+      return;
+    }
 
-  if (part >= 15) {
-    return 'finance-status-badge--warning';
-  }
-
-  return 'finance-status-badge--error';
-}
+    await reportStore.charger(selectedDate.value);
+  },
+  { immediate: true },
+);
 </script>

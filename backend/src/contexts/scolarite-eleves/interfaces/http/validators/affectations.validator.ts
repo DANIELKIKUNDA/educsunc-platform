@@ -35,6 +35,17 @@ export class ValidateurAffectationsHttp {
     };
   }
 
+  /** Valide une consultation d'affectation par identifiant permanent. */
+  public static validerConsultationParId(params: unknown, headers: unknown) {
+    return {
+      ...OutilsValidationHttpScolarite.lireContexteUtilisateurRequis(headers, false),
+      idAffectationClasse: OutilsValidationHttpScolarite.lireParametre(
+        OutilsValidationHttpScolarite.obtenirObjet(params, 'params'),
+        'id',
+      ),
+    };
+  }
+
   /** Valide la desactivation d'une affectation par inscription. */
   public static validerDesactivation(params: unknown, headers: unknown) {
     return {

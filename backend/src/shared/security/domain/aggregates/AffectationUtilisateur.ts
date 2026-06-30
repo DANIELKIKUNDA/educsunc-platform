@@ -108,6 +108,8 @@ export class AffectationUtilisateur extends RacineAgregat<string> {
   public obtenirIdOrganisation(): string | undefined { return this.idOrganisation; }
   public obtenirIdEcole(): string | undefined { return this.idEcole; }
   public obtenirIdSection(): string | undefined { return this.idSection; }
+  public obtenirIdClasse(): string | undefined { return this.idClasse; }
+  public obtenirIdCours(): string | undefined { return this.idCours; }
   public obtenirDateDebut(): Date { return new Date(this.dateDebut.getTime()); }
   public obtenirDateFin(): Date | undefined { return this.dateFin ? new Date(this.dateFin.getTime()) : undefined; }
   public obtenirCreeLe(): Date { return new Date(this.creeLe.getTime()); }

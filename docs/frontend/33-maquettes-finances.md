@@ -310,7 +310,7 @@ Regles de lecture obligatoires :
 - ils sont comptes seulement sur les colonnes ou l'eleve reste reellement redevable
 - `EX` sort l'eleve de la colonne exoneree
 - `EX50` ne compte que la partie reellement exigible
-- `AG` suit la retenue a la source telle que deja calculee par le backend
+- `AG` signale un enfant d'agent porte par le backend, sans confondre cette qualification avec une exoneration particuliere
 - `AB`, `TR` et `DC` sortent des obligations et du recouvrement futurs a partir de leur date effective
 
 ### Actions visibles
@@ -320,6 +320,7 @@ Regles de lecture obligatoires :
 - faire defiler horizontalement le registre
 - ouvrir le detail financier d'un eleve
 - basculer vers historique ou arrieres d'un eleve
+- ouvrir la lecture des qualifications financieres de l'eleve depuis le detail si elle est exposee
 
 ### Exports
 
@@ -331,7 +332,6 @@ Regles de lecture obligatoires :
 
 - `ADMINISTRATEUR_ECOLE`
 - `CAISSIER`
-- `SECRETAIRE`
 - `PREFET_ETUDES`
 - `DIRECTEUR_PRIMAIRE`
 - `DIRECTEUR_MATERNELLE`
@@ -345,7 +345,7 @@ Regles de lecture obligatoires :
 - `PREFET_ETUDES` : classes du secondaire de son ecole
 - `DIRECTEUR_PRIMAIRE` : classes du primaire de son ecole
 - `DIRECTEUR_MATERNELLE` : classes de la maternelle de son ecole
-- `CAISSIER`, `SECRETAIRE`, `ADMINISTRATEUR_ECOLE` : classes de leur ecole
+- `CAISSIER`, `ADMINISTRATEUR_ECOLE` : classes de leur ecole
 - `GESTIONNAIRE_ORGANISATION`, `PROMOTEUR_ORGANISATION` : ecoles de leur organisation
 
 Regle critique :
@@ -359,6 +359,7 @@ Regle critique :
 
 - `PF-06`
 - `PF-15`
+- `PF-AG`
 - [09-workflows-financiers.md](/C:/Users/MON%20PC/Documents/EducSyn/docs/frontend/09-workflows-financiers.md)
 - [VF-01 — REGISTRE FINANCIER DE CLASSE Spécification fonctionnelle officielle (Ve…](C:\Users\MON PC\.codex\attachments\0e2d52e3-30a0-4d86-9a84-cc85b5c06fbb\pasted-text.txt)
 
@@ -464,7 +465,6 @@ Tableau principal obligatoire :
 
 - `ADMINISTRATEUR_ECOLE`
 - `CAISSIER`
-- `SECRETAIRE`
 - `PREFET_ETUDES`
 - `DIRECTEUR_PRIMAIRE`
 - `DIRECTEUR_MATERNELLE`
@@ -600,7 +600,6 @@ Elles ne doivent pas masquer le detail ouvrable de chaque classe.
 
 - `ADMINISTRATEUR_ECOLE`
 - `CAISSIER`
-- `SECRETAIRE`
 - `PREFET_ETUDES`
 - `DIRECTEUR_PRIMAIRE`
 - `DIRECTEUR_MATERNELLE`
@@ -737,7 +736,6 @@ Ces chiffres doivent rester des points d'entree vers les sections et classes, pa
 
 - `ADMINISTRATEUR_ECOLE`
 - `CAISSIER`
-- `SECRETAIRE`
 - `GESTIONNAIRE_ORGANISATION`
 - `PROMOTEUR_ORGANISATION`
 

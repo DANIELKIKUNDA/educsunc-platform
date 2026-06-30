@@ -49,6 +49,28 @@ export class AutorisationRapportFinancierAdapter
     await this.verifierLectureRapportFinancier(params);
   }
 
+  public async verifierConsultationSyntheseFinanciereOrganisation(params: {
+    idUtilisateur: string;
+    idOrganisation: string;
+  }): Promise<void> {
+    if (await this.estRoleActifDansOrganisation(
+      params.idUtilisateur,
+      params.idOrganisation,
+      ['GESTIONNAIRE_ORGANISATION', 'PROMOTEUR_ORGANISATION'],
+    )) {
+      await this.securityFacade.verifierAcces({
+        idUtilisateur: params.idUtilisateur,
+        permissionDemandee: 'paiements.read',
+        idOrganisation: params.idOrganisation,
+      });
+      return;
+    }
+
+    throw new ErreurDroitsInsuffisants(
+      "L'utilisateur demandeur n'est pas autorise a consulter cette synthese organisationnelle.",
+    );
+  }
+
   private async verifierLectureRapportFinancier(params: {
     idUtilisateur: string;
     idOrganisation: string;

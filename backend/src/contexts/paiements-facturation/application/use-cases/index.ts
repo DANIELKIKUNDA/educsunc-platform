@@ -7,3 +7,4 @@ export * from './recus';
 export * from './caisse';
 export * from './exonerations';
 export * from './annulations';
+export * from './qualifications-financieres';

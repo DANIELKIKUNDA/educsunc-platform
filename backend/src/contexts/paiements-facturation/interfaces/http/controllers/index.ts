@@ -16,3 +16,4 @@ export * from './ConsulterHistoriquePaiementsController';
 export * from './ConsulterRecusPaiementController';
 export * from './RestituerExcedentController';
 export * from './ReimprimerRecuController';
+export * from './QualificationFinanciereEleveController';

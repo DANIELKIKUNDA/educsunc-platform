@@ -2202,6 +2202,42 @@ Aucun acteur delegue par defaut
 
 `CFG-USER-01 FIGE`
 
+## Cloture Frontend Configuration
+
+Les workflows `configuration` deja figes sont maintenant materialises en frontend reel, sans rouvrir leur doctrine metier.
+
+Preuves frontend :
+
+- [routes.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/configuration/routes.ts)
+- [ModuleHomeView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/configuration/views/ModuleHomeView.vue)
+- [ConfigurationWorkspaceView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/configuration/views/ConfigurationWorkspaceView.vue)
+- [ConfigurationOrganizationView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/configuration/views/ConfigurationOrganizationView.vue)
+- [ConfigurationSchoolModulesView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/configuration/views/ConfigurationSchoolModulesView.vue)
+- [ConfigurationSchoolBrandingView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/configuration/views/ConfigurationSchoolBrandingView.vue)
+- [ConfigurationSchoolNotificationsView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/configuration/views/ConfigurationSchoolNotificationsView.vue)
+- [ConfigurationUserPreferencesView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/configuration/views/ConfigurationUserPreferencesView.vue)
+- [configuration.api.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/configuration/services/configuration.api.ts)
+- [configuration-center.store.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/configuration/stores/configuration-center.store.ts)
+- [configuration-modules.store.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/configuration/stores/configuration-modules.store.ts)
+
+Correspondance ecrans / routes reelles :
+
+- `SCR-CFG-001` : `/app/configuration/plateforme/runtime`
+- `SCR-CFG-002` : `/app/configuration/organisation` et `/app/configuration/organisation/modules`
+- `SCR-CFG-003` : `/app/configuration/ecole/modules`
+- `SCR-CFG-004` : `/app/configuration/ecole/branding`
+- `SCR-CFG-005` : `/app/configuration/ecole/notifications`
+- `SCR-CFG-006` : `/app/configuration/utilisateur/preferences` et `/app/moi/preferences`
+
+Verification technique de cloture :
+
+- `npm run build` frontend : OK
+
+Verdict de cloture :
+
+- aucune dette bloquante de branchement relevee sur `configuration`
+- la documentation frontend et l'implementation reelle sont maintenant synchronisees
+
 ## NOTIF-01
 
 ### Identifiant
@@ -2310,6 +2346,40 @@ Superviser les notifications d'une organisation
 
 ### Perimetre reel
 
+## Cloture Frontend Notifications
+
+Les workflows `notifications` deja figes sont maintenant materialises en frontend reel, sans rouvrir la doctrine metier.
+
+Preuves frontend :
+
+- [routes.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/notifications/routes.ts)
+- [ModuleHomeView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/notifications/views/ModuleHomeView.vue)
+- [NotificationsSchoolComposeView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/notifications/views/NotificationsSchoolComposeView.vue)
+- [NotificationsSchoolCenterView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/notifications/views/NotificationsSchoolCenterView.vue)
+- [NotificationsSchoolOperationsView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/notifications/views/NotificationsSchoolOperationsView.vue)
+- [NotificationsOrganizationView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/notifications/views/NotificationsOrganizationView.vue)
+- [NotificationsOrganizationRealtimeView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/notifications/views/NotificationsOrganizationRealtimeView.vue)
+- [notifications.api.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/notifications/services/notifications.api.ts)
+- [notifications.store.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/notifications/stores/notifications.store.ts)
+- [notifications.model.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/notifications/models/notifications.model.ts)
+- [notifications.mapper.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/notifications/mappers/notifications.mapper.ts)
+
+Correspondance ecrans / routes reelles :
+
+- `SCR-NOTIF-001` : `/app/notifications/ecole/envoyer`
+- `SCR-NOTIF-002` : `/app/notifications/ecole` et `/app/notifications/ecole/:idNotification`
+- `SCR-NOTIF-003` : `/app/notifications/ecole/operations` et `/app/notifications/ecole/dead-letter`
+- `SCR-NOTIF-004` : `/app/notifications/organisation` et `/app/notifications/organisation/escalades`
+- `SCR-NOTIF-005` : `/app/notifications/organisation/realtime`
+
+Verification technique de cloture :
+
+- `npm run build` frontend : OK
+
+Verdict de cloture :
+
+- aucune dette bloquante de branchement relevee sur `notifications`
+- la documentation frontend et l'implementation reelle sont maintenant synchronisees
 `ORGANISATION`
 
 ### Contraintes backend
@@ -2516,10 +2586,83 @@ Consulter l'audit security transverse
 
 ### Contraintes backend
 
-- l'audit security brut n'est pas une lecture ecole
-- les acteurs locaux consomment plutot les audits fonctionnels de leurs propres BC
-- cette lecture transverse est maintenant reellement exposee et testee
+  - l'audit security brut n'est pas une lecture ecole
+  - les acteurs locaux consomment plutot les audits fonctionnels de leurs propres BC
+  - cette lecture transverse est maintenant reellement exposee et testee
+
+## Cloture Frontend Security
+
+Les workflows `security` deja figes sont maintenant materialises en frontend reel, sans rouvrir la doctrine metier.
+
+Preuves frontend :
+
+- [routes.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/security/routes.ts)
+- [ModuleHomeView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/security/views/ModuleHomeView.vue)
+- [SecurityRolesView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/security/views/SecurityRolesView.vue)
+- [SecurityAssignmentsView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/security/views/SecurityAssignmentsView.vue)
+- [SecurityChecksView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/security/views/SecurityChecksView.vue)
+- [SecurityAuditView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/security/views/SecurityAuditView.vue)
+- [security.api.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/security/services/security.api.ts)
+- [security.store.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/security/stores/security.store.ts)
+- [security.model.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/security/models/security.model.ts)
+- [security.mapper.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/security/mappers/security.mapper.ts)
+
+Correspondance ecrans / routes reelles :
+
+- `SCR-SEC-001` : `/app/security/roles` et `/app/security/roles/:codeRole`
+- `SCR-SEC-002` : `/app/security/affectations`, `/app/security/affectations/utilisateurs/:idUtilisateur` et `/app/security/titulariats`
+- `SCR-SEC-003` : `/app/security/verifications`
+- `SCR-SEC-004` : `/app/security/audit`
+
+Verification technique de cloture :
+
+- `npm run build` frontend : OK
+
+Verdict de cloture :
+
+- aucune dette bloquante de branchement relevee sur `security`
+- la documentation frontend et l'implementation reelle sont maintenant synchronisees
 
 ### Statut de figement
 
 `SEC-04 FIGE`
+
+## Cloture Frontend Monitoring
+
+Les workflows `monitoring` deja figes sont maintenant materialises en frontend reel, toujours dans le perimetre `PLATEFORME / SYSTEME`.
+
+Preuves frontend :
+
+- [routes.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/monitoring/routes.ts)
+- [ModuleHomeView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/monitoring/views/ModuleHomeView.vue)
+- [MonitoringOverviewView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/monitoring/views/MonitoringOverviewView.vue)
+- [MonitoringIncidentsView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/monitoring/views/MonitoringIncidentsView.vue)
+- [MonitoringAlertsView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/monitoring/views/MonitoringAlertsView.vue)
+- [MonitoringDiagnosticsView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/monitoring/views/MonitoringDiagnosticsView.vue)
+- [MonitoringCapacityView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/monitoring/views/MonitoringCapacityView.vue)
+- [MonitoringTracesView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/monitoring/views/MonitoringTracesView.vue)
+- [monitoring.api.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/monitoring/services/monitoring.api.ts)
+- [monitoring.store.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/monitoring/stores/monitoring.store.ts)
+- [monitoring.model.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/monitoring/models/monitoring.model.ts)
+- [monitoring.mapper.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/monitoring/mappers/monitoring.mapper.ts)
+
+Correspondance ecrans / routes reelles :
+
+- `SCR-MON-001` : `/app/monitoring/etat-systeme`
+- `SCR-MON-002` : `/app/monitoring/dashboard`
+- `SCR-MON-003` : `/app/monitoring/observabilite`
+- `SCR-MON-004` : `/app/monitoring/sante`
+- `SCR-MON-005` : `/app/monitoring/incidents`
+- `SCR-MON-006` : `/app/monitoring/alertes`
+- `SCR-MON-007` : `/app/monitoring/diagnostics`
+- `SCR-MON-008` : `/app/monitoring/capacite`
+- `SCR-MON-009` : `/app/monitoring/traces`
+
+Verification technique de cloture :
+
+- `npm run build` frontend : OK
+
+Verdict de cloture :
+
+- les workflows `MON-01` a `MON-17` disposent maintenant d'une materialisation frontend coherente avec leurs routes backend reelles
+- aucune dette bloquante de branchement n'est relevee sur `shared/monitoring`

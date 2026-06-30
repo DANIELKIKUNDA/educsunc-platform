@@ -284,21 +284,38 @@ Bonnes pratiques retenues :
 
 Pages candidates typiques :
 
+- lecture du socle academique officiel
+- administration du socle academique officiel
+- migration referentielle
 - publication referentiel
 - activation version
 - import referentiel
 - comparaison versions
-- lecture referentiel
-- migration referentielle
+- pilotage des annees scolaires locales
+- gestion des classes pedagogiques
+- gestion des responsables de classe
+- gestion du calendrier academique local
+- gestion du programme-niveau local
 
 Routes candidates :
 
 - `/academique/referentiels`
-- `/academique/referentiels/publier`
-- `/academique/referentiels/activer`
-- `/academique/referentiels/importer`
-- `/academique/referentiels/comparer`
-- `/academique/referentiels/migration`
+- `/academique/publication`
+- `/academique/activation`
+- `/academique/imports`
+- `/academique/comparaisons`
+- `/academique/migrations`
+- `/academique/annees-scolaires`
+- `/academique/classes-pedagogiques`
+- `/academique/responsabilites-classes`
+- `/academique/calendriers`
+- `/academique/programmes-locaux`
+
+Lecture doctrinale :
+
+- les routes `/academique/publication`, `/academique/activation`, `/academique/imports`, `/academique/comparaisons` et `/academique/migrations` restent dans le socle plateforme
+- les routes `/academique/annees-scolaires`, `/academique/classes-pedagogiques`, `/academique/responsabilites-classes`, `/academique/calendriers` et `/academique/programmes-locaux` portent l'exploitation academique locale de l'ecole
+- sur ce second bloc, l'acteur local cible est `ADMIN_SYSTEME_ECOLE`, pas `ADMINISTRATEUR_ECOLE`
 
 ### Module `Pedagogique`
 

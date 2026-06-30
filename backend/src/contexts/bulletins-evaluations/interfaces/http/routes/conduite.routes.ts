@@ -6,6 +6,8 @@ import { executerRouteBulletin } from './outilsRoutesBulletins';
 export const creerConduiteRoutes = (
   dependances: DependancesRoutesBulletinsEvaluationsDocument,
 ): FastifyPluginAsync => async (serveur) => {
+  serveur.get('/conduite/classe', (requete, reponse) =>
+    executerRouteBulletin(requete, reponse, () => dependances.conduiteApplicationController.consulterConduiteClasse(requete.query, requete.headers), dependances.contexteTenant));
   serveur.post('/conduite', (requete, reponse) =>
     executerRouteBulletin(requete, reponse, () => dependances.conduiteApplicationController.encoder(requete.body, requete.headers), dependances.contexteTenant));
   serveur.get('/conduite/:idEleve', (requete, reponse) =>

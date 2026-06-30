@@ -1,4 +1,4 @@
-type MethodeHttp = 'GET' | 'POST' | 'PATCH' | 'DELETE';
+type MethodeHttp = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
 export interface RequeteApi {
   methode?: MethodeHttp;

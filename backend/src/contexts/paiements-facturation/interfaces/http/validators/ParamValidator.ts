@@ -13,6 +13,11 @@ import type { ConsulterRapportFinancierJournalierInput } from '../../../applicat
 import type { ConsulterPaiementsParCaissierInput } from '../../../application/dto/input/AnalysesFinancieresEntreeDTO';
 import type { ConsulterPaiementsParTypeFraisInput } from '../../../application/dto/input/AnalysesFinancieresEntreeDTO';
 import type { ConsulterFondsAnticipesInput } from '../../../application/dto/input/AnalysesFinancieresEntreeDTO';
+import type { ConsulterRegistreFinancierClasseInput } from '../../../application/dto/input/AnalysesFinancieresEntreeDTO';
+import type { ConsulterSyntheseFinanciereClasseInput } from '../../../application/dto/input/AnalysesFinancieresEntreeDTO';
+import type { ConsulterSyntheseFinanciereEcoleInput } from '../../../application/dto/input/AnalysesFinancieresEntreeDTO';
+import type { ConsulterSyntheseFinanciereOrganisationInput } from '../../../application/dto/input/AnalysesFinancieresEntreeDTO';
+import type { ConsulterSyntheseFinanciereSectionInput } from '../../../application/dto/input/AnalysesFinancieresEntreeDTO';
 import { ValidationHttpPaiementsFacturation } from './ValidationHttpPaiementsFacturation';
 
 // Ce validator gere les identifiants et parametres techniques communs des routes HTTP paiements.
@@ -162,6 +167,88 @@ export class ParamValidator {
       idUtilisateur: this.lireIdentifiantUtilisateur(donnees, headers, 'idUtilisateur'),
       dateDebut: ValidationHttpPaiementsFacturation.lireChaineOptionnelle(donnees, 'dateDebut'),
       dateFin: ValidationHttpPaiementsFacturation.lireChaineOptionnelle(donnees, 'dateFin'),
+    };
+  }
+
+  public static validerConsultationRegistreFinancierClasse(
+    query: unknown,
+    headers: unknown,
+  ): ConsulterRegistreFinancierClasseInput {
+    const donnees = ValidationHttpPaiementsFacturation.obtenirObjet(query, 'query');
+
+    return {
+      idOrganisation: this.lireIdentifiantOrganisation(donnees, headers),
+      idEcole: this.lireIdentifiantEcole(donnees, headers),
+      idUtilisateur: this.lireIdentifiantUtilisateur(donnees, headers, 'idUtilisateur'),
+      idAnneeScolaire: ValidationHttpPaiementsFacturation.lireChaineRequise(donnees, 'idAnneeScolaire'),
+      idClassePedagogique: ValidationHttpPaiementsFacturation.lireChaineRequise(donnees, 'idClassePedagogique'),
+      moisAnalyseJusqua: ValidationHttpPaiementsFacturation.lireChaineOptionnelle(donnees, 'moisAnalyseJusqua'),
+      typeFrais: ValidationHttpPaiementsFacturation.lireChaineOptionnelle(donnees, 'typeFrais'),
+    };
+  }
+
+  public static validerConsultationSyntheseFinanciereClasse(
+    query: unknown,
+    headers: unknown,
+  ): ConsulterSyntheseFinanciereClasseInput {
+    const donnees = ValidationHttpPaiementsFacturation.obtenirObjet(query, 'query');
+
+    return {
+      idOrganisation: this.lireIdentifiantOrganisation(donnees, headers),
+      idEcole: this.lireIdentifiantEcole(donnees, headers),
+      idUtilisateur: this.lireIdentifiantUtilisateur(donnees, headers, 'idUtilisateur'),
+      idAnneeScolaire: ValidationHttpPaiementsFacturation.lireChaineRequise(donnees, 'idAnneeScolaire'),
+      idClassePedagogique: ValidationHttpPaiementsFacturation.lireChaineRequise(donnees, 'idClassePedagogique'),
+      moisAnalyseJusqua: ValidationHttpPaiementsFacturation.lireChaineOptionnelle(donnees, 'moisAnalyseJusqua'),
+      typeFrais: ValidationHttpPaiementsFacturation.lireChaineOptionnelle(donnees, 'typeFrais'),
+    };
+  }
+
+  public static validerConsultationSyntheseFinanciereSection(
+    query: unknown,
+    headers: unknown,
+  ): ConsulterSyntheseFinanciereSectionInput {
+    const donnees = ValidationHttpPaiementsFacturation.obtenirObjet(query, 'query');
+
+    return {
+      idOrganisation: this.lireIdentifiantOrganisation(donnees, headers),
+      idEcole: this.lireIdentifiantEcole(donnees, headers),
+      idUtilisateur: this.lireIdentifiantUtilisateur(donnees, headers, 'idUtilisateur'),
+      idAnneeScolaire: ValidationHttpPaiementsFacturation.lireChaineRequise(donnees, 'idAnneeScolaire'),
+      idSectionScolaire: ValidationHttpPaiementsFacturation.lireChaineRequise(donnees, 'idSectionScolaire'),
+      moisAnalyseJusqua: ValidationHttpPaiementsFacturation.lireChaineOptionnelle(donnees, 'moisAnalyseJusqua'),
+      typeFrais: ValidationHttpPaiementsFacturation.lireChaineOptionnelle(donnees, 'typeFrais'),
+    };
+  }
+
+  public static validerConsultationSyntheseFinanciereEcole(
+    query: unknown,
+    headers: unknown,
+  ): ConsulterSyntheseFinanciereEcoleInput {
+    const donnees = ValidationHttpPaiementsFacturation.obtenirObjet(query, 'query');
+
+    return {
+      idOrganisation: this.lireIdentifiantOrganisation(donnees, headers),
+      idEcole: this.lireIdentifiantEcole(donnees, headers),
+      idUtilisateur: this.lireIdentifiantUtilisateur(donnees, headers, 'idUtilisateur'),
+      idAnneeScolaire: ValidationHttpPaiementsFacturation.lireChaineRequise(donnees, 'idAnneeScolaire'),
+      moisAnalyseJusqua: ValidationHttpPaiementsFacturation.lireChaineOptionnelle(donnees, 'moisAnalyseJusqua'),
+      typeFrais: ValidationHttpPaiementsFacturation.lireChaineOptionnelle(donnees, 'typeFrais'),
+    };
+  }
+
+  public static validerConsultationSyntheseFinanciereOrganisation(
+    query: unknown,
+    headers: unknown,
+  ): ConsulterSyntheseFinanciereOrganisationInput {
+    const donnees = ValidationHttpPaiementsFacturation.obtenirObjet(query, 'query');
+
+    return {
+      idOrganisation: this.lireIdentifiantOrganisation(donnees, headers),
+      idUtilisateur: this.lireIdentifiantUtilisateur(donnees, headers, 'idUtilisateur'),
+      idAnneeScolaire: ValidationHttpPaiementsFacturation.lireChaineRequise(donnees, 'idAnneeScolaire'),
+      moisAnalyseJusqua: ValidationHttpPaiementsFacturation.lireChaineOptionnelle(donnees, 'moisAnalyseJusqua'),
+      typeFrais: ValidationHttpPaiementsFacturation.lireChaineOptionnelle(donnees, 'typeFrais'),
     };
   }
 

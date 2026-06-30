@@ -169,7 +169,7 @@ export const ROLE_FIXTURES: Record<string, RoleFixture> = {
     codeRole: 'PREFET_ETUDES',
     nomRole: 'Prefet des etudes',
     niveauAcces: 'ECOLE',
-    permissions: ['bulletins.read', 'eleves.read', 'eleves.write', 'abandons.write', 'transferts.write', 'paiements.read', 'referentiel.read'],
+    permissions: ['bulletins.read', 'eleves.read', 'eleves.write', 'abandons.write', 'transferts.write', 'paiements.read', 'paiements.write', 'referentiel.read'],
   },
   DIRECTEUR_ETUDES: {
     codeRole: 'DIRECTEUR_ETUDES',
@@ -182,14 +182,14 @@ export const ROLE_FIXTURES: Record<string, RoleFixture> = {
     codeRole: 'DIRECTEUR_PRIMAIRE',
     nomRole: 'Directeur primaire',
     niveauAcces: 'ECOLE',
-    permissions: ['eleves.read', 'eleves.write', 'paiements.read'],
+    permissions: ['eleves.read', 'eleves.write', 'paiements.read', 'paiements.write'],
     restrictions: ['INTERDICTION_CAISSE'],
   },
   DIRECTEUR_MATERNELLE: {
     codeRole: 'DIRECTEUR_MATERNELLE',
     nomRole: 'Directeur maternelle',
     niveauAcces: 'ECOLE',
-    permissions: ['eleves.read', 'eleves.write', 'paiements.read'],
+    permissions: ['eleves.read', 'eleves.write', 'paiements.read', 'paiements.write'],
     restrictions: ['INTERDICTION_CAISSE'],
   },
   DIRECTEUR_DISCIPLINE: {

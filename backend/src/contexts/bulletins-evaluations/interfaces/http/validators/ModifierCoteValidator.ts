@@ -18,6 +18,7 @@ export class ModifierCoteValidator {
       nouvelleCote: ValidationHttpBulletinsEvaluations.lireEntierRequis(donnees, 'nouvelleCote'),
       versionAttendue: ValidationHttpBulletinsEvaluations.lireEntierRequis(donnees, 'versionAttendue'),
       idUtilisateur: ValidationHttpBulletinsEvaluations.lireHeaderChaineRequise(headers, 'x-user-id'),
+      idOrganisation: ValidationHttpBulletinsEvaluations.lireHeaderChaine(headers, 'x-organisation-id'),
       cleIdempotence: ValidationHttpBulletinsEvaluations.lireHeaderChaine(headers, 'x-idempotency-key'),
     };
   }

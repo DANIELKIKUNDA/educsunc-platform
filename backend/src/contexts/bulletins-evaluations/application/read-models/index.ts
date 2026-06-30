@@ -27,6 +27,7 @@ export * from './EleveEchecReadModel';
 export * from './CoursProblematiqueReadModel';
 export * from './EvolutionResultatReadModel';
 export * from './ComparatifClasseReadModel';
+export * from './ConduiteClasseReadModel';
 export * from './EligibilitePerequationReadModel';
 export * from './EligibiliteRepechageReadModel';
 export * from './DossierDeliberationReadModel';

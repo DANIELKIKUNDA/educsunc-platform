@@ -10,6 +10,7 @@ import { ObligationFinanciereEleve } from '../../../../domain/aggregates/Obligat
 import { Paiement } from '../../../../domain/aggregates/Paiement';
 import { ParametresPaiementEcole } from '../../../../domain/aggregates/ParametresPaiementEcole';
 import { PlanAnticipationFrais } from '../../../../domain/aggregates/PlanAnticipationFrais';
+import { QualificationFinanciereEleve } from '../../../../domain/aggregates/QualificationFinanciereEleve';
 import { RecuPaiement } from '../../../../domain/aggregates/RecuPaiement';
 import { Restitution } from '../../../../domain/aggregates/Restitution';
 import {
@@ -36,8 +37,10 @@ import { StatutCaisse } from '../../../../domain/value-objects/StatutCaisse';
 import { StatutDette } from '../../../../domain/value-objects/StatutDette';
 import { StatutExoneration } from '../../../../domain/value-objects/StatutExoneration';
 import { StatutPaiement } from '../../../../domain/value-objects/StatutPaiement';
+import { StatutQualificationFinanciereEleve } from '../../../../domain/value-objects/StatutQualificationFinanciereEleve';
 import { StatutRecu } from '../../../../domain/value-objects/StatutRecu';
 import { TrancheFraisEtat } from '../../../../domain/value-objects/TrancheFraisEtat';
+import { CodeQualificationFinanciereEleve } from '../../../../domain/value-objects/CodeQualificationFinanciereEleve';
 import { TypeExoneration } from '../../../../domain/value-objects/TypeExoneration';
 import { TypeFrais } from '../../../../domain/value-objects/TypeFrais';
 import { TypeOperationCaisse } from '../../../../domain/value-objects/TypeOperationCaisse';
@@ -231,6 +234,22 @@ export interface PersistanceExonerationPostgres {
   valide_par: string;
   validee_le: Date | string;
   statut: StatutExoneration;
+}
+
+export interface PersistanceQualificationFinanciereElevePostgres {
+  id: string;
+  id_organisation: string | null;
+  id_ecole: string;
+  id_eleve: string;
+  code_qualification: CodeQualificationFinanciereEleve;
+  actif: boolean;
+  date_debut_effet: string | null;
+  date_fin_effet: string | null;
+  details: Record<string, unknown> | null;
+  raison: string | null;
+  cree_par: string;
+  cree_le: Date | string;
+  version: number;
 }
 
 export interface PersistancePlanAnticipationFraisPostgres {
@@ -824,6 +843,48 @@ export class MappersPaiementsPostgres extends BaseMapperPostgresPaiementsFactura
       validePar: ligne.valide_par,
       valideeLe: this.versDate(ligne.validee_le, 'validee_le'),
       statut: ligne.statut,
+    });
+  }
+
+  public static versPersistanceQualificationFinanciereEleve(
+    qualification: QualificationFinanciereEleve,
+  ): PersistanceQualificationFinanciereElevePostgres {
+    return {
+      id: qualification.obtenirId(),
+      id_organisation: qualification.obtenirIdOrganisation() ?? null,
+      id_ecole: qualification.obtenirIdEcole(),
+      id_eleve: qualification.obtenirIdEleve(),
+      code_qualification: qualification.obtenirCodeQualification(),
+      actif: qualification.obtenirStatut() === StatutQualificationFinanciereEleve.ACTIVE,
+      date_debut_effet: qualification.obtenirDateDebutEffet() ?? null,
+      date_fin_effet: qualification.obtenirDateFinEffet() ?? null,
+      details: qualification.obtenirDetails() ?? null,
+      raison: qualification.obtenirRaison() ?? null,
+      cree_par: qualification.obtenirCreePar(),
+      cree_le: qualification.obtenirCreeLe(),
+      version: qualification.obtenirVersion(),
+    };
+  }
+
+  public static depuisPersistanceQualificationFinanciereEleve(
+    ligne: PersistanceQualificationFinanciereElevePostgres,
+  ): QualificationFinanciereEleve {
+    return new QualificationFinanciereEleve({
+      idQualification: ligne.id,
+      idOrganisation: ligne.id_organisation ?? undefined,
+      idEcole: ligne.id_ecole,
+      idEleve: ligne.id_eleve,
+      codeQualification: ligne.code_qualification,
+      statut: ligne.actif
+        ? StatutQualificationFinanciereEleve.ACTIVE
+        : StatutQualificationFinanciereEleve.DESACTIVEE,
+      raison: ligne.raison ?? undefined,
+      details: ligne.details ?? undefined,
+      dateDebutEffet: ligne.date_debut_effet ?? undefined,
+      dateFinEffet: ligne.date_fin_effet ?? undefined,
+      creePar: ligne.cree_par,
+      creeLe: this.versDate(ligne.cree_le, 'cree_le'),
+      version: ligne.version,
     });
   }
 

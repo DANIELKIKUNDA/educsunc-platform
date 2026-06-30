@@ -1,4 +1,5 @@
 import { UseCase } from '../../../../../shared/application/UseCase';
+import { DepotEleve } from '../../../domain/repositories/DepotEleve';
 import { DepotFamille } from '../../../domain/repositories/DepotFamille';
 import { PaginationEntreeDTO } from '../../dto/input/PaginationEntreeDTO';
 import { FamilleSortieDTO } from '../../dto/output/FamilleSortieDTO';
@@ -12,12 +13,16 @@ export interface ListerFamillesEntree extends PaginationEntreeDTO {
   idOrganisation: string;
   idEcole: string;
   idUtilisateur: string;
+  nomFamille?: string;
+  nomResponsable?: string;
+  nomEleve?: string;
 }
 
 /** Ce cas d'usage liste les familles d'une ecole avec pagination. */
 export class ListerFamilles implements UseCase<ListerFamillesEntree, PageResultatSortieDTO<FamilleSortieDTO>> {
   constructor(
     private readonly depotFamille: DepotFamille,
+    private readonly depotEleve: DepotEleve,
     private readonly autorisationFamille?: AutorisationFamillePort,
     private readonly servicePagination: ServiceApplicationPagination = new ServiceApplicationPagination(),
   ) {}
@@ -32,10 +37,49 @@ export class ListerFamilles implements UseCase<ListerFamillesEntree, PageResulta
 
     const pagination = this.servicePagination.normaliser(entree);
     const familles = await this.depotFamille.listerParEcole(entree.idEcole);
+    const nomFamille = entree.nomFamille?.trim().toLowerCase();
+    const nomResponsable = entree.nomResponsable?.trim().toLowerCase();
+    const nomEleve = entree.nomEleve?.trim().toLowerCase();
+
+    const famillesFiltrees: typeof familles = [];
+
+    for (const famille of familles) {
+      const proprietes = famille.versProprietes();
+
+      if (nomFamille && !proprietes.nomFamille.toLowerCase().includes(nomFamille)) {
+        continue;
+      }
+
+      if (
+        nomResponsable
+        && !proprietes.responsables.some((responsable) =>
+          responsable.obtenirNomComplet().toLowerCase().includes(nomResponsable))
+      ) {
+        continue;
+      }
+
+      if (nomEleve) {
+        const elevesLies = await this.depotEleve.trouverParFamille(famille.obtenirId());
+        const eleveCorrespond = elevesLies.some((eleve) =>
+          [eleve.obtenirNom(), eleve.obtenirPostNom(), eleve.obtenirPrenom()]
+            .filter(Boolean)
+            .join(' ')
+            .toLowerCase()
+            .includes(nomEleve));
+
+        if (!eleveCorrespond) {
+          continue;
+        }
+      }
+
+      famillesFiltrees.push(famille);
+    }
 
     return {
-      donnees: this.servicePagination.paginer(familles, pagination).map(FamilleMapper.versSortie),
-      total: familles.length,
+      donnees: this.servicePagination
+        .paginer(famillesFiltrees, pagination)
+        .map((famille) => FamilleMapper.versSortie(famille)),
+      total: famillesFiltrees.length,
       page: pagination.page,
       taillePage: pagination.taillePage,
     };

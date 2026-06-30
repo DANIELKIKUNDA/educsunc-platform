@@ -18,6 +18,7 @@ import { Migration_014_AddConsultationHistoriqueDelegueeParametresPaiement } fro
 import { Migration_015_IndustrialiserRecusOfficiels } from './Migration_015_IndustrialiserRecusOfficiels';
 import { Migration_016_AssetsDocumentairesRecus } from './Migration_016_AssetsDocumentairesRecus';
 import { Migration_017_AddExonerationDelegueeParametresPaiement } from './Migration_017_AddExonerationDelegueeParametresPaiement';
+import { Migration_018_CreateQualificationsFinancieresEleves } from './Migration_018_CreateQualificationsFinancieresEleves';
 
 // Ce fichier execute sequentiellement les migrations PostgreSQL du BC Paiements.
 export class MigrateurPostgresPaiementsFacturation {
@@ -39,6 +40,7 @@ export class MigrateurPostgresPaiementsFacturation {
     new Migration_015_IndustrialiserRecusOfficiels(),
     new Migration_016_AssetsDocumentairesRecus(),
     new Migration_017_AddExonerationDelegueeParametresPaiement(),
+    new Migration_018_CreateQualificationsFinancieresEleves(),
   ];
 
   constructor(

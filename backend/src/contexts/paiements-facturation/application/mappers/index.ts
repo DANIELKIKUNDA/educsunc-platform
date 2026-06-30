@@ -4,3 +4,4 @@ export * from './DetteEleveApplicationMapper';
 export * from './PaiementApplicationMapper';
 export * from './CaisseApplicationMapper';
 export * from './ExonerationApplicationMapper';
+export * from './QualificationFinanciereEleveApplicationMapper';

@@ -7,6 +7,7 @@ export interface EncoderCoteInput {
   cote: number;
   versionAttendue: number;
   idUtilisateur: string;
+  idOrganisation?: string;
   cleIdempotence?: string;
   origineSynchronisation?: 'ONLINE' | 'OFFLINE';
 }

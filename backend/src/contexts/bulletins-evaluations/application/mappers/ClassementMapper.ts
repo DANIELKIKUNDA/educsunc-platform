@@ -12,6 +12,7 @@ export class ClassementMapper {
       codeColonne: classement.obtenirCodeColonne(),
       lignes: classement.obtenirLignesClassement().map((ligne) => ({
         idEleve: ligne.obtenirIdEleve(),
+        nomComplet: ligne.obtenirNomComplet(),
         sexe: ligne.obtenirSexe(),
         totalObtenu: ligne.obtenirTotalObtenu(),
         maximumGeneral: ligne.obtenirMaximumGeneral(),

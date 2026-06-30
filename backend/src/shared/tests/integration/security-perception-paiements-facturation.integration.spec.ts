@@ -60,6 +60,13 @@ test('SECURITY applique la doctrine locale de perception des paiements', async (
     ecoleId: TENANT_FIXTURES.ecoleA1,
     sectionId: WORKFLOW_FIXTURES.sectionSecondaire,
   });
+  const prefetLectureSeulement = await bootstrap.creerActeur({
+    ...ROLE_FIXTURES.PREFET,
+    permissions: ROLE_FIXTURES.PREFET.permissions.filter((permission) => permission !== 'paiements.write'),
+    organisationId: TENANT_FIXTURES.organisationA,
+    ecoleId: TENANT_FIXTURES.ecoleA1,
+    sectionId: WORKFLOW_FIXTURES.sectionSecondaire,
+  });
   const administrateur = await bootstrap.creerActeur({
     ...ROLE_FIXTURES.ADMIN_ECOLE,
     organisationId: TENANT_FIXTURES.organisationA,
@@ -120,6 +127,14 @@ test('SECURITY applique la doctrine locale de perception des paiements', async (
 
   await assert.rejects(() => adaptateurSecondaire.verifierPerceptionPaiement({
     idUtilisateur: enseignant.utilisateurId,
+    idOrganisation: TENANT_FIXTURES.organisationA,
+    idEcole: TENANT_FIXTURES.ecoleA1,
+    idEleve: WORKFLOW_FIXTURES.eleveA,
+    typeFrais: TypeFrais.FRAIS_PARTICIPATION_EXETAT,
+  }));
+
+  await assert.rejects(() => adaptateurSecondaire.verifierPerceptionPaiement({
+    idUtilisateur: prefetLectureSeulement.utilisateurId,
     idOrganisation: TENANT_FIXTURES.organisationA,
     idEcole: TENANT_FIXTURES.ecoleA1,
     idEleve: WORKFLOW_FIXTURES.eleveA,

@@ -17,6 +17,7 @@ export class EncoderCoteValidator {
       cote: ValidationHttpBulletinsEvaluations.lireEntierRequis(donnees, 'cote'),
       versionAttendue: ValidationHttpBulletinsEvaluations.lireEntierRequis(donnees, 'versionAttendue'),
       idUtilisateur: ValidationHttpBulletinsEvaluations.lireHeaderChaineRequise(headers, 'x-user-id'),
+      idOrganisation: ValidationHttpBulletinsEvaluations.lireHeaderChaine(headers, 'x-organisation-id'),
       cleIdempotence: ValidationHttpBulletinsEvaluations.lireHeaderChaine(headers, 'x-idempotency-key'),
       origineSynchronisation: ValidationHttpBulletinsEvaluations.lireHeaderChaine(headers, 'x-sync-origin') as
         | 'ONLINE'

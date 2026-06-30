@@ -156,7 +156,7 @@ export class AutorisationPerceptionPaiementAdapter
 
     await this.securityFacade.verifierAcces({
       idUtilisateur: params.idUtilisateur,
-      permissionDemandee: 'paiements.read',
+      permissionDemandee: 'paiements.write',
       idOrganisation: params.idOrganisation,
       idEcole: params.idEcole,
       idSection: section.idSectionScolaire,

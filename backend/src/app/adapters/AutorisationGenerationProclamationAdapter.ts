@@ -1,4 +1,6 @@
 import type { AutorisationGenerationProclamationPort } from '../../contexts/bulletins-evaluations/application/ports/out/AutorisationGenerationProclamationPort';
+import { ApplicationException } from '../../contexts/bulletins-evaluations/application/exceptions/ApplicationException';
+import { SecurityCapacitesEffectivesService } from '../../shared/security/application/services/SecurityCapacitesEffectivesService';
 import { SecurityFacade } from '../../shared/security/application/services/SecurityFacade';
 import {
   PermissionCacheService,
@@ -15,23 +17,50 @@ import {
 } from '../../shared/security/domain';
 import { ResponsabiliteClassePedagogiqueAdapter } from './ResponsabiliteClassePedagogiqueAdapter';
 
+interface DependancesAutorisationGenerationProclamationAdapter {
+  securityFacade?: Pick<SecurityFacade, 'verifierAcces'>;
+  securityCapacitesEffectivesService?: Pick<
+    SecurityCapacitesEffectivesService,
+    'calculerPourUtilisateur'
+  >;
+}
+
 // Cet adaptateur relit shared/security pour verrouiller localement l'initialisation et la generation de proclamation.
 export class AutorisationGenerationProclamationAdapter
   implements AutorisationGenerationProclamationPort
 {
   private readonly responsabiliteClassePedagogiqueAdapter = new ResponsabiliteClassePedagogiqueAdapter();
-  private readonly securityFacade = new SecurityFacade(
-    new PostgresRoleRepository(),
-    new PostgresAffectationUtilisateurRepository(),
-    new PostgresAffectationTitulariatRepository(),
-    new PermissionCacheService(),
-    new MoteurAutorisation(),
-    new MoteurScope(),
-    new MoteurRestrictionsMetier(),
-    new MoteurCapacitesEffectives(),
-    new SecurityAuditInfrastructureService(),
-    this.responsabiliteClassePedagogiqueAdapter,
-  );
+  private readonly securityCapacitesEffectivesService: Pick<
+    SecurityCapacitesEffectivesService,
+    'calculerPourUtilisateur'
+  >;
+  private readonly securityFacade: Pick<SecurityFacade, 'verifierAcces'>;
+
+  constructor(dependances?: DependancesAutorisationGenerationProclamationAdapter) {
+    this.securityCapacitesEffectivesService =
+      dependances?.securityCapacitesEffectivesService
+      ?? new SecurityCapacitesEffectivesService(
+        new PostgresRoleRepository(),
+        new PostgresAffectationUtilisateurRepository(),
+        new PostgresAffectationTitulariatRepository(),
+        new MoteurCapacitesEffectives(),
+        this.responsabiliteClassePedagogiqueAdapter,
+      );
+    this.securityFacade =
+      dependances?.securityFacade
+      ?? new SecurityFacade(
+        new PostgresRoleRepository(),
+        new PostgresAffectationUtilisateurRepository(),
+        new PostgresAffectationTitulariatRepository(),
+        new PermissionCacheService(),
+        new MoteurAutorisation(),
+        new MoteurScope(),
+        new MoteurRestrictionsMetier(),
+        new MoteurCapacitesEffectives(),
+        new SecurityAuditInfrastructureService(),
+        this.responsabiliteClassePedagogiqueAdapter,
+      );
+  }
 
   public async verifierInitialisationProclamation(params: {
     idUtilisateur: string;
@@ -72,5 +101,23 @@ export class AutorisationGenerationProclamationAdapter
       idClasse: params.idClassePedagogique,
       idAnneeScolaire: params.idAnneeScolaire,
     });
+
+    const capacites = await this.securityCapacitesEffectivesService.calculerPourUtilisateur({
+      idUtilisateur: params.idUtilisateur,
+      idOrganisationActive: params.idOrganisation,
+      idEcoleActive: params.idEcole,
+      idClasse: params.idClassePedagogique,
+      idAnneeScolaire: params.idAnneeScolaire,
+    });
+
+    if (
+      !capacites.permissions.includes('proclamations.generate')
+      || !capacites.estTitulaireEffectif
+    ) {
+      throw new ApplicationException(
+        "L'utilisateur demandeur n'est pas autorise a generer cette proclamation.",
+        'PROCLAMATION_GENERATION_ACCES_REFUSE',
+      );
+    }
   }
 }

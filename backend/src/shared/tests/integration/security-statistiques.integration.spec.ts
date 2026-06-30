@@ -42,7 +42,11 @@ test('SECURITY applique bien les regles locales de consultation des statistiques
     organisationId: TENANT_FIXTURES.organisationA,
     ecoleId: TENANT_FIXTURES.ecoleA1,
   });
-
+  const promoteurOrganisation = await bootstrap.creerActeur({
+    ...ROLE_FIXTURES.PROMOTEUR_ORGANISATION,
+    organisationId: TENANT_FIXTURES.organisationA,
+    ecoleId: TENANT_FIXTURES.ecoleA1,
+  });
   const adaptateur = new AutorisationConsultationStatistiquesAdapter({
     async resoudreSectionClasse({ idClassePedagogique }) {
       if (idClassePedagogique === WORKFLOW_FIXTURES.classeA) {
@@ -73,19 +77,22 @@ test('SECURITY applique bien les regles locales de consultation des statistiques
     idAnneeScolaire: WORKFLOW_FIXTURES.anneeScolaireId,
   });
 
-  await adaptateur.verifierConsultationStatistiquesEcole({
-    idUtilisateur: administrateur.utilisateurId,
-    idOrganisation: TENANT_FIXTURES.organisationA,
-    idEcole: TENANT_FIXTURES.ecoleA1,
-    idAnneeScolaire: WORKFLOW_FIXTURES.anneeScolaireId,
-  });
-
   await assert.rejects(
     () => adaptateur.verifierConsultationStatistiquesClasse({
       idUtilisateur: enseignant.utilisateurId,
       idOrganisation: TENANT_FIXTURES.organisationA,
       idEcole: TENANT_FIXTURES.ecoleA1,
       idClassePedagogique: WORKFLOW_FIXTURES.classeA,
+      idAnneeScolaire: WORKFLOW_FIXTURES.anneeScolaireId,
+    }),
+    /pas autorise/i,
+  );
+
+  await assert.rejects(
+    () => adaptateur.verifierConsultationStatistiquesEcole({
+      idUtilisateur: administrateur.utilisateurId,
+      idOrganisation: TENANT_FIXTURES.organisationA,
+      idEcole: TENANT_FIXTURES.ecoleA1,
       idAnneeScolaire: WORKFLOW_FIXTURES.anneeScolaireId,
     }),
     /pas autorise/i,
@@ -104,6 +111,16 @@ test('SECURITY applique bien les regles locales de consultation des statistiques
   await assert.rejects(
     () => adaptateur.verifierConsultationStatistiquesEcole({
       idUtilisateur: directeurEtudes.utilisateurId,
+      idOrganisation: TENANT_FIXTURES.organisationA,
+      idEcole: TENANT_FIXTURES.ecoleA1,
+      idAnneeScolaire: WORKFLOW_FIXTURES.anneeScolaireId,
+    }),
+    /pas autorise/i,
+  );
+
+  await assert.rejects(
+    () => adaptateur.verifierConsultationStatistiquesEcole({
+      idUtilisateur: promoteurOrganisation.utilisateurId,
       idOrganisation: TENANT_FIXTURES.organisationA,
       idEcole: TENANT_FIXTURES.ecoleA1,
       idAnneeScolaire: WORKFLOW_FIXTURES.anneeScolaireId,
