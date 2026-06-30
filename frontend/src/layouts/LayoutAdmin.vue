@@ -11,7 +11,7 @@ import {
 } from 'lucide-vue-next';
 import { onMounted } from 'vue';
 import { useTheme } from '../composables/useTheme';
-import ThemeToggle from '../modules/referentiel/commun/composants/ThemeToggle.vue';
+import ThemeToggle from '../shared/ui/ThemeToggle.vue';
 
 const { initTheme } = useTheme();
 

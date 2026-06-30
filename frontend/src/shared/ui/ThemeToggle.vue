@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Moon, Sun } from 'lucide-vue-next';
-import { useTheme } from '../../../../composables/useTheme';
+import { useTheme } from '../../composables/useTheme';
 
 const { isDark, toggleTheme } = useTheme();
 </script>
@@ -71,7 +71,7 @@ const { isDark, toggleTheme } = useTheme();
   .theme-label {
     display: none;
   }
-  
+
   .theme-toggle {
     padding: 0.5rem;
   }
