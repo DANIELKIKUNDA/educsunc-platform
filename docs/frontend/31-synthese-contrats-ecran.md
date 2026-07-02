@@ -13,7 +13,7 @@ Il ne cree :
 
 Il consolide simplement ce qui est deja fige dans les documents de contrats d'ecran ouverts a partir de la phase 22.
 
-La suite naturelle de cette cloture est l'ouverture de la conception du shell dans [32-maquettes-shell-global.md](/C:/Users/MON%20PC/Documents/EducSyn/docs/frontend/32-maquettes-shell-global.md).
+La suite naturelle de cette cloture a ete l'ouverture puis la stabilisation du shell dans [32-maquettes-shell-global.md](/C:/Users/MON%20PC/Documents/EducSyn/docs/frontend/32-maquettes-shell-global.md).
 
 ## Objectif
 
@@ -157,6 +157,10 @@ Important :
 
 - cette phase suivante doit rester une implementation de contrats
 - elle ne doit pas redevenir une phase d'audit workflow
+
+Depuis cette synthese, le shell global doctrinal a ete effectivement implemente et stabilise.
+
+La suite n'est donc plus la conception du shell lui-meme, mais l'industrialisation continue des vues metier a l'interieur de cette coque deja posee.
 
 ## Lecture CTO De Cloture
 

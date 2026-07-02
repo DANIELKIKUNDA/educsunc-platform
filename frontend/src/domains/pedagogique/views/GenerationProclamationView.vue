@@ -13,7 +13,7 @@
       </div>
     </SectionBlock>
 
-    <AccessBoundary capability="module.pedagogique.access">
+    <AccessBoundary page-code="PED-003">
       <ErrorState
         v-if="!isAuthorized"
         title="Generation non autorisee"
@@ -108,7 +108,7 @@
             </div>
           </div>
           <div class="pedagogique-actions-row">
-            <button class="pedagogique-primary-action" type="button" :disabled="!canGenerate" @click="generer">
+            <button v-if="canGenerateProclamation" class="pedagogique-primary-action" type="button" :disabled="!canGenerate" @click="generer">
               <FileOutput />
               <span>Generer la proclamation</span>
             </button>
@@ -179,13 +179,14 @@ import PageContainer from '../../../shared/layout/PageContainer.vue';
 import PageHeader from '../../../shared/layout/PageHeader.vue';
 import SectionBlock from '../../../shared/layout/SectionBlock.vue';
 import { sessionStore } from '../../../shared/auth/session.store';
-import { authorizedProclamationGenerationActors } from '../models/proclamation-generation.model';
+import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
 import { useProclamationGenerationStore } from '../stores/proclamation-generation.store';
 
 const route = useRoute();
 const router = useRouter();
 const store = useProclamationGenerationStore();
 const session = sessionStore.state;
+const doctrineAccess = useDoctrineAccess();
 
 const anneeScolaireLabelInput = ref('');
 const classeLabelInput = ref('');
@@ -195,7 +196,8 @@ const codeColonneInput = ref('TOTAL_GENERAL');
 const typeProclamationInput = ref<'PERIODE' | 'EXAMEN' | 'SEMESTRE' | 'TRIMESTRE' | 'ANNUEL'>('ANNUEL');
 const columnOptions = ['P1', 'P2', 'EX1', 'TOTAL_S1', 'P3', 'P4', 'EX2', 'TOTAL_S2', 'TOTAL_GENERAL', 'TOTAL_T1', 'TOTAL_T2', 'P5', 'P6', 'EX3', 'TOTAL_T3'];
 
-const isAuthorized = computed(() => authorizedProclamationGenerationActors.includes(session.actorCode as never));
+const isAuthorized = computed(() => doctrineAccess.canAccessPage('PED-003'));
+const canGenerateProclamation = computed(() => doctrineAccess.canUseAction('pedagogique.proclamations.generate', 'PED-003'));
 const proclamation = computed(() => store.state.proclamation);
 const perimeterMessage = 'Generation bornee a la classe titulaire effective et a la bonne annee scolaire.';
 const missingFields = computed(() => {

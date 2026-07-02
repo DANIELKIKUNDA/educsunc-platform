@@ -1,7 +1,7 @@
 <template>
   <PageContainer>
     <PageHeader eyebrow="ACA-07" title="Programmes niveau" description="Initialisation, consultation, validation, archivage et etat local du programme-niveau." />
-    <AccessBoundary capability="module.academique.access">
+    <AccessBoundary page-code="ACA-LOC-005">
       <ErrorState v-if="!isAuthorized" title="Acces non autorise" message="Cette vue locale academique reste reservee a l administrateur systeme ecole." />
       <template v-else>
         <SectionBlock title="Initialisation locale" description="Le programme-niveau est derive d un referentiel programme et d une version officielle.">
@@ -79,17 +79,14 @@ import LoadingState from '../../../shared/ui/LoadingState.vue';
 import PageContainer from '../../../shared/layout/PageContainer.vue';
 import PageHeader from '../../../shared/layout/PageHeader.vue';
 import SectionBlock from '../../../shared/layout/SectionBlock.vue';
-import { sessionStore } from '../../../shared/auth/session.store';
+import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
 import { tenantContextStore } from '../../../shared/session/tenant-context.store';
-import {
-  authorizedAcademiqueLocalActors,
-} from '../models/academique.model';
 import { useProgrammesNiveauStore } from '../stores/programmes-niveau.store';
 
 const store = useProgrammesNiveauStore();
-const session = sessionStore.state;
 const tenantContext = tenantContextStore.state;
-const isAuthorized = authorizedAcademiqueLocalActors.includes(session.actorCode as never);
+const doctrineAccess = useDoctrineAccess();
+const isAuthorized = doctrineAccess.canAccessPage('ACA-LOC-005');
 const idEcoleInput = ref(tenantContext.schoolId);
 const idAnneeScolaireInput = ref('');
 const idProgrammeNiveauInput = ref('');

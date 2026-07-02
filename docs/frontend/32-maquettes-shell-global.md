@@ -2,7 +2,11 @@
 
 ## Statut
 
-Ce document ouvre la conception officielle du shell global frontend EduSync.
+Ce document a ouvert la conception officielle du shell global frontend EduSync.
+
+Le shell global doctrinal est maintenant implemente et stabilise dans le frontend Vue.
+
+Le present document reste la specification de reference de cette couche.
 
 Il ne cree :
 
@@ -74,6 +78,57 @@ Il ne porte pas directement :
 - la logique metier fine d'un ecran
 - la totalite des actions d'un workflow
 - les validations fonctionnelles profondes
+
+## Etat Reel D'Implementation
+
+Le shell global est maintenant materialise dans le frontend autour de :
+
+- `frontend/src/shell/AppShellDesktop.vue`
+- `frontend/src/shell/AppShellMobile.vue`
+- `frontend/src/shell/components/AppSidebar.vue`
+- `frontend/src/shell/components/AppTopbar.vue`
+- `frontend/src/shell/components/AppDrawerMobile.vue`
+- `frontend/src/shell/components/ContextSwitcher.vue`
+- `frontend/src/shell/components/UserMenu.vue`
+- `frontend/src/shared/doctrine/frontend-doctrine.ts`
+- `frontend/src/shared/doctrine/doctrine.resolver.ts`
+- `frontend/src/shared/navigation/navigation.builder.ts`
+- `frontend/src/router/guards.ts`
+
+Le principe effectivement retenu en code est :
+
+acteur
+-> niveau de gouvernance actif
+-> pages accessibles par doctrine
+-> modules visibles
+-> sous-menus visibles
+-> actions visibles dans les ecrans
+
+Le shell n'est donc plus un shell statique par domaine.
+
+Il est devenu un shell doctrinal compose a partir de la source de verite frontend.
+
+Les pages racines de module ne sont plus de simples placeholders visuels :
+
+- elles relisent la doctrine active
+- elles recomposent les acces visibles du module courant
+- elles exposent les pages et actions reelles du profil courant
+
+## Verifications De Figement
+
+Les verifications suivantes ont ete confirmees sur l'implementation reelle :
+
+1. les pages d'accueil doctrinales des acteurs existants sont resolues et accessibles
+2. la navigation laterale est calculee a partir de la doctrine active
+3. le garde-route refuse les pages non autorisees et redirige vers une route ouvrable
+4. la topbar relit la doctrine pour le titre courant et la recherche
+5. un module sans sous-menu visible ne devient pas un lien mort dans le shell
+6. le changement d'acteur et de contexte recompose la navigation visible
+7. les centres de module se recomposent eux aussi depuis les pages et actions visibles
+
+Verification technique :
+
+- `npm run build` : OK
 
 ## Doctrine De Conception
 
@@ -484,10 +539,12 @@ Avant de coder le shell global, il faudra verifier pour chaque variante :
 
 ## Verdict
 
-Le shell global EduSync peut maintenant etre concu comme une vraie coque produit de haut niveau, sans reouvrir les workflows ni improviser la structure d'experience.
+Le shell global EduSync est maintenant implemente comme une vraie coque produit de haut niveau, sans reouvrir les workflows ni improviser la structure d'experience.
 
-La prochaine etape legitime apres ce document est :
+Le statut retenu est :
 
-- maquette visuelle concrete du shell
-- puis implementation du shell frontend
-- puis declinaison ecran par ecran des modules prioritaires
+- doctrine shell : figee
+- shell doctrinal frontend : implemente
+- navigation par acteur : stabilisee
+- centres de module doctrinaux : implementes
+- prochaine etape legitime : poursuite et finition des ecrans metier dans le shell stabilise

@@ -51,7 +51,7 @@
       </div>
     </SectionBlock>
 
-    <AccessBoundary capability="module.finances.access">
+    <AccessBoundary page-code="VF-03">
       <template v-if="uiState === 'loading'">
         <LoadingState title="Chargement de la synthese section" message="Consolidation des classes de la section en cours." />
       </template>
@@ -224,8 +224,8 @@ import PermissionTag from '../../../shared/ui/PermissionTag.vue';
 import LoadingState from '../../../shared/ui/LoadingState.vue';
 import ErrorState from '../../../shared/ui/ErrorState.vue';
 import EmptyState from '../../../shared/ui/EmptyState.vue';
+import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
 import {
-  authorizedSectionFinancialSummaryActors,
   type SectionFinancialSummaryFilters,
 } from '../models/section-financial-summary.model';
 import { useSectionFinancialSummaryStore } from '../stores/section-financial-summary.store';
@@ -235,6 +235,7 @@ const session = sessionStore.state;
 const route = useRoute();
 const router = useRouter();
 const summaryStore = useSectionFinancialSummaryStore();
+const doctrineAccess = useDoctrineAccess();
 
 const idAnneeScolaireInput = ref('');
 const anneeScolaireLabelInput = ref('');
@@ -253,9 +254,7 @@ const typeFraisOptions = [
   { value: 'AUTRE', label: 'Autre' },
 ];
 
-const isAuthorized = computed(() =>
-  authorizedSectionFinancialSummaryActors.includes(session.actorCode as never),
-);
+const isAuthorized = computed(() => doctrineAccess.canAccessPage('VF-03'));
 const summary = computed(() => summaryStore.state.summary);
 const technicalErrorMessage = computed(() =>
   summaryStore.state.errorMessage ?? 'Le backend n a pas pu restituer la synthese financiere de section.',

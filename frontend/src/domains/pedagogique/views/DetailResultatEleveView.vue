@@ -48,7 +48,7 @@
       </div>
     </SectionBlock>
 
-    <AccessBoundary capability="module.pedagogique.access">
+    <AccessBoundary page-code="PED-DET-001">
       <template v-if="uiState === 'loading'">
         <LoadingState
           title="Chargement du detail resultat"
@@ -409,8 +409,8 @@ import ContextBadge from '../../../shared/ui/ContextBadge.vue';
 import PermissionTag from '../../../shared/ui/PermissionTag.vue';
 import { activeContextStore } from '../../../shared/session/active-context.store';
 import { sessionStore } from '../../../shared/auth/session.store';
+import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
 import {
-  authorizedPedagogicalAnalysisActors,
   type PedagogicalAnalysisFilters,
 } from '../models/pedagogical-analysis.model';
 import { useStudentResultDetailStore } from '../stores/student-result-detail.store';
@@ -420,6 +420,7 @@ const router = useRouter();
 const context = activeContextStore.state;
 const session = sessionStore.state;
 const detailStore = useStudentResultDetailStore();
+const doctrineAccess = useDoctrineAccess();
 
 const idAnneeScolaireInput = ref('');
 const anneeScolaireLabelInput = ref('');
@@ -466,9 +467,7 @@ const columnLabels: Record<string, string> = {
   TOTAL_T3: 'Total trimestre 3',
 };
 
-const isAuthorized = computed(() =>
-  authorizedPedagogicalAnalysisActors.includes(session.actorCode as never),
-);
+const isAuthorized = computed(() => doctrineAccess.canAccessPage('PED-DET-001'));
 const detail = computed(() => detailStore.state.detail);
 const canLoad = computed(() =>
   idAnneeScolaireInput.value.trim().length > 0 && idEleveInput.value.trim().length > 0,

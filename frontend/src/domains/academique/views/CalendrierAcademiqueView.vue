@@ -1,7 +1,7 @@
 <template>
   <PageContainer>
     <PageHeader eyebrow="ACA-06" title="Calendrier academique" description="Creation, consultation, ajustement, validation et verrouillage du calendrier academique local." />
-    <AccessBoundary capability="module.academique.access">
+    <AccessBoundary page-code="ACA-LOC-004">
       <ErrorState v-if="!isAuthorized" title="Acces non autorise" message="Cette vue locale academique reste reservee a l administrateur systeme ecole." />
       <template v-else>
         <SectionBlock title="Calendrier cible" description="Le backend porte la vraie logique de calendrier et de ses periodes.">
@@ -54,15 +54,14 @@ import LoadingState from '../../../shared/ui/LoadingState.vue';
 import PageContainer from '../../../shared/layout/PageContainer.vue';
 import PageHeader from '../../../shared/layout/PageHeader.vue';
 import SectionBlock from '../../../shared/layout/SectionBlock.vue';
-import { sessionStore } from '../../../shared/auth/session.store';
+import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
 import { tenantContextStore } from '../../../shared/session/tenant-context.store';
-import { authorizedAcademiqueLocalActors } from '../models/academique.model';
 import { useCalendrierAcademiqueStore } from '../stores/calendrier-academique.store';
 
 const store = useCalendrierAcademiqueStore();
-const session = sessionStore.state;
 const tenantContext = tenantContextStore.state;
-const isAuthorized = authorizedAcademiqueLocalActors.includes(session.actorCode as never);
+const doctrineAccess = useDoctrineAccess();
+const isAuthorized = doctrineAccess.canAccessPage('ACA-LOC-004');
 const idEcoleInput = ref(tenantContext.schoolId);
 const idAnneeScolaireInput = ref('');
 const typeStructureEvaluationInput = ref('');

@@ -23,7 +23,7 @@
       </template>
     </PageHeader>
 
-    <SectionBlock title="Perimetre de lecture" description="La consultation reste bornee a l ecole complete pour le caissier et a la section utile pour les acteurs pedagogiques.">
+    <SectionBlock title="Perimetre de lecture" description="La consultation reste bornee a l ecole active selon la doctrine effectivement exposee a ce stade.">
       <div class="scolarite-hero">
         <div class="scolarite-hero__lead">
           <div class="scolarite-hero__icon">
@@ -43,11 +43,11 @@
       </div>
     </SectionBlock>
 
-    <AccessBoundary capability="module.scolarite.access">
+    <AccessBoundary page-code="SCO-002">
       <ErrorState
         v-if="!isAuthorized"
         title="Lecture eleves non autorisee"
-        message="Cette vue reste reservee au caissier et aux gestionnaires pedagogiques dans leur section."
+        message="Cette vue reste reservee aux acteurs explicitement autorises par la doctrine active."
       />
 
       <template v-else>
@@ -56,7 +56,7 @@
             <div class="scolarite-kpi-card">
               <small>Acteur</small>
               <strong>{{ session.actorLabel }}</strong>
-              <span>{{ session.actorCode === 'CAISSIER' ? 'Lecture ecole complete' : 'Lecture sectionnelle' }}</span>
+              <span>Lecture ecole complete</span>
             </div>
             <div class="scolarite-kpi-card">
               <small>Resultats visibles</small>
@@ -233,14 +233,15 @@ import ContextBadge from '../../../shared/ui/ContextBadge.vue';
 import PermissionTag from '../../../shared/ui/PermissionTag.vue';
 import { sessionStore } from '../../../shared/auth/session.store';
 import { activeContextStore } from '../../../shared/session/active-context.store';
-import { authorizedElevesActors } from '../models/scolarite.model';
+import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
 import { mapperElevesCsv, mapperNomCompletEleve } from '../mappers/students.mapper';
 import { useStudentsStore } from '../stores/students.store';
 
 const store = useStudentsStore();
 const session = sessionStore.state;
 const context = activeContextStore.state;
-const isAuthorized = computed(() => authorizedElevesActors.includes(session.actorCode as never));
+const doctrineAccess = useDoctrineAccess();
+const isAuthorized = computed(() => doctrineAccess.canAccessPage('SCO-002'));
 const filters = reactive({
   nom: '',
   postNom: '',
@@ -261,14 +262,10 @@ const hasSearch = computed(() =>
   ),
 );
 
-const perimeterLabel = computed(() =>
-  session.actorCode === 'CAISSIER' ? `Ecole ${context.schoolName}` : `Section ${context.sectionName}`,
-);
+const perimeterLabel = computed(() => `Ecole ${context.schoolName}`);
 
 const perimeterMessage = computed(() =>
-  session.actorCode === 'CAISSIER'
-    ? 'Le caissier consulte les eleves de toute son ecole, sans sortir de son tenant actif.'
-    : 'Les acteurs pedagogiques consultent uniquement les eleves de leur section effective.',
+  'La lecture exposee ici reste actuellement bornee a l ecole active definie dans le contexte.',
 );
 
 function nomComplet(entry: { nom: string; postNom: string; prenom?: string }): string {

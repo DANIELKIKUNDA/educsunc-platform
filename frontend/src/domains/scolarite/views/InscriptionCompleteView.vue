@@ -43,7 +43,7 @@
       </div>
     </SectionBlock>
 
-    <AccessBoundary capability="module.scolarite.access">
+    <AccessBoundary page-code="SCO-001">
       <ErrorState
         v-if="!isAuthorized"
         title="Inscription non autorisee"
@@ -268,7 +268,7 @@
             </div>
 
             <div class="scolarite-actions-row">
-              <button class="scolarite-primary-action" type="button" :disabled="!canSubmit" @click="soumettre">
+              <button v-if="canWriteEnrollment" class="scolarite-primary-action" type="button" :disabled="!canSubmit" @click="soumettre">
                 <Save />
                 <span>Enregistrer l inscription complete</span>
               </button>
@@ -343,13 +343,15 @@ import ContextBadge from '../../../shared/ui/ContextBadge.vue';
 import PermissionTag from '../../../shared/ui/PermissionTag.vue';
 import { sessionStore } from '../../../shared/auth/session.store';
 import { activeContextStore } from '../../../shared/session/active-context.store';
-import { authorizedInscriptionActors } from '../models/scolarite.model';
+import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
 import { useEnrollmentStore } from '../stores/enrollment.store';
 
 const store = useEnrollmentStore();
 const session = sessionStore.state;
 const context = activeContextStore.state;
-const isAuthorized = computed(() => authorizedInscriptionActors.includes(session.actorCode as never));
+const doctrineAccess = useDoctrineAccess();
+const isAuthorized = computed(() => doctrineAccess.canAccessPage('SCO-001'));
+const canWriteEnrollment = computed(() => doctrineAccess.canUseAction('scolarite.inscription.write', 'SCO-001'));
 const hasAffectation = ref(true);
 
 const eleve = reactive({

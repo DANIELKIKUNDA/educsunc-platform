@@ -1,4 +1,6 @@
-import { reactive } from 'vue';
+import { reactive, watchEffect } from 'vue';
+import { sessionStore } from '../auth/session.store';
+import { activeContextStore } from './active-context.store';
 
 export interface TenantContextState {
   organizationId: string;
@@ -6,15 +8,16 @@ export interface TenantContextState {
   userId: string;
 }
 
-function lireVariableEnvironnement(nom: string): string {
-  const valeur = import.meta.env[nom];
-  return typeof valeur === 'string' ? valeur.trim() : '';
-}
-
 const state = reactive<TenantContextState>({
-  organizationId: lireVariableEnvironnement('VITE_REFERENTIEL_ORGANISATION_ID'),
-  schoolId: lireVariableEnvironnement('VITE_REFERENTIEL_ECOLE_ID'),
-  userId: lireVariableEnvironnement('VITE_REFERENTIEL_UTILISATEUR_ID'),
+  organizationId: '',
+  schoolId: '',
+  userId: '',
+});
+
+watchEffect(() => {
+  state.organizationId = activeContextStore.state.organizationId;
+  state.schoolId = activeContextStore.state.schoolId;
+  state.userId = sessionStore.state.userId;
 });
 
 export const tenantContextStore = {

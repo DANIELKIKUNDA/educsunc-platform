@@ -6,7 +6,7 @@
       description="Action plateforme de publication officielle d une version de referentiel academique."
     />
 
-    <AccessBoundary capability="module.academique.access">
+    <AccessBoundary page-code="ACA-PUB-001">
       <ErrorState
         v-if="!isAuthorized"
         title="Publication non autorisee"
@@ -94,16 +94,15 @@ import LoadingState from '../../../shared/ui/LoadingState.vue';
 import PageContainer from '../../../shared/layout/PageContainer.vue';
 import PageHeader from '../../../shared/layout/PageHeader.vue';
 import SectionBlock from '../../../shared/layout/SectionBlock.vue';
-import { sessionStore } from '../../../shared/auth/session.store';
+import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
 import {
-  authorizedAcademiqueWriteActors,
   type PublicationReferentielRequest,
 } from '../models/academique.model';
 import { useReferentielAdminStore } from '../stores/referentiel-admin.store';
 
 const store = useReferentielAdminStore();
-const session = sessionStore.state;
-const isAuthorized = authorizedAcademiqueWriteActors.includes(session.actorCode as never);
+const doctrineAccess = useDoctrineAccess();
+const isAuthorized = doctrineAccess.canAccessPage('ACA-PUB-001');
 
 const demande = reactive<PublicationReferentielRequest>({
   idReferentielProgramme: '',

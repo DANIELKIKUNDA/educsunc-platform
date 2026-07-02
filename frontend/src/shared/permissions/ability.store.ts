@@ -1,26 +1,31 @@
-import { computed, reactive } from 'vue';
+import { computed } from 'vue';
+import { sessionStore } from '../auth/session.store';
 import type { FrontendCapability } from './ability.types';
+import { buildDoctrineNavigation } from '../doctrine/doctrine.resolver';
+import { activeContextStore } from '../session/active-context.store';
 
-const initialCapabilities: FrontendCapability[] = [
-  'module.finances.access',
-  'module.pedagogique.access',
-  'module.scolarite.access',
-  'module.academique.access',
-  'module.monitoring.access',
-  'module.audit.access',
-  'module.configuration.access',
-  'module.notifications.access',
-  'module.security.access',
-];
+const capabilityToRoutePrefix: Record<FrontendCapability, string> = {
+  'module.finances.access': '/app/finances',
+  'module.pedagogique.access': '/app/pedagogique',
+  'module.scolarite.access': '/app/scolarite',
+  'module.academique.access': '/app/academique',
+  'module.monitoring.access': '/app/monitoring',
+  'module.audit.access': '/app/audit',
+  'module.configuration.access': '/app/configuration',
+  'module.notifications.access': '/app/notifications',
+  'module.security.access': '/app/security',
+};
 
-const state = reactive({
-  capabilities: new Set<FrontendCapability>(initialCapabilities),
-});
+function hasCapability(capability: FrontendCapability): boolean {
+  const moduleRoute = capabilityToRoutePrefix[capability];
+  return buildDoctrineNavigation(sessionStore.state.actorCode, activeContextStore.state.governanceLevel).some((entry) =>
+    entry.route.startsWith(moduleRoute),
+  );
+}
 
 export const abilityStore = {
-  state,
-  has(capability: FrontendCapability): boolean {
-    return state.capabilities.has(capability);
-  },
-  list: computed(() => [...state.capabilities.values()]),
+  has: hasCapability,
+  list: computed(() =>
+    (Object.keys(capabilityToRoutePrefix) as FrontendCapability[]).filter((capability) => hasCapability(capability)),
+  ),
 };

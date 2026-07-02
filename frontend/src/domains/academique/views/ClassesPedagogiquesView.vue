@@ -1,7 +1,7 @@
 <template>
   <PageContainer>
     <PageHeader eyebrow="ACA-04" title="Classes pedagogiques" description="Structure scolaire locale: creation, liste, renommage, desactivation, archivage et lecture des regles de frais." />
-    <AccessBoundary capability="module.academique.access">
+    <AccessBoundary page-code="ACA-LOC-002">
       <ErrorState v-if="!isAuthorized" title="Acces non autorise" message="Cette structure locale reste reservee a l administrateur systeme ecole." />
       <template v-else>
         <SectionBlock title="Creation de classe pedagogique" description="Ouverture locale a partir d une classe academique deja existante.">
@@ -76,15 +76,14 @@ import LoadingState from '../../../shared/ui/LoadingState.vue';
 import PageContainer from '../../../shared/layout/PageContainer.vue';
 import PageHeader from '../../../shared/layout/PageHeader.vue';
 import SectionBlock from '../../../shared/layout/SectionBlock.vue';
-import { sessionStore } from '../../../shared/auth/session.store';
+import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
 import { tenantContextStore } from '../../../shared/session/tenant-context.store';
-import { authorizedAcademiqueLocalActors } from '../models/academique.model';
 import { useClassesPedagogiquesStore } from '../stores/classes-pedagogiques.store';
 
 const store = useClassesPedagogiquesStore();
-const session = sessionStore.state;
 const tenantContext = tenantContextStore.state;
-const isAuthorized = authorizedAcademiqueLocalActors.includes(session.actorCode as never);
+const doctrineAccess = useDoctrineAccess();
+const isAuthorized = doctrineAccess.canAccessPage('ACA-LOC-002');
 const idEcoleInput = ref(tenantContext.schoolId);
 const idAnneeScolaireInput = ref('');
 const traceUtilisateur = ref(tenantContext.userId);

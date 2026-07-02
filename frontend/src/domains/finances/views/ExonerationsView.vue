@@ -42,7 +42,7 @@
       </div>
     </SectionBlock>
 
-    <AccessBoundary capability="module.finances.access">
+    <AccessBoundary page-code="PF-18">
       <template v-if="uiState === 'loading-student' || uiState === 'submitting'">
         <LoadingState
           :title="uiState === 'submitting' ? 'Mutation d exonération en cours' : 'Chargement de la cible d exonération'"
@@ -205,7 +205,7 @@
                 </label>
 
                 <div class="finance-form-actions">
-                  <button class="finance-primary-action" type="button" @click="grantExoneration">
+                  <button v-if="canManageExonerations" class="finance-primary-action" type="button" @click="grantExoneration">
                     <BadgePercent />
                     <span>Accorder l exonération</span>
                   </button>
@@ -241,7 +241,7 @@
                 </label>
 
                 <div class="finance-form-actions">
-                  <button class="finance-secondary-action" type="button" @click="cancelExoneration">
+                  <button v-if="canManageExonerations" class="finance-secondary-action" type="button" @click="cancelExoneration">
                     <Undo2 />
                     <span>Annuler l exonération</span>
                   </button>
@@ -300,8 +300,8 @@ import ErrorState from '../../../shared/ui/ErrorState.vue';
 import EmptyState from '../../../shared/ui/EmptyState.vue';
 import { activeContextStore } from '../../../shared/session/active-context.store';
 import { sessionStore } from '../../../shared/auth/session.store';
+import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
 import {
-  authorizedExonerationActors,
   exonerationTypeOptions,
 } from '../models/exoneration.model';
 import { useExonerationStore } from '../stores/exoneration.store';
@@ -320,6 +320,7 @@ const context = activeContextStore.state;
 const session = sessionStore.state;
 const studentSituationStore = useStudentFinancialSituationStore();
 const exonerationStore = useExonerationStore();
+const doctrineAccess = useDoctrineAccess();
 
 const studentIdInput = ref(typeof route.query.idEleve === 'string' ? route.query.idEleve : '');
 const selectedObligationId = ref('');
@@ -329,9 +330,8 @@ const reasonInput = ref('');
 const cancelExonerationIdInput = ref('');
 const uiState = ref<ExonerationUiState>('idle');
 
-const isAuthorized = computed(() =>
-  authorizedExonerationActors.includes(session.actorCode as never),
-);
+const isAuthorized = computed(() => doctrineAccess.canAccessPage('PF-18'));
+const canManageExonerations = computed(() => doctrineAccess.canUseAction('finances.exonerations.manage', 'PF-18'));
 const profile = computed(() => studentSituationStore.state.profile);
 const obligations = computed(() => studentSituationStore.state.profile?.obligations ?? []);
 const eligibleObligations = computed(() =>

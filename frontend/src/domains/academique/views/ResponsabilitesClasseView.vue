@@ -1,7 +1,7 @@
 <template>
   <PageContainer>
     <PageHeader eyebrow="ACA-05" title="Responsables de classe" description="Attribution, consultation et retrait du responsable officiel d une classe pedagogique." />
-    <AccessBoundary capability="module.academique.access">
+    <AccessBoundary page-code="ACA-LOC-003">
       <ErrorState v-if="!isAuthorized" title="Acces non autorise" message="Cette responsabilite locale reste reservee a l administrateur systeme ecole." />
       <template v-else>
         <SectionBlock title="Gestion du titulaire" description="Le backend attend la classe pedagogique, l annee scolaire et l enseignant cible.">
@@ -38,15 +38,14 @@ import LoadingState from '../../../shared/ui/LoadingState.vue';
 import PageContainer from '../../../shared/layout/PageContainer.vue';
 import PageHeader from '../../../shared/layout/PageHeader.vue';
 import SectionBlock from '../../../shared/layout/SectionBlock.vue';
-import { sessionStore } from '../../../shared/auth/session.store';
+import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
 import { tenantContextStore } from '../../../shared/session/tenant-context.store';
-import { authorizedAcademiqueLocalActors } from '../models/academique.model';
 import { useResponsabilitesClasseStore } from '../stores/responsabilites-classe.store';
 
 const store = useResponsabilitesClasseStore();
-const session = sessionStore.state;
 const tenantContext = tenantContextStore.state;
-const isAuthorized = authorizedAcademiqueLocalActors.includes(session.actorCode as never);
+const doctrineAccess = useDoctrineAccess();
+const isAuthorized = doctrineAccess.canAccessPage('ACA-LOC-003');
 const idClassePedagogiqueInput = ref('');
 const idAnneeScolaireInput = ref('');
 const idUtilisateurEnseignantInput = ref('');

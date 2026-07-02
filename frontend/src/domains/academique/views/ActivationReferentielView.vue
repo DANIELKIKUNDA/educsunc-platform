@@ -6,7 +6,7 @@
       description="Bloc de confirmation simple pour activer une version officielle deja connue."
     />
 
-    <AccessBoundary capability="module.academique.access">
+    <AccessBoundary page-code="ACA-ACT-001">
       <ErrorState
         v-if="!isAuthorized"
         title="Activation non autorisee"
@@ -69,13 +69,12 @@ import LoadingState from '../../../shared/ui/LoadingState.vue';
 import PageContainer from '../../../shared/layout/PageContainer.vue';
 import PageHeader from '../../../shared/layout/PageHeader.vue';
 import SectionBlock from '../../../shared/layout/SectionBlock.vue';
-import { sessionStore } from '../../../shared/auth/session.store';
-import { authorizedAcademiqueWriteActors } from '../models/academique.model';
+import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
 import { useReferentielAdminStore } from '../stores/referentiel-admin.store';
 
 const store = useReferentielAdminStore();
-const session = sessionStore.state;
-const isAuthorized = authorizedAcademiqueWriteActors.includes(session.actorCode as never);
+const doctrineAccess = useDoctrineAccess();
+const isAuthorized = doctrineAccess.canAccessPage('ACA-ACT-001');
 const idVersionInput = ref('');
 
 async function activer(): Promise<void> {

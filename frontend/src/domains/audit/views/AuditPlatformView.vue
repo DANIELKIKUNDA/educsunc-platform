@@ -45,7 +45,7 @@
       </div>
     </SectionBlock>
 
-    <AccessBoundary capability="module.audit.access">
+    <AccessBoundary page-code="AUD-PLAT-001">
       <template v-if="uiState === 'loading'">
         <LoadingState title="Chargement de l audit plateforme" message="Lecture de la liste, de la timeline et de l historique en cours." />
       </template>
@@ -208,13 +208,15 @@ import ErrorState from '../../../shared/ui/ErrorState.vue';
 import LoadingState from '../../../shared/ui/LoadingState.vue';
 import PermissionTag from '../../../shared/ui/PermissionTag.vue';
 import { sessionStore } from '../../../shared/auth/session.store';
+import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
 import { activeContextStore } from '../../../shared/session/active-context.store';
-import { authorizedPlatformAuditActors, serializeAuditTableRows, type AuditEntryViewModel } from '../models/audit.model';
+import { serializeAuditTableRows, type AuditEntryViewModel } from '../models/audit.model';
 import { usePlatformAuditStore } from '../stores/platform-audit.store';
 
 const session = sessionStore.state;
 const context = activeContextStore.state;
 const store = usePlatformAuditStore();
+const doctrineAccess = useDoctrineAccess();
 const activeTab = ref<'liste' | 'timeline' | 'historique'>('liste');
 const selectedEntry = ref<AuditEntryViewModel | null>(null);
 const actionInput = ref('');
@@ -225,9 +227,7 @@ const acteurIdInput = ref('');
 const ressourceIdInput = ref('');
 const correlationIdInput = ref('');
 
-const isAuthorized = computed(() =>
-  authorizedPlatformAuditActors.includes(session.actorCode as never),
-);
+const isAuthorized = computed(() => doctrineAccess.canAccessPage('AUD-PLAT-001'));
 const uiState = computed(() => store.state.status);
 const technicalErrorMessage = computed(() =>
   store.state.errorMessage ?? 'Le backend shared/audit n a pas pu restituer les traces demandées.',

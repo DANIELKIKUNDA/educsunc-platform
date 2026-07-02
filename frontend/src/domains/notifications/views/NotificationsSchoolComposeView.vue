@@ -17,7 +17,7 @@
       </div>
     </SectionBlock>
 
-    <AccessBoundary capability="module.notifications.access">
+    <AccessBoundary page-code="NOTIF-ECO-001">
       <ErrorState
         v-if="!isAuthorized"
         title="Acces non autorise"
@@ -53,7 +53,14 @@
           </div>
 
           <div class="notif-actions">
-            <button class="notif-pill notif-pill--action" type="button" @click="submit">Envoyer</button>
+            <button
+              v-if="canSend"
+              class="notif-pill notif-pill--action"
+              type="button"
+              @click="submit"
+            >
+              Envoyer
+            </button>
           </div>
         </SectionBlock>
 
@@ -90,10 +97,12 @@ import LoadingState from '../../../shared/ui/LoadingState.vue';
 import ErrorState from '../../../shared/ui/ErrorState.vue';
 import { activeContextStore } from '../../../shared/session/active-context.store';
 import { sessionStore } from '../../../shared/auth/session.store';
-import { notificationSchoolReaders, type NotificationChannel } from '../models/notifications.model';
+import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
+import type { NotificationChannel } from '../models/notifications.model';
 import { useNotificationsStore } from '../stores/notifications.store';
 
 const store = useNotificationsStore();
+const doctrineAccess = useDoctrineAccess();
 const context = activeContextStore.state;
 const session = sessionStore.state;
 const channels: readonly NotificationChannel[] = ['EMAIL', 'SMS', 'IN_APP', 'WHATSAPP', 'WEBHOOK', 'PUSH'];
@@ -106,7 +115,8 @@ const form = reactive({
 const destinatairesRaw = ref('');
 const selectedChannels = ref<NotificationChannel[]>(['IN_APP']);
 
-const isAuthorized = computed(() => notificationSchoolReaders.includes(session.actorCode as never));
+const isAuthorized = computed(() => doctrineAccess.canAccessPage('NOTIF-ECO-001'));
+const canSend = computed(() => doctrineAccess.canUseAction('notifications.school.send', 'NOTIF-ECO-001'));
 
 async function submit(): Promise<void> {
   await store.creer({

@@ -13,7 +13,7 @@
       </div>
     </SectionBlock>
 
-    <AccessBoundary capability="module.pedagogique.access">
+    <AccessBoundary page-code="PED-002">
       <ErrorState
         v-if="!isAuthorized"
         title="Generation non autorisee"
@@ -114,7 +114,13 @@
             </div>
           </div>
           <div class="pedagogique-actions-row">
-            <button class="pedagogique-primary-action" type="button" :disabled="!canGenerate" @click="generer">
+            <button
+              v-if="canGenerateBulletin"
+              class="pedagogique-primary-action"
+              type="button"
+              :disabled="!canGenerate"
+              @click="generer"
+            >
               <FileOutput />
               <span>Generer le bulletin</span>
             </button>
@@ -185,13 +191,14 @@ import PageContainer from '../../../shared/layout/PageContainer.vue';
 import PageHeader from '../../../shared/layout/PageHeader.vue';
 import SectionBlock from '../../../shared/layout/SectionBlock.vue';
 import { sessionStore } from '../../../shared/auth/session.store';
-import { authorizedBulletinGenerationActors } from '../models/bulletin-generation.model';
+import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
 import { useBulletinGenerationStore } from '../stores/bulletin-generation.store';
 
 const route = useRoute();
 const router = useRouter();
 const store = useBulletinGenerationStore();
 const session = sessionStore.state;
+const doctrineAccess = useDoctrineAccess();
 
 const anneeScolaireLabelInput = ref('');
 const classeLabelInput = ref('');
@@ -203,7 +210,8 @@ const typeGenerationInput = ref<'BROUILLON' | 'PROGRESSIF' | 'FINALISATION'>('PR
 const versionBulletinInput = ref('');
 const preparerPdfInput = ref(false);
 
-const isAuthorized = computed(() => authorizedBulletinGenerationActors.includes(session.actorCode as never));
+const isAuthorized = computed(() => doctrineAccess.canAccessPage('PED-002'));
+const canGenerateBulletin = computed(() => doctrineAccess.canUseAction('pedagogique.bulletins.generate', 'PED-002'));
 const bulletin = computed(() => store.state.bulletin);
 const perimeterMessage = 'Generation bornee a la classe titulaire effective et a la bonne annee scolaire.';
 const missingFields = computed(() => {

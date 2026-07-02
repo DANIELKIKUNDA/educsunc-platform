@@ -42,7 +42,7 @@
       </div>
     </SectionBlock>
 
-    <AccessBoundary capability="module.finances.access">
+    <AccessBoundary page-code="PF-17">
       <template v-if="uiState === 'loading'">
         <LoadingState
           title="Chargement des fonds anticipes"
@@ -179,21 +179,18 @@ import ErrorState from '../../../shared/ui/ErrorState.vue';
 import EmptyState from '../../../shared/ui/EmptyState.vue';
 import { activeContextStore } from '../../../shared/session/active-context.store';
 import { sessionStore } from '../../../shared/auth/session.store';
-import {
-  authorizedAnticipatedFundsActors,
-} from '../models/anticipated-funds.model';
+import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
 import { useAnticipatedFundsStore } from '../stores/anticipated-funds.store';
 
 const context = activeContextStore.state;
 const session = sessionStore.state;
 const fundsStore = useAnticipatedFundsStore();
+const doctrineAccess = useDoctrineAccess();
 const dateDebut = ref('2026-06-01');
 const dateFin = ref('2026-06-30');
 const selectedRowId = ref('');
 
-const isAuthorized = computed(() =>
-  authorizedAnticipatedFundsActors.includes(session.actorCode as never),
-);
+const isAuthorized = computed(() => doctrineAccess.canAccessPage('PF-17'));
 const model = computed(() => fundsStore.state.funds);
 const technicalErrorMessage = computed(() =>
   fundsStore.state.errorMessage

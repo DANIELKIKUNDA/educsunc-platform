@@ -14,6 +14,8 @@ export const routesConfiguration: RouteRecordRaw[] = [
     component: () => import('./views/ConfigurationWorkspaceView.vue'),
     props: {
       screenCode: 'SCR-CFG-001',
+      pageCode: 'CFG-PLAT-001',
+      actionCode: 'configuration.platform.runtime.manage',
       title: 'Configuration runtime plateforme',
       description: 'Pilotage des configurations runtime globales au niveau SYSTEM.',
       scopeLevel: 'SYSTEM',

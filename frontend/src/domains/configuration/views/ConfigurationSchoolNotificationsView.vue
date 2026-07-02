@@ -1,6 +1,8 @@
 <template>
   <ConfigurationWorkspaceView
     screen-code="SCR-CFG-005"
+    page-code="CFG-ECO-003"
+    action-code="configuration.school.notifications.manage"
     title="Notifications ecole"
     description="Templates, quotas et politiques locales de communication de l ecole active."
     scope-level="SCHOOL"
@@ -18,4 +20,3 @@
 <script setup lang="ts">
 import ConfigurationWorkspaceView from './ConfigurationWorkspaceView.vue';
 </script>
-

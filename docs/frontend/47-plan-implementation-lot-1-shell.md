@@ -4,6 +4,10 @@
 
 Ce document ouvre le plan d'implementation officiel du `Lot 1` frontend EduSync.
 
+Le `Lot 1` shell est maintenant implemente et stabilise dans le frontend Vue.
+
+Le present document reste la reference de cadrage de cette phase, avec les ajustements issus de l'implementation reelle.
+
 Il ne cree :
 
 - aucun nouveau workflow
@@ -22,7 +26,7 @@ Il transforme en plan d'execution technique ce qui est deja fige dans :
 - les contrats d'ecran
 - les maquettes shell
 
-La suite naturelle de cette phase est l'implementation des premiers ecrans pilotes metier a partir du shell stabilise.
+La suite naturelle de cette phase n'est plus la conception du shell, mais la poursuite des ecrans metier dans un shell deja fige.
 
 ## Objectif
 
@@ -94,6 +98,8 @@ Le point de convergence cible est :
 - une navigation pilotee par capacites visibles
 - un contexte actif transverse
 - des domaines modules coherents avec la doctrine frontend
+
+Cette cible est maintenant materialisee par la couche doctrinale frontend et non par une simple configuration statique.
 
 ## Resultat Attendu Du Lot 1
 
@@ -169,8 +175,12 @@ Les fichiers de base a viser sont :
 - `frontend/src/shared/ui/ContextBadge.vue`
 - `frontend/src/shared/ui/PermissionTag.vue`
 - `frontend/src/shared/navigation/navigation.types.ts`
-- `frontend/src/shared/navigation/navigation.config.ts`
 - `frontend/src/shared/navigation/navigation.builder.ts`
+- `frontend/src/shared/doctrine/frontend-doctrine.ts`
+- `frontend/src/shared/doctrine/doctrine.types.ts`
+- `frontend/src/shared/doctrine/doctrine.resolver.ts`
+- `frontend/src/shared/doctrine/use-doctrine-access.ts`
+- `frontend/src/shared/doctrine/DoctrineModuleHome.vue`
 - `frontend/src/shared/auth/session.store.ts`
 - `frontend/src/shared/permissions/ability.types.ts`
 - `frontend/src/shared/permissions/ability.store.ts`
@@ -308,8 +318,9 @@ Il ne remplace jamais la securite backend.
 
 Role :
 
-- servir de racine visible par domaine
-- offrir un point d'entree stable tant que les vues metier profondes ne sont pas encore branchees
+- servir de centre doctrinal visible par domaine
+- relire les pages et actions visibles du module pour l'acteur et le contexte courants
+- offrir un point d'entree compose automatiquement a partir de la doctrine frontend
 
 ## Etapes D'Implementation Recommandees
 
@@ -343,8 +354,9 @@ Construire le shell :
 Construire la navigation :
 
 - `navigation.types.ts`
-- `navigation.config.ts`
 - `navigation.builder.ts`
+- `frontend-doctrine.ts`
+- `doctrine.resolver.ts`
 
 ### Etape 5
 
@@ -368,6 +380,7 @@ Sortir les composants UI transverses de base :
 Brancher des vues racines minimales par domaine :
 
 - `ModuleHomeView.vue`
+- `DoctrineModuleHome.vue`
 - tests de navigation de base
 
 ## Ce Que Le Lot 1 Ne Doit Pas Faire
@@ -393,10 +406,18 @@ Le `Lot 1` sera considere comme termine lorsque :
 - les composants UI transverses de base existent
 - le frontend est pret a ouvrir `SCR-PF-001`, `SCR-PED-001` et `SCR-SCO-001`
 
+Etat reel confirme :
+
+- shell doctrinal desktop et mobile en place
+- navigation laterale et topbar relues depuis la doctrine frontend
+- changement d'acteur et de contexte actif effectivement branches
+- centres de module doctrinaux effectivement composes depuis les pages visibles
+- verification technique `npm run build` : OK
+
 ## Verdict
 
-Le `Lot 1` peut maintenant etre implemente sans invention produit supplementaire.
+Le `Lot 1` shell n'est plus a concevoir : il est implemente et fige.
 
-La doctrine, les routes, les vues, les contrats et les maquettes necessaires existent deja.
+La doctrine, les routes, les vues, les contrats et les maquettes necessaires sont maintenant portes dans le code frontend.
 
-Le travail restant est un travail d'execution technique disciplinee, et non un travail de reinvention fonctionnelle.
+Le travail restant est donc la poursuite disciplinee des ecrans metier et de leurs branchements, sans reinvention de la coque globale.

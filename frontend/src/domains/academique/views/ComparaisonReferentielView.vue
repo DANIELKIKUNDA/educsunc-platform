@@ -6,7 +6,7 @@
       description="Analyse plateforme de deux versions de referentiel sans recalcul frontend parallele."
     />
 
-    <AccessBoundary capability="module.academique.access">
+    <AccessBoundary page-code="ACA-CMP-001">
       <ErrorState
         v-if="!isAuthorized"
         title="Comparaison non autorisee"
@@ -66,16 +66,15 @@ import LoadingState from '../../../shared/ui/LoadingState.vue';
 import PageContainer from '../../../shared/layout/PageContainer.vue';
 import PageHeader from '../../../shared/layout/PageHeader.vue';
 import SectionBlock from '../../../shared/layout/SectionBlock.vue';
-import { sessionStore } from '../../../shared/auth/session.store';
+import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
 import {
-  authorizedAcademiqueReadActors,
   type ComparaisonReferentielRequest,
 } from '../models/academique.model';
 import { useReferentielAdminStore } from '../stores/referentiel-admin.store';
 
 const store = useReferentielAdminStore();
-const session = sessionStore.state;
-const isAuthorized = authorizedAcademiqueReadActors.includes(session.actorCode as never);
+const doctrineAccess = useDoctrineAccess();
+const isAuthorized = doctrineAccess.canAccessPage('ACA-CMP-001');
 
 const demande = reactive<ComparaisonReferentielRequest>({
   idClasseAcademique: '',
@@ -84,9 +83,11 @@ const demande = reactive<ComparaisonReferentielRequest>({
 });
 
 const canSubmit = computed(() =>
-  demande.idClasseAcademique.trim()
-  && demande.versionReferentielSource.trim()
-  && demande.versionReferentielCible.trim(),
+  Boolean(
+    demande.idClasseAcademique.trim()
+    && demande.versionReferentielSource.trim()
+    && demande.versionReferentielCible.trim(),
+  ),
 );
 
 async function comparer(): Promise<void> {

@@ -6,7 +6,7 @@
       description="Ecran d import brut pour les composantes officielles du referentiel academique."
     />
 
-    <AccessBoundary capability="module.academique.access">
+    <AccessBoundary page-code="ACA-IMP-001">
       <ErrorState
         v-if="!isAuthorized"
         title="Import non autorise"
@@ -69,13 +69,12 @@ import LoadingState from '../../../shared/ui/LoadingState.vue';
 import PageContainer from '../../../shared/layout/PageContainer.vue';
 import PageHeader from '../../../shared/layout/PageHeader.vue';
 import SectionBlock from '../../../shared/layout/SectionBlock.vue';
-import { sessionStore } from '../../../shared/auth/session.store';
-import { authorizedAcademiqueWriteActors } from '../models/academique.model';
+import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
 import { useReferentielAdminStore } from '../stores/referentiel-admin.store';
 
 const store = useReferentielAdminStore();
-const session = sessionStore.state;
-const isAuthorized = authorizedAcademiqueWriteActors.includes(session.actorCode as never);
+const doctrineAccess = useDoctrineAccess();
+const isAuthorized = doctrineAccess.canAccessPage('ACA-IMP-001');
 const typeImport = ref<'sections' | 'options' | 'classes' | 'cours' | 'programmes' | 'lignes'>('sections');
 const rawJson = ref('');
 

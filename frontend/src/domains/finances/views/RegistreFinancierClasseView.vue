@@ -56,7 +56,7 @@
       </div>
     </SectionBlock>
 
-    <AccessBoundary capability="module.finances.access">
+    <AccessBoundary page-code="VF-01">
       <template v-if="uiState === 'loading'">
         <LoadingState
           title="Chargement du registre"
@@ -399,8 +399,8 @@ import PermissionTag from '../../../shared/ui/PermissionTag.vue';
 import LoadingState from '../../../shared/ui/LoadingState.vue';
 import ErrorState from '../../../shared/ui/ErrorState.vue';
 import EmptyState from '../../../shared/ui/EmptyState.vue';
+import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
 import {
-  authorizedClassFinancialRegisterActors,
   type ClassFinancialRegisterCellViewModel,
   type ClassFinancialRegisterFilters,
   type ClassFinancialRegisterRowViewModel,
@@ -412,6 +412,7 @@ const session = sessionStore.state;
 const route = useRoute();
 const router = useRouter();
 const registerStore = useClassFinancialRegisterStore();
+const doctrineAccess = useDoctrineAccess();
 
 const idAnneeScolaireInput = ref('');
 const anneeScolaireLabelInput = ref('');
@@ -445,9 +446,7 @@ const statusLegend = [
   { code: 'DC', label: 'Decede, hors calcul apres date' },
 ];
 
-const isAuthorized = computed(() =>
-  authorizedClassFinancialRegisterActors.includes(session.actorCode as never),
-);
+const isAuthorized = computed(() => doctrineAccess.canAccessPage('VF-01'));
 const register = computed(() => registerStore.state.register);
 const technicalErrorMessage = computed(() =>
   registerStore.state.errorMessage

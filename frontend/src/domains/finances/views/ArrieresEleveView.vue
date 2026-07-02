@@ -50,7 +50,7 @@
       </div>
     </SectionBlock>
 
-    <AccessBoundary capability="module.finances.access">
+    <AccessBoundary page-code="PF-15-ARR">
       <template v-if="uiState === 'loading'">
         <LoadingState
           title="Chargement des arrieres"
@@ -214,18 +214,17 @@ import ErrorState from '../../../shared/ui/ErrorState.vue';
 import EmptyState from '../../../shared/ui/EmptyState.vue';
 import { activeContextStore } from '../../../shared/session/active-context.store';
 import { sessionStore } from '../../../shared/auth/session.store';
-import { authorizedStudentArrearsActors } from '../models/student-arrears.model';
+import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
 import { useStudentArrearsStore } from '../stores/student-arrears.store';
 
 const route = useRoute();
 const context = activeContextStore.state;
 const session = sessionStore.state;
 const studentArrearsStore = useStudentArrearsStore();
+const doctrineAccess = useDoctrineAccess();
 const selectedRowId = ref('');
 
-const isAuthorized = computed(() =>
-  authorizedStudentArrearsActors.includes(session.actorCode as never),
-);
+const isAuthorized = computed(() => doctrineAccess.canAccessPage('PF-15-ARR'));
 const profile = computed(() => studentArrearsStore.state.profile);
 const rows = computed(() => studentArrearsStore.state.rows);
 const technicalErrorMessage = computed(() =>

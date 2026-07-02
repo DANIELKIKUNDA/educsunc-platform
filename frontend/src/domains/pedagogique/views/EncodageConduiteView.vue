@@ -13,7 +13,7 @@
       </div>
     </SectionBlock>
 
-    <AccessBoundary capability="module.pedagogique.access">
+    <AccessBoundary page-code="PED-007">
       <template v-if="uiState === 'loading'">
         <LoadingState title="Chargement de la conduite" message="Lecture des eleves et de leurs periodes de conduite en cours." />
       </template>
@@ -210,7 +210,7 @@
                   </label>
 
                   <div class="pedagogique-actions-row">
-                    <button class="pedagogique-primary-action" type="button" :disabled="!selectedPeriod" @click="enregistrerConduite">
+                    <button v-if="canWriteConduite" class="pedagogique-primary-action" type="button" :disabled="!selectedPeriod" @click="enregistrerConduite">
                       <Save />
                       <span>Enregistrer</span>
                     </button>
@@ -258,7 +258,8 @@ import ErrorState from '../../../shared/ui/ErrorState.vue';
 import EmptyState from '../../../shared/ui/EmptyState.vue';
 import { activeContextStore } from '../../../shared/session/active-context.store';
 import { sessionStore } from '../../../shared/auth/session.store';
-import { authorizedConduiteManagementActors, type ConduiteClasseFilters } from '../models/conduite-management.model';
+import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
+import { type ConduiteClasseFilters } from '../models/conduite-management.model';
 import { useConduiteManagementStore } from '../stores/conduite-management.store';
 
 const route = useRoute();
@@ -266,6 +267,7 @@ const router = useRouter();
 const context = activeContextStore.state;
 const session = sessionStore.state;
 const conduiteStore = useConduiteManagementStore();
+const doctrineAccess = useDoctrineAccess();
 
 const idAnneeScolaireInput = ref('');
 const anneeScolaireLabelInput = ref('');
@@ -276,7 +278,8 @@ const selectedResultatId = ref('');
 const selectedPeriodCode = ref('');
 const pointsConduiteInput = ref('');
 
-const isAuthorized = computed(() => authorizedConduiteManagementActors.includes(session.actorCode as never));
+const isAuthorized = computed(() => doctrineAccess.canAccessPage('PED-007'));
+const canWriteConduite = computed(() => doctrineAccess.canUseAction('pedagogique.conduite.write', 'PED-007'));
 const conduiteClasse = computed(() => conduiteStore.state.classe);
 const auditEntries = computed(() => conduiteStore.state.audit);
 const saveMessage = computed(() => conduiteStore.state.saveMessage);

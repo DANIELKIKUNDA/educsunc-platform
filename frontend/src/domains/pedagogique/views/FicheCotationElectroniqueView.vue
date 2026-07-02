@@ -13,7 +13,7 @@
       </div>
     </SectionBlock>
 
-    <AccessBoundary capability="module.pedagogique.access">
+    <AccessBoundary page-code="PED-001">
       <template v-if="uiState === 'loading'">
         <LoadingState title="Chargement de la fiche" message="Lecture de la classe, du cours et des fiches de cotation reelles." />
       </template>
@@ -191,6 +191,7 @@
                           />
                           <div class="grade-sheet-inline-actions">
                             <button
+                              v-if="canWriteGradeSheet"
                               class="grade-sheet-inline-action"
                               type="button"
                               @click="enregistrerCellule(row.idFicheCotationEleveCours, cell.code)"
@@ -198,6 +199,7 @@
                               OK
                             </button>
                             <button
+                              v-if="canWriteGradeSheet"
                               class="grade-sheet-inline-action ghost"
                               type="button"
                               @click="viderCellule(row.idFicheCotationEleveCours, cell.code)"
@@ -251,14 +253,15 @@ import LoadingState from '../../../shared/ui/LoadingState.vue';
 import ErrorState from '../../../shared/ui/ErrorState.vue';
 import EmptyState from '../../../shared/ui/EmptyState.vue';
 import { sessionStore } from '../../../shared/auth/session.store';
+import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
 import type { GradeSheetFilters } from '../models/grade-sheet.model';
-import { authorizedGradeSheetActors } from '../models/grade-sheet.model';
 import { useGradeSheetStore } from '../stores/grade-sheet.store';
 
 const route = useRoute();
 const router = useRouter();
 const gradeSheetStore = useGradeSheetStore();
 const session = sessionStore.state;
+const doctrineAccess = useDoctrineAccess();
 
 const idAnneeScolaireInput = ref('');
 const anneeScolaireLabelInput = ref('');
@@ -269,7 +272,8 @@ const coursLabelInput = ref('');
 const enseignantLabelInput = ref('');
 const drafts = reactive<Record<string, string>>({});
 
-const isAuthorized = computed(() => authorizedGradeSheetActors.includes(session.actorCode as never));
+const isAuthorized = computed(() => doctrineAccess.canAccessPage('PED-001'));
+const canWriteGradeSheet = computed(() => doctrineAccess.canUseAction('pedagogique.fiches.write', 'PED-001'));
 const sheet = computed(() => gradeSheetStore.state.sheet);
 const saveMessage = computed(() => gradeSheetStore.state.saveMessage);
 const hasDrafts = computed(() => Object.keys(drafts).length > 0);

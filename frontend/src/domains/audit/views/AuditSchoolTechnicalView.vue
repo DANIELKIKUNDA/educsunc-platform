@@ -33,7 +33,7 @@
       </div>
     </SectionBlock>
 
-    <AccessBoundary capability="module.audit.access">
+    <AccessBoundary page-code="AUD-ECO-002">
       <template v-if="uiState === 'loading'">
         <LoadingState title="Chargement audit technique" message="Lecture des traces locales et des métriques techniques en cours." />
       </template>
@@ -98,18 +98,20 @@ import ErrorState from '../../../shared/ui/ErrorState.vue';
 import LoadingState from '../../../shared/ui/LoadingState.vue';
 import PermissionTag from '../../../shared/ui/PermissionTag.vue';
 import { sessionStore } from '../../../shared/auth/session.store';
+import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
 import { activeContextStore } from '../../../shared/session/active-context.store';
-import { authorizedSchoolTechnicalAuditActors, serializeAuditTableRows } from '../models/audit.model';
+import { serializeAuditTableRows } from '../models/audit.model';
 import { useSchoolTechnicalAuditStore } from '../stores/school-technical-audit.store';
 
 const session = sessionStore.state;
 const context = activeContextStore.state;
 const store = useSchoolTechnicalAuditStore();
+const doctrineAccess = useDoctrineAccess();
 const periodeInput = ref('24h');
 const metriqueInput = ref('');
 const correlationIdInput = ref('');
 
-const isAuthorized = computed(() => authorizedSchoolTechnicalAuditActors.includes(session.actorCode as never));
+const isAuthorized = computed(() => doctrineAccess.canAccessPage('AUD-ECO-002'));
 const uiState = computed(() => store.state.status);
 const technicalErrorMessage = computed(() => store.state.errorMessage ?? 'La lecture technique locale a échoué.');
 const traceHeaders = computed(() => Object.keys(store.state.traces[0]?.columns ?? {}));

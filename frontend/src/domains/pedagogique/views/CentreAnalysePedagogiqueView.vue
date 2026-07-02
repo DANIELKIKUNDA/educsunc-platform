@@ -54,7 +54,7 @@
       </div>
     </SectionBlock>
 
-    <AccessBoundary capability="module.pedagogique.access">
+    <AccessBoundary page-code="PED-008">
       <template v-if="uiState === 'loading'">
         <LoadingState
           title="Chargement du centre d analyse"
@@ -351,8 +351,8 @@ import ErrorState from '../../../shared/ui/ErrorState.vue';
 import EmptyState from '../../../shared/ui/EmptyState.vue';
 import { sessionStore } from '../../../shared/auth/session.store';
 import { activeContextStore } from '../../../shared/session/active-context.store';
+import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
 import {
-  authorizedPedagogicalAnalysisActors,
   type PedagogicalAnalysisFilters,
 } from '../models/pedagogical-analysis.model';
 import { usePedagogicalAnalysisStore } from '../stores/pedagogical-analysis.store';
@@ -362,6 +362,7 @@ const router = useRouter();
 const session = sessionStore.state;
 const context = activeContextStore.state;
 const analysisStore = usePedagogicalAnalysisStore();
+const doctrineAccess = useDoctrineAccess();
 
 const idAnneeScolaireInput = ref('');
 const anneeScolaireLabelInput = ref('');
@@ -404,9 +405,7 @@ const tabs = [
   { code: 'nonClasses', label: 'Non classes' },
 ];
 
-const isAuthorized = computed(() =>
-  authorizedPedagogicalAnalysisActors.includes(session.actorCode as never),
-);
+const isAuthorized = computed(() => doctrineAccess.canAccessPage('PED-008'));
 const center = computed(() => analysisStore.state.center);
 const technicalErrorMessage = computed(() =>
   analysisStore.state.errorMessage

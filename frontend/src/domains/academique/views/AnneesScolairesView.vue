@@ -6,7 +6,7 @@
       description="Pilotage local de l annee scolaire: creation, liste, annee active, preparation, garantie, activation, cloture et archivage."
     />
 
-    <AccessBoundary capability="module.academique.access">
+    <AccessBoundary page-code="ACA-LOC-001">
       <ErrorState
         v-if="!isAuthorized"
         title="Acces non autorise"
@@ -146,18 +146,17 @@ import PageContainer from '../../../shared/layout/PageContainer.vue';
 import PageHeader from '../../../shared/layout/PageHeader.vue';
 import SectionBlock from '../../../shared/layout/SectionBlock.vue';
 import { sessionStore } from '../../../shared/auth/session.store';
+import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
 import { activeContextStore } from '../../../shared/session/active-context.store';
 import { tenantContextStore } from '../../../shared/session/tenant-context.store';
-import {
-  authorizedAcademiqueLocalActors,
-} from '../models/academique.model';
 import { useAcademicYearsStore } from '../stores/academic-years.store';
 
 const store = useAcademicYearsStore();
 const session = sessionStore.state;
 const context = activeContextStore.state;
 const tenantContext = tenantContextStore.state;
-const isAuthorized = authorizedAcademiqueLocalActors.includes(session.actorCode as never);
+const doctrineAccess = useDoctrineAccess();
+const isAuthorized = doctrineAccess.canAccessPage('ACA-LOC-001');
 const idEcoleInput = ref(tenantContext.schoolId);
 const traceUtilisateur = ref(tenantContext.userId);
 

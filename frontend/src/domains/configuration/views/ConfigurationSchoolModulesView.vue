@@ -36,6 +36,8 @@
 
     <ConfigurationWorkspaceView
       screen-code="SCR-CFG-003"
+      page-code="CFG-ECO-001"
+      action-code="configuration.school.modules.manage"
       title="Configurations systeme d'ecole"
       description="Espace local de gouvernance systeme d ecole, incluant la lecture effective et les operations techniques autorisees."
       scope-level="SCHOOL"
@@ -92,4 +94,3 @@ async function loadEffectiveModules(): Promise<void> {
 .cfg-stack{display:grid;gap:1rem;margin-top:1rem}
 .cfg-preview{margin:0;white-space:pre-wrap;word-break:break-word;padding:1rem;border-radius:20px;background:#102844;color:#edf5fb}
 </style>
-

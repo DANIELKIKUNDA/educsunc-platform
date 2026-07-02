@@ -34,7 +34,7 @@
       </div>
     </SectionBlock>
 
-    <AccessBoundary capability="module.pedagogique.access">
+    <AccessBoundary page-code="PED-STAT-001">
       <template v-if="uiState === 'loading'">
         <LoadingState title="Chargement des statistiques" message="Lecture des indicateurs de classe en cours." />
       </template>
@@ -219,7 +219,8 @@ import ErrorState from '../../../shared/ui/ErrorState.vue';
 import EmptyState from '../../../shared/ui/EmptyState.vue';
 import { sessionStore } from '../../../shared/auth/session.store';
 import { activeContextStore } from '../../../shared/session/active-context.store';
-import { authorizedClassStatisticsActors, type ClassStatisticsFilters } from '../models/class-statistics.model';
+import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
+import { type ClassStatisticsFilters } from '../models/class-statistics.model';
 import { useClassStatisticsStore } from '../stores/class-statistics.store';
 
 const route = useRoute();
@@ -227,6 +228,7 @@ const router = useRouter();
 const session = sessionStore.state;
 const context = activeContextStore.state;
 const statisticsStore = useClassStatisticsStore();
+const doctrineAccess = useDoctrineAccess();
 
 const idAnneeScolaireInput = ref('');
 const anneeScolaireLabelInput = ref('');
@@ -237,7 +239,7 @@ const codeColonneInput = ref('TOTAL_GENERAL');
 
 const columnOptions = ['P1', 'P2', 'EX1', 'TOTAL_S1', 'P3', 'P4', 'EX2', 'TOTAL_S2', 'TOTAL_GENERAL', 'TOTAL_T1', 'TOTAL_T2', 'P5', 'P6', 'EX3', 'TOTAL_T3'];
 
-const isAuthorized = computed(() => authorizedClassStatisticsActors.includes(session.actorCode as never));
+const isAuthorized = computed(() => doctrineAccess.canAccessPage('PED-STAT-001'));
 const statistics = computed(() => statisticsStore.state.statistics);
 const technicalErrorMessage = computed(() =>
   statisticsStore.state.errorMessage ?? 'Le backend n a pas pu restituer les statistiques attendues.',

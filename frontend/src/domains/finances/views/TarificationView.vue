@@ -11,7 +11,7 @@
             <ArrowLeft />
             <span>Retour finances</span>
           </RouterLink>
-          <button class="module-quick-access__pill" type="button" @click="prepareCreate">
+          <button v-if="canManagePricing" class="module-quick-access__pill" type="button" @click="prepareCreate">
             <Plus />
             <span>Nouvelle grille</span>
           </button>
@@ -46,7 +46,7 @@
       </div>
     </SectionBlock>
 
-    <AccessBoundary capability="module.finances.access">
+    <AccessBoundary page-code="PF-13">
       <template v-if="uiState === 'loading' || uiState === 'saving'">
         <LoadingState
           :title="uiState === 'saving' ? 'Sauvegarde des grilles' : 'Chargement des grilles'"
@@ -342,11 +342,12 @@
               </div>
 
               <div class="finance-form-actions">
-                <button class="finance-primary-action" type="button" @click="saveGrid">
+                <button v-if="canManagePricing" class="finance-primary-action" type="button" @click="saveGrid">
                   <Save />
                   <span>{{ form.id ? 'Modifier' : 'Creer' }}</span>
                 </button>
                 <button
+                  v-if="canManagePricing"
                   class="finance-secondary-action"
                   type="button"
                   :disabled="form.id === null"
@@ -387,6 +388,7 @@ import ErrorState from '../../../shared/ui/ErrorState.vue';
 import EmptyState from '../../../shared/ui/EmptyState.vue';
 import { activeContextStore } from '../../../shared/session/active-context.store';
 import { sessionStore } from '../../../shared/auth/session.store';
+import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
 import { paymentSchoolMonthOptions } from '../models/payment-settings.model';
 import {
   tarificationCategorieFraisEtatOptions,
@@ -402,10 +404,12 @@ const route = useRoute();
 const context = activeContextStore.state;
 const session = sessionStore.state;
 const tarificationStore = useTarificationStore();
+const doctrineAccess = useDoctrineAccess();
 const selectedTypeFrais = ref('');
 const selectedActif = ref('');
 
-const isAuthorized = computed(() => session.actorCode === 'ADMIN_SYSTEME_ECOLE');
+const isAuthorized = computed(() => doctrineAccess.canAccessPage('PF-13'));
+const canManagePricing = computed(() => doctrineAccess.canUseAction('finances.pricing.manage', 'PF-13'));
 const rows = computed(() => tarificationStore.state.rows);
 const form = computed(() => tarificationStore.state.form);
 const selectedGrid = computed(() =>

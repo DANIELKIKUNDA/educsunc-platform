@@ -2,7 +2,7 @@
   <PageContainer>
     <PageHeader eyebrow="MS-05" title="Cycle de vie eleve" description="Lecture du statut courant, de l historique et du bloc d action autorise." />
 
-    <AccessBoundary capability="module.scolarite.access">
+    <AccessBoundary page-code="SCO-004">
       <ErrorState
         v-if="!isAuthorized"
         title="Cycle de vie non autorise"
@@ -36,7 +36,7 @@
           </div>
           <div class="scolarite-actions">
             <button class="scolarite-primary-action" type="button" @click="charger"><Search /><span>Charger le dossier</span></button>
-            <button class="scolarite-secondary-action" type="button" @click="executer">Executer l action</button>
+            <button v-if="canMutateLifecycle" class="scolarite-secondary-action" type="button" @click="executer">Executer l action</button>
           </div>
         </SectionBlock>
 
@@ -80,29 +80,31 @@ import SectionBlock from '../../../shared/layout/SectionBlock.vue';
 import AccessBoundary from '../../../shared/permissions/AccessBoundary.vue';
 import LoadingState from '../../../shared/ui/LoadingState.vue';
 import ErrorState from '../../../shared/ui/ErrorState.vue';
-import { sessionStore } from '../../../shared/auth/session.store';
+import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
 import type { CycleVieActionCode } from '../models/scolarite.model';
 import {
-  authorizedCycleVieActors,
   construireNomComplet,
   cycleVieActionDescriptions,
+  cycleVieDoctrineActionCodes,
   cycleVieActionLabels,
-  cycleVieActionsParActeur,
 } from '../models/scolarite.model';
 import { useStudentLifecycleStore } from '../stores/student-lifecycle.store';
 
 const store = useStudentLifecycleStore();
-const session = sessionStore.state;
-const isAuthorized = computed(() => authorizedCycleVieActors.includes(session.actorCode as never));
+const doctrineAccess = useDoctrineAccess();
+const isAuthorized = computed(() => doctrineAccess.canAccessPage('SCO-004'));
+const canMutateLifecycle = computed(() => actionsDisponibles.value.length > 0);
 const idEleve = ref('');
 const versionAttendue = ref(1);
 const actionsDisponibles = computed(() => {
-  const actorCode = session.actorCode as keyof typeof cycleVieActionsParActeur;
-  return (cycleVieActionsParActeur[actorCode] ?? []).map((code) => ({
-    code,
-    label: cycleVieActionLabels[code],
-    description: cycleVieActionDescriptions[code],
-  }));
+  const visibleActions = doctrineAccess.listVisibleActions('SCO-004');
+  return (Object.keys(cycleVieDoctrineActionCodes) as CycleVieActionCode[])
+    .filter((code) => visibleActions.some((action) => action.code === cycleVieDoctrineActionCodes[code]))
+    .map((code) => ({
+      code,
+      label: cycleVieActionLabels[code],
+      description: cycleVieActionDescriptions[code],
+    }));
 });
 const action = ref<CycleVieActionCode>('abandon');
 const nomComplet = computed(() =>

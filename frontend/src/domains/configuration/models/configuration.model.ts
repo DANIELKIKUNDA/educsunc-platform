@@ -138,9 +138,3 @@ export const configurationModuleCatalog: ReadonlyArray<{
   { code: 'MONITORING', label: 'Monitoring', description: 'Observation et sante de la plateforme.' },
 ];
 
-export const configurationPlatformActors = ['MANAGER_SYSTEME', 'OPERATEUR_SYSTEME', 'SUPPORT_SYSTEME'] as const;
-export const configurationPlatformWriteActors = ['MANAGER_SYSTEME', 'OPERATEUR_SYSTEME'] as const;
-export const configurationOrganizationActors = ['PROMOTEUR_ORGANISATION', 'ADMIN_SYSTEME_ORGANISATION', 'GESTIONNAIRE_ORGANISATION'] as const;
-export const configurationOrganizationWriteActors = ['PROMOTEUR_ORGANISATION', 'ADMIN_SYSTEME_ORGANISATION'] as const;
-export const configurationSchoolActors = ['ADMIN_SYSTEME_ECOLE', 'ADMINISTRATEUR_ECOLE'] as const;
-

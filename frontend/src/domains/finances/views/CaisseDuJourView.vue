@@ -42,7 +42,7 @@
       </div>
     </SectionBlock>
 
-    <AccessBoundary capability="module.finances.access">
+    <AccessBoundary page-code="PF-05">
       <template v-if="uiState === 'loading'">
         <LoadingState
           title="Chargement de la caisse du jour"
@@ -205,23 +205,16 @@ import ErrorState from '../../../shared/ui/ErrorState.vue';
 import EmptyState from '../../../shared/ui/EmptyState.vue';
 import { activeContextStore } from '../../../shared/session/active-context.store';
 import { sessionStore } from '../../../shared/auth/session.store';
+import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
 import { useCashDayStore } from '../stores/cash-day.store';
-
-const authorizedCashWorkbenchActors = [
-  'CAISSIER',
-  'ADMINISTRATEUR_ECOLE',
-  'GESTIONNAIRE_ORGANISATION',
-  'PROMOTEUR_ORGANISATION',
-] as const;
 
 const context = activeContextStore.state;
 const session = sessionStore.state;
 const cashDayStore = useCashDayStore();
+const doctrineAccess = useDoctrineAccess();
 const selectedDate = ref(new Date().toISOString().slice(0, 10));
 
-const isAuthorized = computed(() =>
-  authorizedCashWorkbenchActors.includes(session.actorCode as (typeof authorizedCashWorkbenchActors)[number]),
-);
+const isAuthorized = computed(() => doctrineAccess.canAccessPage('PF-05'));
 const cashDay = computed(() => cashDayStore.state.cashDay);
 const technicalErrorMessage = computed(() =>
   cashDayStore.state.errorMessage

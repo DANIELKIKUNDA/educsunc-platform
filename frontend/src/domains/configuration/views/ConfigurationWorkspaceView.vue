@@ -31,7 +31,7 @@
       </div>
     </SectionBlock>
 
-    <AccessBoundary capability="module.configuration.access">
+    <AccessBoundary :page-code="pageCode">
       <ErrorState
         v-if="!isAuthorized"
         title="Acces non autorise"
@@ -103,17 +103,17 @@
             </div>
 
             <div class="cfg-actions">
-              <button class="cfg-pill cfg-pill--action" type="button" :disabled="!canCreate" @click="createConfiguration">Creer</button>
+              <button v-if="canMutate" class="cfg-pill cfg-pill--action" type="button" :disabled="!canCreate" @click="createConfiguration">Creer</button>
               <button class="cfg-pill" type="button" :disabled="!canRead" @click="loadConfiguration">Consulter</button>
-              <button class="cfg-pill" type="button" :disabled="!canUpdate" @click="updateConfiguration">Mettre a jour</button>
-              <button v-if="allowDelete" class="cfg-pill" type="button" :disabled="!canRead" @click="deleteConfiguration">Supprimer</button>
-              <button v-if="allowLock" class="cfg-pill" type="button" :disabled="!canRead" @click="lockConfiguration">Verrouiller</button>
-              <button v-if="allowLock" class="cfg-pill" type="button" :disabled="!canRead" @click="unlockConfiguration">Deverrouiller</button>
-              <button class="cfg-pill" type="button" :disabled="!canValidate" @click="validateConfiguration">Valider</button>
-              <button v-if="allowSnapshots" class="cfg-pill" type="button" :disabled="!canRead" @click="createSnapshot">Snapshot</button>
-              <button v-if="allowSnapshots" class="cfg-pill" type="button" :disabled="!canCompareSnapshots" @click="compareSnapshots">Comparer snapshots</button>
-              <button v-if="allowPropagate" class="cfg-pill" type="button" :disabled="!canRead" @click="propagateConfiguration">Propager</button>
-              <button v-if="allowReload" class="cfg-pill" type="button" :disabled="!canRead" @click="reloadConfiguration">Reload</button>
+              <button v-if="canMutate" class="cfg-pill" type="button" :disabled="!canUpdate" @click="updateConfiguration">Mettre a jour</button>
+              <button v-if="allowDelete && canMutate" class="cfg-pill" type="button" :disabled="!canRead" @click="deleteConfiguration">Supprimer</button>
+              <button v-if="allowLock && canMutate" class="cfg-pill" type="button" :disabled="!canRead" @click="lockConfiguration">Verrouiller</button>
+              <button v-if="allowLock && canMutate" class="cfg-pill" type="button" :disabled="!canRead" @click="unlockConfiguration">Deverrouiller</button>
+              <button v-if="canMutate" class="cfg-pill" type="button" :disabled="!canValidate" @click="validateConfiguration">Valider</button>
+              <button v-if="allowSnapshots && canMutate" class="cfg-pill" type="button" :disabled="!canRead" @click="createSnapshot">Snapshot</button>
+              <button v-if="allowSnapshots && canMutate" class="cfg-pill" type="button" :disabled="!canCompareSnapshots" @click="compareSnapshots">Comparer snapshots</button>
+              <button v-if="allowPropagate && canMutate" class="cfg-pill" type="button" :disabled="!canRead" @click="propagateConfiguration">Propager</button>
+              <button v-if="allowReload && canMutate" class="cfg-pill" type="button" :disabled="!canRead" @click="reloadConfiguration">Reload</button>
               <button class="cfg-pill" type="button" @click="loadEffective">Valeur effective</button>
             </div>
           </div>
@@ -197,17 +197,11 @@ import LoadingState from '../../../shared/ui/LoadingState.vue';
 import ErrorState from '../../../shared/ui/ErrorState.vue';
 import ContextBadge from '../../../shared/ui/ContextBadge.vue';
 import PermissionTag from '../../../shared/ui/PermissionTag.vue';
+import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
 import { activeContextStore } from '../../../shared/session/active-context.store';
 import { sessionStore } from '../../../shared/auth/session.store';
 import { tenantContextStore } from '../../../shared/session/tenant-context.store';
-import {
-  configurationOrganizationActors,
-  configurationOrganizationWriteActors,
-  configurationPlatformActors,
-  configurationPlatformWriteActors,
-  configurationSchoolActors,
-  type ConfigurationScopeLevel,
-} from '../models/configuration.model';
+import { type ConfigurationScopeLevel } from '../models/configuration.model';
 import {
   buildScopeFromLevel,
   parseConfigurationValue,
@@ -219,6 +213,8 @@ import { useConfigurationCenterStore } from '../stores/configuration-center.stor
 
 const props = defineProps<{
   screenCode: string;
+  pageCode: string;
+  actionCode?: string;
   title: string;
   description: string;
   scopeLevel: ConfigurationScopeLevel;
@@ -236,6 +232,7 @@ const store = useConfigurationCenterStore();
 const context = activeContextStore.state;
 const session = sessionStore.state;
 const tenantContext = tenantContextStore.state;
+const doctrineAccess = useDoctrineAccess();
 
 const scopeForm = reactive({
   organisationId: tenantContext.organizationId,
@@ -255,22 +252,14 @@ const headerTitle = computed(() => props.title);
 const headerDescription = computed(() => props.description);
 const scopeLabel = computed(() => `${props.scopeLevel} | ${session.actorLabel}`);
 const keyPrefixPlaceholder = computed(() => props.keyPrefixDefault || 'prefixe optionnel');
+const pageCode = computed(() => props.pageCode);
 
-const isAuthorized = computed(() => {
-  if (props.scopeLevel === 'SYSTEM') {
-    return configurationPlatformActors.includes(session.actorCode as never);
-  }
-
-  if (props.scopeLevel === 'ORGANIZATION') {
-    return configurationOrganizationActors.includes(session.actorCode as never);
-  }
-
-  if (props.scopeLevel === 'SCHOOL') {
-    return configurationSchoolActors.includes(session.actorCode as never);
-  }
-
-  return session.isAuthenticated;
-});
+const isAuthorized = computed(() => doctrineAccess.canAccessPage(pageCode.value));
+const canMutate = computed(() =>
+  props.actionCode
+    ? doctrineAccess.canUseAction(props.actionCode, pageCode.value)
+    : isAuthorized.value,
+);
 
 const perimeterMessage = computed(() => {
   if (props.scopeLevel === 'SYSTEM') {
@@ -440,4 +429,3 @@ async function loadEffective(): Promise<void> {
 .cfg-summary-grid .cfg-card{border-radius:24px;padding:1rem;background:#fff;border:1px solid rgba(17,40,63,.08);box-shadow:0 18px 45px rgba(17,40,63,.08);display:grid;gap:.35rem}
 .cfg-preview{margin:0;white-space:pre-wrap;word-break:break-word;padding:1rem;border-radius:20px;background:#102844;color:#edf5fb}
 </style>
-

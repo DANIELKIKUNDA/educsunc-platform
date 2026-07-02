@@ -33,7 +33,7 @@
       </div>
     </SectionBlock>
 
-    <AccessBoundary capability="module.audit.access">
+    <AccessBoundary page-code="AUD-ECO-001">
       <template v-if="uiState === 'loading'">
         <LoadingState title="Chargement audit financier" message="Lecture des événements financiers, de leur historique et de leur timeline en cours." />
       </template>
@@ -126,13 +126,15 @@ import ErrorState from '../../../shared/ui/ErrorState.vue';
 import LoadingState from '../../../shared/ui/LoadingState.vue';
 import PermissionTag from '../../../shared/ui/PermissionTag.vue';
 import { sessionStore } from '../../../shared/auth/session.store';
+import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
 import { activeContextStore } from '../../../shared/session/active-context.store';
-import { authorizedSchoolFinancialAuditActors, serializeAuditTableRows, type AuditEntryViewModel } from '../models/audit.model';
+import { serializeAuditTableRows, type AuditEntryViewModel } from '../models/audit.model';
 import { useSchoolFinancialAuditStore } from '../stores/school-financial-audit.store';
 
 const session = sessionStore.state;
 const context = activeContextStore.state;
 const store = useSchoolFinancialAuditStore();
+const doctrineAccess = useDoctrineAccess();
 const activeTab = ref<'liste' | 'historique' | 'timeline'>('liste');
 const selectedEntry = ref<AuditEntryViewModel | null>(null);
 const actionInput = ref('');
@@ -142,7 +144,7 @@ const acteurIdInput = ref('');
 const ressourceIdInput = ref('');
 const correlationIdInput = ref('');
 
-const isAuthorized = computed(() => authorizedSchoolFinancialAuditActors.includes(session.actorCode as never));
+const isAuthorized = computed(() => doctrineAccess.canAccessPage('AUD-ECO-001'));
 const uiState = computed(() => store.state.status);
 const technicalErrorMessage = computed(() => store.state.errorMessage ?? 'La lecture de l audit financier a échoué.');
 const activeEntries = computed(() => activeTab.value === 'historique' ? store.state.history : store.state.list);

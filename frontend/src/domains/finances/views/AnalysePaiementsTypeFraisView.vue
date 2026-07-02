@@ -42,7 +42,7 @@
       </div>
     </SectionBlock>
 
-    <AccessBoundary capability="module.finances.access">
+    <AccessBoundary page-code="PF-14">
       <template v-if="uiState === 'loading'">
         <LoadingState
           title="Chargement de l'analyse"
@@ -191,22 +191,19 @@ import ErrorState from '../../../shared/ui/ErrorState.vue';
 import EmptyState from '../../../shared/ui/EmptyState.vue';
 import { activeContextStore } from '../../../shared/session/active-context.store';
 import { sessionStore } from '../../../shared/auth/session.store';
-import {
-  authorizedPaymentAnalyticsActors,
-} from '../models/payment-type-analytics.model';
+import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
 import { usePaymentTypeAnalyticsStore } from '../stores/payment-type-analytics.store';
 
 const context = activeContextStore.state;
 const session = sessionStore.state;
 const analyticsStore = usePaymentTypeAnalyticsStore();
+const doctrineAccess = useDoctrineAccess();
 const selectedType = ref('');
 const selectedRowId = ref('');
 const dateDebutInput = ref('');
 const dateFinInput = ref('');
 
-const isAuthorized = computed(() =>
-  authorizedPaymentAnalyticsActors.includes(session.actorCode as never),
-);
+const isAuthorized = computed(() => doctrineAccess.canAccessPage('PF-14'));
 const analytics = computed(() => analyticsStore.state.analytics);
 const technicalErrorMessage = computed(() =>
   analyticsStore.state.errorMessage

@@ -33,7 +33,7 @@
       </div>
     </SectionBlock>
 
-    <AccessBoundary capability="module.audit.access">
+    <AccessBoundary :page-code="currentPageCode">
       <template v-if="uiState === 'loading'">
         <LoadingState title="Chargement audit pédagogique" message="Lecture des traces pédagogiques de l objet sélectionné en cours." />
       </template>
@@ -136,9 +136,9 @@ import ErrorState from '../../../shared/ui/ErrorState.vue';
 import LoadingState from '../../../shared/ui/LoadingState.vue';
 import PermissionTag from '../../../shared/ui/PermissionTag.vue';
 import { sessionStore } from '../../../shared/auth/session.store';
+import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
 import { activeContextStore } from '../../../shared/session/active-context.store';
 import {
-  authorizedPedagogicalAuditActors,
   serializeAuditTableRows,
   type AuditPedagogicalFilters,
 } from '../models/audit.model';
@@ -149,6 +149,7 @@ const router = useRouter();
 const session = sessionStore.state;
 const context = activeContextStore.state;
 const store = usePedagogicalAuditStore();
+const doctrineAccess = useDoctrineAccess();
 const kinds = [
   { code: 'cotes', label: 'Audit cotes' },
   { code: 'conduite', label: 'Audit conduite' },
@@ -171,7 +172,19 @@ const currentKind = computed<PedagogicalAuditKind>(() => {
   return 'cotes';
 });
 const currentKindLabel = computed(() => kinds.find((kind) => kind.code === currentKind.value)?.label ?? 'Audit pédagogique');
-const isAuthorized = computed(() => authorizedPedagogicalAuditActors.includes(session.actorCode as never));
+const currentPageCode = computed(() => {
+  switch (currentKind.value) {
+    case 'conduite':
+      return 'AUD-PED-002';
+    case 'bulletins':
+      return 'AUD-PED-003';
+    case 'classements':
+      return 'AUD-PED-004';
+    default:
+      return 'AUD-PED-001';
+  }
+});
+const isAuthorized = computed(() => doctrineAccess.canAccessPage(currentPageCode.value));
 const uiState = computed(() => store.state.status);
 const technicalErrorMessage = computed(() => store.state.errorMessage ?? 'Le backend n a pas pu restituer l audit pédagogique demandé.');
 const entries = computed(() => store.state[currentKind.value]);

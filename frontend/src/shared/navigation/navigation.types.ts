@@ -1,9 +1,24 @@
-import type { FrontendCapability } from '../permissions/ability.types';
+import type { FrontendGovernanceLevel } from '../doctrine/doctrine.types';
+import type { FrontendPageAction } from '../doctrine/doctrine.types';
+
+export interface NavigationChildEntry {
+  code: string;
+  label: string;
+  route: string;
+  routeName: string;
+  icon: string;
+  sectionCode: string;
+  sectionLabel: string;
+  visibleActions: readonly FrontendPageAction[];
+}
 
 export interface NavigationEntry {
+  code: string;
   label: string;
   description: string;
   route: string;
-  capability: FrontendCapability;
-  shortCode: string;
+  icon: string;
+  governanceLevels: readonly FrontendGovernanceLevel[];
+  actorCodes: readonly string[];
+  children: readonly NavigationChildEntry[];
 }

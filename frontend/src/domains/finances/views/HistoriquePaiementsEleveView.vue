@@ -42,7 +42,7 @@
       </div>
     </SectionBlock>
 
-    <AccessBoundary capability="module.finances.access">
+    <AccessBoundary page-code="PF-10">
       <template v-if="uiState === 'loading'">
         <LoadingState
           title="Chargement de l'historique"
@@ -257,19 +257,20 @@ import ErrorState from '../../../shared/ui/ErrorState.vue';
 import EmptyState from '../../../shared/ui/EmptyState.vue';
 import { activeContextStore } from '../../../shared/session/active-context.store';
 import { sessionStore } from '../../../shared/auth/session.store';
-import { authorizedPaymentHistoryActors } from '../models/payment-history.model';
+import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
 import { usePaymentHistoryStore } from '../stores/payment-history.store';
 
 const route = useRoute();
 const context = activeContextStore.state;
 const session = sessionStore.state;
 const paymentHistoryStore = usePaymentHistoryStore();
+const doctrineAccess = useDoctrineAccess();
 const selectedType = ref('');
 const selectedMode = ref('');
 const selectedStatus = ref('');
 const selectedEntryId = ref('');
 
-const isAuthorized = computed(() => authorizedPaymentHistoryActors.includes(session.actorCode as never));
+const isAuthorized = computed(() => doctrineAccess.canAccessPage('PF-10'));
 const profile = computed(() => paymentHistoryStore.state.profile);
 const entries = computed(() => paymentHistoryStore.state.entries);
 const technicalErrorMessage = computed(() =>

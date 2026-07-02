@@ -42,7 +42,7 @@
       </div>
     </SectionBlock>
 
-    <AccessBoundary capability="module.finances.access">
+    <AccessBoundary page-code="PF-03">
       <template v-if="effectiveState === 'loading'">
         <LoadingState
           title="Preparation de la cloture"
@@ -179,6 +179,7 @@
 
               <div class="finance-form-actions">
                 <button
+                  v-if="canCloseCash"
                   class="finance-primary-action"
                   type="button"
                   :disabled="effectiveState === 'cash-not-open' || effectiveState === 'success'"
@@ -241,16 +242,19 @@ import LoadingState from '../../../shared/ui/LoadingState.vue';
 import ErrorState from '../../../shared/ui/ErrorState.vue';
 import { activeContextStore } from '../../../shared/session/active-context.store';
 import { sessionStore } from '../../../shared/auth/session.store';
+import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
 import { useCashClosingStore } from '../stores/cash-closing.store';
 
 const context = activeContextStore.state;
 const session = sessionStore.state;
 const cashClosingStore = useCashClosingStore();
+const doctrineAccess = useDoctrineAccess();
 const montantPhysiqueDeclare = ref('');
 const observation = ref('');
 
 const cashClosing = computed(() => cashClosingStore.state.cashDay);
-const isAuthorized = computed(() => session.actorCode === 'CAISSIER');
+const isAuthorized = computed(() => doctrineAccess.canAccessPage('PF-03'));
+const canCloseCash = computed(() => doctrineAccess.canUseAction('finances.cash.close', 'PF-03'));
 const technicalErrorMessage = computed(() =>
   cashClosingStore.state.errorMessage
   ?? 'La cloture de caisse n a pas pu etre finalisee.',

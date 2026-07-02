@@ -45,7 +45,7 @@
       </div>
     </SectionBlock>
 
-    <AccessBoundary capability="module.audit.access">
+    <AccessBoundary page-code="AUD-ORG-001">
       <template v-if="uiState === 'loading'">
         <LoadingState title="Chargement audit organisationnel" message="Lecture des analytics, anomalies, accès et volumétrie en cours." />
       </template>
@@ -154,13 +154,15 @@ import ErrorState from '../../../shared/ui/ErrorState.vue';
 import LoadingState from '../../../shared/ui/LoadingState.vue';
 import PermissionTag from '../../../shared/ui/PermissionTag.vue';
 import { sessionStore } from '../../../shared/auth/session.store';
+import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
 import { activeContextStore } from '../../../shared/session/active-context.store';
-import { authorizedOrganizationAuditActors, serializeAuditTableRows } from '../models/audit.model';
+import { serializeAuditTableRows } from '../models/audit.model';
 import { useOrganizationAuditStore } from '../stores/organization-audit.store';
 
 const session = sessionStore.state;
 const context = activeContextStore.state;
 const store = useOrganizationAuditStore();
+const doctrineAccess = useDoctrineAccess();
 const activeTab = ref<'analytics' | 'tenants' | 'anomalies' | 'access'>('analytics');
 const periodeInput = ref('30j');
 const ecoleIdInput = ref('');
@@ -168,9 +170,7 @@ const typeAuditInput = ref('');
 const metriqueInput = ref('');
 const correlationIdInput = ref('');
 
-const isAuthorized = computed(() =>
-  authorizedOrganizationAuditActors.includes(session.actorCode as never),
-);
+const isAuthorized = computed(() => doctrineAccess.canAccessPage('AUD-ORG-001'));
 const uiState = computed(() => store.state.status);
 const technicalErrorMessage = computed(() =>
   store.state.errorMessage ?? 'La supervision organisationnelle d audit a échoué.',

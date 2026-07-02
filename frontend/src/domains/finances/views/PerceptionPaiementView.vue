@@ -42,7 +42,7 @@
       </div>
     </SectionBlock>
 
-    <AccessBoundary capability="module.finances.access">
+    <AccessBoundary page-code="PF-01">
       <template v-if="uiState === 'loading-student' || uiState === 'submitting'">
         <LoadingState
           :title="uiState === 'submitting' ? 'Enregistrement du paiement' : 'Verification de l eleve'"
@@ -206,7 +206,12 @@
               </label>
 
               <div class="finance-form-actions">
-                <button class="finance-primary-action" type="button" @click="submitPayment">
+                <button
+                  v-if="canRecordPayment"
+                  class="finance-primary-action"
+                  type="button"
+                  @click="submitPayment"
+                >
                   <CheckCircle2 />
                   <span>Enregistrer le paiement</span>
                 </button>
@@ -331,12 +336,10 @@ import ErrorState from '../../../shared/ui/ErrorState.vue';
 import EmptyState from '../../../shared/ui/EmptyState.vue';
 import LoadingState from '../../../shared/ui/LoadingState.vue';
 import AccessBoundary from '../../../shared/permissions/AccessBoundary.vue';
+import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
 import { sessionStore } from '../../../shared/auth/session.store';
 import { activeContextStore } from '../../../shared/session/active-context.store';
-import {
-  authorizedPaymentRegistrationActors,
-  paymentRegistrationModeOptions,
-} from '../models/payment-registration.model';
+import { paymentRegistrationModeOptions } from '../models/payment-registration.model';
 import { usePaymentRegistrationStore } from '../stores/payment-registration.store';
 
 type UiState =
@@ -351,6 +354,7 @@ const route = useRoute();
 const session = sessionStore.state;
 const context = activeContextStore.state;
 const paymentRegistrationStore = usePaymentRegistrationStore();
+const doctrineAccess = useDoctrineAccess();
 
 const studentIdInput = ref(lireParametreTexte(route.query.idEleve) ?? '');
 const selectedObligationId = ref('');
@@ -358,9 +362,8 @@ const amountInput = ref('');
 const paymentMode = ref('');
 const uiState = ref<UiState>('idle');
 
-const isAuthorized = computed(() =>
-  authorizedPaymentRegistrationActors.includes(session.actorCode as never),
-);
+const isAuthorized = computed(() => doctrineAccess.canAccessPage('PF-01'));
+const canRecordPayment = computed(() => doctrineAccess.canUseAction('finances.payments.record', 'PF-01'));
 const profile = computed(() => paymentRegistrationStore.state.profile);
 const availableObligations = computed(() => paymentRegistrationStore.state.obligations);
 const result = computed(() => paymentRegistrationStore.state.result);

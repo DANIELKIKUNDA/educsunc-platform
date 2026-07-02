@@ -9,7 +9,7 @@
       </div>
     </SectionBlock>
 
-    <AccessBoundary capability="module.scolarite.access">
+    <AccessBoundary page-code="SCO-006">
       <ErrorState
         v-if="!isAuthorized"
         title="Suspension non autorisee"
@@ -24,7 +24,7 @@
           </div>
           <div class="scolarite-actions">
             <button class="scolarite-primary-action" type="button" @click="charger"><Search /><span>Charger l eleve</span></button>
-            <button class="scolarite-secondary-action" type="button" @click="suspendre">Suspendre</button>
+            <button v-if="canSuspendStudent" class="scolarite-secondary-action" type="button" @click="suspendre">Suspendre</button>
           </div>
         </SectionBlock>
 
@@ -72,13 +72,16 @@ import LoadingState from '../../../shared/ui/LoadingState.vue';
 import ErrorState from '../../../shared/ui/ErrorState.vue';
 import { sessionStore } from '../../../shared/auth/session.store';
 import { activeContextStore } from '../../../shared/session/active-context.store';
-import { authorizedSuspensionActors, construireNomComplet } from '../models/scolarite.model';
+import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
+import { construireNomComplet } from '../models/scolarite.model';
 import { useStudentLifecycleStore } from '../stores/student-lifecycle.store';
 
 const store = useStudentLifecycleStore();
 const session = sessionStore.state;
 const context = activeContextStore.state;
-const isAuthorized = computed(() => authorizedSuspensionActors.includes(session.actorCode as never));
+const doctrineAccess = useDoctrineAccess();
+const isAuthorized = computed(() => doctrineAccess.canAccessPage('SCO-006'));
+const canSuspendStudent = computed(() => doctrineAccess.canUseAction('scolarite.suspensions.write', 'SCO-006'));
 const idEleve = ref('');
 const versionAttendue = ref(1);
 const nomComplet = computed(() =>

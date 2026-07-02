@@ -40,7 +40,7 @@
       </div>
     </SectionBlock>
 
-    <AccessBoundary capability="module.finances.access">
+    <AccessBoundary page-code="PF-19">
       <template v-if="uiState === 'loading' || uiState === 'saving'">
         <LoadingState
           :title="uiState === 'saving' ? 'Sauvegarde des parametres' : 'Chargement des parametres'"
@@ -75,7 +75,7 @@
             description="Premier parametrage officiel de l'ecole."
           >
             <div class="finance-form-actions">
-              <button class="finance-primary-action" type="button" @click="saveSettings">
+              <button v-if="canManagePaymentSettings" class="finance-primary-action" type="button" @click="saveSettings">
                 <Save />
                 <span>Creer les parametres</span>
               </button>
@@ -349,7 +349,7 @@
               </SectionBlock>
 
               <div class="finance-form-actions">
-                <button class="finance-primary-action" type="button" @click="saveSettings">
+                <button v-if="canManagePaymentSettings" class="finance-primary-action" type="button" @click="saveSettings">
                   <Save />
                   <span>Modifier</span>
                 </button>
@@ -385,6 +385,7 @@ import ErrorState from '../../../shared/ui/ErrorState.vue';
 import EmptyState from '../../../shared/ui/EmptyState.vue';
 import { activeContextStore } from '../../../shared/session/active-context.store';
 import { sessionStore } from '../../../shared/auth/session.store';
+import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
 import {
   paymentArrearsPolicyOptions,
   paymentDelegatedExonerationRoleOptions,
@@ -405,8 +406,10 @@ import { usePaymentSettingsStore } from '../stores/payment-settings.store';
 const context = activeContextStore.state;
 const session = sessionStore.state;
 const paymentSettingsStore = usePaymentSettingsStore();
+const doctrineAccess = useDoctrineAccess();
 
-const isAuthorized = computed(() => session.actorCode === 'ADMIN_SYSTEME_ECOLE');
+const isAuthorized = computed(() => doctrineAccess.canAccessPage('PF-19'));
+const canManagePaymentSettings = computed(() => doctrineAccess.canUseAction('finances.settings.manage', 'PF-19'));
 const profile = computed(() => paymentSettingsStore.state.profile);
 const form = computed(() => paymentSettingsStore.state.form);
 const technicalErrorMessage = computed(() =>

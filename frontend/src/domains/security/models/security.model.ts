@@ -97,5 +97,3 @@ export interface SecurityTitulariatCreatePayload {
   idClasse: string;
   idAnneeScolaire: string;
 }
-
-export const securityActors = ['MANAGER_SYSTEME', 'OPERATEUR_SYSTEME'] as const;

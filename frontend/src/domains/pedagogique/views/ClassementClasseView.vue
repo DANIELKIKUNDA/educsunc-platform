@@ -30,7 +30,7 @@
       </div>
     </SectionBlock>
 
-    <AccessBoundary capability="module.pedagogique.access">
+    <AccessBoundary page-code="PED-006">
       <template v-if="uiState === 'loading'">
         <LoadingState title="Chargement du classement" message="Lecture du classement de classe en cours." />
       </template>
@@ -231,7 +231,8 @@ import ErrorState from '../../../shared/ui/ErrorState.vue';
 import EmptyState from '../../../shared/ui/EmptyState.vue';
 import { sessionStore } from '../../../shared/auth/session.store';
 import { activeContextStore } from '../../../shared/session/active-context.store';
-import { authorizedClassRankingActors, type ClassRankingFilters } from '../models/class-ranking.model';
+import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
+import { type ClassRankingFilters } from '../models/class-ranking.model';
 import { useClassRankingStore } from '../stores/class-ranking.store';
 
 const route = useRoute();
@@ -239,6 +240,7 @@ const router = useRouter();
 const session = sessionStore.state;
 const context = activeContextStore.state;
 const rankingStore = useClassRankingStore();
+const doctrineAccess = useDoctrineAccess();
 
 const idAnneeScolaireInput = ref('');
 const anneeScolaireLabelInput = ref('');
@@ -249,7 +251,7 @@ const codeColonneInput = ref('TOTAL_GENERAL');
 
 const columnOptions = ['P1', 'P2', 'EX1', 'TOTAL_S1', 'P3', 'P4', 'EX2', 'TOTAL_S2', 'TOTAL_GENERAL', 'TOTAL_T1', 'TOTAL_T2', 'P5', 'P6', 'EX3', 'TOTAL_T3'];
 
-const isAuthorized = computed(() => authorizedClassRankingActors.includes(session.actorCode as never));
+const isAuthorized = computed(() => doctrineAccess.canAccessPage('PED-006'));
 const ranking = computed(() => rankingStore.state.ranking);
 const technicalErrorMessage = computed(() =>
   rankingStore.state.errorMessage ?? 'Le backend n a pas pu restituer le classement attendu.',

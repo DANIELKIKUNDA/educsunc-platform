@@ -150,11 +150,3 @@ export interface NotificationPublishRealtimePayload {
   sujet: string;
   message: string;
 }
-
-export const notificationSchoolReaders = ['ADMIN_SYSTEME_ECOLE', 'ADMINISTRATEUR_ECOLE'] as const;
-export const notificationSchoolTechnicalActors = ['ADMIN_SYSTEME_ECOLE'] as const;
-export const notificationOrganizationActors = [
-  'PROMOTEUR_ORGANISATION',
-  'ADMIN_SYSTEME_ORGANISATION',
-  'GESTIONNAIRE_ORGANISATION',
-] as const;

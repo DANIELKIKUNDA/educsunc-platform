@@ -42,7 +42,7 @@
       </div>
     </SectionBlock>
 
-    <AccessBoundary capability="module.finances.access">
+    <AccessBoundary page-code="PF-09-LIST">
       <template v-if="uiState === 'loading'">
         <LoadingState
           title="Chargement des recus"
@@ -184,11 +184,13 @@ import ErrorState from '../../../shared/ui/ErrorState.vue';
 import EmptyState from '../../../shared/ui/EmptyState.vue';
 import { activeContextStore } from '../../../shared/session/active-context.store';
 import { sessionStore } from '../../../shared/auth/session.store';
+import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
 import { usePaymentReceiptListStore } from '../stores/payment-receipt-list.store';
 
 const context = activeContextStore.state;
 const session = sessionStore.state;
 const paymentReceiptListStore = usePaymentReceiptListStore();
+const doctrineAccess = useDoctrineAccess();
 const numeroRecuInput = ref('');
 const eleveInput = ref('');
 const dateDebutInput = ref('');
@@ -196,7 +198,7 @@ const dateFinInput = ref('');
 const pageCourante = ref(1);
 
 const receipts = computed(() => paymentReceiptListStore.state.receipts);
-const isAuthorized = computed(() => session.actorCode === 'CAISSIER');
+const isAuthorized = computed(() => doctrineAccess.canAccessPage('PF-09-LIST'));
 const technicalErrorMessage = computed(() =>
   paymentReceiptListStore.state.errorMessage
   ?? 'Le backend n a pas pu restituer la liste des recus.',

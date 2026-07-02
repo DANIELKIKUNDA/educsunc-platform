@@ -42,7 +42,7 @@
       </div>
     </SectionBlock>
 
-    <AccessBoundary capability="module.finances.access">
+    <AccessBoundary page-code="PF-16">
       <template v-if="uiState === 'loading'">
         <LoadingState
           title="Chargement des paiements par caissier"
@@ -167,21 +167,18 @@ import LoadingState from '../../../shared/ui/LoadingState.vue';
 import ErrorState from '../../../shared/ui/ErrorState.vue';
 import { activeContextStore } from '../../../shared/session/active-context.store';
 import { sessionStore } from '../../../shared/auth/session.store';
-import {
-  authorizedCashierAnalyticsActors,
-} from '../models/payments-by-cashier.model';
+import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
 import { usePaymentsByCashierStore } from '../stores/payments-by-cashier.store';
 
 const context = activeContextStore.state;
 const session = sessionStore.state;
 const analyticsStore = usePaymentsByCashierStore();
+const doctrineAccess = useDoctrineAccess();
 const dateDebut = ref('2026-06-01');
 const dateFin = ref('2026-06-30');
 const selectedRowId = ref('');
 
-const isAuthorized = computed(() =>
-  authorizedCashierAnalyticsActors.includes(session.actorCode as never),
-);
+const isAuthorized = computed(() => doctrineAccess.canAccessPage('PF-16'));
 const analytics = computed(() => analyticsStore.state.analytics);
 const technicalErrorMessage = computed(() =>
   analyticsStore.state.errorMessage

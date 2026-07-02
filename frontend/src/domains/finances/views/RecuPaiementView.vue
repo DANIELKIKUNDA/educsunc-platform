@@ -53,7 +53,7 @@
       </div>
     </SectionBlock>
 
-    <AccessBoundary capability="module.finances.access">
+    <AccessBoundary page-code="PF-09">
       <template v-if="uiState === 'loading'">
         <LoadingState
           title="Chargement du recu"
@@ -238,22 +238,24 @@ import LoadingState from '../../../shared/ui/LoadingState.vue';
 import ErrorState from '../../../shared/ui/ErrorState.vue';
 import { activeContextStore } from '../../../shared/session/active-context.store';
 import { sessionStore } from '../../../shared/auth/session.store';
+import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
 import { usePaymentReceiptStore } from '../stores/payment-receipt.store';
 
 const route = useRoute();
 const context = activeContextStore.state;
 const session = sessionStore.state;
 const paymentReceiptStore = usePaymentReceiptStore();
+const doctrineAccess = useDoctrineAccess();
 const exportInProgress = ref(false);
 
 const receipt = computed(() => paymentReceiptStore.state.receipt);
-const isAuthorized = computed(() => session.actorCode === 'CAISSIER');
+const isAuthorized = computed(() => doctrineAccess.canAccessPage('PF-09'));
 const technicalErrorMessage = computed(() =>
   paymentReceiptStore.state.errorMessage
   ?? 'Le backend n a pas pu restituer ce recu officiel.',
 );
 const canExportPdf = computed(() =>
-  isAuthorized.value && receipt.value !== null && !exportInProgress.value,
+  doctrineAccess.canUseAction('finances.receipts.reprint', 'PF-09') && receipt.value !== null && !exportInProgress.value,
 );
 const uiState = computed<'loading' | 'idle' | 'missing-receipt' | 'render-error'>(() => {
   const idRecu = lireIdRecuRoute();

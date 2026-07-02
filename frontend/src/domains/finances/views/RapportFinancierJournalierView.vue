@@ -42,7 +42,7 @@
       </div>
     </SectionBlock>
 
-    <AccessBoundary capability="module.finances.access">
+    <AccessBoundary page-code="PF-15">
       <template v-if="uiState === 'loading'">
         <LoadingState
           title="Chargement du rapport journalier"
@@ -162,19 +162,16 @@ import LoadingState from '../../../shared/ui/LoadingState.vue';
 import ErrorState from '../../../shared/ui/ErrorState.vue';
 import { activeContextStore } from '../../../shared/session/active-context.store';
 import { sessionStore } from '../../../shared/auth/session.store';
-import {
-  authorizedDailyFinancialReportActors,
-} from '../models/daily-financial-report.model';
+import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
 import { useDailyFinancialReportStore } from '../stores/daily-financial-report.store';
 
 const context = activeContextStore.state;
 const session = sessionStore.state;
 const reportStore = useDailyFinancialReportStore();
+const doctrineAccess = useDoctrineAccess();
 const selectedDate = ref(new Date().toISOString().slice(0, 10));
 
-const isAuthorized = computed(() =>
-  authorizedDailyFinancialReportActors.includes(session.actorCode as never),
-);
+const isAuthorized = computed(() => doctrineAccess.canAccessPage('PF-15'));
 const report = computed(() => reportStore.state.report);
 const technicalErrorMessage = computed(() =>
   reportStore.state.errorMessage

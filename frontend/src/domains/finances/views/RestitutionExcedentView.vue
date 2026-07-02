@@ -44,7 +44,7 @@
       </div>
     </SectionBlock>
 
-    <AccessBoundary capability="module.finances.access">
+    <AccessBoundary page-code="PF-08">
       <template v-if="!isAuthorized">
         <ErrorState
           title="Workflow non autorise"
@@ -108,6 +108,7 @@
 
             <div class="module-home-actions">
               <button
+                v-if="canRefundPayment"
                 class="module-quick-access__pill module-quick-access__pill--action"
                 type="button"
                 :disabled="submitDisabled"
@@ -163,7 +164,7 @@ import ErrorState from '../../../shared/ui/ErrorState.vue';
 import { activeContextStore } from '../../../shared/session/active-context.store';
 import { tenantContextStore } from '../../../shared/session/tenant-context.store';
 import { sessionStore } from '../../../shared/auth/session.store';
-import { authorizedPaymentRefundActors } from '../models/payment-refund.model';
+import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
 import { usePaymentRefundStore } from '../stores/payment-refund.store';
 
 const route = useRoute();
@@ -171,12 +172,12 @@ const context = activeContextStore.state;
 const session = sessionStore.state;
 const refundStore = usePaymentRefundStore();
 const tenantContext = tenantContextStore.state;
+const doctrineAccess = useDoctrineAccess();
 const idPaiement = ref('');
 const idEleve = ref('');
 
-const isAuthorized = computed(() =>
-  authorizedPaymentRefundActors.includes(session.actorCode as never),
-);
+const isAuthorized = computed(() => doctrineAccess.canAccessPage('PF-08'));
+const canRefundPayment = computed(() => doctrineAccess.canUseAction('finances.payments.refund', 'PF-08'));
 const effectuePar = computed(() => tenantContext.userId || 'Utilisateur a configurer');
 const executionLabel = computed(() =>
   refundStore.state.status === 'submitting' ? 'En cours' : refundStore.state.status === 'success' ? 'Terminee' : 'Prete',

@@ -1,95 +1,12 @@
 <template>
-  <PageContainer>
-    <PageHeader
-      eyebrow="Module financier"
-      title="Centre financier"
-      description="Le shell Lot 1 est maintenant en place. Les ecrans pilotes PF viendront se brancher ici."
-    >
-      <template #actions>
-        <div class="module-home-actions">
-          <RouterLink class="module-quick-access__pill" to="/app/finances/paiements/enregistrer">
-            Ouvrir SCR-PF-001
-          </RouterLink>
-          <RouterLink class="module-quick-access__pill" to="/app/finances/caisse">
-            Ouvrir SCR-PF-004
-          </RouterLink>
-          <RouterLink class="module-quick-access__pill" to="/app/finances/historiques">
-            Ouvrir SCR-PF-005
-          </RouterLink>
-          <RouterLink class="module-quick-access__pill" to="/app/finances/dettes">
-            Ouvrir SCR-PF-006
-          </RouterLink>
-          <RouterLink class="module-quick-access__pill" to="/app/finances/registre-classe">
-            Ouvrir MF-01
-          </RouterLink>
-          <RouterLink class="module-quick-access__pill" to="/app/finances/synthese-classe">
-            Ouvrir MF-02
-          </RouterLink>
-          <RouterLink class="module-quick-access__pill" to="/app/finances/synthese-section">
-            Ouvrir MF-03
-          </RouterLink>
-          <RouterLink class="module-quick-access__pill" to="/app/finances/synthese-ecole">
-            Ouvrir MF-04
-          </RouterLink>
-          <RouterLink class="module-quick-access__pill" to="/app/finances/synthese-organisation">
-            Ouvrir MF-05
-          </RouterLink>
-          <RouterLink class="module-quick-access__pill" to="/app/finances/recus/recu-250625-006">
-            Ouvrir SCR-PF-007
-          </RouterLink>
-          <RouterLink class="module-quick-access__pill" to="/app/finances/paiements/restitution">
-            Ouvrir WF-PF-08
-          </RouterLink>
-          <RouterLink class="module-quick-access__pill" to="/app/finances/rapports">
-            Ouvrir SCR-PF-008
-          </RouterLink>
-          <RouterLink class="module-quick-access__pill" to="/app/finances/exonerations">
-            Ouvrir SCR-PF-009
-          </RouterLink>
-          <RouterLink class="module-quick-access__pill" to="/app/finances/recus">
-            Ouvrir SCR-PF-010
-          </RouterLink>
-          <RouterLink class="module-quick-access__pill" to="/app/finances/rapports/journalier">
-            Ouvrir SCR-PF-011
-          </RouterLink>
-          <RouterLink class="module-quick-access__pill" to="/app/finances/rapports/paiements-par-caissier">
-            Ouvrir SCR-PF-012
-          </RouterLink>
-          <RouterLink class="module-quick-access__pill" to="/app/finances/rapports/fonds-anticipes">
-            Ouvrir SCR-PF-013
-          </RouterLink>
-          <RouterLink class="module-quick-access__pill" to="/app/finances/arrieres">
-            Ouvrir SCR-PF-014
-          </RouterLink>
-          <RouterLink class="module-quick-access__pill" to="/app/finances/parametres">
-            Ouvrir SCR-PF-015
-          </RouterLink>
-          <RouterLink class="module-quick-access__pill" to="/app/finances/tarification">
-            Ouvrir SCR-PF-016
-          </RouterLink>
-          <RouterLink class="module-quick-access__pill module-quick-access__pill--action" to="/app/finances/caisse/ouverture">
-            Ouvrir SCR-PF-002
-          </RouterLink>
-          <RouterLink class="module-quick-access__pill" to="/app/finances/caisse/cloture">
-            Ouvrir SCR-PF-003
-          </RouterLink>
-        </div>
-      </template>
-    </PageHeader>
-    <SectionBlock title="Etat du domaine" description="Point d'entree officiel du module finances.">
-      <div class="module-home-grid">
-        <StatChip label="Priorite" value="Haute" />
-        <StatChip label="Lot en cours" value="MF-01 + SCR-PF-001 a SCR-PF-016" />
-        <StatChip label="Perimetre" value="Ecole active" />
-      </div>
-    </SectionBlock>
-  </PageContainer>
+  <DoctrineModuleHome
+    module-code="FINANCES"
+    eyebrow="Module financier"
+    title="Centre financier"
+    description="Point d entree doctrinal du domaine paiements et facturation pour le profil courant."
+  />
 </template>
 
 <script setup lang="ts">
-import { RouterLink } from 'vue-router';
-import PageContainer from '../../../shared/layout/PageContainer.vue';
-import PageHeader from '../../../shared/layout/PageHeader.vue';
-import SectionBlock from '../../../shared/layout/SectionBlock.vue';
-import StatChip from '../../../shared/ui/StatChip.vue';
+import DoctrineModuleHome from '../../../shared/doctrine/DoctrineModuleHome.vue';
 </script>

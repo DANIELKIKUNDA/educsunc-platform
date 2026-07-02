@@ -1,10 +1,10 @@
 <template>
-  <div class="module-quick-access">
+  <div class="quick-access-v2">
     <RouterLink
       v-for="entry in entries.slice(0, 3)"
       :key="entry.route"
       :to="entry.route"
-      class="module-quick-access__pill"
+      class="quick-access-v2__item"
     >
       {{ entry.label }}
     </RouterLink>

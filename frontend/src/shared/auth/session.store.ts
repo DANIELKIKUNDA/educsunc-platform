@@ -1,23 +1,40 @@
-import { reactive } from 'vue';
+import { computed, reactive } from 'vue';
+import { actorProfiles } from '../doctrine/frontend-doctrine';
+import type { FrontendActorCode, FrontendActorProfile, FrontendGovernanceLevel } from '../doctrine/doctrine.types';
+
+export type { FrontendActorCode, FrontendActorProfile, FrontendGovernanceLevel } from '../doctrine/doctrine.types';
 
 export interface FrontendSessionState {
   isAuthenticated: boolean;
-  actorCode: string;
+  actorCode: FrontendActorCode;
   actorLabel: string;
   displayName: string;
+  userId: string;
 }
+
+function findProfile(actorCode: FrontendActorCode): FrontendActorProfile {
+  return actorProfiles.find((profile) => profile.code === actorCode) ?? actorProfiles[0];
+}
+
+const initialProfile = findProfile('ADMINISTRATEUR_ECOLE');
 
 const state = reactive<FrontendSessionState>({
   isAuthenticated: true,
-  actorCode: 'ADMINISTRATEUR_ECOLE',
-  actorLabel: 'Administrateur ecole',
-  displayName: 'Daniel Kikunda',
+  actorCode: initialProfile.code,
+  actorLabel: initialProfile.label,
+  displayName: initialProfile.displayName,
+  userId: 'usr-demo-admin-ecole',
 });
 
 export const sessionStore = {
   state,
-  setActor(actorCode: string, actorLabel: string): void {
-    state.actorCode = actorCode;
-    state.actorLabel = actorLabel;
+  actorProfiles,
+  activeProfile: computed(() => findProfile(state.actorCode)),
+  setActor(actorCode: string): void {
+    const profile = findProfile(actorCode as FrontendActorCode);
+    state.actorCode = profile.code;
+    state.actorLabel = profile.label;
+    state.displayName = profile.displayName;
+    state.userId = `usr-${profile.code.toLowerCase()}`;
   },
 };

@@ -42,7 +42,7 @@
       </div>
     </SectionBlock>
 
-    <AccessBoundary capability="module.finances.access">
+    <AccessBoundary page-code="PF-02">
       <template v-if="effectiveState === 'loading'">
         <LoadingState
           title="Preparation de la caisse"
@@ -142,6 +142,7 @@
 
                 <div class="finance-form-actions">
                   <button
+                    v-if="canOpenCash"
                     class="finance-primary-action"
                     type="button"
                     :disabled="effectiveState === 'already-open'"
@@ -205,14 +206,17 @@ import LoadingState from '../../../shared/ui/LoadingState.vue';
 import ErrorState from '../../../shared/ui/ErrorState.vue';
 import { activeContextStore } from '../../../shared/session/active-context.store';
 import { sessionStore } from '../../../shared/auth/session.store';
+import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
 import { useCashOpeningStore } from '../stores/cash-opening.store';
 
 const context = activeContextStore.state;
 const session = sessionStore.state;
 const cashOpeningStore = useCashOpeningStore();
+const doctrineAccess = useDoctrineAccess();
 
 const cashRegister = computed(() => cashOpeningStore.state.cashDay);
-const isAuthorized = computed(() => session.actorCode === 'CAISSIER');
+const isAuthorized = computed(() => doctrineAccess.canAccessPage('PF-02'));
+const canOpenCash = computed(() => doctrineAccess.canUseAction('finances.cash.open', 'PF-02'));
 const technicalErrorMessage = computed(() =>
   cashOpeningStore.state.errorMessage
   ?? 'L ouverture de caisse n a pas pu etre finalisee.',

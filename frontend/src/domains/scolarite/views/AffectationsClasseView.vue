@@ -2,7 +2,7 @@
   <PageContainer>
     <PageHeader eyebrow="MS-04" title="Affectations de classe" description="Centre reel de lecture, affectation, reaffectation et desactivation dans le bon perimetre scolaire." />
 
-    <AccessBoundary capability="module.scolarite.access">
+    <AccessBoundary page-code="SCO-005">
       <ErrorState
         v-if="!isAuthorized"
         title="Affectations non autorisees"
@@ -23,9 +23,9 @@
             <button class="scolarite-primary-action" type="button" @click="chargerClasse"><Search /><span>Charger la classe</span></button>
             <button class="scolarite-secondary-action" type="button" @click="chargerAffectationActive">Lire l affectation active</button>
             <button class="scolarite-secondary-action" type="button" @click="chargerAffectationParId">Lire par id</button>
-            <button class="scolarite-secondary-action" type="button" @click="affecter">Affecter</button>
-            <button class="scolarite-secondary-action" type="button" @click="changerClasse">Reaffecter</button>
-            <button class="scolarite-secondary-action" type="button" @click="desactiver">Desactiver</button>
+            <button v-if="canManageAssignments" class="scolarite-secondary-action" type="button" @click="affecter">Affecter</button>
+            <button v-if="canManageAssignments" class="scolarite-secondary-action" type="button" @click="changerClasse">Reaffecter</button>
+            <button v-if="canManageAssignments" class="scolarite-secondary-action" type="button" @click="desactiver">Desactiver</button>
           </div>
         </SectionBlock>
 
@@ -85,7 +85,14 @@
                       <div class="scolarite-row-actions">
                         <button class="scolarite-link-action" type="button" @click="selectionnerLigne(entry)">Selectionner</button>
                         <button class="scolarite-link-action" type="button" @click="ouvrirAffectation(entry.idAffectationClasse)">Lire</button>
-                        <button class="scolarite-link-action danger" type="button" @click="desactiverDepuisLigne(entry.idInscriptionScolaire)">Desactiver</button>
+                        <button
+                          v-if="canManageAssignments"
+                          class="scolarite-link-action danger"
+                          type="button"
+                          @click="desactiverDepuisLigne(entry.idInscriptionScolaire)"
+                        >
+                          Desactiver
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -108,14 +115,15 @@ import SectionBlock from '../../../shared/layout/SectionBlock.vue';
 import AccessBoundary from '../../../shared/permissions/AccessBoundary.vue';
 import LoadingState from '../../../shared/ui/LoadingState.vue';
 import ErrorState from '../../../shared/ui/ErrorState.vue';
-import { sessionStore } from '../../../shared/auth/session.store';
+import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
 import type { EleveAffecteClasseItem } from '../models/scolarite.model';
-import { authorizedAffectationsActors, construireNomComplet } from '../models/scolarite.model';
+import { construireNomComplet } from '../models/scolarite.model';
 import { useAssignmentsStore } from '../stores/assignments.store';
 
 const store = useAssignmentsStore();
-const session = sessionStore.state;
-const isAuthorized = computed(() => authorizedAffectationsActors.includes(session.actorCode as never));
+const doctrineAccess = useDoctrineAccess();
+const isAuthorized = computed(() => doctrineAccess.canAccessPage('SCO-005'));
+const canManageAssignments = computed(() => doctrineAccess.canUseAction('scolarite.affectations.manage', 'SCO-005'));
 const idClassePedagogique = ref('');
 const idInscriptionScolaire = ref('');
 const idAffectationClasse = ref('');

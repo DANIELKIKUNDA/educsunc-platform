@@ -51,7 +51,7 @@
       </div>
     </SectionBlock>
 
-    <AccessBoundary capability="module.finances.access">
+    <AccessBoundary page-code="PF-11">
       <template v-if="uiState === 'loading'">
         <LoadingState
           title="Chargement de la situation financiere"
@@ -315,21 +315,20 @@ import ErrorState from '../../../shared/ui/ErrorState.vue';
 import EmptyState from '../../../shared/ui/EmptyState.vue';
 import { activeContextStore } from '../../../shared/session/active-context.store';
 import { sessionStore } from '../../../shared/auth/session.store';
-import { authorizedPaymentHistoryActors } from '../models/payment-history.model';
+import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
 import { useStudentFinancialSituationStore } from '../stores/student-financial-situation.store';
 
 const route = useRoute();
 const context = activeContextStore.state;
 const session = sessionStore.state;
 const studentFinancialSituationStore = useStudentFinancialSituationStore();
+const doctrineAccess = useDoctrineAccess();
 const selectedType = ref('');
 const selectedStatus = ref('');
 const selectedSegment = ref('');
 const selectedObligationId = ref('');
 
-const isAuthorized = computed(() =>
-  authorizedPaymentHistoryActors.includes(session.actorCode as never),
-);
+const isAuthorized = computed(() => doctrineAccess.canAccessPage('PF-11'));
 const profile = computed(() => studentFinancialSituationStore.state.profile);
 const exigibleObligations = computed(() => studentFinancialSituationStore.state.exigibleObligations);
 const technicalErrorMessage = computed(() =>

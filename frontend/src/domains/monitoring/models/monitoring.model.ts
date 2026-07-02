@@ -9,5 +9,3 @@ export interface MonitoringMutationPayload {
 }
 
 export type MonitoringOverviewMode = 'state' | 'dashboard' | 'observability' | 'health';
-
-export const monitoringActors = ['MANAGER_SYSTEME', 'OPERATEUR_SYSTEME', 'SUPPORT_SYSTEME'] as const;

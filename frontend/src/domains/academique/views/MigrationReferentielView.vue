@@ -6,7 +6,7 @@
       description="Analyse, application et supervision d une migration officielle de programme niveau."
     />
 
-    <AccessBoundary capability="module.academique.access">
+    <AccessBoundary page-code="ACA-MIG-001">
       <ErrorState
         v-if="!isAuthorized"
         title="Migration non autorisee"
@@ -150,16 +150,15 @@ import LoadingState from '../../../shared/ui/LoadingState.vue';
 import PageContainer from '../../../shared/layout/PageContainer.vue';
 import PageHeader from '../../../shared/layout/PageHeader.vue';
 import SectionBlock from '../../../shared/layout/SectionBlock.vue';
-import { sessionStore } from '../../../shared/auth/session.store';
+import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
 import {
-  authorizedAcademiqueReadActors,
   type AnalyseMigrationRequest,
 } from '../models/academique.model';
 import { useMigrationReferentielStore } from '../stores/migration-referentiel.store';
 
 const store = useMigrationReferentielStore();
-const session = sessionStore.state;
-const isAuthorized = authorizedAcademiqueReadActors.includes(session.actorCode as never);
+const doctrineAccess = useDoctrineAccess();
+const isAuthorized = doctrineAccess.canAccessPage('ACA-MIG-001');
 const idMigrationInput = ref('');
 const idProgrammeNiveauListeInput = ref('');
 

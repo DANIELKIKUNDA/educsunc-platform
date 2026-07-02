@@ -1,6 +1,8 @@
 <template>
   <ConfigurationWorkspaceView
     screen-code="SCR-CFG-004"
+    page-code="CFG-ECO-002"
+    action-code="configuration.school.branding.manage"
     title="Branding ecole"
     description="Identite documentaire locale, bornee au prefixe branding.* et a l ecole active."
     scope-level="SCHOOL"
@@ -18,4 +20,3 @@
 <script setup lang="ts">
 import ConfigurationWorkspaceView from './ConfigurationWorkspaceView.vue';
 </script>
-

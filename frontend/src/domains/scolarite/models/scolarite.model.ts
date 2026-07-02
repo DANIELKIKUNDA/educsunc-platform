@@ -250,47 +250,6 @@ export type CycleVieActionCode =
   | 'deces'
   | 'suspension';
 
-export const authorizedInscriptionActors: ScolariteActorCode[] = ['CAISSIER'];
-export const authorizedElevesActors: ScolariteActorCode[] = [
-  'CAISSIER',
-  'PREFET_ETUDES',
-  'DIRECTEUR_ETUDES',
-  'DIRECTEUR_PRIMAIRE',
-  'DIRECTEUR_MATERNELLE',
-];
-export const authorizedFamillesActors: ScolariteActorCode[] = ['CAISSIER'];
-export const authorizedAffectationsActors: ScolariteActorCode[] = [
-  'CAISSIER',
-  'PREFET_ETUDES',
-  'DIRECTEUR_ETUDES',
-  'DIRECTEUR_PRIMAIRE',
-  'DIRECTEUR_MATERNELLE',
-];
-export const authorizedCycleVieActors: ScolariteActorCode[] = [
-  'CAISSIER',
-  'PREFET_ETUDES',
-  'DIRECTEUR_ETUDES',
-  'DIRECTEUR_PRIMAIRE',
-  'DIRECTEUR_MATERNELLE',
-  'DIRECTEUR_DISCIPLINE',
-];
-export const authorizedSuspensionActors: ScolariteActorCode[] = [
-  'DIRECTEUR_DISCIPLINE',
-  'PREFET_ETUDES',
-  'DIRECTEUR_ETUDES',
-  'DIRECTEUR_PRIMAIRE',
-  'DIRECTEUR_MATERNELLE',
-];
-
-export const cycleVieActionsParActeur: Record<ScolariteActorCode, CycleVieActionCode[]> = {
-  CAISSIER: ['abandon', 'transfert', 'reintegration', 'reactivation', 'deces'],
-  PREFET_ETUDES: ['abandon', 'transfert', 'reintegration', 'reactivation', 'deces', 'suspension'],
-  DIRECTEUR_ETUDES: ['abandon', 'transfert', 'reintegration', 'reactivation', 'deces', 'suspension'],
-  DIRECTEUR_PRIMAIRE: ['abandon', 'transfert', 'reintegration', 'reactivation', 'deces', 'suspension'],
-  DIRECTEUR_MATERNELLE: ['abandon', 'transfert', 'reintegration', 'reactivation', 'deces', 'suspension'],
-  DIRECTEUR_DISCIPLINE: ['suspension'],
-};
-
 export const cycleVieActionLabels: Record<CycleVieActionCode, string> = {
   abandon: 'Abandon',
   transfert: 'Transfert',
@@ -307,6 +266,15 @@ export const cycleVieActionDescriptions: Record<CycleVieActionCode, string> = {
   reactivation: 'Reouverture d un dossier precedemment inactif.',
   deces: 'Declaration definitive du deces de l eleve.',
   suspension: 'Suspension dans le perimetre disciplinaire ou pedagogique autorise.',
+};
+
+export const cycleVieDoctrineActionCodes: Record<CycleVieActionCode, string> = {
+  abandon: 'scolarite.cycle.abandon',
+  transfert: 'scolarite.cycle.transfert',
+  reintegration: 'scolarite.cycle.reintegration',
+  reactivation: 'scolarite.cycle.reactivation',
+  deces: 'scolarite.cycle.deces',
+  suspension: 'scolarite.cycle.suspension',
 };
 
 export function construireNomComplet(

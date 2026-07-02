@@ -43,7 +43,7 @@
       </div>
     </SectionBlock>
 
-    <AccessBoundary capability="module.scolarite.access">
+    <AccessBoundary page-code="SCO-003">
       <ErrorState
         v-if="!isAuthorized"
         title="Familles non autorisees"
@@ -153,7 +153,7 @@
                 </label>
               </div>
               <div class="scolarite-actions-row">
-                <button class="scolarite-primary-action" type="button" :disabled="!canCreate" @click="creer">
+                <button v-if="canManageFamilies" class="scolarite-primary-action" type="button" :disabled="!canCreate" @click="creer">
                   <Save />
                   <span>Creer la famille</span>
                 </button>
@@ -260,7 +260,7 @@
                     </label>
                   </div>
                   <div class="scolarite-actions-row">
-                    <button class="scolarite-primary-action" type="button" @click="modifierFamille">
+                    <button v-if="canManageFamilies" class="scolarite-primary-action" type="button" @click="modifierFamille">
                       <Save />
                       <span>Mettre a jour</span>
                     </button>
@@ -336,11 +336,11 @@
                     </label>
                   </div>
                   <div class="scolarite-actions-row">
-                    <button class="scolarite-primary-action" type="button" :disabled="!canSaveResponsable" @click="ajouterResponsable">
+                    <button v-if="canManageFamilies" class="scolarite-primary-action" type="button" :disabled="!canSaveResponsable" @click="ajouterResponsable">
                       <Save />
                       <span>Ajouter</span>
                     </button>
-                    <button class="scolarite-secondary-action" type="button" :disabled="!canSaveResponsable" @click="modifierResponsable">
+                    <button v-if="canManageFamilies" class="scolarite-secondary-action" type="button" :disabled="!canSaveResponsable" @click="modifierResponsable">
                       Modifier
                     </button>
                     <button class="scolarite-secondary-action" type="button" @click="reinitialiserResponsable">
@@ -355,8 +355,8 @@
                       <small>{{ responsable.estPrincipal ? 'Principal' : 'Secondaire' }}</small>
                       <div class="scolarite-actions-row">
                         <button class="scolarite-inline-action" type="button" @click="chargerResponsable(responsable)">Charger</button>
-                        <button class="scolarite-inline-action" type="button" @click="definirPrincipal(responsable.idResponsableFamille)">Definir principal</button>
-                        <button class="scolarite-inline-action" type="button" @click="retirerResponsable(responsable.idResponsableFamille)">Retirer</button>
+                        <button v-if="canManageFamilies" class="scolarite-inline-action" type="button" @click="definirPrincipal(responsable.idResponsableFamille)">Definir principal</button>
+                        <button v-if="canManageFamilies" class="scolarite-inline-action" type="button" @click="retirerResponsable(responsable.idResponsableFamille)">Retirer</button>
                       </div>
                     </li>
                   </ul>
@@ -379,7 +379,7 @@
                     </label>
                   </div>
                   <div class="scolarite-actions-row">
-                    <button class="scolarite-primary-action" type="button" :disabled="!canLinkStudent" @click="rattacherEleve">
+                    <button v-if="canManageFamilies" class="scolarite-primary-action" type="button" :disabled="!canLinkStudent" @click="rattacherEleve">
                       <Link2 />
                       <span>Rattacher l eleve</span>
                     </button>
@@ -390,7 +390,7 @@
                       <strong>{{ nomComplet(eleve) }}</strong>
                       <small>{{ eleve.matricule }} | {{ eleve.statutGlobal }}</small>
                       <div class="scolarite-actions-row">
-                        <button class="scolarite-inline-action" type="button" @click="detacherEleve(eleve.idEleve)">Detacher</button>
+                        <button v-if="canManageFamilies" class="scolarite-inline-action" type="button" @click="detacherEleve(eleve.idEleve)">Detacher</button>
                       </div>
                     </li>
                   </ul>
@@ -431,8 +431,8 @@ import ContextBadge from '../../../shared/ui/ContextBadge.vue';
 import PermissionTag from '../../../shared/ui/PermissionTag.vue';
 import { sessionStore } from '../../../shared/auth/session.store';
 import { activeContextStore } from '../../../shared/session/active-context.store';
+import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
 import {
-  authorizedFamillesActors,
   construireNomComplet,
   type EleveItem,
   type ResponsableFamilleItem,
@@ -443,7 +443,9 @@ import { useFamiliesStore } from '../stores/families.store';
 const store = useFamiliesStore();
 const session = sessionStore.state;
 const context = activeContextStore.state;
-const isAuthorized = computed(() => authorizedFamillesActors.includes(session.actorCode as never));
+const doctrineAccess = useDoctrineAccess();
+const isAuthorized = computed(() => doctrineAccess.canAccessPage('SCO-003'));
+const canManageFamilies = computed(() => doctrineAccess.canUseAction('scolarite.familles.manage', 'SCO-003'));
 
 const filters = reactive({
   nomFamille: '',
