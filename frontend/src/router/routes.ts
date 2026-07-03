@@ -13,6 +13,7 @@ import { routesPedagogique } from '../domains/pedagogique/routes';
 import { routesPlateforme } from '../domains/plateforme/routes';
 import { routesScolarite } from '../domains/scolarite/routes';
 import { routesSecurity } from '../domains/security/routes';
+import { resolveAppEntryRoute } from '../shared/doctrine/doctrine.resolver';
 
 export const routesFrontend: RouteRecordRaw[] = [
   {
@@ -37,7 +38,7 @@ export const routesFrontend: RouteRecordRaw[] = [
     children: [
       {
         path: '',
-        redirect: '/app/finances',
+        redirect: () => resolveAppEntryRoute(),
       },
       ...routesPlateforme,
       ...routesOrganisation,

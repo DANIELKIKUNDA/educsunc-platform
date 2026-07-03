@@ -1,7 +1,13 @@
 import type { Router } from 'vue-router';
 import { sessionStore } from '../shared/auth/session.store';
 import { activeContextStore } from '../shared/session/active-context.store';
-import { getFirstAccessibleRoute, resolvePageByRouteName } from '../shared/doctrine/doctrine.resolver';
+import {
+  getFirstAccessibleRoute,
+  isPageAccessible,
+  resolveAppEntryRoute,
+  resolvePageByRouteName,
+  resolvePageByRoutePath,
+} from '../shared/doctrine/doctrine.resolver';
 
 export function installNavigationGuards(router: Router): void {
   router.beforeEach((to) => {
@@ -12,17 +18,21 @@ export function installNavigationGuards(router: Router): void {
     }
 
     if (to.path.startsWith('/app')) {
-      const doctrinePage = resolvePageByRouteName(to.name);
+      const actorCode = sessionStore.state.actorCode;
+      const governanceLevel = activeContextStore.state.governanceLevel;
+
+      if (to.path === '/app') {
+        return resolveAppEntryRoute(actorCode, governanceLevel);
+      }
+
+      const doctrinePage = resolvePageByRouteName(to.name) ?? resolvePageByRoutePath(to.path);
 
       if (doctrinePage) {
-        const actorCode = sessionStore.state.actorCode;
-        const governanceLevel = activeContextStore.state.governanceLevel;
-        const actorAllowed = doctrinePage.actorCodes.includes(actorCode);
-        const levelAllowed = doctrinePage.governanceLevels.includes(governanceLevel);
-
-        if (!actorAllowed || !levelAllowed) {
+        if (!isPageAccessible(doctrinePage, actorCode, governanceLevel)) {
           return getFirstAccessibleRoute(actorCode, governanceLevel);
         }
+      } else {
+        return getFirstAccessibleRoute(actorCode, governanceLevel);
       }
     }
 

@@ -48,7 +48,7 @@ import {
   changerEcoleActiveFrontend,
   changerOrganisationActiveFrontend,
 } from '../../shared/auth/session.bootstrap';
-import { getFirstAccessibleRoute, resolvePageByRoutePath } from '../../shared/doctrine/doctrine.resolver';
+import { getFirstAccessibleRoute, isRouteAccessible } from '../../shared/doctrine/doctrine.resolver';
 import { activeContextStore } from '../../shared/session/active-context.store';
 
 const context = activeContextStore.state;
@@ -91,14 +91,8 @@ function onSchoolYearChange(event: Event): void {
 }
 
 function ensureCurrentPageStillAccessible(): void {
-  const currentPage = resolvePageByRoutePath(route.path);
   const governanceLevel = activeContextStore.state.governanceLevel;
-
-  if (
-    currentPage &&
-    currentPage.actorCodes.includes(sessionStore.state.actorCode) &&
-    currentPage.governanceLevels.includes(governanceLevel)
-  ) {
+  if (isRouteAccessible(route.path, sessionStore.state.actorCode, governanceLevel)) {
     return;
   }
 

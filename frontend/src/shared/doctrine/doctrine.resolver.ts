@@ -17,6 +17,19 @@ export function isPageAccessible(page: FrontendPageDoctrine, actorCode: Frontend
   return page.actorCodes.includes(actorCode) && page.governanceLevels.includes(governanceLevel as never);
 }
 
+export function isRouteAccessible(
+  path: string,
+  actorCode = sessionStore.state.actorCode,
+  governanceLevel = activeContextStore.state.governanceLevel,
+): boolean {
+  const page = resolvePageByRoutePath(path);
+  if (!page) {
+    return false;
+  }
+
+  return isPageAccessible(page, actorCode as FrontendActorCode, governanceLevel);
+}
+
 export function getAccessiblePages(actorCode = sessionStore.state.actorCode, governanceLevel = activeContextStore.state.governanceLevel) {
   return pageDoctrine.filter((page) => isPageAccessible(page, actorCode as FrontendActorCode, governanceLevel));
 }
@@ -43,6 +56,13 @@ export function getFirstAccessibleRoute(actorCode = sessionStore.state.actorCode
   }
 
   return getAccessiblePages(actorCode, governanceLevel)[0]?.routePath ?? '/app';
+}
+
+export function resolveAppEntryRoute(
+  actorCode = sessionStore.state.actorCode,
+  governanceLevel = activeContextStore.state.governanceLevel,
+) {
+  return getFirstAccessibleRoute(actorCode, governanceLevel);
 }
 
 export function buildDoctrineNavigation(actorCode = sessionStore.state.actorCode, governanceLevel = activeContextStore.state.governanceLevel) {

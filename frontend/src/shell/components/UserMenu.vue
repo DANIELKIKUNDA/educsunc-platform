@@ -61,7 +61,7 @@
 import { computed, ref, watchEffect } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { sessionStore } from '../../shared/auth/session.store';
-import { getFirstAccessibleRoute, resolvePageByRoutePath } from '../../shared/doctrine/doctrine.resolver';
+import { getFirstAccessibleRoute, isRouteAccessible } from '../../shared/doctrine/doctrine.resolver';
 import { activeContextStore } from '../../shared/session/active-context.store';
 
 const session = sessionStore.state;
@@ -117,15 +117,9 @@ function onToggle(event: Event): void {
 function onActorChange(event: Event): void {
   const target = event.target as HTMLSelectElement;
   sessionStore.setActor(target.value);
-
-  const currentPage = resolvePageByRoutePath(route.path);
   const governanceLevel = activeContextStore.state.governanceLevel;
-  const currentStillAccessible =
-    currentPage !== undefined &&
-    currentPage.actorCodes.includes(sessionStore.state.actorCode) &&
-    currentPage.governanceLevels.includes(governanceLevel);
 
-  if (!currentStillAccessible) {
+  if (!isRouteAccessible(route.path, sessionStore.state.actorCode, governanceLevel)) {
     void router.push(getFirstAccessibleRoute(sessionStore.state.actorCode, governanceLevel));
   }
 }
