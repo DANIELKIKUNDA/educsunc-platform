@@ -1,5 +1,8 @@
 import { clientApi } from '../../../services/api';
-import { sessionStore } from '../../../shared/auth/session.store';
+import {
+  construireEntetesContexteActif,
+  lireContexteApiActif,
+} from '../../../shared/session/api-context';
 import type {
   SecurityAffectationCreatePayload,
   SecurityApiContext,
@@ -10,16 +13,6 @@ import type {
   SecurityScopeCreatePayload,
   SecurityTitulariatCreatePayload,
 } from '../models/security.model';
-
-function lireVariableEnvironnement(nom: string): string | null {
-  const valeur = import.meta.env[nom];
-  if (typeof valeur !== 'string') {
-    return null;
-  }
-
-  const nettoyee = valeur.trim();
-  return nettoyee.length > 0 ? nettoyee : null;
-}
 
 function genererIdempotencyKey(prefixe: string): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
@@ -35,18 +28,10 @@ function construireEntetesContexte(contexte: SecurityApiContext): Record<string,
     || contexte.ecoleId === null
     || contexte.utilisateurId === null
   ) {
-    throw new Error(
-      'Le contexte frontend security est incomplet. Configurez VITE_REFERENTIEL_ORGANISATION_ID, VITE_REFERENTIEL_ECOLE_ID et VITE_REFERENTIEL_UTILISATEUR_ID.',
-    );
+    throw new Error('Le contexte frontend security est incomplet.');
   }
 
-  return {
-    'x-organisation-id': contexte.organisationId,
-    'x-tenant-id': contexte.ecoleId,
-    'x-ecole-id': contexte.ecoleId,
-    'x-user-id': contexte.utilisateurId,
-    'x-role-actif': sessionStore.state.actorCode,
-  };
+  return construireEntetesContexteActif(contexte, { includeSchoolHeader: true });
 }
 
 function construireEntetesMutation(contexte: SecurityApiContext, prefixe: string): Record<string, string> {
@@ -57,11 +42,7 @@ function construireEntetesMutation(contexte: SecurityApiContext, prefixe: string
 }
 
 export function lireContexteApiSecurity(): SecurityApiContext {
-  return {
-    organisationId: lireVariableEnvironnement('VITE_REFERENTIEL_ORGANISATION_ID'),
-    ecoleId: lireVariableEnvironnement('VITE_REFERENTIEL_ECOLE_ID'),
-    utilisateurId: lireVariableEnvironnement('VITE_REFERENTIEL_UTILISATEUR_ID'),
-  };
+  return lireContexteApiActif();
 }
 
 export const securityApi = {

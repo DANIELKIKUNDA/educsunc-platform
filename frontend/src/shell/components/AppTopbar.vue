@@ -41,6 +41,9 @@
     <ContextSwitcher v-if="!mobile" class="erp-topbar__context" />
 
     <div v-if="!mobile" class="erp-topbar__signals">
+      <span v-if="session.authMode === 'dev'" class="erp-shell-badge erp-shell-badge--dev-topbar">
+        Mode dev
+      </span>
       <button type="button" class="erp-topbar__signal">
         <Bell />
         <span>0</span>
@@ -61,6 +64,7 @@ import { useRoute } from 'vue-router';
 import { Bell, MessagesSquare, PanelLeftClose, PanelLeftOpen, Search } from 'lucide-vue-next';
 import { resolvePageByRouteName } from '../../shared/doctrine/doctrine.resolver';
 import { flattenNavigation } from '../../shared/navigation/navigation.builder';
+import { sessionStore } from '../../shared/auth/session.store';
 import { activeContextStore } from '../../shared/session/active-context.store';
 import type { NavigationEntry } from '../../shared/navigation/navigation.types';
 import ContextSwitcher from './ContextSwitcher.vue';
@@ -87,6 +91,7 @@ type TopbarSearchResult = {
 
 const route = useRoute();
 const context = activeContextStore.state;
+const session = sessionStore.state;
 const query = ref('');
 
 const currentModule = computed(() => props.entries.find((entry) => route.path.startsWith(entry.route)) ?? props.entries[0]);

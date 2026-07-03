@@ -5,7 +5,12 @@ interface SchoolContextOption {
   id: string;
   name: string;
   sectionName: string;
-  years: readonly string[];
+  years: readonly SchoolYearContextOption[];
+}
+
+interface SchoolYearContextOption {
+  id: string;
+  label: string;
 }
 
 interface OrganizationContextOption {
@@ -21,10 +26,11 @@ export interface ActiveFrontendContext {
   schoolId: string;
   schoolName: string;
   sectionName: string;
+  schoolYearId: string;
   schoolYearLabel: string;
 }
 
-const organizations: readonly OrganizationContextOption[] = [
+const initialOrganizations: readonly OrganizationContextOption[] = [
   {
     id: 'org-archedu',
     name: 'Archi Logiciel Education',
@@ -33,13 +39,19 @@ const organizations: readonly OrganizationContextOption[] = [
         id: 'ecole-saint-raphael',
         name: 'College Saint Raphael',
         sectionName: 'Secondaire',
-        years: ['2025 - 2026', '2024 - 2025'],
+        years: [
+          { id: 'annee-saint-raphael-2025-2026', label: '2025 - 2026' },
+          { id: 'annee-saint-raphael-2024-2025', label: '2024 - 2025' },
+        ],
       },
       {
         id: 'ecole-sainte-marie',
         name: 'Ecole Sainte Marie',
         sectionName: 'Primaire',
-        years: ['2025 - 2026', '2024 - 2025'],
+        years: [
+          { id: 'annee-sainte-marie-2025-2026', label: '2025 - 2026' },
+          { id: 'annee-sainte-marie-2024-2025', label: '2024 - 2025' },
+        ],
       },
     ],
   },
@@ -51,21 +63,69 @@ const organizations: readonly OrganizationContextOption[] = [
         id: 'ecole-lumumba',
         name: 'Institut Patrice Lumumba',
         sectionName: 'Secondaire',
-        years: ['2025 - 2026', '2024 - 2025'],
+        years: [
+          { id: 'annee-lumumba-2025-2026', label: '2025 - 2026' },
+          { id: 'annee-lumumba-2024-2025', label: '2024 - 2025' },
+        ],
       },
     ],
   },
 ];
 
+const organizationsState = reactive<OrganizationContextOption[]>(
+  initialOrganizations.map((organization) => ({
+    ...organization,
+    schools: [...organization.schools],
+  })),
+);
+
 function findOrganization(organizationId: string): OrganizationContextOption {
-  return organizations.find((organization) => organization.id === organizationId) ?? organizations[0];
+  return organizationsState.find((organization) => organization.id === organizationId) ?? {
+    id: organizationId,
+    name: organizationId,
+    schools: organizationsState[0]?.schools ?? [],
+  };
 }
 
 function findSchool(organization: OrganizationContextOption, schoolId: string): SchoolContextOption {
-  return organization.schools.find((school) => school.id === schoolId) ?? organization.schools[0];
+  return organization.schools.find((school) => school.id === schoolId) ?? {
+    id: schoolId,
+    name: schoolId,
+    sectionName: organization.schools[0]?.sectionName ?? 'Non renseignee',
+    years: organization.schools[0]?.years ?? [{ id: `annee-${schoolId}`, label: '2025 - 2026' }],
+  };
 }
 
-const initialOrganization = organizations[0];
+function getFirstSchoolYear(school: SchoolContextOption): SchoolYearContextOption {
+  return school.years[0] ?? { id: '', label: '' };
+}
+
+function resolveSchoolYear(
+  school: SchoolContextOption,
+  schoolYearLabelOrId: string,
+): SchoolYearContextOption {
+  return school.years.find((year) => year.id === schoolYearLabelOrId || year.label === schoolYearLabelOrId)
+    ?? getFirstSchoolYear(school);
+}
+
+function upsertOrganizationOption(option: OrganizationContextOption): void {
+  const index = organizationsState.findIndex((organization) => organization.id === option.id);
+  if (index >= 0) {
+    organizationsState[index] = {
+      ...organizationsState[index],
+      ...option,
+      schools: [...option.schools],
+    };
+    return;
+  }
+
+  organizationsState.push({
+    ...option,
+    schools: [...option.schools],
+  });
+}
+
+const initialOrganization = organizationsState[0];
 const initialSchool = initialOrganization.schools[0];
 
 const state = reactive<ActiveFrontendContext>({
@@ -75,13 +135,14 @@ const state = reactive<ActiveFrontendContext>({
   schoolId: initialSchool.id,
   schoolName: initialSchool.name,
   sectionName: initialSchool.sectionName,
-  schoolYearLabel: initialSchool.years[0],
+  schoolYearId: getFirstSchoolYear(initialSchool).id,
+  schoolYearLabel: getFirstSchoolYear(initialSchool).label,
 });
 
 export const activeContextStore = {
   state,
-  organizations,
-  organizationOptions: computed(() => organizations),
+  organizations: organizationsState,
+  organizationOptions: computed(() => organizationsState),
   schoolOptions: computed(() => findOrganization(state.organizationId).schools),
   schoolYearOptions: computed(() => findSchool(findOrganization(state.organizationId), state.schoolId).years),
   setGovernanceLevel(governanceLevel: FrontendGovernanceLevel): void {
@@ -97,22 +158,154 @@ export const activeContextStore = {
   setOrganization(organizationId: string): void {
     const organization = findOrganization(organizationId);
     const school = organization.schools[0];
+    const schoolYear = getFirstSchoolYear(school);
     state.organizationId = organization.id;
     state.organizationName = organization.name;
     state.schoolId = school.id;
     state.schoolName = school.name;
     state.sectionName = school.sectionName;
-    state.schoolYearLabel = school.years[0];
+    state.schoolYearId = schoolYear.id;
+    state.schoolYearLabel = schoolYear.label;
   },
   setSchool(schoolId: string): void {
     const organization = findOrganization(state.organizationId);
     const school = findSchool(organization, schoolId);
+    const schoolYear = getFirstSchoolYear(school);
     state.schoolId = school.id;
     state.schoolName = school.name;
     state.sectionName = school.sectionName;
-    state.schoolYearLabel = school.years[0];
+    state.schoolYearId = schoolYear.id;
+    state.schoolYearLabel = schoolYear.label;
   },
-  setSchoolYear(schoolYearLabel: string): void {
-    state.schoolYearLabel = schoolYearLabel;
+  setSchoolYear(schoolYearLabelOrId: string, schoolYearId?: string): void {
+    const school = findSchool(findOrganization(state.organizationId), state.schoolId);
+    const schoolYear = schoolYearId
+      ? school.years.find((year) => year.id === schoolYearId) ?? resolveSchoolYear(school, schoolYearLabelOrId)
+      : resolveSchoolYear(school, schoolYearLabelOrId);
+    state.schoolYearId = schoolYear.id;
+    state.schoolYearLabel = schoolYear.label;
+  },
+  remplacerAnneesScolairesEcole(
+    schoolId: string,
+    schoolYears: ReadonlyArray<{
+      id: string;
+      label: string;
+    }>,
+  ): void {
+    const organisation = findOrganization(state.organizationId);
+    const ecoles = [...organisation.schools];
+    const index = ecoles.findIndex((ecole) => ecole.id === schoolId);
+
+    if (index < 0) {
+      return;
+    }
+
+    ecoles[index] = {
+      ...ecoles[index],
+      years: schoolYears.length > 0 ? [...schoolYears] : ecoles[index].years,
+    };
+
+    upsertOrganizationOption({
+      id: organisation.id,
+      name: organisation.name,
+      schools: ecoles,
+    });
+
+    if (state.schoolId === schoolId && schoolYears.length > 0) {
+      state.schoolYearId = schoolYears[0].id;
+      state.schoolYearLabel = schoolYears[0].label;
+    }
+  },
+  remplacerOrganisationsDepuisBackend(
+    organisations: ReadonlyArray<{
+      id: string;
+      nom: string;
+    }>,
+  ): void {
+    for (const organisation of organisations) {
+      upsertOrganizationOption({
+        id: organisation.id,
+        name: organisation.nom,
+        schools: findOrganization(organisation.id).schools,
+      });
+    }
+  },
+  remplacerEcolesDepuisBackend(
+    organizationId: string,
+    ecoles: ReadonlyArray<{
+      id: string;
+      nom: string;
+    }>,
+  ): void {
+    const organisation = findOrganization(organizationId);
+    upsertOrganizationOption({
+      id: organisation.id,
+      name: organisation.name,
+      schools: ecoles.map((ecole) => ({
+        id: ecole.id,
+        name: ecole.nom,
+        sectionName: findSchool(organisation, ecole.id).sectionName,
+        years: findSchool(organisation, ecole.id).years,
+      })),
+    });
+  },
+  enregistrerOrganisation(
+    organisation: {
+      id: string;
+      nom: string;
+    },
+  ): void {
+    upsertOrganizationOption({
+      id: organisation.id,
+      name: organisation.nom,
+      schools: findOrganization(organisation.id).schools,
+    });
+  },
+  enregistrerEcole(
+    payload: {
+      idOrganisation: string;
+      id: string;
+      nom: string;
+    },
+  ): void {
+    const organisation = findOrganization(payload.idOrganisation);
+    const ecoles = [...organisation.schools];
+    const index = ecoles.findIndex((ecole) => ecole.id === payload.id);
+    const nouvelleEcole: SchoolContextOption = {
+      id: payload.id,
+      name: payload.nom,
+      sectionName: index >= 0 ? ecoles[index].sectionName : 'Secondaire',
+      years: index >= 0 ? ecoles[index].years : [{ id: `annee-${payload.id}`, label: '2025 - 2026' }],
+    };
+
+    if (index >= 0) {
+      ecoles[index] = nouvelleEcole;
+    } else {
+      ecoles.push(nouvelleEcole);
+    }
+
+    upsertOrganizationOption({
+      id: organisation.id,
+      name: organisation.name,
+      schools: ecoles,
+    });
+  },
+  applyResolvedContext(params: {
+    organizationId?: string | null;
+    schoolId?: string | null;
+  }): void {
+    const organizationId = params.organizationId ?? state.organizationId;
+    const organization = findOrganization(organizationId);
+    const schoolId = params.schoolId ?? state.schoolId;
+    const school = findSchool(organization, schoolId);
+    const schoolYear = getFirstSchoolYear(school);
+
+    state.organizationId = organization.id;
+    state.organizationName = organization.name;
+    state.schoolId = school.id;
+    state.schoolName = school.name;
+    state.sectionName = school.sectionName;
+    state.schoolYearId = schoolYear.id;
+    state.schoolYearLabel = schoolYear.label || state.schoolYearLabel;
   },
 };

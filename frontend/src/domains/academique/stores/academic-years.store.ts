@@ -1,4 +1,5 @@
 import { reactive } from 'vue';
+import { activeContextStore } from '../../../shared/session/active-context.store';
 import type {
   AnneeScolaireItem,
   BasculeAnneeScolaireResponse,
@@ -48,6 +49,13 @@ async function chargerListe(idEcole: string): Promise<void> {
     const contexte = lireContexteApiAcademique();
     const response = await academiqueApi.listerAnneesScolaires(idEcole, contexte);
     state.entries = mapperAnneesScolaires(response.donnees);
+    activeContextStore.remplacerAnneesScolairesEcole(
+      idEcole,
+      state.entries.map((entry) => ({
+        id: entry.id,
+        label: entry.code,
+      })),
+    );
   }, 'Le chargement des annees scolaires a echoue.');
 }
 
@@ -56,6 +64,9 @@ async function chargerActive(idEcole: string): Promise<void> {
     const contexte = lireContexteApiAcademique();
     const response = await academiqueApi.consulterAnneeActive(idEcole, contexte);
     state.active = response.donnee;
+    if (response.donnee?.code) {
+      activeContextStore.setSchoolYear(response.donnee.code, response.donnee.id);
+    }
   }, 'La lecture de l annee active a echoue.');
 }
 
@@ -103,6 +114,9 @@ async function garantir(payload: {
     const response = await academiqueApi.garantirAnneeActive(payload, contexte);
     state.active = response.donnee;
     state.transitionSummary = response;
+    if (response.donnee.code) {
+      activeContextStore.setSchoolYear(response.donnee.code, response.donnee.id);
+    }
   }, 'La garantie de l annee active a echoue.');
 }
 
@@ -118,6 +132,12 @@ async function basculer(payload: {
     const response = await academiqueApi.basculerAnneeScolaire(payload, contexte);
     state.active = response.donnee.anneeActive;
     state.transitionSummary = response;
+    if (response.donnee.anneeActive.code) {
+      activeContextStore.setSchoolYear(
+        response.donnee.anneeActive.code,
+        response.donnee.anneeActive.id,
+      );
+    }
   }, 'La bascule d annee scolaire a echoue.');
 }
 
@@ -126,6 +146,10 @@ async function activer(idAnneeScolaire: string, modifiePar: string): Promise<voi
     const contexte = lireContexteApiAcademique();
     const response = await academiqueApi.activerAnneeScolaire(idAnneeScolaire, modifiePar, contexte);
     state.transitionSummary = response;
+    state.active = response.donnee;
+    if (response.donnee.code) {
+      activeContextStore.setSchoolYear(response.donnee.code, response.donnee.id);
+    }
   }, 'L activation de l annee scolaire a echoue.');
 }
 

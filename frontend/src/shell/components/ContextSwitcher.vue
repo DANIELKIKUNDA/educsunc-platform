@@ -31,9 +31,9 @@
 
     <label v-if="context.governanceLevel === 'ECOLE'" class="context-strip__field">
       <span>Annee</span>
-      <select :value="context.schoolYearLabel" @change="onSchoolYearChange">
-        <option v-for="schoolYear in activeContextStore.schoolYearOptions.value" :key="schoolYear" :value="schoolYear">
-          {{ schoolYear }}
+      <select :value="context.schoolYearId" @change="onSchoolYearChange">
+        <option v-for="schoolYear in activeContextStore.schoolYearOptions.value" :key="schoolYear.id" :value="schoolYear.id">
+          {{ schoolYear.label }}
         </option>
       </select>
     </label>
@@ -44,6 +44,10 @@
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { sessionStore, type FrontendGovernanceLevel } from '../../shared/auth/session.store';
+import {
+  changerEcoleActiveFrontend,
+  changerOrganisationActiveFrontend,
+} from '../../shared/auth/session.bootstrap';
 import { getFirstAccessibleRoute, resolvePageByRoutePath } from '../../shared/doctrine/doctrine.resolver';
 import { activeContextStore } from '../../shared/session/active-context.store';
 
@@ -67,19 +71,23 @@ function onGovernanceLevelChange(event: Event): void {
 
 function onOrganizationChange(event: Event): void {
   const target = event.target as HTMLSelectElement;
-  activeContextStore.setOrganization(target.value);
-  ensureCurrentPageStillAccessible();
+  void (async () => {
+    await changerOrganisationActiveFrontend(target.value);
+    ensureCurrentPageStillAccessible();
+  })();
 }
 
 function onSchoolChange(event: Event): void {
   const target = event.target as HTMLSelectElement;
-  activeContextStore.setSchool(target.value);
-  ensureCurrentPageStillAccessible();
+  void (async () => {
+    await changerEcoleActiveFrontend(target.value);
+    ensureCurrentPageStillAccessible();
+  })();
 }
 
 function onSchoolYearChange(event: Event): void {
   const target = event.target as HTMLSelectElement;
-  activeContextStore.setSchoolYear(target.value);
+  activeContextStore.setSchoolYear(target.value, target.value);
 }
 
 function ensureCurrentPageStillAccessible(): void {

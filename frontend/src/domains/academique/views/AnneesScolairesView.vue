@@ -35,11 +35,17 @@
         </SectionBlock>
 
         <SectionBlock title="Creation et transitions" description="Le frontend suit strictement les routes reelles deja exposees.">
+          <div class="academique-context-strip">
+            <div class="academique-context-chip">
+              <small>Id ecole actif</small>
+              <strong>{{ tenantContext.schoolId }}</strong>
+            </div>
+            <div class="academique-context-chip">
+              <small>Utilisateur trace</small>
+              <strong>{{ tenantContext.userId }}</strong>
+            </div>
+          </div>
           <div class="academique-form-grid">
-            <label class="academique-field">
-              <span>Id ecole</span>
-              <input v-model="idEcoleInput" type="text" placeholder="uuid-ecole" />
-            </label>
             <label class="academique-field">
               <span>Code</span>
               <input v-model="creation.code" type="text" placeholder="2025-2026" />
@@ -56,28 +62,24 @@
               <span>Date fin</span>
               <input v-model="creation.dateFin" type="date" />
             </label>
-            <label class="academique-field">
-              <span>Utilisateur trace</span>
-              <input v-model="traceUtilisateur" type="text" placeholder="uuid-utilisateur" />
-            </label>
           </div>
           <div class="academique-actions-row">
             <button class="academique-primary-action" type="button" :disabled="store.state.status === 'loading' || !canCreate" @click="creer">
               Creer
             </button>
-            <button class="academique-secondary-action" type="button" :disabled="store.state.status === 'loading' || !idEcoleInput.trim()" @click="chargerListe">
+            <button class="academique-secondary-action" type="button" :disabled="store.state.status === 'loading' || !hasActiveSchool" @click="chargerListe">
               Lister
             </button>
-            <button class="academique-secondary-action" type="button" :disabled="store.state.status === 'loading' || !idEcoleInput.trim()" @click="chargerActive">
+            <button class="academique-secondary-action" type="button" :disabled="store.state.status === 'loading' || !hasActiveSchool" @click="chargerActive">
               Annee active
             </button>
-            <button class="academique-secondary-action" type="button" :disabled="store.state.status === 'loading' || !idEcoleInput.trim() || !traceUtilisateur.trim()" @click="preparer">
+            <button class="academique-secondary-action" type="button" :disabled="store.state.status === 'loading' || !hasMutationContext" @click="preparer">
               Preparer suivante
             </button>
-            <button class="academique-secondary-action" type="button" :disabled="store.state.status === 'loading' || !idEcoleInput.trim() || !traceUtilisateur.trim()" @click="garantir">
+            <button class="academique-secondary-action" type="button" :disabled="store.state.status === 'loading' || !hasMutationContext" @click="garantir">
               Garantir active
             </button>
-            <button class="academique-secondary-action" type="button" :disabled="store.state.status === 'loading' || !idEcoleInput.trim() || !traceUtilisateur.trim()" @click="basculer">
+            <button class="academique-secondary-action" type="button" :disabled="store.state.status === 'loading' || !hasMutationContext" @click="basculer">
               Basculer
             </button>
           </div>
@@ -137,7 +139,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue';
+import { computed, reactive } from 'vue';
 import AccessBoundary from '../../../shared/permissions/AccessBoundary.vue';
 import ErrorState from '../../../shared/ui/ErrorState.vue';
 import EmptyState from '../../../shared/ui/EmptyState.vue';
@@ -157,8 +159,6 @@ const context = activeContextStore.state;
 const tenantContext = tenantContextStore.state;
 const doctrineAccess = useDoctrineAccess();
 const isAuthorized = doctrineAccess.canAccessPage('ACA-LOC-001');
-const idEcoleInput = ref(tenantContext.schoolId);
-const traceUtilisateur = ref(tenantContext.userId);
 
 const creation = reactive({
   code: '',
@@ -167,72 +167,90 @@ const creation = reactive({
   dateFin: '',
 });
 
+const hasActiveSchool = computed(() => tenantContext.schoolId.trim().length > 0);
+const hasMutationContext = computed(() =>
+  tenantContext.schoolId.trim().length > 0 && tenantContext.userId.trim().length > 0,
+);
+
 const canCreate = computed(() =>
-  idEcoleInput.value.trim()
-  && creation.code.trim()
+  creation.code.trim()
   && creation.libelle.trim()
   && creation.dateDebut.trim()
   && creation.dateFin.trim()
-  && traceUtilisateur.value.trim(),
+  && hasMutationContext.value,
 );
 
 async function chargerListe(): Promise<void> {
-  await store.chargerListe(idEcoleInput.value.trim());
+  if (!hasActiveSchool.value) return;
+  await store.chargerListe(tenantContext.schoolId.trim());
 }
 
 async function chargerActive(): Promise<void> {
-  await store.chargerActive(idEcoleInput.value.trim());
+  if (!hasActiveSchool.value) return;
+  await store.chargerActive(tenantContext.schoolId.trim());
 }
 
 async function creer(): Promise<void> {
+  if (!hasMutationContext.value) return;
   await store.creer({
-      idEcole: idEcoleInput.value.trim(),
+      idEcole: tenantContext.schoolId.trim(),
       code: creation.code.trim(),
       libelle: creation.libelle.trim(),
       dateDebut: creation.dateDebut,
       dateFin: creation.dateFin,
-      creePar: traceUtilisateur.value.trim(),
+      creePar: tenantContext.userId.trim(),
   });
+  await chargerListe();
+  await chargerActive();
 }
 
 async function preparer(): Promise<void> {
+  if (!hasMutationContext.value) return;
   await store.preparer({
-    idEcole: idEcoleInput.value.trim(),
-    creePar: traceUtilisateur.value.trim(),
+    idEcole: tenantContext.schoolId.trim(),
+    creePar: tenantContext.userId.trim(),
   });
   await chargerListe();
+  await chargerActive();
 }
 
 async function garantir(): Promise<void> {
+  if (!hasMutationContext.value) return;
   await store.garantir({
-    idEcole: idEcoleInput.value.trim(),
-    modifiePar: traceUtilisateur.value.trim(),
+    idEcole: tenantContext.schoolId.trim(),
+    modifiePar: tenantContext.userId.trim(),
   });
   await chargerListe();
+  await chargerActive();
 }
 
 async function basculer(): Promise<void> {
+  if (!hasMutationContext.value) return;
   await store.basculer({
-    idEcole: idEcoleInput.value.trim(),
-    modifiePar: traceUtilisateur.value.trim(),
+    idEcole: tenantContext.schoolId.trim(),
+    modifiePar: tenantContext.userId.trim(),
     creerSuivanteSiAbsente: true,
   });
   await chargerListe();
+  await chargerActive();
 }
 
 async function activer(idAnneeScolaire: string): Promise<void> {
-  await store.activer(idAnneeScolaire, traceUtilisateur.value.trim());
+  if (!tenantContext.userId.trim()) return;
+  await store.activer(idAnneeScolaire, tenantContext.userId.trim());
   await chargerListe();
   await chargerActive();
 }
 
 async function cloturer(idAnneeScolaire: string): Promise<void> {
-  await store.cloturer(idAnneeScolaire, traceUtilisateur.value.trim());
+  if (!tenantContext.userId.trim()) return;
+  await store.cloturer(idAnneeScolaire, tenantContext.userId.trim());
   await chargerListe();
 }
 
 async function archiver(idAnneeScolaire: string): Promise<void> {
-  await store.archiver(idAnneeScolaire, traceUtilisateur.value.trim());
+  if (!tenantContext.userId.trim()) return;
+  await store.archiver(idAnneeScolaire, tenantContext.userId.trim());
   await chargerListe();
 }
 
@@ -241,10 +259,11 @@ void chargerActive();
 </script>
 
 <style scoped>
+.academique-context-strip,.academique-actions-row,.academique-inline-actions{display:flex;flex-wrap:wrap;gap:.75rem}
 .academique-form-grid,.academique-kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem}
+.academique-context-chip{border-radius:20px;padding:1rem 1.1rem;background:#f4f8fb;border:1px solid rgba(17,40,63,.08);display:grid;gap:.35rem;min-width:220px}
 .academique-field{display:grid;gap:.45rem}
 .academique-field input{border-radius:16px;border:1px solid rgba(17,40,63,.16);padding:.8rem .9rem;background:#fbfdff}
-.academique-actions-row,.academique-inline-actions{display:flex;flex-wrap:wrap;gap:.75rem}
 .academique-primary-action,.academique-secondary-action,.academique-link-action{border:1px solid rgba(17,40,63,.14);border-radius:999px;padding:.75rem 1rem;font-weight:600}
 .academique-primary-action{background:linear-gradient(135deg,#0b5d7a,#1487a8);color:#fff}
 .academique-secondary-action,.academique-link-action{background:#fff;color:#11283f}

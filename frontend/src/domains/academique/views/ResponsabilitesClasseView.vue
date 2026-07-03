@@ -5,11 +5,23 @@
       <ErrorState v-if="!isAuthorized" title="Acces non autorise" message="Cette responsabilite locale reste reservee a l administrateur systeme ecole." />
       <template v-else>
         <SectionBlock title="Gestion du titulaire" description="Le backend attend la classe pedagogique, l annee scolaire et l enseignant cible.">
+          <div class="academique-context-strip">
+            <div class="academique-context-chip">
+              <small>Annee scolaire active</small>
+              <strong>{{ activeContext.schoolYearLabel || 'A charger via ACA-03' }}</strong>
+            </div>
+            <div class="academique-context-chip">
+              <small>Id annee active</small>
+              <strong>{{ activeContext.schoolYearId || 'Non resolu' }}</strong>
+            </div>
+            <div class="academique-context-chip">
+              <small>Utilisateur trace</small>
+              <strong>{{ tenantContext.userId }}</strong>
+            </div>
+          </div>
           <div class="academique-form-grid">
             <label class="academique-field"><span>Id classe pedagogique</span><input v-model="idClassePedagogiqueInput" type="text" /></label>
-            <label class="academique-field"><span>Id annee scolaire</span><input v-model="idAnneeScolaireInput" type="text" /></label>
             <label class="academique-field"><span>Id utilisateur enseignant</span><input v-model="idUtilisateurEnseignantInput" type="text" /></label>
-            <label class="academique-field"><span>Utilisateur trace</span><input v-model="traceUtilisateur" type="text" /></label>
           </div>
           <div class="academique-actions-row">
             <button class="academique-primary-action" type="button" :disabled="store.state.status === 'loading' || !canAssign" @click="attribuer">Attribuer</button>
@@ -39,42 +51,47 @@ import PageContainer from '../../../shared/layout/PageContainer.vue';
 import PageHeader from '../../../shared/layout/PageHeader.vue';
 import SectionBlock from '../../../shared/layout/SectionBlock.vue';
 import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
+import { activeContextStore } from '../../../shared/session/active-context.store';
 import { tenantContextStore } from '../../../shared/session/tenant-context.store';
 import { useResponsabilitesClasseStore } from '../stores/responsabilites-classe.store';
 
 const store = useResponsabilitesClasseStore();
+const activeContext = activeContextStore.state;
 const tenantContext = tenantContextStore.state;
 const doctrineAccess = useDoctrineAccess();
 const isAuthorized = doctrineAccess.canAccessPage('ACA-LOC-003');
 const idClassePedagogiqueInput = ref('');
-const idAnneeScolaireInput = ref('');
 const idUtilisateurEnseignantInput = ref('');
-const traceUtilisateur = ref(tenantContext.userId);
 
-const canConsult = computed(() => idClassePedagogiqueInput.value.trim() && idAnneeScolaireInput.value.trim());
-const canAssign = computed(() => canConsult.value && idUtilisateurEnseignantInput.value.trim() && traceUtilisateur.value.trim());
+const hasActiveSchoolYear = computed(() => activeContext.schoolYearId.trim().length > 0);
+const canConsult = computed(() => idClassePedagogiqueInput.value.trim() && hasActiveSchoolYear.value);
+const canAssign = computed(() => canConsult.value && idUtilisateurEnseignantInput.value.trim() && tenantContext.userId.trim());
 
 async function attribuer(): Promise<void> {
+  if (!tenantContext.userId.trim()) return;
   await store.attribuer(idClassePedagogiqueInput.value.trim(), {
     idUtilisateurEnseignant: idUtilisateurEnseignantInput.value.trim(),
-    creePar: traceUtilisateur.value.trim(),
+    creePar: tenantContext.userId.trim(),
   });
 }
 
 async function consulter(): Promise<void> {
-  await store.consulter(idClassePedagogiqueInput.value.trim(), idAnneeScolaireInput.value.trim());
+  if (!activeContext.schoolYearId.trim()) return;
+  await store.consulter(idClassePedagogiqueInput.value.trim(), activeContext.schoolYearId.trim());
 }
 
 async function retirer(): Promise<void> {
-  await store.retirer(idClassePedagogiqueInput.value.trim(), idAnneeScolaireInput.value.trim());
+  if (!activeContext.schoolYearId.trim()) return;
+  await store.retirer(idClassePedagogiqueInput.value.trim(), activeContext.schoolYearId.trim());
 }
 </script>
 
 <style scoped>
+.academique-context-strip,.academique-actions-row{display:flex;flex-wrap:wrap;gap:.75rem}
 .academique-form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem}
+.academique-context-chip{border-radius:20px;padding:1rem 1.1rem;background:#f4f8fb;border:1px solid rgba(17,40,63,.08);display:grid;gap:.35rem;min-width:220px}
 .academique-field{display:grid;gap:.45rem}
 .academique-field input{border-radius:16px;border:1px solid rgba(17,40,63,.16);padding:.8rem .9rem;background:#fbfdff}
-.academique-actions-row{display:flex;flex-wrap:wrap;gap:.75rem}
 .academique-primary-action,.academique-secondary-action{border:1px solid rgba(17,40,63,.14);border-radius:999px;padding:.75rem 1rem;font-weight:600}
 .academique-primary-action{background:linear-gradient(135deg,#0b5d7a,#1487a8);color:#fff}
 .academique-secondary-action{background:#fff;color:#11283f}

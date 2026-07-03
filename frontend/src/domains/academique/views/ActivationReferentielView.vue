@@ -6,7 +6,7 @@
       description="Bloc de confirmation simple pour activer une version officielle deja connue."
     />
 
-    <AccessBoundary page-code="ACA-ACT-001">
+    <AccessBoundary :page-code="currentPageCode">
       <ErrorState
         v-if="!isAuthorized"
         title="Activation non autorisee"
@@ -62,7 +62,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import AccessBoundary from '../../../shared/permissions/AccessBoundary.vue';
 import ErrorState from '../../../shared/ui/ErrorState.vue';
 import LoadingState from '../../../shared/ui/LoadingState.vue';
@@ -74,7 +74,11 @@ import { useReferentielAdminStore } from '../stores/referentiel-admin.store';
 
 const store = useReferentielAdminStore();
 const doctrineAccess = useDoctrineAccess();
-const isAuthorized = doctrineAccess.canAccessPage('ACA-ACT-001');
+const currentPageCode = computed(() => {
+  const code = doctrineAccess.currentPage.value?.code;
+  return typeof code === 'string' ? code : undefined;
+});
+const isAuthorized = computed(() => currentPageCode.value ? doctrineAccess.canAccessPage(currentPageCode.value) : false);
 const idVersionInput = ref('');
 
 async function activer(): Promise<void> {

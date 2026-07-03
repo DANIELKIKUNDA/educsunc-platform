@@ -3,6 +3,7 @@ import { configurationApplicationFrontend } from './config/app.config';
 import { configurationOffline } from './config/offline.config';
 import App from './App.vue';
 import { routeur } from './router';
+import { initializeFrontendSession } from './shared/auth/session.bootstrap';
 import { registerServiceWorker } from './shared/pwa/register-sw';
 import './styles/variables.css';
 import './styles/base.css';
@@ -16,9 +17,15 @@ import './styles/shell.css';
 void configurationApplicationFrontend;
 void configurationOffline;
 
-const application = createApp(App);
+async function demarrerFrontend(): Promise<void> {
+  await initializeFrontendSession();
 
-application.use(routeur);
-application.mount('#app');
+  const application = createApp(App);
 
-registerServiceWorker();
+  application.use(routeur);
+  application.mount('#app');
+
+  registerServiceWorker();
+}
+
+void demarrerFrontend();

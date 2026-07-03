@@ -1,3 +1,5 @@
+import { lireEntetesAuthentificationActive } from '../shared/session/api-context';
+
 type MethodeHttp = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
 export interface RequeteApi {
@@ -16,9 +18,11 @@ export const clientApi = {
   async envoyer<TSortie>(requete: RequeteApi): Promise<TSortie> {
     const reponse = await fetch(`${baseUrl}${requete.chemin}`, {
       method: requete.methode ?? 'GET',
+      credentials: 'include',
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json',
+        ...lireEntetesAuthentificationActive(),
         ...requete.entetes,
       },
       body: requete.corps === undefined ? undefined : JSON.stringify(requete.corps),

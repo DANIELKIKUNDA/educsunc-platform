@@ -6,7 +6,7 @@
       description="Action plateforme de publication officielle d une version de referentiel academique."
     />
 
-    <AccessBoundary page-code="ACA-PUB-001">
+    <AccessBoundary :page-code="currentPageCode">
       <ErrorState
         v-if="!isAuthorized"
         title="Publication non autorisee"
@@ -102,7 +102,11 @@ import { useReferentielAdminStore } from '../stores/referentiel-admin.store';
 
 const store = useReferentielAdminStore();
 const doctrineAccess = useDoctrineAccess();
-const isAuthorized = doctrineAccess.canAccessPage('ACA-PUB-001');
+const currentPageCode = computed(() => {
+  const code = doctrineAccess.currentPage.value?.code;
+  return typeof code === 'string' ? code : undefined;
+});
+const isAuthorized = computed(() => currentPageCode.value ? doctrineAccess.canAccessPage(currentPageCode.value) : false);
 
 const demande = reactive<PublicationReferentielRequest>({
   idReferentielProgramme: '',

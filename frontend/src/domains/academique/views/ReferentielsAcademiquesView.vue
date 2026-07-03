@@ -26,7 +26,7 @@
       </div>
     </SectionBlock>
 
-    <AccessBoundary page-code="ACA-REF-001">
+    <AccessBoundary :page-code="currentPageCode">
       <ErrorState
         v-if="!isAuthorized"
         title="Lecture non autorisee"
@@ -191,7 +191,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import AccessBoundary from '../../../shared/permissions/AccessBoundary.vue';
 import ErrorState from '../../../shared/ui/ErrorState.vue';
 import EmptyState from '../../../shared/ui/EmptyState.vue';
@@ -206,7 +206,11 @@ import { useAcademiqueReferentielsStore } from '../stores/referentiels.store';
 const store = useAcademiqueReferentielsStore();
 const session = sessionStore.state;
 const doctrineAccess = useDoctrineAccess();
-const isAuthorized = doctrineAccess.canAccessPage('ACA-REF-001');
+const currentPageCode = computed(() => {
+  const code = doctrineAccess.currentPage.value?.code;
+  return typeof code === 'string' ? code : undefined;
+});
+const isAuthorized = computed(() => currentPageCode.value ? doctrineAccess.canAccessPage(currentPageCode.value) : false);
 
 const idClasseAcademiqueInput = ref('');
 const idReferentielProgrammeInput = ref('');

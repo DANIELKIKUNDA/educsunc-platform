@@ -22,6 +22,9 @@ export type FrontendActorCode =
   | 'COMPTABLE';
 
 export type FrontendModuleCode =
+  | 'PLATEFORME'
+  | 'ORGANISATION'
+  | 'ADMINISTRATION_ECOLE'
   | 'ACADEMIQUE'
   | 'PEDAGOGIQUE'
   | 'SCOLARITE'

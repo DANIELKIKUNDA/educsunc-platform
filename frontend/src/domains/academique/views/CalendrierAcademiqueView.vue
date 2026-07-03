@@ -5,17 +5,32 @@
       <ErrorState v-if="!isAuthorized" title="Acces non autorise" message="Cette vue locale academique reste reservee a l administrateur systeme ecole." />
       <template v-else>
         <SectionBlock title="Calendrier cible" description="Le backend porte la vraie logique de calendrier et de ses periodes.">
+          <div class="academique-context-strip">
+            <div class="academique-context-chip">
+              <small>Id ecole actif</small>
+              <strong>{{ tenantContext.schoolId }}</strong>
+            </div>
+            <div class="academique-context-chip">
+              <small>Annee scolaire active</small>
+              <strong>{{ activeContext.schoolYearLabel || 'A charger via ACA-03' }}</strong>
+            </div>
+            <div class="academique-context-chip">
+              <small>Id annee active</small>
+              <strong>{{ activeContext.schoolYearId || 'Non resolu' }}</strong>
+            </div>
+            <div class="academique-context-chip">
+              <small>Utilisateur trace</small>
+              <strong>{{ tenantContext.userId }}</strong>
+            </div>
+          </div>
           <div class="academique-form-grid">
-            <label class="academique-field"><span>Id ecole</span><input v-model="idEcoleInput" type="text" /></label>
-            <label class="academique-field"><span>Id annee scolaire</span><input v-model="idAnneeScolaireInput" type="text" /></label>
             <label class="academique-field"><span>Type structure evaluation</span><input v-model="typeStructureEvaluationInput" type="text" placeholder="SECONDAIRE_TRIMESTRIEL" /></label>
             <label class="academique-field"><span>Date debut annee</span><input v-model="dateDebutAnneeInput" type="date" /></label>
             <label class="academique-field"><span>Date fin annee</span><input v-model="dateFinAnneeInput" type="date" /></label>
-            <label class="academique-field"><span>Utilisateur trace</span><input v-model="traceUtilisateur" type="text" /></label>
           </div>
           <div class="academique-actions-row">
             <button class="academique-primary-action" type="button" :disabled="store.state.status === 'loading' || !canCreate" @click="creer">Creer</button>
-            <button class="academique-secondary-action" type="button" :disabled="store.state.status === 'loading' || !idEcoleInput.trim() || !idAnneeScolaireInput.trim()" @click="consulterParEcoleEtAnnee">Consulter par ecole/annee</button>
+            <button class="academique-secondary-action" type="button" :disabled="store.state.status === 'loading' || !hasActiveScope" @click="consulterParEcoleEtAnnee">Consulter par ecole/annee</button>
           </div>
         </SectionBlock>
 
@@ -31,8 +46,8 @@
           </div>
           <div class="academique-actions-row">
             <button class="academique-secondary-action" type="button" :disabled="store.state.status === 'loading' || !canPatchPeriode" @click="modifierPeriode">Modifier periode</button>
-            <button class="academique-secondary-action" type="button" :disabled="store.state.status === 'loading' || !idCalendrierInput.trim() || !traceUtilisateur.trim()" @click="valider">Valider</button>
-            <button class="academique-secondary-action" type="button" :disabled="store.state.status === 'loading' || !idCalendrierInput.trim() || !traceUtilisateur.trim()" @click="verrouiller">Verrouiller</button>
+            <button class="academique-secondary-action" type="button" :disabled="store.state.status === 'loading' || !idCalendrierInput.trim() || !tenantContext.userId.trim()" @click="valider">Valider</button>
+            <button class="academique-secondary-action" type="button" :disabled="store.state.status === 'loading' || !idCalendrierInput.trim() || !tenantContext.userId.trim()" @click="verrouiller">Verrouiller</button>
           </div>
         </SectionBlock>
 
@@ -54,20 +69,19 @@ import LoadingState from '../../../shared/ui/LoadingState.vue';
 import PageContainer from '../../../shared/layout/PageContainer.vue';
 import PageHeader from '../../../shared/layout/PageHeader.vue';
 import SectionBlock from '../../../shared/layout/SectionBlock.vue';
+import { activeContextStore } from '../../../shared/session/active-context.store';
 import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
 import { tenantContextStore } from '../../../shared/session/tenant-context.store';
 import { useCalendrierAcademiqueStore } from '../stores/calendrier-academique.store';
 
 const store = useCalendrierAcademiqueStore();
+const activeContext = activeContextStore.state;
 const tenantContext = tenantContextStore.state;
 const doctrineAccess = useDoctrineAccess();
 const isAuthorized = doctrineAccess.canAccessPage('ACA-LOC-004');
-const idEcoleInput = ref(tenantContext.schoolId);
-const idAnneeScolaireInput = ref('');
 const typeStructureEvaluationInput = ref('');
 const dateDebutAnneeInput = ref('');
 const dateFinAnneeInput = ref('');
-const traceUtilisateur = ref(tenantContext.userId);
 const idCalendrierInput = ref('');
 
 const periode = reactive({
@@ -79,13 +93,19 @@ const periode = reactive({
   dateFin: '',
 });
 
+const hasActiveScope = computed(() =>
+  tenantContext.schoolId.trim().length > 0 && activeContext.schoolYearId.trim().length > 0,
+);
+
+const hasMutationContext = computed(() =>
+  hasActiveScope.value && tenantContext.userId.trim().length > 0,
+);
+
 const canCreate = computed(() =>
-  idEcoleInput.value.trim()
-  && idAnneeScolaireInput.value.trim()
-  && typeStructureEvaluationInput.value.trim()
+  typeStructureEvaluationInput.value.trim()
   && dateDebutAnneeInput.value.trim()
   && dateFinAnneeInput.value.trim()
-  && traceUtilisateur.value.trim(),
+  && hasMutationContext.value,
 );
 const canPatchPeriode = computed(() =>
   idCalendrierInput.value.trim()
@@ -95,13 +115,14 @@ const canPatchPeriode = computed(() =>
   && periode.typePeriode.trim()
   && periode.dateDebut.trim()
   && periode.dateFin.trim()
-  && traceUtilisateur.value.trim(),
+  && tenantContext.userId.trim().length > 0,
 );
 
 async function creer(): Promise<void> {
+  if (!hasMutationContext.value) return;
   await store.creer({
-      idEcole: idEcoleInput.value.trim(),
-      idAnneeScolaire: idAnneeScolaireInput.value.trim(),
+      idEcole: tenantContext.schoolId.trim(),
+      idAnneeScolaire: activeContext.schoolYearId.trim(),
       typeStructureEvaluation: typeStructureEvaluationInput.value.trim(),
       dateDebutAnnee: dateDebutAnneeInput.value,
       dateFinAnnee: dateFinAnneeInput.value,
@@ -113,17 +134,19 @@ async function creer(): Promise<void> {
         dateDebut: periode.dateDebut || dateDebutAnneeInput.value,
         dateFin: periode.dateFin || dateFinAnneeInput.value,
       }],
-      creePar: traceUtilisateur.value.trim(),
+      creePar: tenantContext.userId.trim(),
   });
   idCalendrierInput.value = store.state.calendrier?.id ?? '';
 }
 
 async function consulterParEcoleEtAnnee(): Promise<void> {
-  await store.consulterParEcoleEtAnnee(idEcoleInput.value.trim(), idAnneeScolaireInput.value.trim());
+  if (!hasActiveScope.value) return;
+  await store.consulterParEcoleEtAnnee(tenantContext.schoolId.trim(), activeContext.schoolYearId.trim());
   idCalendrierInput.value = store.state.calendrier?.id ?? '';
 }
 
 async function modifierPeriode(): Promise<void> {
+  if (!tenantContext.userId.trim()) return;
   await store.modifierPeriode(
       idCalendrierInput.value.trim(),
       periode.code.trim(),
@@ -134,25 +157,28 @@ async function modifierPeriode(): Promise<void> {
         typePeriode: periode.typePeriode.trim(),
         dateDebut: periode.dateDebut,
         dateFin: periode.dateFin,
-        modifiePar: traceUtilisateur.value.trim(),
+        modifiePar: tenantContext.userId.trim(),
       },
     );
 }
 
 async function valider(): Promise<void> {
-  await store.valider(idCalendrierInput.value.trim(), traceUtilisateur.value.trim());
+  if (!tenantContext.userId.trim()) return;
+  await store.valider(idCalendrierInput.value.trim(), tenantContext.userId.trim());
 }
 
 async function verrouiller(): Promise<void> {
-  await store.verrouiller(idCalendrierInput.value.trim(), traceUtilisateur.value.trim());
+  if (!tenantContext.userId.trim()) return;
+  await store.verrouiller(idCalendrierInput.value.trim(), tenantContext.userId.trim());
 }
 </script>
 
 <style scoped>
+.academique-context-strip,.academique-actions-row{display:flex;flex-wrap:wrap;gap:.75rem}
 .academique-form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem}
+.academique-context-chip{border-radius:20px;padding:1rem 1.1rem;background:#f4f8fb;border:1px solid rgba(17,40,63,.08);display:grid;gap:.35rem;min-width:220px}
 .academique-field{display:grid;gap:.45rem}
 .academique-field input{border-radius:16px;border:1px solid rgba(17,40,63,.16);padding:.8rem .9rem;background:#fbfdff}
-.academique-actions-row{display:flex;flex-wrap:wrap;gap:.75rem}
 .academique-primary-action,.academique-secondary-action{border:1px solid rgba(17,40,63,.14);border-radius:999px;padding:.75rem 1rem;font-weight:600}
 .academique-primary-action{background:linear-gradient(135deg,#0b5d7a,#1487a8);color:#fff}
 .academique-secondary-action{background:#fff;color:#11283f}

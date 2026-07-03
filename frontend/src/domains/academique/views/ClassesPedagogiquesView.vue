@@ -5,19 +5,34 @@
       <ErrorState v-if="!isAuthorized" title="Acces non autorise" message="Cette structure locale reste reservee a l administrateur systeme ecole." />
       <template v-else>
         <SectionBlock title="Creation de classe pedagogique" description="Ouverture locale a partir d une classe academique deja existante.">
+          <div class="academique-context-strip">
+            <div class="academique-context-chip">
+              <small>Id ecole actif</small>
+              <strong>{{ tenantContext.schoolId }}</strong>
+            </div>
+            <div class="academique-context-chip">
+              <small>Annee scolaire active</small>
+              <strong>{{ activeContext.schoolYearLabel || 'A charger via ACA-03' }}</strong>
+            </div>
+            <div class="academique-context-chip">
+              <small>Id annee active</small>
+              <strong>{{ activeContext.schoolYearId || 'Non resolu' }}</strong>
+            </div>
+            <div class="academique-context-chip">
+              <small>Utilisateur trace</small>
+              <strong>{{ tenantContext.userId }}</strong>
+            </div>
+          </div>
           <div class="academique-form-grid">
-            <label class="academique-field"><span>Id ecole</span><input v-model="idEcoleInput" type="text" /></label>
-            <label class="academique-field"><span>Id annee scolaire</span><input v-model="idAnneeScolaireInput" type="text" /></label>
             <label class="academique-field"><span>Id classe academique</span><input v-model="creation.idClasseAcademique" type="text" /></label>
             <label class="academique-field"><span>Code</span><input v-model="creation.code" type="text" /></label>
             <label class="academique-field"><span>Libelle</span><input v-model="creation.libelle" type="text" /></label>
             <label class="academique-field"><span>Suffixe parallele</span><input v-model="creation.suffixeParallele" type="text" /></label>
             <label class="academique-field"><span>Capacite accueil</span><input v-model="creation.capaciteAccueil" type="number" min="0" /></label>
-            <label class="academique-field"><span>Utilisateur trace</span><input v-model="traceUtilisateur" type="text" /></label>
           </div>
           <div class="academique-actions-row">
             <button class="academique-primary-action" type="button" :disabled="store.state.status === 'loading' || !canCreate" @click="creer">Creer</button>
-            <button class="academique-secondary-action" type="button" :disabled="store.state.status === 'loading' || !idEcoleInput.trim() || !idAnneeScolaireInput.trim()" @click="chargerListe">Lister</button>
+            <button class="academique-secondary-action" type="button" :disabled="store.state.status === 'loading' || !hasActiveScope" @click="chargerListe">Lister</button>
           </div>
         </SectionBlock>
 
@@ -68,7 +83,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue';
+import { computed, reactive } from 'vue';
 import AccessBoundary from '../../../shared/permissions/AccessBoundary.vue';
 import ErrorState from '../../../shared/ui/ErrorState.vue';
 import EmptyState from '../../../shared/ui/EmptyState.vue';
@@ -76,17 +91,16 @@ import LoadingState from '../../../shared/ui/LoadingState.vue';
 import PageContainer from '../../../shared/layout/PageContainer.vue';
 import PageHeader from '../../../shared/layout/PageHeader.vue';
 import SectionBlock from '../../../shared/layout/SectionBlock.vue';
+import { activeContextStore } from '../../../shared/session/active-context.store';
 import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
 import { tenantContextStore } from '../../../shared/session/tenant-context.store';
 import { useClassesPedagogiquesStore } from '../stores/classes-pedagogiques.store';
 
 const store = useClassesPedagogiquesStore();
+const activeContext = activeContextStore.state;
 const tenantContext = tenantContextStore.state;
 const doctrineAccess = useDoctrineAccess();
 const isAuthorized = doctrineAccess.canAccessPage('ACA-LOC-002');
-const idEcoleInput = ref(tenantContext.schoolId);
-const idAnneeScolaireInput = ref('');
-const traceUtilisateur = ref(tenantContext.userId);
 
 const creation = reactive({
   idClasseAcademique: '',
@@ -96,29 +110,37 @@ const creation = reactive({
   capaciteAccueil: '',
 });
 
+const hasActiveScope = computed(() =>
+  tenantContext.schoolId.trim().length > 0 && activeContext.schoolYearId.trim().length > 0,
+);
+
+const hasMutationContext = computed(() =>
+  hasActiveScope.value && tenantContext.userId.trim().length > 0,
+);
+
 const canCreate = computed(() =>
-  idEcoleInput.value.trim()
-  && idAnneeScolaireInput.value.trim()
-  && creation.idClasseAcademique.trim()
+  creation.idClasseAcademique.trim()
   && creation.code.trim()
   && creation.libelle.trim()
-  && traceUtilisateur.value.trim(),
+  && hasMutationContext.value,
 );
 
 async function chargerListe(): Promise<void> {
-  await store.chargerListe(idEcoleInput.value.trim(), idAnneeScolaireInput.value.trim());
+  if (!hasActiveScope.value) return;
+  await store.chargerListe(tenantContext.schoolId.trim(), activeContext.schoolYearId.trim());
 }
 
 async function creer(): Promise<void> {
+  if (!hasMutationContext.value) return;
   await store.creer({
-      idEcole: idEcoleInput.value.trim(),
-      idAnneeScolaire: idAnneeScolaireInput.value.trim(),
+      idEcole: tenantContext.schoolId.trim(),
+      idAnneeScolaire: activeContext.schoolYearId.trim(),
       idClasseAcademique: creation.idClasseAcademique.trim(),
       code: creation.code.trim(),
       libelle: creation.libelle.trim(),
       suffixeParallele: creation.suffixeParallele.trim() || undefined,
       capaciteAccueil: creation.capaciteAccueil.trim() ? Number.parseInt(creation.capaciteAccueil, 10) : undefined,
-      creePar: traceUtilisateur.value.trim(),
+      creePar: tenantContext.userId.trim(),
   });
   await chargerListe();
 }
@@ -129,27 +151,30 @@ async function chargerRegles(idClassePedagogique: string): Promise<void> {
 
 async function renommer(idClassePedagogique: string): Promise<void> {
   const cible = store.state.entries.find((item) => item.id === idClassePedagogique);
-  if (!cible) return;
-  await store.renommer(idClassePedagogique, `${cible.libelle} ajuste`, traceUtilisateur.value.trim());
+  if (!cible || !tenantContext.userId.trim()) return;
+  await store.renommer(idClassePedagogique, `${cible.libelle} ajuste`, tenantContext.userId.trim());
   await chargerListe();
 }
 
 async function desactiver(idClassePedagogique: string): Promise<void> {
-  await store.desactiver(idClassePedagogique, traceUtilisateur.value.trim());
+  if (!tenantContext.userId.trim()) return;
+  await store.desactiver(idClassePedagogique, tenantContext.userId.trim());
   await chargerListe();
 }
 
 async function archiver(idClassePedagogique: string): Promise<void> {
-  await store.archiver(idClassePedagogique, traceUtilisateur.value.trim());
+  if (!tenantContext.userId.trim()) return;
+  await store.archiver(idClassePedagogique, tenantContext.userId.trim());
   await chargerListe();
 }
 </script>
 
 <style scoped>
+.academique-context-strip,.academique-actions-row,.academique-inline-actions{display:flex;flex-wrap:wrap;gap:.75rem}
 .academique-form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem}
+.academique-context-chip{border-radius:20px;padding:1rem 1.1rem;background:#f4f8fb;border:1px solid rgba(17,40,63,.08);display:grid;gap:.35rem;min-width:220px}
 .academique-field{display:grid;gap:.45rem}
 .academique-field input{border-radius:16px;border:1px solid rgba(17,40,63,.16);padding:.8rem .9rem;background:#fbfdff}
-.academique-actions-row,.academique-inline-actions{display:flex;flex-wrap:wrap;gap:.75rem}
 .academique-primary-action,.academique-secondary-action,.academique-link-action{border:1px solid rgba(17,40,63,.14);border-radius:999px;padding:.75rem 1rem;font-weight:600}
 .academique-primary-action{background:linear-gradient(135deg,#0b5d7a,#1487a8);color:#fff}
 .academique-secondary-action,.academique-link-action{background:#fff;color:#11283f}

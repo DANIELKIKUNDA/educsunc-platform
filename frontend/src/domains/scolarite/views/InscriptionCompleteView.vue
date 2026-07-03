@@ -202,10 +202,11 @@
                   <span>Id inscription</span>
                   <input v-model="inscription.idInscriptionScolaire" type="text" placeholder="inscription-uuid" />
                 </label>
-                <label class="scolarite-field">
-                  <span>Id annee scolaire</span>
-                  <input v-model="inscription.idAnneeScolaire" type="text" placeholder="annee-uuid" />
-                </label>
+                <div class="scolarite-context-card">
+                  <small>Annee scolaire active</small>
+                  <strong>{{ context.schoolYearLabel || 'A charger dans ACA-03' }}</strong>
+                  <span>{{ context.schoolYearId || 'Identifiant non resolu' }}</span>
+                </div>
                 <label class="scolarite-field">
                   <span>Date inscription</span>
                   <input v-model="inscription.dateInscription" type="date" />
@@ -402,7 +403,7 @@ const isFamilleStepComplete = computed(() => eleve.idFamille.trim().length > 0);
 
 const isInscriptionStepComplete = computed(() =>
   inscription.idInscriptionScolaire.trim().length > 0
-  && inscription.idAnneeScolaire.trim().length > 0
+  && context.schoolYearId.trim().length > 0
   && inscription.dateInscription.trim().length > 0,
 );
 
@@ -451,6 +452,7 @@ async function soumettre(): Promise<void> {
     inscription: {
       ...inscription,
       idEleve: eleve.idEleve,
+      idAnneeScolaire: context.schoolYearId,
       numeroOrdre: inscription.numeroOrdre || undefined,
       observation: inscription.observation || undefined,
     },
@@ -476,7 +478,6 @@ function prefillDemo(): void {
   eleve.nomEcoleProvenance = 'Institut Source';
   eleve.idFamille = 'famille-demo-001';
   inscription.idInscriptionScolaire = 'inscription-demo-001';
-  inscription.idAnneeScolaire = 'annee-2026';
   inscription.dateInscription = '2026-09-01';
   affectation.idAffectationClasse = 'affectation-demo-001';
   affectation.idClassePedagogique = 'classe-demo-001';
@@ -497,7 +498,6 @@ function reinitialiserFormulaire(): void {
   eleve.nomEcoleProvenance = '';
   eleve.idFamille = '';
   inscription.idInscriptionScolaire = '';
-  inscription.idAnneeScolaire = '';
   inscription.dateInscription = '';
   inscription.origineInscription = 'NOUVEAU';
   inscription.numeroOrdre = '';
@@ -523,6 +523,7 @@ function reinitialiserFormulaire(): void {
 .scolarite-form-stack{display:grid;gap:1rem}
 .scolarite-subsection{border:1px solid rgba(17,40,63,.08);background:linear-gradient(180deg,rgba(243,248,251,.96),rgba(255,255,255,.98));border-radius:24px;padding:1rem 1.1rem;display:grid;gap:1rem}
 .scolarite-grid,.scolarite-kpi-grid,.scolarite-step-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem}
+.scolarite-context-card{border-radius:18px;border:1px solid rgba(17,40,63,.08);background:#f4f8fb;padding:1rem;display:grid;gap:.35rem;align-content:start}
 .scolarite-field{display:grid;gap:.45rem}
 .scolarite-field--full{grid-column:1/-1}
 .scolarite-field input,.scolarite-field select{border-radius:16px;border:1px solid rgba(17,40,63,.16);padding:.8rem .9rem;background:#fbfdff}
