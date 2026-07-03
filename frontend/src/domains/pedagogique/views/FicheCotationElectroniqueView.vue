@@ -36,10 +36,11 @@
                 <span>Annee scolaire</span>
                 <input v-model="anneeScolaireLabelInput" type="text" placeholder="2025-2026" />
               </label>
-              <label class="grade-sheet-field">
-                <span>Id annee scolaire</span>
-                <input v-model="idAnneeScolaireInput" type="text" placeholder="uuid-annee" />
-              </label>
+              <div class="grade-sheet-context-card">
+                <small>Id annee scolaire active</small>
+                <strong>{{ context.schoolYearId || 'Annee scolaire active requise' }}</strong>
+                <span>Herite du Shell global.</span>
+              </div>
               <label class="grade-sheet-field">
                 <span>Classe</span>
                 <input v-model="classeLabelInput" type="text" placeholder="4e CG" />
@@ -252,6 +253,7 @@ import AccessBoundary from '../../../shared/permissions/AccessBoundary.vue';
 import LoadingState from '../../../shared/ui/LoadingState.vue';
 import ErrorState from '../../../shared/ui/ErrorState.vue';
 import EmptyState from '../../../shared/ui/EmptyState.vue';
+import { activeContextStore } from '../../../shared/session/active-context.store';
 import { sessionStore } from '../../../shared/auth/session.store';
 import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
 import type { GradeSheetFilters } from '../models/grade-sheet.model';
@@ -260,10 +262,10 @@ import { useGradeSheetStore } from '../stores/grade-sheet.store';
 const route = useRoute();
 const router = useRouter();
 const gradeSheetStore = useGradeSheetStore();
+const context = activeContextStore.state;
 const session = sessionStore.state;
 const doctrineAccess = useDoctrineAccess();
 
-const idAnneeScolaireInput = ref('');
 const anneeScolaireLabelInput = ref('');
 const idClassePedagogiqueInput = ref('');
 const classeLabelInput = ref('');
@@ -301,8 +303,7 @@ function lireQueryString(name: string): string {
 }
 
 function synchroniserDepuisRoute(): void {
-  idAnneeScolaireInput.value = lireQueryString('idAnneeScolaire');
-  anneeScolaireLabelInput.value = lireQueryString('anneeScolaire');
+  anneeScolaireLabelInput.value = lireQueryString('anneeScolaire') || context.schoolYearLabel;
   idClassePedagogiqueInput.value = lireQueryString('idClassePedagogique');
   classeLabelInput.value = lireQueryString('classe');
   idReferentielCoursInput.value = lireQueryString('idReferentielCours');
@@ -312,7 +313,7 @@ function synchroniserDepuisRoute(): void {
 
 function buildFilters(): GradeSheetFilters {
   return {
-    idAnneeScolaire: idAnneeScolaireInput.value.trim(),
+    idAnneeScolaire: context.schoolYearId.trim(),
     idClassePedagogique: idClassePedagogiqueInput.value.trim(),
     idReferentielCours: idReferentielCoursInput.value.trim(),
     anneeScolaireLabel: anneeScolaireLabelInput.value.trim() || undefined,
@@ -430,7 +431,7 @@ async function viderCellule(idFicheCotationEleveCours: string, codeColonne: stri
 }
 
 synchroniserDepuisRoute();
-if (idAnneeScolaireInput.value && idClassePedagogiqueInput.value && idReferentielCoursInput.value && isAuthorized.value) {
+if (context.schoolYearId && idClassePedagogiqueInput.value && idReferentielCoursInput.value && isAuthorized.value) {
   void chargerFiche();
 }
 </script>
@@ -438,6 +439,7 @@ if (idAnneeScolaireInput.value && idClassePedagogiqueInput.value && idReferentie
 <style scoped>
 .grade-sheet-callout{display:flex;gap:.75rem;align-items:flex-start;border:1px solid rgba(17,40,63,.08);background:linear-gradient(180deg,rgba(238,246,251,.96),rgba(255,255,255,.98));border-radius:24px;padding:1rem 1.1rem}
 .grade-sheet-form-grid,.grade-sheet-kpi-grid,.grade-sheet-footer-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem}
+.grade-sheet-context-card{border-radius:18px;border:1px solid rgba(17,40,63,.08);background:linear-gradient(180deg,rgba(246,250,252,.98),rgba(255,255,255,.98));padding:1rem;display:grid;gap:.35rem}
 .grade-sheet-field{display:grid;gap:.45rem}
 .grade-sheet-field input{border-radius:16px;border:1px solid rgba(17,40,63,.16);padding:.8rem .9rem;background:#fbfdff}
 .grade-sheet-actions-row{display:flex;flex-wrap:wrap;gap:.75rem}

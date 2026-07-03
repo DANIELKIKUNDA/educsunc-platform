@@ -43,12 +43,13 @@
           <div class="pedagogique-form-grid">
             <label class="pedagogique-field">
               <span>Annee scolaire</span>
-              <input v-model="anneeScolaireLabelInput" type="text" placeholder="2025-2026" />
+                <input v-model="anneeScolaireLabelInput" type="text" placeholder="2025-2026" />
             </label>
-            <label class="pedagogique-field">
-              <span>Id annee scolaire</span>
-              <input v-model="idAnneeScolaireInput" type="text" placeholder="uuid-annee" />
-            </label>
+            <div class="pedagogique-context-card">
+              <small>Id annee scolaire active</small>
+              <strong>{{ context.schoolYearId || 'Non resolu' }}</strong>
+              <span>Contexte shell actif</span>
+            </div>
             <label class="pedagogique-field">
               <span>Classe titulaire</span>
               <input v-model="classeLabelInput" type="text" placeholder="4e CG" />
@@ -96,9 +97,9 @@
 
         <SectionBlock title="Precontrole" description="Le frontend ne valide que la presence minimale. Le vrai verrou de coherence reste backend.">
           <div class="bulletin-generation-checklist">
-            <div :class="['bulletin-generation-check', idAnneeScolaireInput.trim() ? 'is-ready' : 'is-missing']">
+            <div :class="['bulletin-generation-check', context.schoolYearId.trim() ? 'is-ready' : 'is-missing']">
               <strong>Annee scolaire</strong>
-              <span>{{ idAnneeScolaireInput.trim() ? 'Renseignee' : 'Manquante' }}</span>
+              <span>{{ context.schoolYearId.trim() ? 'Renseignee' : 'Manquante' }}</span>
             </div>
             <div :class="['bulletin-generation-check', idClassePedagogiqueInput.trim() ? 'is-ready' : 'is-missing']">
               <strong>Classe titulaire</strong>
@@ -191,6 +192,7 @@ import PageContainer from '../../../shared/layout/PageContainer.vue';
 import PageHeader from '../../../shared/layout/PageHeader.vue';
 import SectionBlock from '../../../shared/layout/SectionBlock.vue';
 import { sessionStore } from '../../../shared/auth/session.store';
+import { activeContextStore } from '../../../shared/session/active-context.store';
 import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
 import { useBulletinGenerationStore } from '../stores/bulletin-generation.store';
 
@@ -198,6 +200,7 @@ const route = useRoute();
 const router = useRouter();
 const store = useBulletinGenerationStore();
 const session = sessionStore.state;
+const context = activeContextStore.state;
 const doctrineAccess = useDoctrineAccess();
 
 const anneeScolaireLabelInput = ref('');
@@ -205,7 +208,6 @@ const classeLabelInput = ref('');
 const idClassePedagogiqueInput = ref('');
 const idEleveInput = ref('');
 const idInscriptionInput = ref('');
-const idAnneeScolaireInput = ref('');
 const typeGenerationInput = ref<'BROUILLON' | 'PROGRESSIF' | 'FINALISATION'>('PROGRESSIF');
 const versionBulletinInput = ref('');
 const preparerPdfInput = ref(false);
@@ -217,7 +219,7 @@ const perimeterMessage = 'Generation bornee a la classe titulaire effective et a
 const missingFields = computed(() => {
   const manquants: string[] = [];
 
-  if (!idAnneeScolaireInput.value.trim()) {
+  if (!context.schoolYearId.trim()) {
     manquants.push('annee');
   }
   if (!idClassePedagogiqueInput.value.trim()) {
@@ -238,7 +240,7 @@ const missingFieldsLabel = computed(() =>
 );
 const scopeLabel = computed(() =>
   [anneeScolaireLabelInput.value.trim(), classeLabelInput.value.trim()].filter(Boolean).join(' / ')
-  || [idAnneeScolaireInput.value.trim(), idClassePedagogiqueInput.value.trim()].filter(Boolean).join(' / ')
+  || [context.schoolYearLabel.trim(), idClassePedagogiqueInput.value.trim()].filter(Boolean).join(' / ')
   || 'Perimetre a renseigner',
 );
 
@@ -248,10 +250,9 @@ function lireQueryString(name: string): string {
 }
 
 function synchroniserDepuisRoute(): void {
-  anneeScolaireLabelInput.value = lireQueryString('anneeScolaire');
+  anneeScolaireLabelInput.value = lireQueryString('anneeScolaire') || context.schoolYearLabel;
   classeLabelInput.value = lireQueryString('classe');
   idClassePedagogiqueInput.value = lireQueryString('idClassePedagogique');
-  idAnneeScolaireInput.value = lireQueryString('idAnneeScolaire');
   idEleveInput.value = lireQueryString('idEleve');
   idInscriptionInput.value = lireQueryString('idInscriptionScolaire');
 }
@@ -267,7 +268,7 @@ async function generer(): Promise<void> {
       anneeScolaire: anneeScolaireLabelInput.value.trim() || undefined,
       classe: classeLabelInput.value.trim() || undefined,
       idClassePedagogique: idClassePedagogiqueInput.value.trim() || undefined,
-      idAnneeScolaire: idAnneeScolaireInput.value.trim(),
+      idAnneeScolaire: context.schoolYearId.trim(),
       idEleve: idEleveInput.value.trim(),
       idInscriptionScolaire: idInscriptionInput.value.trim(),
     },
@@ -276,7 +277,7 @@ async function generer(): Promise<void> {
   await store.generer({
     idEleve: idEleveInput.value.trim(),
     idInscriptionScolaire: idInscriptionInput.value.trim(),
-    idAnneeScolaire: idAnneeScolaireInput.value.trim(),
+    idAnneeScolaire: context.schoolYearId.trim(),
     typeGeneration: typeGenerationInput.value,
     versionBulletin: versionBulletinInput.value.trim() ? Number.parseInt(versionBulletinInput.value, 10) : undefined,
     preparerPdf: preparerPdfInput.value,
@@ -289,6 +290,7 @@ synchroniserDepuisRoute();
 <style scoped>
 .pedagogique-callout{display:flex;gap:.75rem;align-items:flex-start;border:1px solid rgba(17,40,63,.08);background:linear-gradient(180deg,rgba(238,246,251,.96),rgba(255,255,255,.98));border-radius:24px;padding:1rem 1.1rem}
 .pedagogique-form-grid,.bulletin-generation-kpi-grid,.bulletin-generation-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem}
+.pedagogique-context-card{border-radius:20px;padding:1rem 1.1rem;background:#f4f8fb;border:1px solid rgba(17,40,63,.08);display:grid;gap:.35rem;align-content:start}
 .pedagogique-field{display:grid;gap:.45rem}
 .pedagogique-field input,.pedagogique-field select{border-radius:16px;border:1px solid rgba(17,40,63,.16);padding:.8rem .9rem;background:#fbfdff}
 .pedagogique-field--checkbox{display:flex;align-items:center;gap:.7rem}

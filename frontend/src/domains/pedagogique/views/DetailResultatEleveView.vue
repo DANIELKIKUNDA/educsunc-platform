@@ -104,10 +104,11 @@
                   <span>Annee scolaire</span>
                   <input v-model="anneeScolaireLabelInput" type="text" placeholder="2025-2026" />
                 </label>
-                <label class="pedagogique-field">
-                  <span>Id annee scolaire</span>
-                  <input v-model="idAnneeScolaireInput" type="text" placeholder="uuid-annee" />
-                </label>
+                <div class="pedagogique-context-card">
+                  <small>Id annee scolaire active</small>
+                  <strong>{{ context.schoolYearId || 'Annee scolaire active requise' }}</strong>
+                  <span>Herite du Shell global.</span>
+                </div>
                 <label class="pedagogique-field">
                   <span>Section</span>
                   <input v-model="sectionLabelInput" type="text" placeholder="Secondaire" />
@@ -422,7 +423,6 @@ const session = sessionStore.state;
 const detailStore = useStudentResultDetailStore();
 const doctrineAccess = useDoctrineAccess();
 
-const idAnneeScolaireInput = ref('');
 const anneeScolaireLabelInput = ref('');
 const idClassePedagogiqueInput = ref('');
 const classeLabelInput = ref('');
@@ -470,7 +470,7 @@ const columnLabels: Record<string, string> = {
 const isAuthorized = computed(() => doctrineAccess.canAccessPage('PED-DET-001'));
 const detail = computed(() => detailStore.state.detail);
 const canLoad = computed(() =>
-  idAnneeScolaireInput.value.trim().length > 0 && idEleveInput.value.trim().length > 0,
+  context.schoolYearId.trim().length > 0 && idEleveInput.value.trim().length > 0,
 );
 const activeColumnLabel = computed(() => columnLabels[codeColonneInput.value] ?? codeColonneInput.value);
 const actorScopeMessage = computed(() => {
@@ -510,7 +510,6 @@ function lireQueryString(name: string): string {
 }
 
 function synchroniserDepuisRoute(): void {
-  idAnneeScolaireInput.value = lireQueryString('idAnneeScolaire');
   anneeScolaireLabelInput.value = lireQueryString('anneeScolaire') || context.schoolYearLabel;
   idClassePedagogiqueInput.value = lireQueryString('idClassePedagogique');
   classeLabelInput.value = lireQueryString('classe');
@@ -521,7 +520,6 @@ function synchroniserDepuisRoute(): void {
 }
 
 function reinitialiserFiltres(): void {
-  idAnneeScolaireInput.value = '';
   anneeScolaireLabelInput.value = context.schoolYearLabel;
   idClassePedagogiqueInput.value = '';
   classeLabelInput.value = '';
@@ -535,7 +533,7 @@ function reinitialiserFiltres(): void {
 
 function construireFiltres(): PedagogicalAnalysisFilters {
   return {
-    idAnneeScolaire: idAnneeScolaireInput.value.trim(),
+    idAnneeScolaire: context.schoolYearId.trim(),
     idClassePedagogique: idClassePedagogiqueInput.value.trim(),
     codeColonne: codeColonneInput.value.trim(),
     idEleve: idEleveInput.value.trim() || undefined,
@@ -696,7 +694,7 @@ function formatDate(value: string): string {
 
 synchroniserDepuisRoute();
 
-if (idAnneeScolaireInput.value && idEleveInput.value && isAuthorized.value) {
+if (context.schoolYearId && idEleveInput.value && isAuthorized.value) {
   void chargerDetail();
 }
 </script>
@@ -712,6 +710,7 @@ if (idAnneeScolaireInput.value && idEleveInput.value && isAuthorized.value) {
 .pedagogique-badges{display:flex;flex-wrap:wrap;gap:.75rem;align-items:flex-start}
 .pedagogique-form-stack{display:grid;gap:1rem}
 .pedagogique-filter-grid,.pedagogique-kpi-grid,.analysis-kpi-grid,.analysis-student-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem}
+.pedagogique-context-card{border-radius:18px;border:1px solid rgba(17,40,63,.08);background:linear-gradient(180deg,rgba(246,250,252,.98),rgba(255,255,255,.98));padding:1rem;display:grid;gap:.35rem}
 .pedagogique-field{display:grid;gap:.45rem}
 .pedagogique-field input,.pedagogique-field select{border-radius:16px;border:1px solid rgba(17,40,63,.16);padding:.8rem .9rem;background:#fbfdff}
 .pedagogique-guard-panel{border-radius:22px;border:1px solid rgba(17,40,63,.08);background:#f7fbfd;padding:1rem}

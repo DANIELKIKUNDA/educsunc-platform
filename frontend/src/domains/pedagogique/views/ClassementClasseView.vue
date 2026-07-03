@@ -71,10 +71,11 @@
                 <span>Annee scolaire</span>
                 <input v-model="anneeScolaireLabelInput" type="text" placeholder="2025-2026" />
               </label>
-              <label class="pedagogique-field">
-                <span>Id annee scolaire</span>
-                <input v-model="idAnneeScolaireInput" type="text" placeholder="uuid-annee" />
-              </label>
+              <div class="pedagogique-context-card">
+                <small>Id annee scolaire active</small>
+                <strong>{{ context.schoolYearId || 'Non resolu' }}</strong>
+                <span>Contexte shell actif</span>
+              </div>
               <label class="pedagogique-field">
                 <span>Section</span>
                 <input v-model="sectionLabelInput" type="text" placeholder="Secondaire" />
@@ -98,9 +99,9 @@
             </div>
 
             <div class="ranking-checklist">
-              <div :class="['ranking-check', idAnneeScolaireInput.trim() ? 'is-ready' : 'is-missing']">
+              <div :class="['ranking-check', context.schoolYearId.trim() ? 'is-ready' : 'is-missing']">
                 <strong>Annee scolaire</strong>
-                <span>{{ idAnneeScolaireInput.trim() ? 'Renseignee' : 'Manquante' }}</span>
+                <span>{{ context.schoolYearId.trim() ? 'Renseignee' : 'Manquante' }}</span>
               </div>
               <div :class="['ranking-check', idClassePedagogiqueInput.trim() ? 'is-ready' : 'is-missing']">
                 <strong>Classe</strong>
@@ -242,7 +243,6 @@ const context = activeContextStore.state;
 const rankingStore = useClassRankingStore();
 const doctrineAccess = useDoctrineAccess();
 
-const idAnneeScolaireInput = ref('');
 const anneeScolaireLabelInput = ref('');
 const idClassePedagogiqueInput = ref('');
 const classeLabelInput = ref('');
@@ -268,7 +268,7 @@ const uiState = computed<'loading' | 'idle' | 'technical-error'>(() => {
 const missingFields = computed(() => {
   const manquants: string[] = [];
 
-  if (!idAnneeScolaireInput.value.trim()) {
+  if (!context.schoolYearId.trim()) {
     manquants.push('annee');
   }
   if (!idClassePedagogiqueInput.value.trim()) {
@@ -286,7 +286,7 @@ const missingFieldsLabel = computed(() =>
 );
 const scopeLabel = computed(() =>
   [anneeScolaireLabelInput.value.trim(), classeLabelInput.value.trim(), sectionLabelInput.value.trim(), codeColonneInput.value.trim()].filter(Boolean).join(' / ')
-  || [idAnneeScolaireInput.value.trim(), idClassePedagogiqueInput.value.trim()].filter(Boolean).join(' / ')
+  || [context.schoolYearLabel.trim(), idClassePedagogiqueInput.value.trim()].filter(Boolean).join(' / ')
   || 'Perimetre a renseigner',
 );
 
@@ -308,7 +308,6 @@ function lireQueryString(name: string): string {
 }
 
 function synchroniserDepuisRoute(): void {
-  idAnneeScolaireInput.value = lireQueryString('idAnneeScolaire');
   anneeScolaireLabelInput.value = lireQueryString('anneeScolaire') || context.schoolYearLabel;
   idClassePedagogiqueInput.value = lireQueryString('idClassePedagogique');
   classeLabelInput.value = lireQueryString('classe');
@@ -318,7 +317,7 @@ function synchroniserDepuisRoute(): void {
 
 function buildFilters(): ClassRankingFilters {
   return {
-    idAnneeScolaire: idAnneeScolaireInput.value.trim(),
+    idAnneeScolaire: context.schoolYearId.trim(),
     idClassePedagogique: idClassePedagogiqueInput.value.trim(),
     codeColonne: codeColonneInput.value.trim(),
     anneeScolaireLabel: anneeScolaireLabelInput.value.trim() || undefined,
@@ -387,7 +386,7 @@ function imprimerPage(): void {
 }
 
 synchroniserDepuisRoute();
-if (idAnneeScolaireInput.value && idClassePedagogiqueInput.value && isAuthorized.value) {
+if (context.schoolYearId && idClassePedagogiqueInput.value && isAuthorized.value) {
   void chargerClassement();
 }
 </script>
@@ -399,6 +398,7 @@ if (idAnneeScolaireInput.value && idClassePedagogiqueInput.value && isAuthorized
 .pedagogique-primary-action:disabled{opacity:.55;cursor:not-allowed}
 .pedagogique-callout{display:flex;gap:.75rem;align-items:flex-start;border:1px solid rgba(17,40,63,.08);background:linear-gradient(180deg,rgba(238,246,251,.96),rgba(255,255,255,.98));border-radius:24px;padding:1rem 1.1rem}
 .pedagogique-form-grid,.pedagogique-kpi-grid,.ranking-kpi-grid,.ranking-secondary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem}
+.pedagogique-context-card{border-radius:20px;padding:1rem 1.1rem;background:#f4f8fb;border:1px solid rgba(17,40,63,.08);display:grid;gap:.35rem;align-content:start}
 .pedagogique-field{display:grid;gap:.45rem}
 .pedagogique-field input,.pedagogique-field select{border-radius:16px;border:1px solid rgba(17,40,63,.16);padding:.8rem .9rem;background:#fbfdff}
 .pedagogique-kpi-card,.ranking-kpi-card,.ranking-secondary-card{border-radius:24px;padding:1rem;background:#fff;border:1px solid rgba(17,40,63,.08);box-shadow:0 18px 45px rgba(17,40,63,.08);display:grid;gap:.35rem}
