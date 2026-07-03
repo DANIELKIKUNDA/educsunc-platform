@@ -2,6 +2,7 @@ import type { FastifyPluginAsync } from 'fastify';
 import { ControleurMigrationsReferentiel } from '../controllers/ControleurMigrationsReferentiel';
 import { ExecuteurRouteIdempotenteReferentielAcademique } from './ExecutionRouteIdempotenteReferentielAcademique';
 import { ExecuteurRouteTenantReferentielAcademique } from './ExecutionRouteTenantReferentielAcademique';
+import { executerRouteProtegeeReferentielAcademique } from './ExecutionRouteProtegeeReferentielAcademique';
 
 // Cette interface regroupe les dependances des routes migrations de referentiel.
 export interface DependancesRoutesMigrationsReferentiel {
@@ -15,15 +16,16 @@ export const creerRoutesMigrationsReferentiel = (
   dependances: DependancesRoutesMigrationsReferentiel,
 ): FastifyPluginAsync => async (serveur) => {
   serveur.get('/api/migrations-referentiel', async (requete, reponse) => {
-    const resultat = await dependances.executerRouteTenant(
+    return executerRouteProtegeeReferentielAcademique(
+      dependances,
       requete,
+      reponse,
       () => dependances.controleurMigrationsReferentiel
         .listerMigrationsReferentielParProgrammeNiveau(requete.query, requete.context),
       {
         mode: 'lecture_organisationnelle_ou_tenant',
       },
     );
-    return reponse.code(200).send(resultat);
   });
 
   serveur.post('/api/migrations-referentiel/analyser', async (requete, reponse) => {
@@ -101,14 +103,15 @@ export const creerRoutesMigrationsReferentiel = (
   });
 
   serveur.get('/api/migrations-referentiel/:id', async (requete, reponse) => {
-    const resultat = await dependances.executerRouteTenant(
+    return executerRouteProtegeeReferentielAcademique(
+      dependances,
       requete,
+      reponse,
       () => dependances.controleurMigrationsReferentiel
         .consulterRapportMigration(requete.params, requete.context),
       {
         mode: 'lecture_organisationnelle_ou_tenant',
       },
     );
-    return reponse.code(200).send(resultat);
   });
 };

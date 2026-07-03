@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import Fastify from 'fastify';
 import { RequestContextFactory } from 'shared/context';
+import { ErreurAccesRefuse } from '../../../shared/security/application/exceptions/ErreurAccesRefuse';
 import { creerRoutesMigrationsReferentiel } from '../interfaces/http/routes/migrations-referentiel.routes';
 
 test('les routes de migration transmettent le contexte authentifie et exposent ACA-09', async () => {
@@ -84,6 +85,66 @@ test('les routes de migration transmettent le contexte authentifie et exposent A
   assert.equal(reponseListe.statusCode, 200, reponseListe.body);
   assert.equal(reponseAnalyse.statusCode, 200, reponseAnalyse.body);
   assert.deepEqual(appels, ['liste:user-manager', 'analyse:user-manager']);
+
+  await serveur.close();
+});
+
+test('les routes migrations repondent 401 sans utilisateur courant', async () => {
+  const serveur = Fastify();
+
+  serveur.addHook('onRequest', async (requete) => {
+    requete.context = RequestContextFactory.creerContexteInitial({ requestId: 'req-aca-10' });
+  });
+
+  await serveur.register(creerRoutesMigrationsReferentiel({
+    controleurMigrationsReferentiel: {
+      async listerMigrationsReferentielParProgrammeNiveau() {
+        throw new Error('Ne doit pas etre appele sans authentification.');
+      },
+    } as never,
+    executerRouteTenant: async (_requete, operation) => operation(),
+    executerRouteIdempotente: async (_requete, operation) => operation(),
+  }));
+
+  const reponse = await serveur.inject({
+    method: 'GET',
+    url: '/api/migrations-referentiel?idProgrammeNiveau=prog-1&page=1&taillePage=20',
+  });
+
+  assert.equal(reponse.statusCode, 401, reponse.body);
+  assert.match(reponse.body, /REFERENTIEL_AUTH_REQUIRED/);
+
+  await serveur.close();
+});
+
+test('les routes migrations traduisent un refus d acces en 403', async () => {
+  const serveur = Fastify();
+
+  serveur.addHook('onRequest', async (requete) => {
+    requete.context = RequestContextFactory.creerContexteInitial({ requestId: 'req-aca-11' });
+    requete.context = RequestContextFactory.enrichirAuth(requete.context, {
+      utilisateurId: 'user-support',
+      roleActif: 'SUPPORT_SYSTEME',
+    });
+  });
+
+  await serveur.register(creerRoutesMigrationsReferentiel({
+    controleurMigrationsReferentiel: {
+      async listerMigrationsReferentielParProgrammeNiveau() {
+        throw new ErreurAccesRefuse("L'acteur courant n'est pas autorise a administrer le socle academique officiel.");
+      },
+    } as never,
+    executerRouteTenant: async (_requete, operation) => operation(),
+    executerRouteIdempotente: async (_requete, operation) => operation(),
+  }));
+
+  const reponse = await serveur.inject({
+    method: 'GET',
+    url: '/api/migrations-referentiel?idProgrammeNiveau=prog-1&page=1&taillePage=20',
+  });
+
+  assert.equal(reponse.statusCode, 403, reponse.body);
+  assert.match(reponse.body, /REFERENTIEL_FORBIDDEN/);
 
   await serveur.close();
 });

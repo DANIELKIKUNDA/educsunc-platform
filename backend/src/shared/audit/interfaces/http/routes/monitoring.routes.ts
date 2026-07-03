@@ -3,7 +3,7 @@ import type { DependancesRoutesAudit } from './DependancesRoutesAudit';
 import { appliquerPoliciesRouteAudit, executerRouteAudit } from './_route-helpers';
 
 export const creerMonitoringRoutes = (dependances: DependancesRoutesAudit): FastifyPluginAsync => async (serveur) => {
-  serveur.get('/api/v1/monitoring/health', (requete, reponse) =>
+  serveur.get('/api/v1/audit/monitoring/health', (requete, reponse) =>
     executerRouteAudit(dependances, requete, reponse, async () => {
       await appliquerPoliciesRouteAudit(dependances, requete, reponse, {
         permission: 'audit.monitoring.read',
@@ -13,7 +13,7 @@ export const creerMonitoringRoutes = (dependances: DependancesRoutesAudit): Fast
       return dependances.auditMonitoringController.health({ headers: requete.headers, context: requete.context });
     }));
 
-  serveur.get('/api/v1/monitoring/metrics', (requete, reponse) =>
+  serveur.get('/api/v1/audit/monitoring/metrics', (requete, reponse) =>
     executerRouteAudit(dependances, requete, reponse, async () => {
       await appliquerPoliciesRouteAudit(dependances, requete, reponse, {
         permission: 'audit.monitoring.read',
@@ -23,7 +23,7 @@ export const creerMonitoringRoutes = (dependances: DependancesRoutesAudit): Fast
       return dependances.auditMonitoringController.metrics({ headers: requete.headers, context: requete.context });
     }));
 
-  serveur.get('/api/v1/monitoring/queues', (requete, reponse) =>
+  serveur.get('/api/v1/audit/monitoring/queues', (requete, reponse) =>
     executerRouteAudit(dependances, requete, reponse, async () => {
       await appliquerPoliciesRouteAudit(dependances, requete, reponse, {
         permission: 'audit.monitoring.read',
@@ -33,7 +33,7 @@ export const creerMonitoringRoutes = (dependances: DependancesRoutesAudit): Fast
       return dependances.auditMonitoringController.queues({ headers: requete.headers, context: requete.context });
     }));
 
-  serveur.get('/api/v1/monitoring/replay', (requete, reponse) =>
+  serveur.get('/api/v1/audit/monitoring/replay', (requete, reponse) =>
     executerRouteAudit(dependances, requete, reponse, async () => {
       await appliquerPoliciesRouteAudit(dependances, requete, reponse, {
         permission: 'audit.monitoring.read',
@@ -44,7 +44,7 @@ export const creerMonitoringRoutes = (dependances: DependancesRoutesAudit): Fast
       return dependances.auditMonitoringController.replay({ headers: requete.headers, context: requete.context });
     }));
 
-  serveur.get('/api/v1/monitoring/retry', (requete, reponse) =>
+  serveur.get('/api/v1/audit/monitoring/retry', (requete, reponse) =>
     executerRouteAudit(dependances, requete, reponse, async () => {
       await appliquerPoliciesRouteAudit(dependances, requete, reponse, {
         permission: 'audit.monitoring.read',
@@ -59,7 +59,7 @@ export const creerMonitoringRoutes = (dependances: DependancesRoutesAudit): Fast
       });
     }));
 
-  serveur.get('/api/v1/monitoring/traces', (requete, reponse) =>
+  serveur.get('/api/v1/audit/monitoring/traces', (requete, reponse) =>
     executerRouteAudit(dependances, requete, reponse, async () => {
       await appliquerPoliciesRouteAudit(dependances, requete, reponse, {
         permission: 'audit.monitoring.read',
@@ -73,7 +73,7 @@ export const creerMonitoringRoutes = (dependances: DependancesRoutesAudit): Fast
       });
     }));
 
-  serveur.get('/api/v1/monitoring/anomalies', (requete, reponse) =>
+  serveur.get('/api/v1/audit/monitoring/anomalies', (requete, reponse) =>
     executerRouteAudit(dependances, requete, reponse, async () => {
       await appliquerPoliciesRouteAudit(dependances, requete, reponse, {
         permission: 'audit.monitoring.read',
@@ -87,7 +87,7 @@ export const creerMonitoringRoutes = (dependances: DependancesRoutesAudit): Fast
       });
     }));
 
-  serveur.get('/api/v1/monitoring/volumetrie', (requete, reponse) =>
+  serveur.get('/api/v1/audit/monitoring/volumetrie', (requete, reponse) =>
     executerRouteAudit(dependances, requete, reponse, async () => {
       await appliquerPoliciesRouteAudit(dependances, requete, reponse, {
         permission: 'audit.monitoring.read',
@@ -101,7 +101,7 @@ export const creerMonitoringRoutes = (dependances: DependancesRoutesAudit): Fast
       });
     }));
 
-  serveur.get('/api/v1/monitoring/tenants', (requete, reponse) =>
+  serveur.get('/api/v1/audit/monitoring/tenants', (requete, reponse) =>
     executerRouteAudit(dependances, requete, reponse, async () => {
       await appliquerPoliciesRouteAudit(dependances, requete, reponse, {
         permission: 'audit.monitoring.read',

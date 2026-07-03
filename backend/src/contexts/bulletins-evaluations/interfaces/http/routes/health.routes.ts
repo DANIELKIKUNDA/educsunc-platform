@@ -6,10 +6,10 @@ import { executerRouteBulletin } from './outilsRoutesBulletins';
 export const creerHealthBulletinRoutes = (
   dependances: DependancesRoutesBulletinsEvaluationsDocument,
 ): FastifyPluginAsync => async (serveur) => {
-  serveur.get('/health', (requete, reponse) =>
+  serveur.get('/api/bulletins/health', (requete, reponse) =>
     executerRouteBulletin(requete, reponse, () => dependances.healthBulletinController.consulterSante(), dependances.contexteTenant));
-  serveur.get('/health/projections', (requete, reponse) =>
+  serveur.get('/api/bulletins/health/projections', (requete, reponse) =>
     executerRouteBulletin(requete, reponse, () => dependances.healthBulletinController.consulterSanteProjections(), dependances.contexteTenant));
-  serveur.get('/health/sync', (requete, reponse) =>
+  serveur.get('/api/bulletins/health/sync', (requete, reponse) =>
     executerRouteBulletin(requete, reponse, () => dependances.healthBulletinController.consulterSanteSynchronisation(), dependances.contexteTenant));
 };

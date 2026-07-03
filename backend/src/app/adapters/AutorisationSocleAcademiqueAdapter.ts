@@ -1,4 +1,5 @@
 import { SecurityFacade } from '../../shared/security/application/services/SecurityFacade';
+import { ErreurAccesRefuse } from '../../shared/security/application/exceptions/ErreurAccesRefuse';
 import {
   PermissionCacheService,
   PostgresAffectationTitulariatRepository,
@@ -90,6 +91,6 @@ export class AutorisationSocleAcademiqueAdapter {
       }
     }
 
-    throw new Error("L'acteur courant n'est pas autorise a administrer le socle academique officiel.");
+    throw new ErreurAccesRefuse("L'acteur courant n'est pas autorise a administrer le socle academique officiel.");
   }
 }

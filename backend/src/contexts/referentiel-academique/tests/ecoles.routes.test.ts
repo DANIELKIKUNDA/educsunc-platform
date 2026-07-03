@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import Fastify from 'fastify';
 import { RequestContextFactory } from 'shared/context';
+import { ErreurAccesRefuse } from '../../../shared/security/application/exceptions/ErreurAccesRefuse';
 import { creerRoutesEcoles } from '../interfaces/http/routes/ecoles.routes';
 
 test('les routes ecoles transmettent le contexte authentifie et n exposent plus creePar ou modifiePar comme saisie libre', async () => {
@@ -111,6 +112,64 @@ test('les routes ecoles transmettent le contexte authentifie et n exposent plus 
     'renommer:user-manager',
     'institutionnel:user-manager',
   ]);
+
+  await serveur.close();
+});
+
+test('les routes ecoles repondent 401 sans utilisateur courant', async () => {
+  const serveur = Fastify();
+
+  serveur.addHook('onRequest', async (requete) => {
+    requete.context = RequestContextFactory.creerContexteInitial({ requestId: 'req-adm-02' });
+  });
+
+  await serveur.register(creerRoutesEcoles({
+    controleurEcoles: {
+      async listerEcoles() {
+        throw new Error('Ne doit pas etre appele sans authentification.');
+      },
+    } as never,
+    executerRouteTenant: async (_requete, operation) => operation(),
+  }));
+
+  const reponse = await serveur.inject({
+    method: 'GET',
+    url: '/api/ecoles',
+  });
+
+  assert.equal(reponse.statusCode, 401, reponse.body);
+  assert.match(reponse.body, /REFERENTIEL_AUTH_REQUIRED/);
+
+  await serveur.close();
+});
+
+test('les routes ecoles traduisent un refus d acces en 403', async () => {
+  const serveur = Fastify();
+
+  serveur.addHook('onRequest', async (requete) => {
+    requete.context = RequestContextFactory.creerContexteInitial({ requestId: 'req-adm-03' });
+    requete.context = RequestContextFactory.enrichirAuth(requete.context, {
+      utilisateurId: 'user-support',
+      roleActif: 'SUPPORT_SYSTEME',
+    });
+  });
+
+  await serveur.register(creerRoutesEcoles({
+    controleurEcoles: {
+      async listerEcoles() {
+        throw new ErreurAccesRefuse("L'acteur courant n'est pas autorise a administrer le socle academique officiel.");
+      },
+    } as never,
+    executerRouteTenant: async (_requete, operation) => operation(),
+  }));
+
+  const reponse = await serveur.inject({
+    method: 'GET',
+    url: '/api/ecoles',
+  });
+
+  assert.equal(reponse.statusCode, 403, reponse.body);
+  assert.match(reponse.body, /REFERENTIEL_FORBIDDEN/);
 
   await serveur.close();
 });

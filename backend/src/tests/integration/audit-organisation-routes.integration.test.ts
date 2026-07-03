@@ -41,7 +41,7 @@ test('les routes d audit organisationnel ouvrent la lecture aux acteurs organisa
 
   const monitoringPromoteur = await injecterCommeActeur(serveur, promoteur, {
     method: 'GET',
-    url: '/api/v1/monitoring/health',
+    url: '/api/v1/audit/monitoring/health',
   });
   assert.equal(monitoringPromoteur.statusCode, 200, monitoringPromoteur.body);
 
@@ -59,7 +59,7 @@ test('les routes d audit organisationnel ouvrent la lecture aux acteurs organisa
 
   const monitoringAdminEcole = await injecterCommeActeur(serveur, adminEcole, {
     method: 'GET',
-    url: '/api/v1/monitoring/health',
+    url: '/api/v1/audit/monitoring/health',
   });
   assert.equal(monitoringAdminEcole.statusCode, 403, monitoringAdminEcole.body);
 

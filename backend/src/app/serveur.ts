@@ -34,6 +34,8 @@ const pluginsGlobaux = [
 const originesFrontendAutorisees = new Set([
   'http://localhost:5173',
   'http://127.0.0.1:5173',
+  'http://localhost:4174',
+  'http://127.0.0.1:4174',
 ]);
 
 // Prepare les plugins globaux sans logique technique lourde.
@@ -51,6 +53,7 @@ export const createServer = () => {
   const serveur = Fastify({
     disableRequestLogging: configurationApplication.environnement === 'test',
     loggerInstance: logger.instance,
+    pluginTimeout: 120000,
   });
 
   preparerPluginsGlobaux(logger);

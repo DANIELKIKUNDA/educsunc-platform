@@ -109,5 +109,6 @@ export * from './referentiels-academiques.routes';
 export * from './programmes-niveau.routes';
 export * from './calendriers-academiques.routes';
 export * from './migrations-referentiel.routes';
+export * from './ExecutionRouteProtegeeReferentielAcademique';
 export * from './ExecutionRouteTenantReferentielAcademique';
 export * from './ExecutionRouteIdempotenteReferentielAcademique';

@@ -9,6 +9,5 @@ export class Migration_003_CreateObligationsFinancieres implements MigrationPost
   public readonly nom = 'CreateObligationsFinancieres';
   public async executer(client: PoolClient): Promise<void> {
     await creerTableDepuisSchemaPaiements(client, schemasTablesPaiementsFacturation[2]!);
-    await creerTableDepuisSchemaPaiements(client, schemasTablesPaiementsFacturation[12]!);
   }
 }
