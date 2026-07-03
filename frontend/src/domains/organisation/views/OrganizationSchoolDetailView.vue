@@ -30,11 +30,23 @@
           <button class="gov-link gov-link--button" type="button" @click="activerEcoleDansContexte">
             Activer ecole
           </button>
+          <RouterLink class="gov-link" :to="`/app/administration-ecole/ecoles/${store.state.selectedEcole.id}`">
+            Administrer cette ecole
+          </RouterLink>
         </div>
       </SectionBlock>
 
       <SectionBlock title="Coordonnees et contexte" description="Bloc utile pour verifier que l ecole a bien ete institutionnalisee avant ouverture d exploitation.">
-        <pre class="gov-preview">{{ JSON.stringify(store.state.selectedEcole, null, 2) }}</pre>
+        <div class="gov-kpi-grid">
+          <div class="gov-kpi-card"><small>Organisation</small><strong>{{ store.state.selectedEcole.idOrganisation }}</strong></div>
+          <div class="gov-kpi-card"><small>Sigle</small><strong>{{ store.state.selectedEcole.sigle || '-' }}</strong></div>
+          <div class="gov-kpi-card"><small>Telephone</small><strong>{{ store.state.selectedEcole.telephone || '-' }}</strong></div>
+          <div class="gov-kpi-card"><small>Email</small><strong>{{ store.state.selectedEcole.email || '-' }}</strong></div>
+          <div class="gov-kpi-card"><small>Adresse</small><strong>{{ store.state.selectedEcole.adresse || '-' }}</strong></div>
+          <div class="gov-kpi-card"><small>Province educationnelle</small><strong>{{ store.state.selectedEcole.provinceEducationnelle || '-' }}</strong></div>
+          <div class="gov-kpi-card"><small>Ville</small><strong>{{ store.state.selectedEcole.ville || '-' }}</strong></div>
+          <div class="gov-kpi-card"><small>Commune / territoire</small><strong>{{ store.state.selectedEcole.communeOuTerritoire || '-' }}</strong></div>
+        </div>
       </SectionBlock>
     </template>
 
@@ -89,5 +101,4 @@ async function activerEcoleDansContexte(): Promise<void> {
 .gov-link--button{cursor:pointer}
 .gov-kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem}
 .gov-kpi-card{border-radius:22px;padding:1rem;background:#fff;border:1px solid rgba(17,40,63,.08);box-shadow:0 18px 45px rgba(17,40,63,.08);display:grid;gap:.35rem}
-.gov-preview{margin:0;white-space:pre-wrap;word-break:break-word;padding:1rem;border-radius:20px;background:#102844;color:#edf5fb}
 </style>

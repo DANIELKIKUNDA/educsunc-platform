@@ -57,7 +57,14 @@
             </option>
           </select>
         </label>
-        <button class="gov-pill" type="button" :disabled="!selectedOrganisationId" @click="chargerEcoles">Lire les ecoles</button>
+          <button class="gov-pill" type="button" :disabled="!selectedOrganisationId" @click="chargerEcoles">Lire les ecoles</button>
+        <RouterLink
+          class="gov-pill"
+          :class="{ 'gov-pill--disabled': !selectedOrganisationId }"
+          :to="selectedOrganisationId ? `/app/administration-ecole/ecoles?idOrganisation=${selectedOrganisationId}` : '/app/administration-ecole/ecoles'"
+        >
+          Administrer les ecoles
+        </RouterLink>
         <button
           v-if="canMutateOrganisation"
           class="gov-pill"
@@ -162,6 +169,7 @@
                 <th>Mode</th>
                 <th>Etat</th>
                 <th>Action</th>
+                <th>Pilotage</th>
               </tr>
             </thead>
             <tbody>
@@ -172,6 +180,9 @@
                 <td>{{ ecole.actif ? 'Active' : 'Inactive' }}</td>
                 <td>
                   <RouterLink class="gov-inline-link" :to="`/app/organisation/ecoles/${ecole.id}`">Ouvrir</RouterLink>
+                </td>
+                <td>
+                  <RouterLink class="gov-inline-link" :to="`/app/administration-ecole/ecoles/${ecole.id}`">Administrer</RouterLink>
                 </td>
               </tr>
             </tbody>
@@ -184,7 +195,7 @@
 
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue';
-import { RouterLink } from 'vue-router';
+import { RouterLink, useRoute } from 'vue-router';
 import { ArrowLeft } from 'lucide-vue-next';
 import PageContainer from '../../../shared/layout/PageContainer.vue';
 import PageHeader from '../../../shared/layout/PageHeader.vue';
@@ -199,6 +210,7 @@ import { useOrganizationGovernanceStore } from '../stores/organization-governanc
 
 const store = useOrganizationGovernanceStore();
 const { canUseAction } = useDoctrineAccess();
+const route = useRoute();
 const selectedOrganisationId = ref('');
 const renameOrganisationTarget = ref('');
 const organisationForm = reactive({
@@ -255,7 +267,20 @@ async function activerOrganisationDansContexte(idOrganisation: string): Promise<
   activeContextStore.setGovernanceLevel('ORGANISATION');
 }
 
-void chargerOrganisations();
+async function initialiserDepuisContexte(): Promise<void> {
+  selectedOrganisationId.value =
+    (typeof route.query.idOrganisation === 'string' && route.query.idOrganisation)
+    || (activeContextStore.state.governanceLevel === 'ORGANISATION' ? activeContextStore.state.organizationId : '')
+    || selectedOrganisationId.value;
+
+  await chargerOrganisations();
+
+  if (selectedOrganisationId.value) {
+    await chargerEcoles();
+  }
+}
+
+void initialiserDepuisContexte();
 </script>
 
 <style scoped>
@@ -266,6 +291,7 @@ void chargerOrganisations();
 .gov-field input,.gov-field select{border-radius:16px;border:1px solid rgba(17,40,63,.14);padding:.8rem .95rem;background:#fbfdff}
 .gov-pill,.gov-link,.gov-inline-link{border:1px solid rgba(17,40,63,.14);border-radius:999px;padding:.75rem 1rem;background:#fff;color:#11283f;text-decoration:none;font-weight:600;display:inline-flex;align-items:center;gap:.45rem}
 .gov-pill--primary{background:linear-gradient(135deg,#0c5a6b,#167b91);border-color:transparent;color:#fff}
+.gov-pill--disabled{pointer-events:none;opacity:.55}
 .gov-banner{padding:1rem 1.1rem;border-radius:20px;background:#eef8fb;color:#103040;font-weight:600}
 .gov-banner--muted{background:#f3f7f9;color:#425b67}
 .gov-table-shell{overflow:auto}

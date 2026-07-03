@@ -44,6 +44,22 @@
           <span>Telephone</span>
           <input v-model="form.telephone" type="text" placeholder="+243..." />
         </label>
+        <label class="adm-field">
+          <span>Email</span>
+          <input v-model="form.email" type="email" placeholder="contact@ecole.cd" />
+        </label>
+        <label class="adm-field">
+          <span>Province educationnelle</span>
+          <input v-model="form.provinceEducationnelle" type="text" placeholder="Haut-Katanga 1" />
+        </label>
+        <label class="adm-field">
+          <span>Ville</span>
+          <input v-model="form.ville" type="text" placeholder="Lubumbashi" />
+        </label>
+        <label class="adm-field">
+          <span>Commune / territoire</span>
+          <input v-model="form.communeOuTerritoire" type="text" placeholder="Kampemba" />
+        </label>
         <label class="adm-field adm-field--wide">
           <span>Adresse</span>
           <input v-model="form.adresse" type="text" placeholder="Adresse ecole" />
@@ -139,7 +155,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue';
-import { RouterLink } from 'vue-router';
+import { RouterLink, useRoute } from 'vue-router';
 import { ArrowLeft } from 'lucide-vue-next';
 import PageContainer from '../../../shared/layout/PageContainer.vue';
 import PageHeader from '../../../shared/layout/PageHeader.vue';
@@ -154,6 +170,7 @@ import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access'
 
 const store = useOrganizationGovernanceStore();
 const { canUseAction } = useDoctrineAccess();
+const route = useRoute();
 const selectedOrganisationId = ref('');
 const form = reactive({
   idOrganisation: '',
@@ -162,6 +179,10 @@ const form = reactive({
   modeExploitation: 'MONO_ECOLE',
   sigle: '',
   telephone: '',
+  email: '',
+  provinceEducationnelle: '',
+  ville: '',
+  communeOuTerritoire: '',
   adresse: '',
 });
 
@@ -188,6 +209,10 @@ async function creerEcole(): Promise<void> {
     modeExploitation: form.modeExploitation.trim(),
     sigle: form.sigle.trim() || undefined,
     telephone: form.telephone.trim() || undefined,
+    email: form.email.trim() || undefined,
+    provinceEducationnelle: form.provinceEducationnelle.trim() || undefined,
+    ville: form.ville.trim() || undefined,
+    communeOuTerritoire: form.communeOuTerritoire.trim() || undefined,
     adresse: form.adresse.trim() || undefined,
   });
 
@@ -196,6 +221,10 @@ async function creerEcole(): Promise<void> {
   form.nom = '';
   form.sigle = '';
   form.telephone = '';
+  form.email = '';
+  form.provinceEducationnelle = '';
+  form.ville = '';
+  form.communeOuTerritoire = '';
   form.adresse = '';
 }
 
@@ -206,7 +235,20 @@ async function activerEcoleDansContexte(idOrganisation: string, idEcole: string)
 }
 
 onMounted(async () => {
+  const organisationDepuisRoute = typeof route.query.idOrganisation === 'string' ? route.query.idOrganisation : '';
+  if (organisationDepuisRoute) {
+    selectedOrganisationId.value = organisationDepuisRoute;
+    form.idOrganisation = organisationDepuisRoute;
+  } else if (activeContextStore.state.governanceLevel === 'ORGANISATION') {
+    selectedOrganisationId.value = activeContextStore.state.organizationId;
+    form.idOrganisation = activeContextStore.state.organizationId;
+  }
+
   await chargerOrganisations();
+
+  if (selectedOrganisationId.value) {
+    await chargerEcoles();
+  }
 });
 </script>
 

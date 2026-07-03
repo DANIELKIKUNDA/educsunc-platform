@@ -51,6 +51,22 @@
             <span>Telephone</span>
             <input v-model="telephoneTarget" type="text" placeholder="+243..." />
           </label>
+          <label class="adm-field">
+            <span>Email</span>
+            <input v-model="emailTarget" type="email" placeholder="contact@ecole.cd" />
+          </label>
+          <label class="adm-field">
+            <span>Province educationnelle</span>
+            <input v-model="provinceEducationnelleTarget" type="text" placeholder="Haut-Katanga 1" />
+          </label>
+          <label class="adm-field">
+            <span>Ville</span>
+            <input v-model="villeTarget" type="text" placeholder="Lubumbashi" />
+          </label>
+          <label class="adm-field">
+            <span>Commune / territoire</span>
+            <input v-model="communeOuTerritoireTarget" type="text" placeholder="Kampemba" />
+          </label>
           <label class="adm-field adm-field--wide">
             <span>Adresse</span>
             <input v-model="adresseTarget" type="text" placeholder="Adresse ecole" />
@@ -78,6 +94,19 @@
 
       <SectionBlock v-if="store.state.lastMutationMessage" title="Derniere mutation" description="Confirmation de la derniere operation backend.">
         <div class="adm-banner">{{ store.state.lastMutationMessage }}</div>
+      </SectionBlock>
+
+      <SectionBlock title="Identite institutionnelle" description="Lecture complete des champs structurels exposes par le backend.">
+        <div class="adm-kpi-grid">
+          <div class="adm-kpi-card"><small>Sigle</small><strong>{{ store.state.selectedEcole.sigle || '-' }}</strong></div>
+          <div class="adm-kpi-card"><small>Telephone</small><strong>{{ store.state.selectedEcole.telephone || '-' }}</strong></div>
+          <div class="adm-kpi-card"><small>Email</small><strong>{{ store.state.selectedEcole.email || '-' }}</strong></div>
+          <div class="adm-kpi-card"><small>Adresse</small><strong>{{ store.state.selectedEcole.adresse || '-' }}</strong></div>
+          <div class="adm-kpi-card"><small>Province educationnelle</small><strong>{{ store.state.selectedEcole.provinceEducationnelle || '-' }}</strong></div>
+          <div class="adm-kpi-card"><small>Ville</small><strong>{{ store.state.selectedEcole.ville || '-' }}</strong></div>
+          <div class="adm-kpi-card"><small>Commune / territoire</small><strong>{{ store.state.selectedEcole.communeOuTerritoire || '-' }}</strong></div>
+          <div class="adm-kpi-card"><small>Organisation</small><strong>{{ store.state.selectedEcole.idOrganisation }}</strong></div>
+        </div>
       </SectionBlock>
     </template>
 
@@ -107,6 +136,10 @@ const renameTarget = ref('');
 const modeTarget = ref('MONO_ECOLE');
 const sigleTarget = ref('');
 const telephoneTarget = ref('');
+const emailTarget = ref('');
+const provinceEducationnelleTarget = ref('');
+const villeTarget = ref('');
+const communeOuTerritoireTarget = ref('');
 const adresseTarget = ref('');
 const canMutateDetail = computed(() => canUseAction('school-administration.detail.write', 'ADM-002'));
 
@@ -114,6 +147,17 @@ async function charger(): Promise<void> {
   const idEcole = typeof route.params.idEcole === 'string' ? route.params.idEcole : '';
   if (!idEcole) return;
   await store.chargerEcole(idEcole);
+
+  const ecole = store.state.selectedEcole;
+  if (!ecole) return;
+  modeTarget.value = ecole.modeExploitation || 'MONO_ECOLE';
+  sigleTarget.value = ecole.sigle || '';
+  telephoneTarget.value = ecole.telephone || '';
+  emailTarget.value = ecole.email || '';
+  provinceEducationnelleTarget.value = ecole.provinceEducationnelle || '';
+  villeTarget.value = ecole.ville || '';
+  communeOuTerritoireTarget.value = ecole.communeOuTerritoire || '';
+  adresseTarget.value = ecole.adresse || '';
 }
 
 async function renommer(): Promise<void> {
@@ -135,6 +179,10 @@ async function mettreAJourInformations(): Promise<void> {
   await store.mettreAJourInformationsEcole(idEcole, {
     sigle: sigleTarget.value.trim() || undefined,
     telephone: telephoneTarget.value.trim() || undefined,
+    email: emailTarget.value.trim() || undefined,
+    provinceEducationnelle: provinceEducationnelleTarget.value.trim() || undefined,
+    ville: villeTarget.value.trim() || undefined,
+    communeOuTerritoire: communeOuTerritoireTarget.value.trim() || undefined,
     adresse: adresseTarget.value.trim() || undefined,
   });
 }
