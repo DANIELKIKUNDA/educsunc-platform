@@ -973,7 +973,7 @@ test('la route produit bulletins expose la sante de synchronisation', async () =
 
   const reponse = await serveur.inject({
     method: 'GET',
-    url: '/health/sync',
+    url: '/api/bulletins/health/sync',
     headers: {
       'x-tenant-id': 'ecole-1',
     },
