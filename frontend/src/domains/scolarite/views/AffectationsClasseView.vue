@@ -55,6 +55,19 @@
             </div>
           </SectionBlock>
 
+          <SectionBlock v-if="currentFlowIdInscription || currentFlowIdClasse" title="Etape suivante" description="Une affectation lue ou posee doit pouvoir renvoyer immediatement vers la perception ou la relecture des eleves.">
+            <div class="scolarite-next-grid">
+              <button class="scolarite-next-card" type="button" @click="ouvrirEleves">
+                <strong>Relire les eleves</strong>
+                <small>Verifier la fiche de l eleve depuis la liste scolaire.</small>
+              </button>
+              <button class="scolarite-next-card" type="button" @click="ouvrirPaiement">
+                <strong>Continuer vers le paiement</strong>
+                <small>Passer au workflow financier sans quitter le perimetre courant.</small>
+              </button>
+            </div>
+          </SectionBlock>
+
           <SectionBlock v-if="store.state.classeEleves.length > 0" title="Eleves de la classe" description="La classe reste une liste utile pour piloter les affectations.">
             <div class="scolarite-table-shell">
               <table class="scolarite-table">
@@ -108,6 +121,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { Search } from 'lucide-vue-next';
 import PageContainer from '../../../shared/layout/PageContainer.vue';
 import PageHeader from '../../../shared/layout/PageHeader.vue';
@@ -122,6 +136,8 @@ import { useAssignmentsStore } from '../stores/assignments.store';
 
 const store = useAssignmentsStore();
 const doctrineAccess = useDoctrineAccess();
+const route = useRoute();
+const router = useRouter();
 const isAuthorized = computed(() => doctrineAccess.canAccessPage('SCO-005'));
 const canManageAssignments = computed(() => doctrineAccess.canUseAction('scolarite.affectations.manage', 'SCO-005'));
 const idClassePedagogique = ref('');
@@ -130,6 +146,8 @@ const idAffectationClasse = ref('');
 const idNouvelleClassePedagogique = ref('');
 const versionAttendue = ref(1);
 const motifAffectation = ref('');
+const currentFlowIdInscription = computed(() => store.state.affectationDetail?.idInscriptionScolaire || idInscriptionScolaire.value);
+const currentFlowIdClasse = computed(() => store.state.affectationDetail?.idClassePedagogique || idClassePedagogique.value);
 
 function nomComplet(entry: { nom: string; postNom: string; prenom?: string }): string {
   return construireNomComplet(entry.nom, entry.postNom, entry.prenom);
@@ -195,10 +213,32 @@ async function desactiverDepuisLigne(id: string): Promise<void> {
   idInscriptionScolaire.value = id;
   await desactiver();
 }
+
+async function ouvrirEleves(): Promise<void> {
+  await router.push('/app/scolarite/eleves');
+}
+
+async function ouvrirPaiement(): Promise<void> {
+  await router.push('/app/finances/paiements/enregistrer');
+}
+
+const idClasseDepuisRoute = typeof route.query.idClassePedagogique === 'string' ? route.query.idClassePedagogique : '';
+const idInscriptionDepuisRoute = typeof route.query.idInscriptionScolaire === 'string' ? route.query.idInscriptionScolaire : '';
+
+if (idClasseDepuisRoute) {
+  idClassePedagogique.value = idClasseDepuisRoute;
+}
+
+if (idInscriptionDepuisRoute) {
+  idInscriptionScolaire.value = idInscriptionDepuisRoute;
+}
 </script>
 
 <style scoped>
 .scolarite-grid,.scolarite-kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem}
+.scolarite-next-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem}
+.scolarite-next-card{display:grid;gap:.55rem;text-align:left;padding:1rem 1.05rem;border-radius:22px;border:1px solid rgba(17,40,63,.08);background:linear-gradient(180deg,#f7fbfd,#ffffff);box-shadow:0 18px 45px rgba(17,40,63,.08);color:#11283f}
+.scolarite-next-card small{color:#587083;line-height:1.5}
 .scolarite-field{display:grid;gap:.45rem}
 .scolarite-field input{border-radius:16px;border:1px solid rgba(17,40,63,.16);padding:.8rem .9rem;background:#fbfdff}
 .scolarite-actions{display:flex;flex-wrap:wrap;gap:.75rem}

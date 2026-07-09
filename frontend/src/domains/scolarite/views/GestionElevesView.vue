@@ -176,7 +176,10 @@
                       <td>{{ entry.idFamille ?? '-' }}</td>
                       <td>{{ entry.nomEcoleProvenance }}</td>
                       <td>
-                        <button class="scolarite-inline-action" type="button" @click="ouvrirDetail(entry.idEleve)">Ouvrir</button>
+                        <div class="scolarite-actions-row">
+                          <button class="scolarite-inline-action" type="button" @click="ouvrirDetail(entry.idEleve)">Ouvrir</button>
+                          <button class="scolarite-inline-action" type="button" @click="ouvrirPaiementEleve(entry.idEleve)">Paiement</button>
+                        </div>
                       </td>
                     </tr>
                   </tbody>
@@ -209,6 +212,17 @@
                   <div><small>Modifie par</small><strong>{{ store.state.selected.modifiePar ?? '-' }}</strong></div>
                   <div><small>Modifie le</small><strong>{{ formatDate(store.state.selected.modifieLe) }}</strong></div>
                 </div>
+
+                <div class="scolarite-next-grid">
+                  <button class="scolarite-next-card" type="button" @click="ouvrirInscriptionDepuisEleve">
+                    <strong>Revenir a l inscription</strong>
+                    <small>Ouvrir MS-01 avec l eleve deja cible pour poursuivre ou corriger le flux.</small>
+                  </button>
+                  <button class="scolarite-next-card" type="button" @click="ouvrirPaiementSelection">
+                    <strong>Continuer vers le paiement</strong>
+                    <small>Passer directement a la perception pour cet eleve.</small>
+                  </button>
+                </div>
               </aside>
             </div>
           </SectionBlock>
@@ -219,8 +233,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive } from 'vue';
-import { RouterLink } from 'vue-router';
+import { computed, onMounted, reactive } from 'vue';
+import { RouterLink, useRoute, useRouter } from 'vue-router';
 import { ArrowLeft, Printer, Search, Sheet, ShieldCheck, Users } from 'lucide-vue-next';
 import PageContainer from '../../../shared/layout/PageContainer.vue';
 import PageHeader from '../../../shared/layout/PageHeader.vue';
@@ -241,6 +255,8 @@ const store = useStudentsStore();
 const session = sessionStore.state;
 const context = activeContextStore.state;
 const doctrineAccess = useDoctrineAccess();
+const route = useRoute();
+const router = useRouter();
 const isAuthorized = computed(() => doctrineAccess.canAccessPage('SCO-002'));
 const filters = reactive({
   nom: '',
@@ -280,6 +296,30 @@ async function ouvrirDetail(idEleve: string): Promise<void> {
   await store.chargerDetail(idEleve);
 }
 
+async function ouvrirPaiementEleve(idEleve: string): Promise<void> {
+  await router.push(`/app/finances/paiements/enregistrer?idEleve=${idEleve}`);
+}
+
+async function ouvrirPaiementSelection(): Promise<void> {
+  if (!store.state.selected) {
+    return;
+  }
+
+  await ouvrirPaiementEleve(store.state.selected.idEleve);
+}
+
+async function ouvrirInscriptionDepuisEleve(): Promise<void> {
+  if (!store.state.selected) {
+    return;
+  }
+
+  const query = new URLSearchParams({ idEleve: store.state.selected.idEleve });
+  if (store.state.selected.idFamille) {
+    query.set('idFamille', store.state.selected.idFamille);
+  }
+  await router.push(`/app/scolarite/inscriptions?${query.toString()}`);
+}
+
 function reinitialiserFiltres(): void {
   filters.nom = '';
   filters.postNom = '';
@@ -316,13 +356,23 @@ function formatDate(value?: string): string {
   return Number.isNaN(date.getTime()) ? value : date.toLocaleString('fr-FR');
 }
 
-void charger();
+onMounted(async () => {
+  await charger();
+
+  const idEleve = typeof route.query.idEleve === 'string' ? route.query.idEleve : '';
+  if (idEleve) {
+    await ouvrirDetail(idEleve);
+  }
+});
 </script>
 
 <style scoped>
 .scolarite-actions,.scolarite-actions-row{display:flex;flex-wrap:wrap;gap:.75rem}
 .scolarite-pill,.scolarite-primary-action,.scolarite-secondary-action,.scolarite-inline-action{border:1px solid rgba(17,40,63,.14);background:#fff;color:#11283f;border-radius:999px;padding:.75rem 1rem;display:inline-flex;align-items:center;gap:.5rem;font-weight:600;text-decoration:none}
 .scolarite-pill--action,.scolarite-primary-action{background:linear-gradient(135deg,#0b5d7a,#1487a8);color:#fff;border-color:transparent}
+.scolarite-next-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;margin-top:1rem}
+.scolarite-next-card{display:grid;gap:.55rem;text-align:left;padding:1rem 1.05rem;border-radius:22px;border:1px solid rgba(17,40,63,.08);background:linear-gradient(180deg,#f7fbfd,#ffffff);box-shadow:0 18px 45px rgba(17,40,63,.08);color:#11283f}
+.scolarite-next-card small{color:#587083;line-height:1.5}
 .scolarite-hero{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap}
 .scolarite-hero__lead{display:flex;align-items:center;gap:1rem}
 .scolarite-hero__icon{width:56px;height:56px;border-radius:18px;display:grid;place-items:center;background:linear-gradient(135deg,#0b5d7a,#1487a8);color:#fff}

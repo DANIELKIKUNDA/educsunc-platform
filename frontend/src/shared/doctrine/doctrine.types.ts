@@ -71,4 +71,5 @@ export interface FrontendPageDoctrine {
   actorCodes: readonly FrontendActorCode[];
   governanceLevels: readonly FrontendGovernanceLevel[];
   visibleActions: readonly FrontendPageAction[];
+  hiddenInNavigation?: boolean;
 }

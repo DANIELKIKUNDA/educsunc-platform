@@ -6,6 +6,7 @@ Ce document ouvre la documentation detaillee des workflows academiques reels d'E
 
 Il s'appuie sur :
 
+- [DOCTRINE_REFERENTIEL_OFFICIEL.md](/C:/Users/MON%20PC/Documents/EducSyn/docs/architecture/DOCTRINE_REFERENTIEL_OFFICIEL.md)
 - [00-doctrine-frontend.md](/C:/Users/MON%20PC/Documents/EducSyn/docs/frontend/00-doctrine-frontend.md)
 - [01-acteurs.md](/C:/Users/MON%20PC/Documents/EducSyn/docs/frontend/01-acteurs.md)
 - [02-permissions-effectives.md](/C:/Users/MON%20PC/Documents/EducSyn/docs/frontend/02-permissions-effectives.md)
@@ -14,6 +15,12 @@ Il s'appuie sur :
 - [05-workflows-reels.md](/C:/Users/MON%20PC/Documents/EducSyn/docs/frontend/05-workflows-reels.md)
 
 Le backend reste la source officielle de verite.
+
+Pour toute lecture academique du referentiel, la regle d'architecture transverse a retenir reste :
+
+- la `Plateforme` reste proprietaire de l'officiel
+- l'`Ecole` exploite le referentiel officiel sans en devenir proprietaire
+- les objets locaux d'exploitation restent distincts du referentiel officiel
 
 ## Chaine de Dependances Academiques Corrigee
 

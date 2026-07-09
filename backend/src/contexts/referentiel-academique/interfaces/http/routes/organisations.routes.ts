@@ -31,6 +31,31 @@ export const creerRoutesOrganisations = (
       ));
   });
 
+  serveur.get('/api/organisations/:id/indicateurs', async (requete, reponse) => {
+    return executerRouteProtegeeReferentielAcademique(dependances, requete, reponse, () =>
+      dependances.controleurOrganisations.consulterIndicateursOrganisation(
+        requete.params,
+        requete.context,
+      ));
+  });
+
+  serveur.get('/api/organisations/:id/historique', async (requete, reponse) => {
+    return executerRouteProtegeeReferentielAcademique(dependances, requete, reponse, () =>
+      dependances.controleurOrganisations.consulterHistoriqueOrganisation(
+        requete.params,
+        requete.context,
+      ));
+  });
+
+  serveur.patch('/api/organisations/:id', async (requete, reponse) => {
+    return executerRouteProtegeeReferentielAcademique(dependances, requete, reponse, () =>
+      dependances.controleurOrganisations.mettreAJourOrganisation(
+        requete.params,
+        requete.body,
+        requete.context,
+      ));
+  });
+
   serveur.patch('/api/organisations/:id/renommer', async (requete, reponse) => {
     return executerRouteProtegeeReferentielAcademique(dependances, requete, reponse, () =>
       dependances.controleurOrganisations.renommerOrganisation(

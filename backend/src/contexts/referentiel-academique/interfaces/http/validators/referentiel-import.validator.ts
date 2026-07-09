@@ -23,11 +23,18 @@ import {
   ImporterSectionsDepuisJsonEntree,
 } from '../../../application/dto/input/ImporterSectionsDepuisJsonEntree';
 import { ActiverVersionReferentielEntree } from '../../../application/dto/input/ActiverVersionReferentielEntree';
+import { AjouterLigneVersionReferentielProgrammeEntree } from '../../../application/dto/input/AjouterLigneVersionReferentielProgrammeEntree';
 import { ComparerDeuxVersionsReferentielEntree } from '../../../application/dto/input/ComparerDeuxVersionsReferentielEntree';
 import { ConsulterReferentielProgrammeEntree } from '../../../application/dto/input/ConsulterReferentielProgrammeEntree';
+import { CreerVersionTravailReferentielDepuisVersionEntree } from '../../../application/dto/input/CreerVersionTravailReferentielDepuisVersionEntree';
 import { ListerReferentielsParClasseAcademiqueEntree } from '../../../application/dto/input/ListerReferentielsParClasseAcademiqueEntree';
 import { ListerReferentielsCoursEntree } from '../../../application/dto/input/ListerReferentielsCoursEntree';
+import { ModifierLigneVersionReferentielProgrammeEntree } from '../../../application/dto/input/ModifierLigneVersionReferentielProgrammeEntree';
+import { ModifierPonderationLigneVersionReferentielProgrammeEntree } from '../../../application/dto/input/ModifierPonderationLigneVersionReferentielProgrammeEntree';
 import { PublierVersionReferentielEntree } from '../../../application/dto/input/PublierVersionReferentielEntree';
+import { ReordonnerLignesVersionReferentielProgrammeEntree } from '../../../application/dto/input/ReordonnerLignesVersionReferentielProgrammeEntree';
+import { RetirerLigneVersionReferentielProgrammeEntree } from '../../../application/dto/input/RetirerLigneVersionReferentielProgrammeEntree';
+import { VerifierCoherenceVersionReferentielAvantPublicationEntree } from '../../../application/dto/input/VerifierCoherenceVersionReferentielAvantPublicationEntree';
 import type { ProprietesPonderationEvaluation } from '../../../domain/value-objects/PonderationEvaluation';
 import { SourceLigneProgramme } from '../../../domain/value-objects/SourceLigneProgramme';
 import { SourceReferentiel } from '../../../domain/value-objects/SourceReferentiel';
@@ -296,6 +303,231 @@ export class ValidateurReferentielImportHttp {
     };
   }
 
+  // Cette methode valide la requete HTTP de creation d'une version de travail.
+  public static validerCreationVersionTravail(
+    parametres: unknown,
+    corps: unknown,
+    creePar: string,
+  ): CreerVersionTravailReferentielDepuisVersionEntree {
+    const donneesParametres = OutilsValidationHttpReferentielAcademique.obtenirObjet(
+      parametres,
+      'parametres',
+    );
+    const donnees = OutilsValidationHttpReferentielAcademique.obtenirObjet(corps, 'corps');
+
+    return {
+      idVersionSource: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
+        donnees,
+        'idVersionSource',
+      ),
+      codeVersion: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
+        donnees,
+        'codeVersion',
+      ),
+      anneeReference: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
+        donnees,
+        'anneeReference',
+      ),
+      datePublication: OutilsValidationHttpReferentielAcademique.lireDateRequise(
+        donnees,
+        'datePublication',
+      ),
+      sourceImport: this.lireSourceReferentielOptionnelle(donnees, 'sourceImport'),
+      motifPublication: OutilsValidationHttpReferentielAcademique.lireChaineOptionnelle(
+        donnees,
+        'motifPublication',
+      ),
+      creePar,
+    };
+  }
+
+  // Cette methode valide la requete HTTP d'ajout d'une ligne a une version.
+  public static validerAjoutLigneVersion(
+    parametres: unknown,
+    corps: unknown,
+    ajouteePar: string,
+  ): AjouterLigneVersionReferentielProgrammeEntree {
+    const donneesParametres = OutilsValidationHttpReferentielAcademique.obtenirObjet(
+      parametres,
+      'parametres',
+    );
+    const donnees = OutilsValidationHttpReferentielAcademique.obtenirObjet(corps, 'corps');
+
+    return {
+      idVersionReferentielProgramme:
+        OutilsValidationHttpReferentielAcademique.lireChaineRequise(donneesParametres, 'id'),
+      idReferentielCours: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
+        donnees,
+        'idReferentielCours',
+      ),
+      ordreAffichage: OutilsValidationHttpReferentielAcademique.lireNombreEntierRequis(
+        donnees,
+        'ordreAffichage',
+      ),
+      obligatoire: OutilsValidationHttpReferentielAcademique.lireBooleenRequis(
+        donnees,
+        'obligatoire',
+      ),
+      aExamen: OutilsValidationHttpReferentielAcademique.lireBooleenRequis(donnees, 'aExamen'),
+      estCalculable: OutilsValidationHttpReferentielAcademique.lireBooleenRequis(
+        donnees,
+        'estCalculable',
+      ),
+      sourceLigne: this.lireSourceLigneOptionnelle(donnees, 'sourceLigne'),
+      ponderation: this.validerPonderation(
+        OutilsValidationHttpReferentielAcademique.lireObjetRequis(donnees, 'ponderation'),
+      ),
+      domaine: OutilsValidationHttpReferentielAcademique.lireChaineOptionnelle(donnees, 'domaine'),
+      sousDomaine: OutilsValidationHttpReferentielAcademique.lireChaineOptionnelle(
+        donnees,
+        'sousDomaine',
+      ),
+      ajouteePar,
+    };
+  }
+
+  // Cette methode valide la requete HTTP de modification d'une ligne de version.
+  public static validerModificationLigneVersion(
+    parametres: unknown,
+    corps: unknown,
+    modifieePar: string,
+  ): ModifierLigneVersionReferentielProgrammeEntree {
+    const donneesParametres = OutilsValidationHttpReferentielAcademique.obtenirObjet(
+      parametres,
+      'parametres',
+    );
+    const donnees = OutilsValidationHttpReferentielAcademique.obtenirObjet(corps, 'corps');
+
+    return {
+      idVersionReferentielProgramme:
+        OutilsValidationHttpReferentielAcademique.lireChaineRequise(donneesParametres, 'id'),
+      idLigneReferentielProgramme:
+        OutilsValidationHttpReferentielAcademique.lireChaineRequise(donneesParametres, 'idLigne'),
+      ordreAffichage: OutilsValidationHttpReferentielAcademique.lireNombreEntierOptionnel(
+        donnees,
+        'ordreAffichage',
+      ),
+      obligatoire: OutilsValidationHttpReferentielAcademique.lireBooleenOptionnel(
+        donnees,
+        'obligatoire',
+      ),
+      aExamen: OutilsValidationHttpReferentielAcademique.lireBooleenOptionnel(donnees, 'aExamen'),
+      estCalculable: OutilsValidationHttpReferentielAcademique.lireBooleenOptionnel(
+        donnees,
+        'estCalculable',
+      ),
+      ponderation: this.lirePonderationOptionnelle(donnees, 'ponderation'),
+      domaine: OutilsValidationHttpReferentielAcademique.lireChaineOptionnelle(donnees, 'domaine'),
+      sousDomaine: OutilsValidationHttpReferentielAcademique.lireChaineOptionnelle(
+        donnees,
+        'sousDomaine',
+      ),
+      modifieePar,
+    };
+  }
+
+  // Cette methode valide la requete HTTP de retrait d'une ligne de version.
+  public static validerRetraitLigneVersion(
+    parametres: unknown,
+    corps: unknown,
+    retireePar: string,
+  ): RetirerLigneVersionReferentielProgrammeEntree {
+    const donneesParametres = OutilsValidationHttpReferentielAcademique.obtenirObjet(
+      parametres,
+      'parametres',
+    );
+    OutilsValidationHttpReferentielAcademique.obtenirObjet(corps ?? {}, 'corps');
+
+    return {
+      idVersionReferentielProgramme:
+        OutilsValidationHttpReferentielAcademique.lireChaineRequise(donneesParametres, 'id'),
+      idLigneReferentielProgramme:
+        OutilsValidationHttpReferentielAcademique.lireChaineRequise(donneesParametres, 'idLigne'),
+      retireePar,
+    };
+  }
+
+  // Cette methode valide la requete HTTP de reordonnancement des lignes d'une version.
+  public static validerReordonnancementVersion(
+    parametres: unknown,
+    corps: unknown,
+    reordonneePar: string,
+  ): ReordonnerLignesVersionReferentielProgrammeEntree {
+    const donneesParametres = OutilsValidationHttpReferentielAcademique.obtenirObjet(
+      parametres,
+      'parametres',
+    );
+    const donnees = OutilsValidationHttpReferentielAcademique.obtenirObjet(corps, 'corps');
+    const lignes = OutilsValidationHttpReferentielAcademique.lireTableauRequis(donnees, 'lignes');
+
+    return {
+      idVersionReferentielProgramme:
+        OutilsValidationHttpReferentielAcademique.lireChaineRequise(donneesParametres, 'id'),
+      lignes: lignes.map((ligne, index) => {
+        const donneesLigne = OutilsValidationHttpReferentielAcademique.obtenirObjet(
+          ligne,
+          `lignes[${index}]`,
+        );
+
+        return {
+          idLigneReferentielProgramme:
+            OutilsValidationHttpReferentielAcademique.lireChaineRequise(
+              donneesLigne,
+              'idLigneReferentielProgramme',
+            ),
+          ordreAffichage: OutilsValidationHttpReferentielAcademique.lireNombreEntierRequis(
+            donneesLigne,
+            'ordreAffichage',
+          ),
+        };
+      }),
+      reordonneePar,
+    };
+  }
+
+  // Cette methode valide la requete HTTP de modification de ponderation.
+  public static validerModificationPonderationVersion(
+    parametres: unknown,
+    corps: unknown,
+    modifieePar: string,
+  ): ModifierPonderationLigneVersionReferentielProgrammeEntree {
+    const donneesParametres = OutilsValidationHttpReferentielAcademique.obtenirObjet(
+      parametres,
+      'parametres',
+    );
+    const donnees = OutilsValidationHttpReferentielAcademique.obtenirObjet(corps, 'corps');
+
+    return {
+      idVersionReferentielProgramme:
+        OutilsValidationHttpReferentielAcademique.lireChaineRequise(donneesParametres, 'id'),
+      idLigneReferentielProgramme:
+        OutilsValidationHttpReferentielAcademique.lireChaineRequise(donneesParametres, 'idLigne'),
+      ponderation: this.validerPonderation(
+        OutilsValidationHttpReferentielAcademique.lireObjetRequis(donnees, 'ponderation'),
+      ),
+      modifieePar,
+    };
+  }
+
+  // Cette methode valide la requete HTTP de verification de coherence d'une version.
+  public static validerVerificationCoherenceVersion(
+    parametres: unknown,
+    corps: unknown,
+    verifieePar: string,
+  ): VerifierCoherenceVersionReferentielAvantPublicationEntree {
+    const donneesParametres = OutilsValidationHttpReferentielAcademique.obtenirObjet(
+      parametres,
+      'parametres',
+    );
+    OutilsValidationHttpReferentielAcademique.obtenirObjet(corps ?? {}, 'corps');
+
+    return {
+      idVersionReferentielProgramme:
+        OutilsValidationHttpReferentielAcademique.lireChaineRequise(donneesParametres, 'id'),
+      verifieePar,
+    };
+  }
+
   private static validerSection(
     valeur: unknown,
     index: number,
@@ -552,5 +784,54 @@ export class ValidateurReferentielImportHttp {
         'maxEX3',
       ),
     };
+  }
+
+  private static lirePonderationOptionnelle(
+    donnees: Record<string, unknown>,
+    nomChamp: string,
+  ): ProprietesPonderationEvaluation | undefined {
+    const valeur = donnees[nomChamp];
+
+    if (valeur === undefined) {
+      return undefined;
+    }
+
+    return this.validerPonderation(
+      OutilsValidationHttpReferentielAcademique.lireObjetRequis(donnees, nomChamp),
+    );
+  }
+
+  private static lireSourceLigneOptionnelle(
+    donnees: Record<string, unknown>,
+    nomChamp: string,
+  ): SourceLigneProgramme | undefined {
+    const valeur = donnees[nomChamp];
+
+    if (valeur === undefined) {
+      return undefined;
+    }
+
+    return OutilsValidationHttpReferentielAcademique.lireEnumRequis(
+      donnees,
+      nomChamp,
+      SourceLigneProgramme,
+    );
+  }
+
+  private static lireSourceReferentielOptionnelle(
+    donnees: Record<string, unknown>,
+    nomChamp: string,
+  ): SourceReferentiel | undefined {
+    const valeur = donnees[nomChamp];
+
+    if (valeur === undefined) {
+      return undefined;
+    }
+
+    return OutilsValidationHttpReferentielAcademique.lireEnumRequis(
+      donnees,
+      nomChamp,
+      SourceReferentiel,
+    );
   }
 }

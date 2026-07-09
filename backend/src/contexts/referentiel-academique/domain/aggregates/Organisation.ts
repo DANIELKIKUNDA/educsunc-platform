@@ -12,6 +12,11 @@ export class Organisation extends RacineAgregat<OrganisationId> {
   private description?: string;
   private creeLe: Date;
   private creePar?: string;
+  private promoteurPrincipalUtilisateurId?: string;
+  private promoteurPrincipalNomComplet?: string;
+  private promoteurPrincipalEmail?: string;
+  private promoteurPrincipalTelephone?: string;
+  private promoteurPrincipalIdentifiant?: string;
   private modifieLe?: Date;
   private modifiePar?: string;
   private version: number;
@@ -24,6 +29,11 @@ export class Organisation extends RacineAgregat<OrganisationId> {
     typeOrganisation: TypeOrganisation,
     description?: string,
     creePar?: string,
+    promoteurPrincipalUtilisateurId?: string,
+    promoteurPrincipalNomComplet?: string,
+    promoteurPrincipalEmail?: string,
+    promoteurPrincipalTelephone?: string,
+    promoteurPrincipalIdentifiant?: string,
     actif = true,
     creeLe: Date = new Date(),
     modifieLe?: Date,
@@ -38,6 +48,16 @@ export class Organisation extends RacineAgregat<OrganisationId> {
     this.description = this.validerTexteOptionnel(description);
     this.creeLe = this.validerDate(creeLe, 'creeLe');
     this.creePar = this.validerTexteOptionnel(creePar);
+    this.promoteurPrincipalUtilisateurId =
+      this.validerTexteOptionnel(promoteurPrincipalUtilisateurId);
+    this.promoteurPrincipalNomComplet =
+      this.validerTexteOptionnel(promoteurPrincipalNomComplet);
+    this.promoteurPrincipalEmail =
+      this.validerTexteOptionnel(promoteurPrincipalEmail);
+    this.promoteurPrincipalTelephone =
+      this.validerTexteOptionnel(promoteurPrincipalTelephone);
+    this.promoteurPrincipalIdentifiant =
+      this.validerTexteOptionnel(promoteurPrincipalIdentifiant);
     this.modifieLe = this.validerDateOptionnelle(modifieLe, 'modifieLe');
     this.modifiePar = this.validerTexteOptionnel(modifiePar);
     this.actif = this.validerBooleen(actif, 'actif');
@@ -79,6 +99,26 @@ export class Organisation extends RacineAgregat<OrganisationId> {
     return this.creePar;
   }
 
+  public obtenirPromoteurPrincipalUtilisateurId(): string | undefined {
+    return this.promoteurPrincipalUtilisateurId;
+  }
+
+  public obtenirPromoteurPrincipalNomComplet(): string | undefined {
+    return this.promoteurPrincipalNomComplet;
+  }
+
+  public obtenirPromoteurPrincipalEmail(): string | undefined {
+    return this.promoteurPrincipalEmail;
+  }
+
+  public obtenirPromoteurPrincipalTelephone(): string | undefined {
+    return this.promoteurPrincipalTelephone;
+  }
+
+  public obtenirPromoteurPrincipalIdentifiant(): string | undefined {
+    return this.promoteurPrincipalIdentifiant;
+  }
+
   // Cette methode retourne la date de derniere modification si elle existe.
   public obtenirModifieLe(): Date | undefined {
     return this.modifieLe === undefined ? undefined : new Date(this.modifieLe.getTime());
@@ -92,6 +132,41 @@ export class Organisation extends RacineAgregat<OrganisationId> {
   // Cette methode retourne la version metier courante de l'agregat.
   public obtenirVersion(): number {
     return this.version;
+  }
+
+  // Cette methode met a jour la fiche metier complete de l'organisation en une seule mutation tracee.
+  public mettreAJourFiche(params: {
+    nom: string;
+    typeOrganisation: TypeOrganisation;
+    description?: string;
+    promoteurPrincipal?: {
+      utilisateurId?: string;
+      nomComplet: string;
+      email?: string;
+      telephone?: string;
+      identifiant?: string;
+    };
+    modifiePar?: string;
+  }): void {
+    this.nom = this.validerTexteObligatoire(params.nom, 'nom');
+    this.typeOrganisation = this.validerTypeOrganisation(params.typeOrganisation);
+    this.description = this.validerTexteOptionnel(params.description);
+    this.promoteurPrincipalUtilisateurId = this.validerTexteOptionnel(
+      params.promoteurPrincipal?.utilisateurId,
+    );
+    this.promoteurPrincipalNomComplet = this.validerTexteOptionnel(
+      params.promoteurPrincipal?.nomComplet,
+    );
+    this.promoteurPrincipalEmail = this.validerTexteOptionnel(
+      params.promoteurPrincipal?.email,
+    );
+    this.promoteurPrincipalTelephone = this.validerTexteOptionnel(
+      params.promoteurPrincipal?.telephone,
+    );
+    this.promoteurPrincipalIdentifiant = this.validerTexteOptionnel(
+      params.promoteurPrincipal?.identifiant,
+    );
+    this.marquerModification(params.modifiePar);
   }
 
   // Cette methode renomme l'organisation.

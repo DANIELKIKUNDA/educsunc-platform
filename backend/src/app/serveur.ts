@@ -66,10 +66,27 @@ export const createServer = () => {
       : 'http://localhost:5173';
 
     reponse.header('Access-Control-Allow-Origin', origineAutorisee);
+    reponse.header('Access-Control-Allow-Credentials', 'true');
     reponse.header('Access-Control-Allow-Methods', 'GET,POST,PATCH,DELETE,OPTIONS');
     reponse.header(
       'Access-Control-Allow-Headers',
-      'Accept,Content-Type,Authorization,x-session-id,x-device-id,x-tenant-id,x-organisation-id,Idempotency-Key,x-request-id,x-correlation-id,x-offline-mode',
+      [
+        'Accept',
+        'Content-Type',
+        'Authorization',
+        'x-session-id',
+        'x-device-id',
+        'x-tenant-id',
+        'x-organisation-id',
+        'x-ecole-id',
+        'x-user-id',
+        'x-role-actif',
+        'x-lecture-organisation',
+        'Idempotency-Key',
+        'x-request-id',
+        'x-correlation-id',
+        'x-offline-mode',
+      ].join(','),
     );
 
     if (requete.method === 'OPTIONS') {

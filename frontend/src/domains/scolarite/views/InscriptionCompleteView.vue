@@ -318,18 +318,44 @@
             </div>
           </div>
         </SectionBlock>
+
+        <SectionBlock
+          v-if="store.state.result"
+          title="Etapes suivantes"
+          description="Le parcours reel peut maintenant continuer sans ressaisie manuelle vers les centres de travail suivants."
+        >
+          <div class="scolarite-next-grid">
+            <button class="scolarite-next-card" type="button" @click="ouvrirFamilles">
+              <strong>Revenir aux familles</strong>
+              <small>Relire ou completer la famille rattachee a l eleve inscrit.</small>
+            </button>
+            <button class="scolarite-next-card" type="button" @click="ouvrirEleves">
+              <strong>Ouvrir les eleves</strong>
+              <small>Verifier immediatement la fiche eleve dans la liste scolaire.</small>
+            </button>
+            <button class="scolarite-next-card" type="button" @click="ouvrirAffectations">
+              <strong>{{ store.state.result.idAffectationClasse ? 'Relire l affectation' : 'Terminer l affectation' }}</strong>
+              <small>{{ store.state.result.idAffectationClasse ? 'Le centre MS-04 peut relire ou ajuster la classe.' : 'Le centre MS-04 permet de finaliser la classe si elle n a pas ete posee.' }}</small>
+            </button>
+            <button class="scolarite-next-card" type="button" @click="ouvrirPaiement">
+              <strong>Continuer vers le paiement</strong>
+              <small>Passer directement a la perception financiere dans le meme contexte ecole.</small>
+            </button>
+          </div>
+        </SectionBlock>
       </template>
     </AccessBoundary>
   </PageContainer>
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue';
 import { RouterLink } from 'vue-router';
 import {
-  AlertCircle,
   ArrowLeft,
-  Save,
+  CheckCircle2,
+  CircleCheckBig,
+  CreditCard,
+  School,
   ShieldCheck,
   Sparkles,
   Users,
@@ -342,200 +368,37 @@ import LoadingState from '../../../shared/ui/LoadingState.vue';
 import ErrorState from '../../../shared/ui/ErrorState.vue';
 import ContextBadge from '../../../shared/ui/ContextBadge.vue';
 import PermissionTag from '../../../shared/ui/PermissionTag.vue';
-import { sessionStore } from '../../../shared/auth/session.store';
-import { activeContextStore } from '../../../shared/session/active-context.store';
-import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
-import { useEnrollmentStore } from '../stores/enrollment.store';
+import { useCompleteEnrollmentViewModel } from '../viewmodels/useCompleteEnrollmentViewModel';
 
-const store = useEnrollmentStore();
-const session = sessionStore.state;
-const context = activeContextStore.state;
-const doctrineAccess = useDoctrineAccess();
-const isAuthorized = computed(() => doctrineAccess.canAccessPage('SCO-001'));
-const canWriteEnrollment = computed(() => doctrineAccess.canUseAction('scolarite.inscription.write', 'SCO-001'));
-const hasAffectation = ref(true);
-
-const eleve = reactive({
-  idEleve: '',
-  matricule: '',
-  nom: '',
-  postNom: '',
-  prenom: '',
-  sexe: 'F' as 'F' | 'M',
-  dateNaissance: '',
-  lieuNaissance: '',
-  nationalite: '',
-  typeProvenance: 'EXTERNE' as 'INTERNE' | 'EXTERNE',
-  nomEcoleProvenance: '',
-  idFamille: '',
-});
-
-const inscription = reactive({
-  idInscriptionScolaire: '',
-  idAnneeScolaire: '',
-  dateInscription: '',
-  origineInscription: 'NOUVEAU' as 'NOUVEAU' | 'ANCIEN' | 'TRANSFERE_ENTRANT' | 'REINTEGRE',
-  numeroOrdre: '',
-  observation: '',
-});
-
-const affectation = reactive({
-  idAffectationClasse: '',
-  idClassePedagogique: '',
-  dateAffectation: '',
-  motifAffectation: '',
-});
-
-const perimeterMessage = computed(() =>
-  `Flux borne a l ecole active ${context.schoolName} et a l annee ${context.schoolYearLabel}. Aucun autre acteur ne doit ouvrir ce parcours complet.`,
-);
-
-const isEleveStepComplete = computed(() =>
-  eleve.idEleve.trim().length > 0
-  && eleve.matricule.trim().length > 0
-  && eleve.nom.trim().length > 0
-  && eleve.postNom.trim().length > 0
-  && eleve.dateNaissance.trim().length > 0
-  && eleve.nomEcoleProvenance.trim().length > 0,
-);
-
-const isFamilleStepComplete = computed(() => eleve.idFamille.trim().length > 0);
-
-const isInscriptionStepComplete = computed(() =>
-  inscription.idInscriptionScolaire.trim().length > 0
-  && context.schoolYearId.trim().length > 0
-  && inscription.dateInscription.trim().length > 0,
-);
-
-const isAffectationStepComplete = computed(() => {
-  if (!hasAffectation.value) {
-    return true;
-  }
-
-  return (
-    affectation.idAffectationClasse.trim().length > 0
-    && affectation.idClassePedagogique.trim().length > 0
-    && affectation.dateAffectation.trim().length > 0
-  );
-});
-
-const completedSteps = computed(() =>
-  Number(isEleveStepComplete.value)
-  + Number(isFamilleStepComplete.value)
-  + Number(isInscriptionStepComplete.value)
-  + Number(isAffectationStepComplete.value),
-);
-
-const completedStepsLabel = computed(() => {
-  if (completedSteps.value === 4) {
-    return 'Flux pret pour soumission';
-  }
-
-  return `${4 - completedSteps.value} etape(s) a completer`;
-});
-
-const canSubmit = computed(() =>
-  isEleveStepComplete.value
-  && isInscriptionStepComplete.value
-  && isAffectationStepComplete.value,
-);
-
-async function soumettre(): Promise<void> {
-  await store.soumettre({
-    eleve: {
-      ...eleve,
-      prenom: eleve.prenom || undefined,
-      lieuNaissance: eleve.lieuNaissance || undefined,
-      nationalite: eleve.nationalite || undefined,
-      idFamille: eleve.idFamille || undefined,
-    },
-    inscription: {
-      ...inscription,
-      idEleve: eleve.idEleve,
-      idAnneeScolaire: context.schoolYearId,
-      numeroOrdre: inscription.numeroOrdre || undefined,
-      observation: inscription.observation || undefined,
-    },
-    affectation: hasAffectation.value
-      ? {
-        ...affectation,
-        idInscriptionScolaire: inscription.idInscriptionScolaire,
-        motifAffectation: affectation.motifAffectation || undefined,
-      }
-      : undefined,
-  });
-}
-
-function prefillDemo(): void {
-  eleve.idEleve = 'eleve-demo-001';
-  eleve.matricule = 'EL-2026-001';
-  eleve.nom = 'Mbuyi';
-  eleve.postNom = 'Kalala';
-  eleve.prenom = 'Sarah';
-  eleve.dateNaissance = '2012-04-19';
-  eleve.lieuNaissance = 'Lubumbashi';
-  eleve.nationalite = 'Congolaise';
-  eleve.nomEcoleProvenance = 'Institut Source';
-  eleve.idFamille = 'famille-demo-001';
-  inscription.idInscriptionScolaire = 'inscription-demo-001';
-  inscription.dateInscription = '2026-09-01';
-  affectation.idAffectationClasse = 'affectation-demo-001';
-  affectation.idClassePedagogique = 'classe-demo-001';
-  affectation.dateAffectation = '2026-09-02';
-}
-
-function reinitialiserFormulaire(): void {
-  eleve.idEleve = '';
-  eleve.matricule = '';
-  eleve.nom = '';
-  eleve.postNom = '';
-  eleve.prenom = '';
-  eleve.sexe = 'F';
-  eleve.dateNaissance = '';
-  eleve.lieuNaissance = '';
-  eleve.nationalite = '';
-  eleve.typeProvenance = 'EXTERNE';
-  eleve.nomEcoleProvenance = '';
-  eleve.idFamille = '';
-  inscription.idInscriptionScolaire = '';
-  inscription.dateInscription = '';
-  inscription.origineInscription = 'NOUVEAU';
-  inscription.numeroOrdre = '';
-  inscription.observation = '';
-  affectation.idAffectationClasse = '';
-  affectation.idClassePedagogique = '';
-  affectation.dateAffectation = '';
-  affectation.motifAffectation = '';
-  hasAffectation.value = true;
-  store.reinitialiser();
-}
+const {
+  store,
+  session,
+  context,
+  doctrineAccess,
+  route,
+  router,
+  isAuthorized,
+  canWriteEnrollment,
+  hasAffectation,
+  eleve,
+  inscription,
+  affectation,
+  perimeterMessage,
+  isEleveStepComplete,
+  isFamilleStepComplete,
+  isInscriptionStepComplete,
+  isAffectationStepComplete,
+  completedSteps,
+  completedStepsLabel,
+  canSubmit,
+  soumettre,
+  ouvrirFamilles,
+  ouvrirEleves,
+  ouvrirAffectations,
+  ouvrirPaiement,
+  prefillDemo,
+  reinitialiserFormulaire,
+} = useCompleteEnrollmentViewModel();
 </script>
 
-<style scoped>
-.scolarite-actions,.scolarite-actions-row,.scolarite-subsection__header{display:flex;flex-wrap:wrap;gap:.75rem;align-items:center;justify-content:space-between}
-.scolarite-pill,.scolarite-primary-action,.scolarite-secondary-action{border:1px solid rgba(17,40,63,.14);background:#fff;color:#11283f;border-radius:999px;padding:.75rem 1rem;display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;font-weight:600}
-.scolarite-pill--action,.scolarite-primary-action{background:linear-gradient(135deg,#0b5d7a,#1487a8);color:#fff;border-color:transparent}
-.scolarite-primary-action:disabled{opacity:.55;cursor:not-allowed}
-.scolarite-hero{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap}
-.scolarite-hero__lead{display:flex;align-items:center;gap:1rem}
-.scolarite-hero__icon{width:56px;height:56px;border-radius:18px;display:grid;place-items:center;background:linear-gradient(135deg,#0b5d7a,#1487a8);color:#fff}
-.scolarite-badges{display:flex;flex-wrap:wrap;gap:.75rem;align-items:flex-start}
-.scolarite-form-stack{display:grid;gap:1rem}
-.scolarite-subsection{border:1px solid rgba(17,40,63,.08);background:linear-gradient(180deg,rgba(243,248,251,.96),rgba(255,255,255,.98));border-radius:24px;padding:1rem 1.1rem;display:grid;gap:1rem}
-.scolarite-grid,.scolarite-kpi-grid,.scolarite-step-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem}
-.scolarite-context-card{border-radius:18px;border:1px solid rgba(17,40,63,.08);background:#f4f8fb;padding:1rem;display:grid;gap:.35rem;align-content:start}
-.scolarite-field{display:grid;gap:.45rem}
-.scolarite-field--full{grid-column:1/-1}
-.scolarite-field input,.scolarite-field select{border-radius:16px;border:1px solid rgba(17,40,63,.16);padding:.8rem .9rem;background:#fbfdff}
-.scolarite-kpi-card,.scolarite-step-card{border-radius:24px;padding:1rem;background:#fff;border:1px solid rgba(17,40,63,.08);box-shadow:0 18px 45px rgba(17,40,63,.08);display:grid;gap:.35rem}
-.scolarite-step-card--done{background:linear-gradient(180deg,#ecf9f2,#ffffff);border-color:rgba(22,101,52,.16)}
-.scolarite-inline-note{display:flex;gap:.75rem;align-items:flex-start;border-radius:18px;background:#f7fbfd;padding:.9rem 1rem;color:#456175}
-.scolarite-toggle{display:inline-flex;gap:.5rem;align-items:center}
-.status-chip{display:inline-flex;align-items:center;border-radius:999px;padding:.2rem .65rem;font-size:.82rem;font-weight:600}
-.status-chip--ok{background:#e7f6ee;color:#166534}
-.status-chip--neutral{background:#edf4f8;color:#365066}
-@media (max-width: 900px){
-  .scolarite-hero{flex-direction:column}
-  .scolarite-hero__lead{align-items:flex-start}
-}
-</style>
+<style src="./InscriptionCompleteView.css" scoped></style>

@@ -1,4 +1,6 @@
 import type { FastifyReply, FastifyRequest } from 'fastify';
+import { ErreurMigrationImpossible } from '../../../domain/exceptions/ErreurMigrationImpossible';
+import { ErreurVersionReferentielInvalide } from '../../../domain/exceptions/ErreurVersionReferentielInvalide';
 import { ValidationError } from '../../../../../shared/exceptions/ValidationError';
 import { ErreurAccesRefuse } from '../../../../../shared/security/application/exceptions/ErreurAccesRefuse';
 import type { ExecuteurRouteTenantReferentielAcademique } from './ExecutionRouteTenantReferentielAcademique';
@@ -47,6 +49,16 @@ export async function executerRouteProtegeeReferentielAcademique(
         success: false,
         error: {
           code: 'REFERENTIEL_FORBIDDEN',
+          message: erreur.message,
+        },
+      });
+    }
+
+    if (erreur instanceof ErreurVersionReferentielInvalide || erreur instanceof ErreurMigrationImpossible) {
+      return reponse.code(409).send({
+        success: false,
+        error: {
+          code: 'REFERENTIEL_CONFLICT',
           message: erreur.message,
         },
       });

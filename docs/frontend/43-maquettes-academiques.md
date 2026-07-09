@@ -36,12 +36,15 @@ Elles doivent eviter :
 
 Cette phase s'appuie exclusivement sur :
 
+- [DOCTRINE_REFERENTIEL_OFFICIEL.md](/C:/Users/MON%20PC/Documents/EducSyn/docs/architecture/DOCTRINE_REFERENTIEL_OFFICIEL.md)
 - [06-workflows-academiques.md](/C:/Users/MON%20PC/Documents/EducSyn/docs/frontend/06-workflows-academiques.md)
 - [25-contrats-ecran-academique.md](/C:/Users/MON%20PC/Documents/EducSyn/docs/frontend/25-contrats-ecran-academique.md)
 - [31-synthese-contrats-ecran.md](/C:/Users/MON%20PC/Documents/EducSyn/docs/frontend/31-synthese-contrats-ecran.md)
 - [32-maquettes-shell-global.md](/C:/Users/MON%20PC/Documents/EducSyn/docs/frontend/32-maquettes-shell-global.md)
 
 Le backend reste la source ultime de verite.
+
+Le referentiel officiel reste gouverne au niveau `Plateforme`. Les maquettes academiques locales d'ecole exploitent ce socle, mais ne doivent jamais laisser croire qu'elles en deviennent proprietaires ni qu'elles peuvent le muter hors des workflows plateforme deja figes.
 
 ## Doctrine De Maquettage Academique
 
@@ -63,6 +66,8 @@ Le frontend doit rendre visible la difference entre :
 - parametres locaux d'exploitation
 - etat brouillon local
 - etat valide exploitable
+
+Le socle officiel transverse doit donc etre lu comme une dependance gouvernee par la plateforme, tandis que les ecrans academiques locaux restent des ecrans d'exploitation, de cadrage et d'adaptation dans leur perimetre autorise.
 
 ### Regle 3
 

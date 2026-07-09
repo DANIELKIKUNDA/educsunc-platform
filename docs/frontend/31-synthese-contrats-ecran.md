@@ -41,6 +41,7 @@ Cette synthese s'appuie exclusivement sur :
 - [28-contrats-ecran-configuration.md](/C:/Users/MON%20PC/Documents/EducSyn/docs/frontend/28-contrats-ecran-configuration.md)
 - [29-contrats-ecran-notifications.md](/C:/Users/MON%20PC/Documents/EducSyn/docs/frontend/29-contrats-ecran-notifications.md)
 - [30-contrats-ecran-security.md](/C:/Users/MON%20PC/Documents/EducSyn/docs/frontend/30-contrats-ecran-security.md)
+- [49-contrats-ecran-organisation.md](/C:/Users/MON%20PC/Documents/EducSyn/docs/frontend/49-contrats-ecran-organisation.md)
 
 Le backend reste la source ultime de verite metier.
 
@@ -75,6 +76,7 @@ La conclusion importante est la suivante :
 | `28` | Configuration | ouvert et stabilise |
 | `29` | Notifications | ouvert et stabilise |
 | `30` | Security | ouvert et stabilise |
+| `49` | Organisation | ouvert et stabilise |
 
 ## Ce Qui Est Maintenant Fige
 
@@ -108,6 +110,7 @@ Les centres d'ecran reels sont maintenant ouverts pour :
 - configuration
 - notifications
 - security
+- organisation
 
 ### 3. La projection `permission + perimetre`
 

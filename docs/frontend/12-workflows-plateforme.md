@@ -6,6 +6,7 @@ Ce document ouvre la documentation detaillee des workflows reels plateforme d'Ed
 
 Il s'appuie sur :
 
+- [DOCTRINE_REFERENTIEL_OFFICIEL.md](/C:/Users/MON%20PC/Documents/EducSyn/docs/architecture/DOCTRINE_REFERENTIEL_OFFICIEL.md)
 - [00-doctrine-frontend.md](/C:/Users/MON%20PC/Documents/EducSyn/docs/frontend/00-doctrine-frontend.md)
 - [01-acteurs.md](/C:/Users/MON%20PC/Documents/EducSyn/docs/frontend/01-acteurs.md)
 - [02-permissions-effectives.md](/C:/Users/MON%20PC/Documents/EducSyn/docs/frontend/02-permissions-effectives.md)
@@ -14,6 +15,12 @@ Il s'appuie sur :
 - [05-workflows-reels.md](/C:/Users/MON%20PC/Documents/EducSyn/docs/frontend/05-workflows-reels.md)
 
 Le backend reste la source officielle de verite.
+
+Pour tout workflow relatif au referentiel officiel, la lecture d'architecture transverse a retenir reste :
+
+- `Plateforme` proprietaire de l'officiel
+- `Organisation` supervise sans muter l'officiel
+- `Ecole` exploite sans devenir proprietaire de l'officiel
 
 ## Workflow PLT-01
 

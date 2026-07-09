@@ -14,6 +14,24 @@ export const routesOrganisation: RouteRecordRaw[] = [
     meta: { title: 'Registre organisations et ecoles' },
   },
   {
+    path: 'organisation/organisations/:idOrganisation',
+    name: 'organization-detail',
+    component: () => import('./views/OrganizationDetailView.vue'),
+    meta: { title: 'Voir organisation' },
+  },
+  {
+    path: 'organisation/organisations/:idOrganisation/ecoles',
+    name: 'organization-attached-schools',
+    component: () => import('./views/OrganizationAttachedSchoolsView.vue'),
+    meta: { title: 'Ecoles rattachees' },
+  },
+  {
+    path: 'organisation/organisations/:idOrganisation/modifier',
+    name: 'organization-edit',
+    component: () => import('./views/OrganizationEditView.vue'),
+    meta: { title: 'Modifier organisation' },
+  },
+  {
     path: 'organisation/ecoles/:idEcole',
     name: 'organization-school-detail',
     component: () => import('./views/OrganizationSchoolDetailView.vue'),

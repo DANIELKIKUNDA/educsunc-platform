@@ -8,8 +8,11 @@ import type {
   CreerOrganisationPayload,
   DetailResponse,
   EcoleItem,
+  OrganisationHistoryItem,
   InformationsInstitutionnellesPayload,
   ListResponse,
+  MettreAJourOrganisationPayload,
+  OrganisationIndicatorsItem,
   OrganisationItem,
 } from '../models/organization-governance.model';
 
@@ -62,6 +65,20 @@ export const organizationGovernanceApi = {
     });
   },
 
+  async consulterIndicateursOrganisation(idOrganisation: string) {
+    return clientApi.envoyer<DetailResponse<OrganisationIndicatorsItem>>({
+      chemin: `/api/organisations/${idOrganisation}/indicateurs`,
+      entetes: construireEntetesLecture(),
+    });
+  },
+
+  async consulterHistoriqueOrganisation(idOrganisation: string) {
+    return clientApi.envoyer<DetailResponse<{ evenements: readonly OrganisationHistoryItem[] }>>({
+      chemin: `/api/organisations/${idOrganisation}/historique`,
+      entetes: construireEntetesLecture(),
+    });
+  },
+
   async creerOrganisation(payload: CreerOrganisationPayload) {
     return clientApi.envoyer<DetailResponse<OrganisationItem>>({
       chemin: '/api/organisations',
@@ -77,6 +94,15 @@ export const organizationGovernanceApi = {
       methode: 'PATCH',
       corps: { nouveauNom },
       entetes: construireEntetesMutation('organisation-rename'),
+    });
+  },
+
+  async mettreAJourOrganisation(idOrganisation: string, payload: MettreAJourOrganisationPayload) {
+    return clientApi.envoyer<DetailResponse<OrganisationItem>>({
+      chemin: `/api/organisations/${idOrganisation}`,
+      methode: 'PATCH',
+      corps: payload,
+      entetes: construireEntetesMutation('organisation-update'),
     });
   },
 

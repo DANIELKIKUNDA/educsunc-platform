@@ -13,7 +13,16 @@ export interface OrganisationItem {
   actif: boolean;
   creeLe: string;
   creePar?: string;
+  modifieLe?: string;
+  modifiePar?: string;
   description?: string;
+  promoteurPrincipal?: {
+    utilisateurId?: string;
+    nomComplet: string;
+    email?: string;
+    telephone?: string;
+    identifiant?: string;
+  };
   version: number;
 }
 
@@ -38,6 +47,26 @@ export interface EcoleItem {
   modifiePar?: string;
 }
 
+export interface OrganisationIndicatorsItem {
+  organisationId: string;
+  totalUtilisateursActifs: number;
+  responsablePrincipal?: {
+    utilisateurId?: string;
+    etatCompte: string;
+    dernierAccesLe?: string;
+    dernierLoginLe?: string;
+  };
+}
+
+export interface OrganisationHistoryItem {
+  id: string;
+  action: string;
+  acteur?: string;
+  description: string;
+  creeLe: string;
+  details?: Record<string, unknown>;
+}
+
 export interface DetailResponse<TDonnee> {
   donnee: TDonnee;
 }
@@ -52,6 +81,25 @@ export interface CreerOrganisationPayload {
   nom: string;
   typeOrganisation: string;
   description?: string;
+  promoteurPrincipal?: {
+    nomComplet: string;
+    email: string;
+    telephone?: string;
+    identifiant?: string;
+    motDePasseInitial: string;
+  };
+}
+
+export interface MettreAJourOrganisationPayload {
+  nom: string;
+  typeOrganisation: string;
+  description?: string;
+  promoteurPrincipal?: {
+    nomComplet: string;
+    email?: string;
+    telephone?: string;
+    identifiant?: string;
+  };
 }
 
 export interface CreerEcolePayload {
@@ -77,3 +125,11 @@ export interface InformationsInstitutionnellesPayload {
   ville?: string;
   communeOuTerritoire?: string;
 }
+
+export const organizationTypeOptions = [
+  'PROMOTEUR',
+  'COORDINATION',
+  'RESEAU',
+  'ECOLE_SEULE',
+  'AUTRE',
+] as const;

@@ -6,10 +6,26 @@
       description="Ecran de caisse prioritaire pour enregistrer un paiement autorise dans le bon perimetre."
     >
       <template #actions>
-        <RouterLink class="module-quick-access__pill module-quick-access__pill--action" to="/app/finances">
-          <ArrowLeft />
-          <span>Retour finances</span>
-        </RouterLink>
+        <div class="module-home-actions">
+          <RouterLink class="module-quick-access__pill module-quick-access__pill--action" to="/app/finances">
+            <ArrowLeft />
+            <span>Retour finances</span>
+          </RouterLink>
+          <RouterLink
+            class="module-quick-access__pill"
+            :to="studentFinancialSituationLink"
+          >
+            <WalletCards />
+            <span>Situation eleve</span>
+          </RouterLink>
+          <RouterLink
+            class="module-quick-access__pill"
+            :to="studentPaymentHistoryLink"
+          >
+            <ReceiptText />
+            <span>Historique eleve</span>
+          </RouterLink>
+        </div>
       </template>
     </PageHeader>
 
@@ -86,6 +102,14 @@
                 <button class="finance-primary-action" type="button" @click="verifyStudent">
                   <Search />
                   <span>Verifier l'eleve</span>
+                </button>
+                <button
+                  v-if="profile"
+                  class="finance-secondary-action"
+                  type="button"
+                  @click="resetOperation"
+                >
+                  Reinitialiser l operation
                 </button>
               </div>
 
@@ -274,6 +298,32 @@
         </div>
 
         <SectionBlock
+          v-if="profile"
+          title="Etapes suivantes"
+          description="Une fois l eleve verifie ou le paiement pose, le flux financier doit ouvrir directement les lectures utiles sans ressaisie."
+        >
+          <div class="finance-next-grid">
+            <button class="finance-next-card" type="button" @click="ouvrirSituationFinanciere">
+              <strong>Situation financiere</strong>
+              <small>Relire dette, exigibles et arrieres de cet eleve.</small>
+            </button>
+            <button class="finance-next-card" type="button" @click="ouvrirHistoriquePaiements">
+              <strong>Historique des paiements</strong>
+              <small>Verifier les operations deja enregistrees pour cet eleve.</small>
+            </button>
+            <button
+              class="finance-next-card"
+              type="button"
+              :disabled="result?.receipts.length === 0"
+              @click="ouvrirDernierRecu"
+            >
+              <strong>Ouvrir le dernier recu</strong>
+              <small>Basculer directement vers le recu emis par l operation courante.</small>
+            </button>
+          </div>
+        </SectionBlock>
+
+        <SectionBlock
           v-if="result"
           title="Sortie backend"
           description="Le backend retourne le paiement enregistre, ses recus et une restitution eventuelle."
@@ -315,8 +365,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import { RouterLink, useRoute } from 'vue-router';
+import { RouterLink } from 'vue-router';
 import {
   ArrowLeft,
   BadgeCheck,
@@ -336,129 +385,37 @@ import ErrorState from '../../../shared/ui/ErrorState.vue';
 import EmptyState from '../../../shared/ui/EmptyState.vue';
 import LoadingState from '../../../shared/ui/LoadingState.vue';
 import AccessBoundary from '../../../shared/permissions/AccessBoundary.vue';
-import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
-import { sessionStore } from '../../../shared/auth/session.store';
-import { activeContextStore } from '../../../shared/session/active-context.store';
-import { paymentRegistrationModeOptions } from '../models/payment-registration.model';
-import { usePaymentRegistrationStore } from '../stores/payment-registration.store';
+import { usePaymentRegistrationViewModel } from '../viewmodels/usePaymentRegistrationViewModel';
 
-type UiState =
-  | 'idle'
-  | 'loading-student'
-  | 'submitting'
-  | 'missing-student'
-  | 'missing-form'
-  | 'technical-error';
-
-const route = useRoute();
-const session = sessionStore.state;
-const context = activeContextStore.state;
-const paymentRegistrationStore = usePaymentRegistrationStore();
-const doctrineAccess = useDoctrineAccess();
-
-const studentIdInput = ref(lireParametreTexte(route.query.idEleve) ?? '');
-const selectedObligationId = ref('');
-const amountInput = ref('');
-const paymentMode = ref('');
-const uiState = ref<UiState>('idle');
-
-const isAuthorized = computed(() => doctrineAccess.canAccessPage('PF-01'));
-const canRecordPayment = computed(() => doctrineAccess.canUseAction('finances.payments.record', 'PF-01'));
-const profile = computed(() => paymentRegistrationStore.state.profile);
-const availableObligations = computed(() => paymentRegistrationStore.state.obligations);
-const result = computed(() => paymentRegistrationStore.state.result);
-const technicalErrorMessage = computed(() =>
-  paymentRegistrationStore.state.errorMessage
-  ?? 'La perception n a pas pu etre finalisee.',
-);
-
-const selectedObligation = computed(() =>
-  availableObligations.value.find((obligation) => obligation.id === selectedObligationId.value),
-);
-
-const selectedModeLabel = computed(() =>
-  paymentRegistrationModeOptions.find((mode) => mode.value === paymentMode.value)?.label ?? '-',
-);
-
-const perimeterMessage = computed(() => {
-  switch (session.actorCode) {
-    case 'PREFET_ETUDES':
-      return 'Perimetre visible: section secondaire uniquement, selon delegation locale sur le type de frais.';
-    case 'DIRECTEUR_PRIMAIRE':
-      return 'Perimetre visible: section primaire uniquement, selon delegation locale sur le type de frais.';
-    case 'DIRECTEUR_MATERNELLE':
-      return 'Perimetre visible: section maternelle uniquement, selon delegation locale sur le type de frais.';
-    case 'ADMINISTRATEUR_ECOLE':
-      return 'Perimetre visible: ecole active uniquement. Le frontend ne donne pas un statut de caissier universel.';
-    default:
-      return 'Perimetre visible: meme ecole, avec priorite au percepteur reel de caisse.';
-  }
-});
-
-function lireParametreTexte(valeur: unknown): string | undefined {
-  return typeof valeur === 'string' && valeur.trim().length > 0 ? valeur.trim() : undefined;
-}
-
-async function verifyStudent(): Promise<void> {
-  if (studentIdInput.value.trim().length === 0) {
-    uiState.value = 'missing-student';
-    return;
-  }
-
-  uiState.value = 'loading-student';
-  selectedObligationId.value = '';
-  amountInput.value = '';
-  paymentMode.value = '';
-
-  await paymentRegistrationStore.chargerEleve({
-    idEleve: studentIdInput.value.trim(),
-    classe: lireParametreTexte(route.query.classe),
-    section: lireParametreTexte(route.query.section),
-    anneeScolaire: lireParametreTexte(route.query.anneeScolaire),
-  });
-
-  uiState.value = paymentRegistrationStore.state.status === 'error'
-    ? 'technical-error'
-    : 'idle';
-}
-
-function pickObligation(obligationId: string): void {
-  selectedObligationId.value = obligationId;
-  const obligation = availableObligations.value.find((item) => item.id === obligationId);
-  amountInput.value = obligation !== undefined ? String(obligation.montantExigible) : '';
-  uiState.value = 'idle';
-}
-
-async function submitPayment(): Promise<void> {
-  if (profile.value === null) {
-    uiState.value = 'missing-student';
-    return;
-  }
-
-  if (
-    selectedObligation.value === undefined
-    || paymentMode.value.length === 0
-    || amountInput.value.length === 0
-  ) {
-    uiState.value = 'missing-form';
-    return;
-  }
-
-  uiState.value = 'submitting';
-
-  await paymentRegistrationStore.soumettrePaiement({
-    idEleve: profile.value.id,
-    typeFraisDeclare: selectedObligation.value.typeFrais,
-    montant: amountInput.value,
-    modePaiement: paymentMode.value as 'CASH' | 'MOBILE_MONEY' | 'BANQUE',
-  });
-
-  uiState.value = paymentRegistrationStore.state.status === 'error'
-    ? 'technical-error'
-    : 'idle';
-}
-
-function formatCurrency(amount: number): string {
-  return `${new Intl.NumberFormat('fr-FR').format(amount)} FC`;
-}
+const {
+  session,
+  context,
+  paymentRegistrationStore,
+  studentIdInput,
+  selectedObligationId,
+  amountInput,
+  paymentMode,
+  uiState,
+  isAuthorized,
+  canRecordPayment,
+  profile,
+  availableObligations,
+  result,
+  technicalErrorMessage,
+  studentPaymentHistoryLink,
+  studentFinancialSituationLink,
+  selectedObligation,
+  selectedModeLabel,
+  perimeterMessage,
+  paymentRegistrationModeOptions,
+  verifyStudent,
+  verifyStudentFromRoute,
+  pickObligation,
+  submitPayment,
+  resetOperation,
+  ouvrirHistoriquePaiements,
+  ouvrirSituationFinanciere,
+  ouvrirDernierRecu,
+  formatCurrency,
+} = usePaymentRegistrationViewModel();
 </script>

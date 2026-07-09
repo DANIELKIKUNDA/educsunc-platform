@@ -7,6 +7,11 @@ export class PostgresUtilisateurAuthRepository implements DepotUtilisateurAuth {
   private readonly store = obtenirMemoireAuthStore();
 
   public async sauvegarder(utilisateur: UtilisateurAuth): Promise<void> {
+    const recordExistant = this.store.utilisateurs.get(utilisateur.obtenirId());
+    if (recordExistant) {
+      this.store.utilisateursParEmail.delete(recordExistant.email);
+    }
+
     const record = UtilisateurAuthPersistenceMapper.versRecord(utilisateur);
     this.store.utilisateurs.set(record.id_utilisateur, record);
     this.store.utilisateursParEmail.set(record.email, record.id_utilisateur);

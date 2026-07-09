@@ -1,0 +1,29 @@
+.scolarite-actions,.scolarite-actions-row,.scolarite-subsection__header{display:flex;flex-wrap:wrap;gap:.75rem;align-items:center;justify-content:space-between}
+.scolarite-pill,.scolarite-primary-action,.scolarite-secondary-action{border:1px solid rgba(17,40,63,.14);background:#fff;color:#11283f;border-radius:999px;padding:.75rem 1rem;display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;font-weight:600}
+.scolarite-pill--action,.scolarite-primary-action{background:linear-gradient(135deg,#0b5d7a,#1487a8);color:#fff;border-color:transparent}
+.scolarite-primary-action:disabled{opacity:.55;cursor:not-allowed}
+.scolarite-next-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem}
+.scolarite-next-card{display:grid;gap:.55rem;text-align:left;padding:1rem 1.05rem;border-radius:22px;border:1px solid rgba(17,40,63,.08);background:linear-gradient(180deg,#f7fbfd,#ffffff);box-shadow:0 18px 45px rgba(17,40,63,.08);color:#11283f}
+.scolarite-next-card small{color:#587083;line-height:1.5}
+.scolarite-hero{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.scolarite-hero__lead{display:flex;align-items:center;gap:1rem}
+.scolarite-hero__icon{width:56px;height:56px;border-radius:18px;display:grid;place-items:center;background:linear-gradient(135deg,#0b5d7a,#1487a8);color:#fff}
+.scolarite-badges{display:flex;flex-wrap:wrap;gap:.75rem;align-items:flex-start}
+.scolarite-form-stack{display:grid;gap:1rem}
+.scolarite-subsection{border:1px solid rgba(17,40,63,.08);background:linear-gradient(180deg,rgba(243,248,251,.96),rgba(255,255,255,.98));border-radius:24px;padding:1rem 1.1rem;display:grid;gap:1rem}
+.scolarite-grid,.scolarite-kpi-grid,.scolarite-step-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem}
+.scolarite-context-card{border-radius:18px;border:1px solid rgba(17,40,63,.08);background:#f4f8fb;padding:1rem;display:grid;gap:.35rem;align-content:start}
+.scolarite-field{display:grid;gap:.45rem}
+.scolarite-field--full{grid-column:1/-1}
+.scolarite-field input,.scolarite-field select{border-radius:16px;border:1px solid rgba(17,40,63,.16);padding:.8rem .9rem;background:#fbfdff}
+.scolarite-kpi-card,.scolarite-step-card{border-radius:24px;padding:1rem;background:#fff;border:1px solid rgba(17,40,63,.08);box-shadow:0 18px 45px rgba(17,40,63,.08);display:grid;gap:.35rem}
+.scolarite-step-card--done{background:linear-gradient(180deg,#ecf9f2,#ffffff);border-color:rgba(22,101,52,.16)}
+.scolarite-inline-note{display:flex;gap:.75rem;align-items:flex-start;border-radius:18px;background:#f7fbfd;padding:.9rem 1rem;color:#456175}
+.scolarite-toggle{display:inline-flex;gap:.5rem;align-items:center}
+.status-chip{display:inline-flex;align-items:center;border-radius:999px;padding:.2rem .65rem;font-size:.82rem;font-weight:600}
+.status-chip--ok{background:#e7f6ee;color:#166534}
+.status-chip--neutral{background:#edf4f8;color:#365066}
+@media (max-width: 900px){
+  .scolarite-hero{flex-direction:column}
+  .scolarite-hero__lead{align-items:flex-start}
+}

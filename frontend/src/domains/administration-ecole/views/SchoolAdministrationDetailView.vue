@@ -30,6 +30,30 @@
       </SectionBlock>
 
       <SectionBlock
+        title="Operations locales prioritaires"
+        description="Le detail structurel devient aussi un vrai point de lancement pour les workflows ecole apres bascule automatique du contexte."
+      >
+        <div class="adm-workflow-grid">
+          <button class="adm-workflow-card" type="button" @click="ouvrirWorkflowEcole('/app/academique/annees-scolaires')">
+            <strong>Annees scolaires</strong>
+            <small>Verifier ou relire l annee active avant exploitation locale.</small>
+          </button>
+          <button class="adm-workflow-card" type="button" @click="ouvrirWorkflowEcole('/app/scolarite/inscriptions')">
+            <strong>Inscription scolaire</strong>
+            <small>Ouvrir le flux complet d entree eleve dans la meme ecole active.</small>
+          </button>
+          <button class="adm-workflow-card" type="button" @click="ouvrirWorkflowEcole('/app/finances/paiements/enregistrer')">
+            <strong>Perception de paiement</strong>
+            <small>Basculer directement sur la caisse autorisee de cette ecole.</small>
+          </button>
+          <button class="adm-workflow-card" type="button" @click="ouvrirWorkflowEcole('/app/finances/registre-classe')">
+            <strong>Registre financier</strong>
+            <small>Ouvrir les vues de suivi financier sans repasser par un autre module.</small>
+          </button>
+        </div>
+      </SectionBlock>
+
+      <SectionBlock
         v-if="canMutateDetail"
         title="Mutations structurelles"
         description="Les actions visibles restent limitees au workflow ADM-01 prouve."
@@ -116,7 +140,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
-import { useRoute, RouterLink } from 'vue-router';
+import { useRoute, useRouter, RouterLink } from 'vue-router';
 import { ArrowLeft } from 'lucide-vue-next';
 import PageContainer from '../../../shared/layout/PageContainer.vue';
 import PageHeader from '../../../shared/layout/PageHeader.vue';
@@ -130,6 +154,7 @@ import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access'
 import { activeContextStore } from '../../../shared/session/active-context.store';
 
 const route = useRoute();
+const router = useRouter();
 const store = useOrganizationGovernanceStore();
 const { canUseAction } = useDoctrineAccess();
 const renameTarget = ref('');
@@ -215,6 +240,11 @@ async function activerEcoleDansContexte(): Promise<void> {
   activeContextStore.setGovernanceLevel('ECOLE');
 }
 
+async function ouvrirWorkflowEcole(cible: string): Promise<void> {
+  await activerEcoleDansContexte();
+  await router.push(cible);
+}
+
 onMounted(async () => {
   await charger();
 });
@@ -225,10 +255,12 @@ onMounted(async () => {
 .adm-kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem}
 .adm-kpi-card{border-radius:22px;padding:1rem;background:#fff;border:1px solid rgba(17,40,63,.08);box-shadow:0 18px 45px rgba(17,40,63,.08);display:grid;gap:.35rem}
 .adm-grid,.adm-actions{display:flex;flex-wrap:wrap;gap:.9rem}
-.adm-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.adm-grid,.adm-workflow-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
 .adm-field{display:grid;gap:.45rem;min-width:220px}
 .adm-field--wide{grid-column:1/-1}
 .adm-field input{border-radius:16px;border:1px solid rgba(17,40,63,.14);padding:.8rem .95rem;background:#fbfdff}
 .adm-banner{padding:1rem 1.1rem;border-radius:20px;background:#eef4ff;color:#102844;font-weight:600}
 .adm-banner--muted{background:#f4f7fb;color:#445b70}
+.adm-workflow-card{display:grid;gap:.55rem;text-align:left;padding:1rem 1.05rem;border-radius:22px;border:1px solid rgba(17,40,63,.08);background:linear-gradient(180deg,#f7fbfd,#ffffff);box-shadow:0 18px 45px rgba(17,40,63,.08);color:#11283f}
+.adm-workflow-card small{color:#587083;line-height:1.5}
 </style>

@@ -8,9 +8,39 @@ interface PaginationHttp {
   totalPages: number;
 }
 
+interface ResponsablePrincipalIndicateursHttp {
+  utilisateurId?: string;
+  etatCompte: string;
+  dernierAccesLe?: string;
+  dernierLoginLe?: string;
+}
+
+interface EvenementHistoriqueOrganisationHttp {
+  id: string;
+  action: string;
+  acteur?: string;
+  description: string;
+  creeLe: string;
+  details?: Readonly<Record<string, unknown>>;
+}
+
 // Cette interface represente la reponse HTTP de detail d'une organisation.
 export interface ReponseOrganisationHttp {
   donnee: OrganisationSortie;
+}
+
+export interface ReponseIndicateursOrganisationHttp {
+  donnee: {
+    organisationId: string;
+    totalUtilisateursActifs: number;
+    responsablePrincipal?: ResponsablePrincipalIndicateursHttp;
+  };
+}
+
+export interface ReponseHistoriqueOrganisationHttp {
+  donnee: {
+    evenements: readonly EvenementHistoriqueOrganisationHttp[];
+  };
 }
 
 // Cette interface represente la reponse HTTP paginee des organisations.
@@ -39,6 +69,37 @@ export class OrganisationPresenter {
         this.copierOrganisation(organisation)
       ),
       pagination: this.creerPagination(sortie.total, sortie.page, sortie.taillePage),
+    };
+  }
+
+  public static presenterIndicateursOrganisation(
+    indicateurs: ReponseIndicateursOrganisationHttp['donnee'],
+  ): ReponseIndicateursOrganisationHttp {
+    return {
+      donnee: {
+        organisationId: indicateurs.organisationId,
+        totalUtilisateursActifs: indicateurs.totalUtilisateursActifs,
+        responsablePrincipal: indicateurs.responsablePrincipal
+          ? { ...indicateurs.responsablePrincipal }
+          : undefined,
+      },
+    };
+  }
+
+  public static presenterHistoriqueOrganisation(
+    historique: readonly EvenementHistoriqueOrganisationHttp[],
+  ): ReponseHistoriqueOrganisationHttp {
+    return {
+      donnee: {
+        evenements: historique.map((evenement) => ({
+          id: evenement.id,
+          action: evenement.action,
+          acteur: evenement.acteur,
+          description: evenement.description,
+          creeLe: evenement.creeLe,
+          details: evenement.details ? { ...evenement.details } : undefined,
+        })),
+      },
     };
   }
 

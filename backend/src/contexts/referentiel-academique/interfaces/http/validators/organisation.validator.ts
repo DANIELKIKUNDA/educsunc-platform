@@ -3,6 +3,7 @@ import { CreerOrganisationEntree } from '../../../application/dto/input/CreerOrg
 import { ConsulterOrganisationEntree } from '../../../application/dto/input/ConsulterOrganisationEntree';
 import { DesactiverOrganisationEntree } from '../../../application/dto/input/DesactiverOrganisationEntree';
 import { ListerOrganisationsEntree } from '../../../application/dto/input/ListerOrganisationsEntree';
+import { MettreAJourOrganisationEntree } from '../../../application/dto/input/MettreAJourOrganisationEntree';
 import { RenommerOrganisationEntree } from '../../../application/dto/input/RenommerOrganisationEntree';
 import { TypeOrganisation } from '../../../domain/value-objects/TypeOrganisation';
 import { OutilsValidationHttpReferentielAcademique } from './OutilsValidationHttpReferentielAcademique';
@@ -36,6 +37,7 @@ export class ValidateurOrganisationHttp {
         donnees,
         'description',
       ),
+      promoteurPrincipal: this.lirePromoteurPrincipal(donnees),
     };
   }
 
@@ -92,6 +94,47 @@ export class ValidateurOrganisationHttp {
     };
   }
 
+  // Cette methode valide la requete HTTP de mise a jour complete d une organisation.
+  public static validerMiseAJour(
+    parametres: unknown,
+    corps: unknown,
+    modifiePar: string,
+  ): MettreAJourOrganisationEntree {
+    const donneesParametres = OutilsValidationHttpReferentielAcademique.obtenirObjet(
+      parametres,
+      'parametres',
+    );
+    const donneesCorps = OutilsValidationHttpReferentielAcademique.obtenirObjet(corps, 'corps');
+
+    OutilsValidationHttpReferentielAcademique.validerChampsRequis(
+      donneesCorps,
+      {
+        nom: true,
+        typeOrganisation: true,
+      },
+      'mise-a-jour-organisation',
+    );
+
+    return {
+      idOrganisation: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
+        donneesParametres,
+        'id',
+      ),
+      nom: OutilsValidationHttpReferentielAcademique.lireChaineRequise(donneesCorps, 'nom'),
+      typeOrganisation: OutilsValidationHttpReferentielAcademique.lireEnumRequis(
+        donneesCorps,
+        'typeOrganisation',
+        TypeOrganisation,
+      ),
+      description: OutilsValidationHttpReferentielAcademique.lireChaineOptionnelle(
+        donneesCorps,
+        'description',
+      ),
+      modifiePar,
+      promoteurPrincipal: this.lirePromoteurPrincipalSansMotDePasse(donneesCorps),
+    };
+  }
+
   // Cette methode valide la requete HTTP d'activation d'une organisation.
   public static validerActivation(
     parametres: unknown,
@@ -127,6 +170,74 @@ export class ValidateurOrganisationHttp {
         'id',
       ),
       modifiePar,
+    };
+  }
+
+  private static lirePromoteurPrincipal(
+    donnees: Record<string, unknown>,
+  ): CreerOrganisationEntree['promoteurPrincipal'] {
+    if (donnees.promoteurPrincipal === undefined || donnees.promoteurPrincipal === null) {
+      return undefined;
+    }
+
+    const promoteur = OutilsValidationHttpReferentielAcademique.obtenirObjet(
+      donnees.promoteurPrincipal,
+      'promoteurPrincipal',
+    );
+
+    return {
+      nomComplet: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
+        promoteur,
+        'nomComplet',
+      ),
+      email: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
+        promoteur,
+        'email',
+      ),
+      telephone: OutilsValidationHttpReferentielAcademique.lireChaineOptionnelle(
+        promoteur,
+        'telephone',
+      ),
+      identifiant: OutilsValidationHttpReferentielAcademique.lireChaineOptionnelle(
+        promoteur,
+        'identifiant',
+      ),
+      motDePasseInitial: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
+        promoteur,
+        'motDePasseInitial',
+      ),
+    };
+  }
+
+  private static lirePromoteurPrincipalSansMotDePasse(
+    donnees: Record<string, unknown>,
+  ): MettreAJourOrganisationEntree['promoteurPrincipal'] {
+    if (donnees.promoteurPrincipal === undefined || donnees.promoteurPrincipal === null) {
+      return undefined;
+    }
+
+    const promoteur = OutilsValidationHttpReferentielAcademique.obtenirObjet(
+      donnees.promoteurPrincipal,
+      'promoteurPrincipal',
+    );
+
+    return {
+      nomComplet: OutilsValidationHttpReferentielAcademique.lireChaineRequise(
+        promoteur,
+        'nomComplet',
+      ),
+      email: OutilsValidationHttpReferentielAcademique.lireChaineOptionnelle(
+        promoteur,
+        'email',
+      ),
+      telephone: OutilsValidationHttpReferentielAcademique.lireChaineOptionnelle(
+        promoteur,
+        'telephone',
+      ),
+      identifiant: OutilsValidationHttpReferentielAcademique.lireChaineOptionnelle(
+        promoteur,
+        'identifiant',
+      ),
     };
   }
 }

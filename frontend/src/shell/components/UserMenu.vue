@@ -59,14 +59,14 @@
 
 <script setup lang="ts">
 import { computed, ref, watchEffect } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRouter } from 'vue-router';
+import { ouvrirSessionDeveloppeurActeurSelectionne } from '../../shared/auth/session.bootstrap';
 import { sessionStore } from '../../shared/auth/session.store';
-import { getFirstAccessibleRoute, isRouteAccessible } from '../../shared/doctrine/doctrine.resolver';
+import { getFirstAccessibleRoute } from '../../shared/doctrine/doctrine.resolver';
 import { activeContextStore } from '../../shared/session/active-context.store';
 
 const session = sessionStore.state;
 const context = activeContextStore.state;
-const route = useRoute();
 const router = useRouter();
 const menuOpen = ref(false);
 
@@ -114,13 +114,18 @@ function onToggle(event: Event): void {
   menuOpen.value = (event.currentTarget as HTMLDetailsElement).open;
 }
 
-function onActorChange(event: Event): void {
+async function onActorChange(event: Event): Promise<void> {
   const target = event.target as HTMLSelectElement;
   sessionStore.setActor(target.value);
-  const governanceLevel = activeContextStore.state.governanceLevel;
-
-  if (!isRouteAccessible(route.path, sessionStore.state.actorCode, governanceLevel)) {
-    void router.push(getFirstAccessibleRoute(sessionStore.state.actorCode, governanceLevel));
+  activeContextStore.ensureAllowedLevel(sessionStore.activeProfile.value.governanceLevels);
+  try {
+    await ouvrirSessionDeveloppeurActeurSelectionne();
+  } catch {
+    sessionStore.clearBackendSession();
   }
+  const governanceLevel = activeContextStore.state.governanceLevel;
+  const routeCible = getFirstAccessibleRoute(sessionStore.state.actorCode, governanceLevel);
+  void router.push(routeCible);
+  menuOpen.value = false;
 }
 </script>

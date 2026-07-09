@@ -1,0 +1,33 @@
+.scolarite-actions,.scolarite-actions-row,.scolarite-subsection__header{display:flex;flex-wrap:wrap;gap:.75rem;align-items:center;justify-content:space-between}
+.scolarite-pill,.scolarite-primary-action,.scolarite-secondary-action,.scolarite-inline-action{border:1px solid rgba(17,40,63,.14);background:#fff;color:#11283f;border-radius:999px;padding:.75rem 1rem;display:inline-flex;align-items:center;gap:.5rem;font-weight:600;text-decoration:none}
+.scolarite-pill--action,.scolarite-primary-action{background:linear-gradient(135deg,#0b5d7a,#1487a8);color:#fff;border-color:transparent}
+.scolarite-primary-action:disabled{opacity:.55;cursor:not-allowed}
+.scolarite-hero{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.scolarite-hero__lead{display:flex;align-items:center;gap:1rem}
+.scolarite-hero__icon{width:56px;height:56px;border-radius:18px;display:grid;place-items:center;background:linear-gradient(135deg,#0b5d7a,#1487a8);color:#fff}
+.scolarite-badges{display:flex;flex-wrap:wrap;gap:.75rem;align-items:flex-start}
+.scolarite-form-stack{display:grid;gap:1rem}
+.scolarite-subsection,.scolarite-panel{border-radius:24px;padding:1rem;background:#fff;border:1px solid rgba(17,40,63,.08);box-shadow:0 18px 45px rgba(17,40,63,.08);display:grid;gap:1rem}
+.scolarite-grid,.scolarite-kpi-grid,.scolarite-detail-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem}
+.scolarite-next-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;margin-top:1rem}
+.scolarite-next-card{display:grid;gap:.55rem;text-align:left;padding:1rem 1.05rem;border-radius:22px;border:1px solid rgba(17,40,63,.08);background:linear-gradient(180deg,#f7fbfd,#ffffff);box-shadow:0 18px 45px rgba(17,40,63,.08);color:#11283f}
+.scolarite-next-card small{color:#587083;line-height:1.5}
+.scolarite-field{display:grid;gap:.45rem}
+.scolarite-field--full{grid-column:1/-1}
+.scolarite-field input,.scolarite-field select{border-radius:16px;border:1px solid rgba(17,40,63,.16);padding:.8rem .9rem;background:#fbfdff}
+.scolarite-inline-note,.scolarite-empty-inline{display:flex;gap:.75rem;align-items:flex-start;border-radius:18px;background:#f7fbfd;padding:.9rem 1rem;color:#456175}
+.scolarite-layout{display:grid;grid-template-columns:minmax(0,2fr) minmax(360px,1fr);gap:1rem}
+.scolarite-table-shell{overflow:auto;border-radius:22px;border:1px solid rgba(17,40,63,.08);background:#fff}
+.scolarite-table{width:100%;border-collapse:collapse;min-width:860px}
+.scolarite-table th,.scolarite-table td{padding:.9rem 1rem;border-bottom:1px solid rgba(17,40,63,.08);text-align:left;vertical-align:top}
+.scolarite-table th{background:#edf4f8;font-size:.85rem;letter-spacing:.03em;text-transform:uppercase}
+.scolarite-row--selected{background:#f7fbfd}
+.scolarite-panel__header{display:flex;justify-content:space-between;align-items:flex-start;gap:.75rem}
+.scolarite-list{display:grid;gap:.8rem;padding-left:1rem;margin:0}
+.scolarite-list li{display:grid;gap:.35rem}
+.scolarite-label{margin:0 0 .2rem;color:#4f6677;font-size:.83rem;text-transform:uppercase;letter-spacing:.08em}
+.scolarite-muted{color:#5d7385;font-size:.82rem}
+.status-chip{display:inline-flex;align-items:center;border-radius:999px;padding:.2rem .65rem;font-size:.82rem;font-weight:600}
+.status-chip--ok{background:#e7f6ee;color:#166534}
+.status-chip--neutral{background:#edf4f8;color:#365066}
+@media (max-width:1080px){.scolarite-layout{grid-template-columns:1fr}.scolarite-hero{flex-direction:column}.scolarite-hero__lead{align-items:flex-start}}

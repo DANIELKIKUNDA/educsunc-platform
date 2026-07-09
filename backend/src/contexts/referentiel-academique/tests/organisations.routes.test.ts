@@ -33,6 +33,18 @@ test('les routes organisations transmettent le contexte authentifie et n exposen
         appels.push(`consultation:${context.utilisateurId ?? 'none'}`);
         return { donnee: { id: 'org-1' } };
       },
+      async consulterIndicateursOrganisation(_params: unknown, context: { utilisateurId?: string }) {
+        appels.push(`indicateurs:${context.utilisateurId ?? 'none'}`);
+        return { donnee: { organisationId: 'org-1', totalUtilisateursActifs: 1 } };
+      },
+      async consulterHistoriqueOrganisation(_params: unknown, context: { utilisateurId?: string }) {
+        appels.push(`historique:${context.utilisateurId ?? 'none'}`);
+        return { donnee: { evenements: [] } };
+      },
+      async mettreAJourOrganisation(_params: unknown, _body: unknown, context: { utilisateurId?: string }) {
+        appels.push(`mise-a-jour:${context.utilisateurId ?? 'none'}`);
+        return { donnee: { id: 'org-1' } };
+      },
       async renommerOrganisation(_params: unknown, _body: unknown, context: { utilisateurId?: string }) {
         appels.push(`renommer:${context.utilisateurId ?? 'none'}`);
         return { donnee: { id: 'org-1' } };
@@ -65,10 +77,57 @@ test('les routes organisations transmettent le contexte authentifie et n exposen
       nouveauNom: 'Organisation Renommee',
     },
   });
+  const reponseMiseAJour = await serveur.inject({
+    method: 'PATCH',
+    url: '/api/organisations/org-a',
+    payload: {
+      nom: 'Organisation A prime',
+      typeOrganisation: 'PROMOTEUR',
+    },
+  });
 
   assert.equal(reponseCreation.statusCode, 200, reponseCreation.body);
   assert.equal(reponseRenommage.statusCode, 200, reponseRenommage.body);
-  assert.deepEqual(appels, ['creer:user-manager', 'renommer:user-manager']);
+  assert.equal(reponseMiseAJour.statusCode, 200, reponseMiseAJour.body);
+  assert.deepEqual(appels, [
+    'creer:user-manager',
+    'renommer:user-manager',
+    'mise-a-jour:user-manager',
+  ]);
+
+  await serveur.close();
+});
+
+test('la route historique organisation transmet le contexte authentifie', async () => {
+  const serveur = Fastify();
+  const appels: string[] = [];
+
+  serveur.addHook('onRequest', async (requete) => {
+    requete.context = RequestContextFactory.creerContexteInitial({ requestId: 'req-org-04' });
+    requete.context = RequestContextFactory.enrichirAuth(requete.context, {
+      utilisateurId: 'user-manager',
+      roleActif: 'MANAGER_SYSTEME',
+      organisationActiveId: 'org-a',
+    });
+  });
+
+  await serveur.register(creerRoutesOrganisations({
+    controleurOrganisations: {
+      async consulterHistoriqueOrganisation(_params: unknown, context: { utilisateurId?: string }) {
+        appels.push(`historique:${context.utilisateurId ?? 'none'}`);
+        return { donnee: { evenements: [] } };
+      },
+    } as never,
+    executerRouteTenant: async (_requete, operation) => operation(),
+  }));
+
+  const reponse = await serveur.inject({
+    method: 'GET',
+    url: '/api/organisations/org-a/historique',
+  });
+
+  assert.equal(reponse.statusCode, 200, reponse.body);
+  assert.deepEqual(appels, ['historique:user-manager']);
 
   await serveur.close();
 });

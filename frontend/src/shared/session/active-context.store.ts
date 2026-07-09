@@ -1,6 +1,8 @@
 import { computed, reactive } from 'vue';
 import type { FrontendGovernanceLevel } from '../auth/session.store';
 
+const ACTIVE_CONTEXT_STORAGE_KEY = 'educsync.frontend.active-context';
+
 interface SchoolContextOption {
   id: string;
   name: string;
@@ -17,6 +19,13 @@ interface OrganizationContextOption {
   id: string;
   name: string;
   schools: readonly SchoolContextOption[];
+}
+
+interface PersistedFrontendContext {
+  governanceLevel?: FrontendGovernanceLevel;
+  organizationId?: string;
+  schoolId?: string;
+  schoolYearId?: string;
 }
 
 export interface ActiveFrontendContext {
@@ -79,6 +88,23 @@ const organizationsState = reactive<OrganizationContextOption[]>(
   })),
 );
 
+function lireContextePersisted(): PersistedFrontendContext | null {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  const brut = window.localStorage.getItem(ACTIVE_CONTEXT_STORAGE_KEY);
+  if (!brut) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(brut) as PersistedFrontendContext;
+  } catch {
+    return null;
+  }
+}
+
 function findOrganization(organizationId: string): OrganizationContextOption {
   return organizationsState.find((organization) => organization.id === organizationId) ?? {
     id: organizationId,
@@ -125,19 +151,39 @@ function upsertOrganizationOption(option: OrganizationContextOption): void {
   });
 }
 
-const initialOrganization = organizationsState[0];
-const initialSchool = initialOrganization.schools[0];
+const contextePersisted = lireContextePersisted();
+const initialOrganization = findOrganization(contextePersisted?.organizationId ?? organizationsState[0].id);
+const initialSchool = findSchool(initialOrganization, contextePersisted?.schoolId ?? initialOrganization.schools[0]?.id ?? '');
+const initialSchoolYear = contextePersisted?.schoolYearId
+  ? resolveSchoolYear(initialSchool, contextePersisted.schoolYearId)
+  : getFirstSchoolYear(initialSchool);
 
 const state = reactive<ActiveFrontendContext>({
-  governanceLevel: 'ECOLE',
+  governanceLevel: contextePersisted?.governanceLevel ?? 'ECOLE',
   organizationId: initialOrganization.id,
   organizationName: initialOrganization.name,
   schoolId: initialSchool.id,
   schoolName: initialSchool.name,
   sectionName: initialSchool.sectionName,
-  schoolYearId: getFirstSchoolYear(initialSchool).id,
-  schoolYearLabel: getFirstSchoolYear(initialSchool).label,
+  schoolYearId: initialSchoolYear.id,
+  schoolYearLabel: initialSchoolYear.label,
 });
+
+function persisterContexteActif(): void {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  window.localStorage.setItem(
+    ACTIVE_CONTEXT_STORAGE_KEY,
+    JSON.stringify({
+      governanceLevel: state.governanceLevel,
+      organizationId: state.organizationId,
+      schoolId: state.schoolId,
+      schoolYearId: state.schoolYearId,
+    } satisfies PersistedFrontendContext),
+  );
+}
 
 export const activeContextStore = {
   state,
@@ -147,6 +193,7 @@ export const activeContextStore = {
   schoolYearOptions: computed(() => findSchool(findOrganization(state.organizationId), state.schoolId).years),
   setGovernanceLevel(governanceLevel: FrontendGovernanceLevel): void {
     state.governanceLevel = governanceLevel;
+    persisterContexteActif();
   },
   ensureAllowedLevel(levels: readonly FrontendGovernanceLevel[]): void {
     if (levels.includes(state.governanceLevel)) {
@@ -154,6 +201,7 @@ export const activeContextStore = {
     }
 
     state.governanceLevel = levels[0] ?? 'ECOLE';
+    persisterContexteActif();
   },
   setOrganization(organizationId: string): void {
     const organization = findOrganization(organizationId);
@@ -166,6 +214,7 @@ export const activeContextStore = {
     state.sectionName = school.sectionName;
     state.schoolYearId = schoolYear.id;
     state.schoolYearLabel = schoolYear.label;
+    persisterContexteActif();
   },
   setSchool(schoolId: string): void {
     const organization = findOrganization(state.organizationId);
@@ -176,6 +225,7 @@ export const activeContextStore = {
     state.sectionName = school.sectionName;
     state.schoolYearId = schoolYear.id;
     state.schoolYearLabel = schoolYear.label;
+    persisterContexteActif();
   },
   setSchoolYear(schoolYearLabelOrId: string, schoolYearId?: string): void {
     const school = findSchool(findOrganization(state.organizationId), state.schoolId);
@@ -184,6 +234,7 @@ export const activeContextStore = {
       : resolveSchoolYear(school, schoolYearLabelOrId);
     state.schoolYearId = schoolYear.id;
     state.schoolYearLabel = schoolYear.label;
+    persisterContexteActif();
   },
   remplacerAnneesScolairesEcole(
     schoolId: string,
@@ -214,6 +265,7 @@ export const activeContextStore = {
     if (state.schoolId === schoolId && schoolYears.length > 0) {
       state.schoolYearId = schoolYears[0].id;
       state.schoolYearLabel = schoolYears[0].label;
+      persisterContexteActif();
     }
   },
   remplacerOrganisationsDepuisBackend(
@@ -307,5 +359,6 @@ export const activeContextStore = {
     state.sectionName = school.sectionName;
     state.schoolYearId = schoolYear.id;
     state.schoolYearLabel = schoolYear.label || state.schoolYearLabel;
+    persisterContexteActif();
   },
 };

@@ -50,6 +50,16 @@ export function lireContexteApiActif(): SharedApiContext {
   };
 }
 
+export function lireContexteApiPlateformeGlobal(): SharedApiContext {
+  const contexte = lireContexteApiActif();
+
+  return {
+    organisationId: contexte.organisationId,
+    ecoleId: null,
+    utilisateurId: contexte.utilisateurId,
+  };
+}
+
 export function lireEntetesAuthentificationActive(): Record<string, string> {
   const entetes: Record<string, string> = {};
 

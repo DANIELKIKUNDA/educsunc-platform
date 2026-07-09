@@ -7,6 +7,7 @@ export interface ReferentielProgrammeSortie {
   idClasseAcademique: string;
   typeStructureEvaluation: TypeStructureEvaluation;
   versionProjectionnee: VersionReferentielProgrammeSortie | null;
+  versions: VersionReferentielProgrammeSortie[];
   actif: boolean;
   creeLe: string;
   version: number;

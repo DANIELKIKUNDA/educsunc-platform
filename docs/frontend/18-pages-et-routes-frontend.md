@@ -284,13 +284,6 @@ Bonnes pratiques retenues :
 
 Pages candidates typiques :
 
-- lecture du socle academique officiel
-- administration du socle academique officiel
-- migration referentielle
-- publication referentiel
-- activation version
-- import referentiel
-- comparaison versions
 - pilotage des annees scolaires locales
 - gestion des classes pedagogiques
 - gestion des responsables de classe
@@ -299,12 +292,6 @@ Pages candidates typiques :
 
 Routes candidates :
 
-- `/academique/referentiels`
-- `/academique/publication`
-- `/academique/activation`
-- `/academique/imports`
-- `/academique/comparaisons`
-- `/academique/migrations`
 - `/academique/annees-scolaires`
 - `/academique/classes-pedagogiques`
 - `/academique/responsabilites-classes`
@@ -313,8 +300,9 @@ Routes candidates :
 
 Lecture doctrinale :
 
-- les routes `/academique/publication`, `/academique/activation`, `/academique/imports`, `/academique/comparaisons` et `/academique/migrations` restent dans le socle plateforme
-- les routes `/academique/annees-scolaires`, `/academique/classes-pedagogiques`, `/academique/responsabilites-classes`, `/academique/calendriers` et `/academique/programmes-locaux` portent l'exploitation academique locale de l'ecole
+- le module `Academique` frontend porte uniquement l'exploitation academique locale de l'ecole
+- les routes `/academique/annees-scolaires`, `/academique/classes-pedagogiques`, `/academique/responsabilites-classes`, `/academique/calendriers` et `/academique/programmes-locaux` portent cette exploitation academique locale
+- le referentiel officiel, son import, sa publication, son activation, ses comparaisons et ses migrations sont materialises dans `Plateforme > Referentiel officiel`
 - sur ce second bloc, l'acteur local cible est `ADMIN_SYSTEME_ECOLE`, pas `ADMINISTRATEUR_ECOLE`
 
 ### Module `Pedagogique`
@@ -406,7 +394,8 @@ Routes candidates :
 Pages candidates typiques :
 
 - supervision organisation
-- detail organisation
+- registre des organisations
+- detail ecole organisation
 - ecoles de l'organisation
 
 Routes candidates :

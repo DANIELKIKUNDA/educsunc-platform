@@ -112,6 +112,18 @@ export class UtilisateurAuth extends RacineAgregat<string> {
   public obtenirVersion(): number { return this.version; }
   public obtenirSupprimeLogiquement(): boolean { return this.supprimeLogiquement; }
 
+  // Cette methode met a jour les informations de profil du compte sans toucher a l'authentification.
+  public mettreAJourProfil(params: {
+    nomComplet: string;
+    email: string;
+    telephone?: string;
+  }): void {
+    this.nomComplet = UtilisateurAuth.validerTexte(params.nomComplet, 'nomComplet');
+    this.email = new AdresseEmail(params.email);
+    this.telephone = UtilisateurAuth.nettoyerOptionnel(params.telephone);
+    this.marquerModification();
+  }
+
   // Cette methode remplace le hash de mot de passe et invalide les anciens jetons.
   public changerMotDePasse(nouveauMotDePasseHash: string | MotDePasseHash): void {
     this.motDePasseHash = nouveauMotDePasseHash instanceof MotDePasseHash

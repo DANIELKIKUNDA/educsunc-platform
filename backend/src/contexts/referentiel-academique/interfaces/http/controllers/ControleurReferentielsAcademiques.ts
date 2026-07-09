@@ -4,11 +4,17 @@ import { VersionReferentielProgrammeSortie } from '../../../application/dto/outp
 import { OrchestrateurImportReferentiel } from '../../../application/services/OrchestrateurImportReferentiel';
 import {
   ActiverVersionReferentiel,
+  AjouterLigneVersionReferentielProgramme,
   ComparerDeuxVersionsReferentiel,
   ConsulterReferentielProgramme,
+  CreerVersionTravailReferentielDepuisVersion,
   ListerReferentielsCours,
   ListerReferentielsParClasseAcademique,
+  ModifierLigneVersionReferentielProgramme,
+  ModifierPonderationLigneVersionReferentielProgramme,
   PublierVersionReferentiel,
+  ReordonnerLignesVersionReferentielProgramme,
+  RetirerLigneVersionReferentielProgramme,
   SortieComparerDeuxVersionsReferentiel,
   SortieImporterClassesAcademiquesDepuisJson,
   SortieImporterCoursAcademiquesDepuisJson,
@@ -16,7 +22,9 @@ import {
   SortieImporterOptionsDepuisJson,
   SortieImporterProgrammesAcademiquesDepuisJson,
   SortieImporterSectionsDepuisJson,
+  VerifierCoherenceVersionReferentielAvantPublication,
 } from '../../../application/use-cases/referentiels';
+import { VerificationCoherenceVersionReferentielSortie } from '../../../application/dto/output/VerificationCoherenceVersionReferentielSortie';
 import { ValidateurReferentielImportHttp } from '../validators/referentiel-import.validator';
 import type { RequestContext } from '../../../../../shared/context';
 import { AutorisationPublicationReferentielAdapter } from '../../../../../app/adapters/AutorisationPublicationReferentielAdapter';
@@ -59,6 +67,20 @@ export class ControleurReferentielsAcademiques {
   private readonly casUsageListerReferentielsParClasseAcademique:
     ListerReferentielsParClasseAcademique;
   private readonly casUsageListerReferentielsCours: ListerReferentielsCours;
+  private readonly casUsageCreerVersionTravailReferentielDepuisVersion?:
+    CreerVersionTravailReferentielDepuisVersion;
+  private readonly casUsageAjouterLigneVersionReferentielProgramme?:
+    AjouterLigneVersionReferentielProgramme;
+  private readonly casUsageModifierLigneVersionReferentielProgramme?:
+    ModifierLigneVersionReferentielProgramme;
+  private readonly casUsageRetirerLigneVersionReferentielProgramme?:
+    RetirerLigneVersionReferentielProgramme;
+  private readonly casUsageReordonnerLignesVersionReferentielProgramme?:
+    ReordonnerLignesVersionReferentielProgramme;
+  private readonly casUsageModifierPonderationLigneVersionReferentielProgramme?:
+    ModifierPonderationLigneVersionReferentielProgramme;
+  private readonly casUsageVerifierCoherenceVersionReferentielAvantPublication?:
+    VerifierCoherenceVersionReferentielAvantPublication;
   private readonly autorisationImportReferentiel: AutorisationImportReferentielAdapter;
   private readonly autorisationPublicationReferentiel: AutorisationPublicationReferentielAdapter;
   private readonly autorisationActivationReferentiel: AutorisationActivationReferentielAdapter;
@@ -84,6 +106,17 @@ export class ControleurReferentielsAcademiques {
       new AutorisationComparaisonReferentielAdapter(),
     autorisationLectureReferentiel: AutorisationLectureReferentielAdapter =
       new AutorisationLectureReferentielAdapter(),
+    casUsageCreerVersionTravailReferentielDepuisVersion?:
+      CreerVersionTravailReferentielDepuisVersion,
+    casUsageAjouterLigneVersionReferentielProgramme?: AjouterLigneVersionReferentielProgramme,
+    casUsageModifierLigneVersionReferentielProgramme?: ModifierLigneVersionReferentielProgramme,
+    casUsageRetirerLigneVersionReferentielProgramme?: RetirerLigneVersionReferentielProgramme,
+    casUsageReordonnerLignesVersionReferentielProgramme?:
+      ReordonnerLignesVersionReferentielProgramme,
+    casUsageModifierPonderationLigneVersionReferentielProgramme?:
+      ModifierPonderationLigneVersionReferentielProgramme,
+    casUsageVerifierCoherenceVersionReferentielAvantPublication?:
+      VerifierCoherenceVersionReferentielAvantPublication,
   ) {
     this.orchestrateurImportReferentiel = orchestrateurImportReferentiel;
     this.casUsagePublierVersionReferentiel = casUsagePublierVersionReferentiel;
@@ -93,6 +126,20 @@ export class ControleurReferentielsAcademiques {
     this.casUsageListerReferentielsParClasseAcademique =
       casUsageListerReferentielsParClasseAcademique;
     this.casUsageListerReferentielsCours = casUsageListerReferentielsCours;
+    this.casUsageCreerVersionTravailReferentielDepuisVersion =
+      casUsageCreerVersionTravailReferentielDepuisVersion;
+    this.casUsageAjouterLigneVersionReferentielProgramme =
+      casUsageAjouterLigneVersionReferentielProgramme;
+    this.casUsageModifierLigneVersionReferentielProgramme =
+      casUsageModifierLigneVersionReferentielProgramme;
+    this.casUsageRetirerLigneVersionReferentielProgramme =
+      casUsageRetirerLigneVersionReferentielProgramme;
+    this.casUsageReordonnerLignesVersionReferentielProgramme =
+      casUsageReordonnerLignesVersionReferentielProgramme;
+    this.casUsageModifierPonderationLigneVersionReferentielProgramme =
+      casUsageModifierPonderationLigneVersionReferentielProgramme;
+    this.casUsageVerifierCoherenceVersionReferentielAvantPublication =
+      casUsageVerifierCoherenceVersionReferentielAvantPublication;
     this.autorisationImportReferentiel = autorisationImportReferentiel;
     this.autorisationPublicationReferentiel = autorisationPublicationReferentiel;
     this.autorisationActivationReferentiel = autorisationActivationReferentiel;
@@ -277,6 +324,153 @@ export class ControleurReferentielsAcademiques {
     return this.presenterDonnee(sortie.referentielProgramme);
   }
 
+  // Cette methode traite la creation HTTP d'une version de travail a partir d'une version existante.
+  public async creerVersionTravailReferentielDepuisVersion(
+    parametres: unknown,
+    corps: unknown,
+    contexte?: RequestContext,
+  ): Promise<ReponseDonneeReferentielHttp<VersionReferentielProgrammeSortie>> {
+    const idUtilisateur = await this.verifierMutationEditionReferentiel(contexte);
+    const casUsage = this.exigerCasUsage(
+      this.casUsageCreerVersionTravailReferentielDepuisVersion,
+      'creation de version de travail',
+    );
+    const entree = ValidateurReferentielImportHttp.validerCreationVersionTravail(
+      parametres,
+      corps,
+      idUtilisateur,
+    );
+    const sortie = await casUsage.executer(entree);
+
+    return this.presenterDonnee(sortie.versionReferentielProgramme);
+  }
+
+  // Cette methode traite l'ajout HTTP d'une ligne dans une version de travail.
+  public async ajouterLigneVersionReferentiel(
+    parametres: unknown,
+    corps: unknown,
+    contexte?: RequestContext,
+  ): Promise<ReponseDonneeReferentielHttp<VersionReferentielProgrammeSortie>> {
+    const idUtilisateur = await this.verifierMutationEditionReferentiel(contexte);
+    const casUsage = this.exigerCasUsage(
+      this.casUsageAjouterLigneVersionReferentielProgramme,
+      'ajout de ligne de version',
+    );
+    const entree = ValidateurReferentielImportHttp.validerAjoutLigneVersion(
+      parametres,
+      corps,
+      idUtilisateur,
+    );
+    const sortie = await casUsage.executer(entree);
+
+    return this.presenterDonnee(sortie.versionReferentielProgramme);
+  }
+
+  // Cette methode traite la modification HTTP d'une ligne de version.
+  public async modifierLigneVersionReferentiel(
+    parametres: unknown,
+    corps: unknown,
+    contexte?: RequestContext,
+  ): Promise<ReponseDonneeReferentielHttp<VersionReferentielProgrammeSortie>> {
+    const idUtilisateur = await this.verifierMutationEditionReferentiel(contexte);
+    const casUsage = this.exigerCasUsage(
+      this.casUsageModifierLigneVersionReferentielProgramme,
+      'modification de ligne de version',
+    );
+    const entree = ValidateurReferentielImportHttp.validerModificationLigneVersion(
+      parametres,
+      corps,
+      idUtilisateur,
+    );
+    const sortie = await casUsage.executer(entree);
+
+    return this.presenterDonnee(sortie.versionReferentielProgramme);
+  }
+
+  // Cette methode traite le retrait HTTP d'une ligne de version.
+  public async retirerLigneVersionReferentiel(
+    parametres: unknown,
+    corps: unknown,
+    contexte?: RequestContext,
+  ): Promise<ReponseDonneeReferentielHttp<VersionReferentielProgrammeSortie>> {
+    const idUtilisateur = await this.verifierMutationEditionReferentiel(contexte);
+    const casUsage = this.exigerCasUsage(
+      this.casUsageRetirerLigneVersionReferentielProgramme,
+      'retrait de ligne de version',
+    );
+    const entree = ValidateurReferentielImportHttp.validerRetraitLigneVersion(
+      parametres,
+      corps,
+      idUtilisateur,
+    );
+    const sortie = await casUsage.executer(entree);
+
+    return this.presenterDonnee(sortie.versionReferentielProgramme);
+  }
+
+  // Cette methode traite le reordonnancement HTTP des lignes d'une version.
+  public async reordonnerLignesVersionReferentiel(
+    parametres: unknown,
+    corps: unknown,
+    contexte?: RequestContext,
+  ): Promise<ReponseDonneeReferentielHttp<VersionReferentielProgrammeSortie>> {
+    const idUtilisateur = await this.verifierMutationEditionReferentiel(contexte);
+    const casUsage = this.exigerCasUsage(
+      this.casUsageReordonnerLignesVersionReferentielProgramme,
+      'reordonnancement de lignes de version',
+    );
+    const entree = ValidateurReferentielImportHttp.validerReordonnancementVersion(
+      parametres,
+      corps,
+      idUtilisateur,
+    );
+    const sortie = await casUsage.executer(entree);
+
+    return this.presenterDonnee(sortie.versionReferentielProgramme);
+  }
+
+  // Cette methode traite la modification HTTP de ponderation d'une ligne de version.
+  public async modifierPonderationLigneVersionReferentiel(
+    parametres: unknown,
+    corps: unknown,
+    contexte?: RequestContext,
+  ): Promise<ReponseDonneeReferentielHttp<VersionReferentielProgrammeSortie>> {
+    const idUtilisateur = await this.verifierMutationEditionReferentiel(contexte);
+    const casUsage = this.exigerCasUsage(
+      this.casUsageModifierPonderationLigneVersionReferentielProgramme,
+      'modification de ponderation de ligne',
+    );
+    const entree = ValidateurReferentielImportHttp.validerModificationPonderationVersion(
+      parametres,
+      corps,
+      idUtilisateur,
+    );
+    const sortie = await casUsage.executer(entree);
+
+    return this.presenterDonnee(sortie.versionReferentielProgramme);
+  }
+
+  // Cette methode traite la verification HTTP de coherence d'une version avant publication.
+  public async verifierCoherenceVersionReferentiel(
+    parametres: unknown,
+    corps: unknown,
+    contexte?: RequestContext,
+  ): Promise<ReponseDonneeReferentielHttp<VerificationCoherenceVersionReferentielSortie>> {
+    const idUtilisateur = await this.verifierMutationEditionReferentiel(contexte);
+    const casUsage = this.exigerCasUsage(
+      this.casUsageVerifierCoherenceVersionReferentielAvantPublication,
+      'verification de coherence de version',
+    );
+    const entree = ValidateurReferentielImportHttp.validerVerificationCoherenceVersion(
+      parametres,
+      corps,
+      idUtilisateur,
+    );
+    const sortie = await casUsage.executer(entree);
+
+    return this.presenterDonnee(sortie);
+  }
+
   // Cette methode construit une reponse HTTP simple a donnee unique.
   private presenterDonnee<TDonnee>(donnee: TDonnee): ReponseDonneeReferentielHttp<TDonnee> {
     return {
@@ -345,6 +539,12 @@ export class ControleurReferentielsAcademiques {
     return idUtilisateur;
   }
 
+  private async verifierMutationEditionReferentiel(
+    contexte?: RequestContext,
+  ): Promise<string> {
+    return this.verifierMutationPublicationReferentiel(contexte);
+  }
+
   private async verifierLectureComparaisonReferentiel(
     contexte?: RequestContext,
   ): Promise<void> {
@@ -371,5 +571,13 @@ export class ControleurReferentielsAcademiques {
       idUtilisateur,
       roleActif: contexte?.roleActif,
     });
+  }
+
+  private exigerCasUsage<TCasUsage>(casUsage: TCasUsage | undefined, nomAction: string): TCasUsage {
+    if (casUsage === undefined) {
+      throw new Error(`Le cas d'usage de ${nomAction} n'est pas configure.`);
+    }
+
+    return casUsage;
   }
 }

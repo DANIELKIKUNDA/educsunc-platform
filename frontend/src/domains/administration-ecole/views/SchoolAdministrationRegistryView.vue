@@ -94,6 +94,41 @@
       </div>
     </SectionBlock>
 
+    <SectionBlock
+      title="Etape suivante"
+      description="Une ecole creee ou relue doit pouvoir etre activee puis envoyer directement vers les premiers workflows metier reellement utiles."
+    >
+      <div class="adm-next-grid">
+        <button
+          class="adm-next-card"
+          type="button"
+          :disabled="!lastSchoolContext"
+          @click="activerDerniereEcole"
+        >
+          <strong>Activer l ecole dans le contexte</strong>
+          <small>Basculer le shell sur l ecole courante avant de lancer l exploitation locale.</small>
+        </button>
+        <button
+          class="adm-next-card"
+          type="button"
+          :disabled="!lastSchoolContext"
+          @click="ouvrirInscriptionDerniereEcole"
+        >
+          <strong>Ouvrir l inscription</strong>
+          <small>Continuer le parcours vers les familles, eleves et inscriptions de l ecole choisie.</small>
+        </button>
+        <button
+          class="adm-next-card"
+          type="button"
+          :disabled="!lastSchoolContext"
+          @click="ouvrirPaiementDerniereEcole"
+        >
+          <strong>Ouvrir le paiement</strong>
+          <small>Passer directement a la perception financiere dans le bon perimetre ecole.</small>
+        </button>
+      </div>
+    </SectionBlock>
+
     <LoadingState v-if="store.state.status === 'loading'" title="Administration ecole en cours" message="Lecture ou mutation structurelle en cours." />
     <ErrorState v-else-if="store.state.status === 'error'" title="Administration ecole indisponible" :message="store.state.errorMessage ?? 'Le registre des ecoles ne peut pas etre charge.'" />
 
@@ -137,9 +172,17 @@
                 <td>{{ ecole.modeExploitation }}</td>
                 <td>{{ ecole.actif ? 'Active' : 'Inactive' }}</td>
                 <td>
-                  <button class="adm-inline-link adm-inline-link--button" type="button" @click="activerEcoleDansContexte(ecole.idOrganisation, ecole.id)">
-                    Activer contexte
-                  </button>
+                  <div class="adm-inline-actions">
+                    <button class="adm-inline-link adm-inline-link--button" type="button" @click="activerEcoleDansContexte(ecole.idOrganisation, ecole.id)">
+                      Activer contexte
+                    </button>
+                    <button class="adm-inline-link adm-inline-link--button" type="button" @click="ouvrirInscriptionEcole(ecole.idOrganisation, ecole.id)">
+                      Inscription
+                    </button>
+                    <button class="adm-inline-link adm-inline-link--button" type="button" @click="ouvrirPaiementEcole(ecole.idOrganisation, ecole.id)">
+                      Paiement
+                    </button>
+                  </div>
                 </td>
                 <td>
                   <RouterLink class="adm-inline-link" :to="`/app/administration-ecole/ecoles/${ecole.id}`">Ouvrir</RouterLink>
@@ -154,8 +197,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue';
-import { RouterLink, useRoute } from 'vue-router';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
+import { RouterLink, useRoute, useRouter } from 'vue-router';
 import { ArrowLeft } from 'lucide-vue-next';
 import PageContainer from '../../../shared/layout/PageContainer.vue';
 import PageHeader from '../../../shared/layout/PageHeader.vue';
@@ -171,6 +214,7 @@ import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access'
 const store = useOrganizationGovernanceStore();
 const { canUseAction } = useDoctrineAccess();
 const route = useRoute();
+const router = useRouter();
 const selectedOrganisationId = ref('');
 const form = reactive({
   idOrganisation: '',
@@ -187,6 +231,21 @@ const form = reactive({
 });
 
 const canMutateRegistry = computed(() => canUseAction('school-administration.write', 'ADM-001'));
+const lastSchoolContext = computed(() => {
+  const lastSchool = store.state.ecoles[store.state.ecoles.length - 1];
+  if (lastSchool) {
+    return { idOrganisation: lastSchool.idOrganisation, idEcole: lastSchool.id };
+  }
+
+  if (activeContextStore.state.organizationId && activeContextStore.state.schoolId) {
+    return {
+      idOrganisation: activeContextStore.state.organizationId,
+      idEcole: activeContextStore.state.schoolId,
+    };
+  }
+
+  return null;
+});
 
 async function chargerOrganisations(): Promise<void> {
   await store.chargerOrganisations();
@@ -234,6 +293,44 @@ async function activerEcoleDansContexte(idOrganisation: string, idEcole: string)
   activeContextStore.setGovernanceLevel('ECOLE');
 }
 
+async function activerDerniereEcole(): Promise<void> {
+  if (!lastSchoolContext.value) {
+    return;
+  }
+
+  await activerEcoleDansContexte(lastSchoolContext.value.idOrganisation, lastSchoolContext.value.idEcole);
+}
+
+async function ouvrirInscriptionEcole(idOrganisation: string, idEcole: string): Promise<void> {
+  await activerEcoleDansContexte(idOrganisation, idEcole);
+  await router.push('/app/scolarite/inscriptions');
+}
+
+async function ouvrirPaiementEcole(idOrganisation: string, idEcole: string): Promise<void> {
+  await activerEcoleDansContexte(idOrganisation, idEcole);
+  await router.push('/app/finances/paiements/enregistrer');
+}
+
+async function ouvrirInscriptionDerniereEcole(): Promise<void> {
+  if (!lastSchoolContext.value) {
+    return;
+  }
+
+  await ouvrirInscriptionEcole(lastSchoolContext.value.idOrganisation, lastSchoolContext.value.idEcole);
+}
+
+async function ouvrirPaiementDerniereEcole(): Promise<void> {
+  if (!lastSchoolContext.value) {
+    return;
+  }
+
+  await ouvrirPaiementEcole(lastSchoolContext.value.idOrganisation, lastSchoolContext.value.idEcole);
+}
+
+watch(selectedOrganisationId, (nextOrganisationId) => {
+  form.idOrganisation = nextOrganisationId;
+});
+
 onMounted(async () => {
   const organisationDepuisRoute = typeof route.query.idOrganisation === 'string' ? route.query.idOrganisation : '';
   if (organisationDepuisRoute) {
@@ -262,9 +359,14 @@ onMounted(async () => {
 .adm-pill--primary{background:linear-gradient(135deg,#113f67,#1a6aa0);border-color:transparent;color:#fff}
 .adm-banner{padding:1rem 1.1rem;border-radius:20px;background:#eef4ff;color:#102844;font-weight:600}
 .adm-banner--muted{background:#f4f7fb;color:#445b70}
+.adm-next-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem}
+.adm-next-card{display:grid;gap:.55rem;text-align:left;padding:1rem 1.05rem;border-radius:22px;border:1px solid rgba(17,40,63,.08);background:linear-gradient(180deg,#f7faff,#ffffff);box-shadow:0 18px 45px rgba(17,40,63,.08);color:#11283f}
+.adm-next-card:disabled{opacity:.55;cursor:not-allowed}
+.adm-next-card small{color:#587083;line-height:1.5}
 .adm-table-shell{overflow:auto}
 .adm-table{width:100%;border-collapse:collapse}
 .adm-table th,.adm-table td{padding:.85rem 1rem;border-bottom:1px solid rgba(17,40,63,.08);text-align:left}
 .adm-inline-link{padding:.5rem .85rem;font-size:.92rem}
 .adm-inline-link--button{cursor:pointer}
+.adm-inline-actions{display:flex;flex-wrap:wrap;gap:.5rem}
 </style>

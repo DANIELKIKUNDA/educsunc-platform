@@ -7,6 +7,10 @@ import { OrganisationId } from '../../../domain/value-objects/OrganisationId';
 import { RenommerOrganisationEntree } from '../../dto/input/RenommerOrganisationEntree';
 import { OrganisationSortie } from '../../dto/output/OrganisationSortie';
 import { OrganisationApplicationMapper } from '../../mappers/OrganisationApplicationMapper';
+import {
+  ServiceJournalAuditReferentielAcademique,
+  ServiceJournalAuditReferentielAcademiqueSansEffet,
+} from '../../services/ServiceJournalAuditReferentielAcademique';
 
 // Cette interface represente la sortie du cas d'usage RenommerOrganisation.
 export interface SortieRenommerOrganisation {
@@ -17,14 +21,18 @@ export interface SortieRenommerOrganisation {
 export class RenommerOrganisation implements UseCase<RenommerOrganisationEntree, SortieRenommerOrganisation> {
   private readonly depotOrganisation: DepotOrganisation;
   private readonly policyAudit: PolicyAudit;
+  private readonly serviceJournalAudit: ServiceJournalAuditReferentielAcademique;
 
   // Ce constructeur injecte les dependances applicatives necessaires au renommage d'une organisation.
   constructor(
     depotOrganisation: DepotOrganisation,
     policyAudit: PolicyAudit = new PolicyAudit(),
+    serviceJournalAudit: ServiceJournalAuditReferentielAcademique =
+      new ServiceJournalAuditReferentielAcademiqueSansEffet(),
   ) {
     this.depotOrganisation = depotOrganisation;
     this.policyAudit = policyAudit;
+    this.serviceJournalAudit = serviceJournalAudit;
   }
 
   // Cette methode renomme une organisation existante apres validation et controle d'unicite.
@@ -61,9 +69,22 @@ export class RenommerOrganisation implements UseCase<RenommerOrganisationEntree,
       );
     }
 
+    const ancienNom = organisation.obtenirNom();
     organisation.renommer(entreeValidee.nouveauNom, entreeValidee.modifiePar);
 
     await this.depotOrganisation.sauvegarder(organisation);
+    await this.serviceJournalAudit.journaliser({
+      action: 'RENOMMER_ORGANISATION',
+      acteur: entreeValidee.modifiePar,
+      typeRessource: 'ORGANISATION',
+      idRessource: organisation.obtenirId().obtenirValeur(),
+      idOrganisation: organisation.obtenirId().obtenirValeur(),
+      details: {
+        ancienNom,
+        nouveauNom: organisation.obtenirNom(),
+      },
+      creeLe: horodatageModification,
+    });
 
     return {
       organisation: OrganisationApplicationMapper.versSortie(organisation),

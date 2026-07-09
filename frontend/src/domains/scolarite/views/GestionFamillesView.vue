@@ -210,7 +210,12 @@
                       <td>{{ entry.telephonePrincipal }}</td>
                       <td>{{ entry.responsables.length }}</td>
                       <td>{{ entry.nombreElevesActifs ?? '-' }}</td>
-                      <td><button class="scolarite-inline-action" type="button" @click="ouvrirDetail(entry.idFamille)">Ouvrir</button></td>
+                      <td>
+                        <div class="scolarite-actions-row">
+                          <button class="scolarite-inline-action" type="button" @click="ouvrirDetail(entry.idFamille)">Ouvrir</button>
+                          <button class="scolarite-inline-action" type="button" @click="ouvrirInscriptionFamille(entry.idFamille)">Inscription</button>
+                        </div>
+                      </td>
                     </tr>
                   </tbody>
                 </table>
@@ -232,6 +237,17 @@
                   <div><small>Adresse</small><strong>{{ store.state.selected.adresse ?? '-' }}</strong></div>
                   <div><small>Version</small><strong>{{ store.state.selected.version }}</strong></div>
                   <div><small>Eleves actifs</small><strong>{{ store.state.selected.nombreElevesActifs ?? '-' }}</strong></div>
+                </div>
+
+                <div class="scolarite-next-grid">
+                  <button class="scolarite-next-card" type="button" @click="ouvrirInscriptionFamille(store.state.selected.idFamille)">
+                    <strong>Continuer vers l inscription</strong>
+                    <small>Ouvrir MS-01 avec la famille deja pre-rattachee.</small>
+                  </button>
+                  <button class="scolarite-next-card" type="button" @click="ouvrirElevesFamille">
+                    <strong>Relire les eleves</strong>
+                    <small>Basculer vers la liste eleves pour verifier les rattachements actifs.</small>
+                  </button>
                 </div>
 
                 <div class="scolarite-subsection">
@@ -408,7 +424,6 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive } from 'vue';
 import { RouterLink } from 'vue-router';
 import {
   ArrowLeft,
@@ -429,291 +444,47 @@ import ErrorState from '../../../shared/ui/ErrorState.vue';
 import EmptyState from '../../../shared/ui/EmptyState.vue';
 import ContextBadge from '../../../shared/ui/ContextBadge.vue';
 import PermissionTag from '../../../shared/ui/PermissionTag.vue';
-import { sessionStore } from '../../../shared/auth/session.store';
-import { activeContextStore } from '../../../shared/session/active-context.store';
-import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
-import {
-  construireNomComplet,
-  type EleveItem,
-  type ResponsableFamilleItem,
-} from '../models/scolarite.model';
-import { mapperFamillesCsv, mapperTotalResponsables } from '../mappers/families.mapper';
-import { useFamiliesStore } from '../stores/families.store';
+import { useFamiliesViewModel } from '../viewmodels/useFamiliesViewModel';
 
-const store = useFamiliesStore();
-const session = sessionStore.state;
-const context = activeContextStore.state;
-const doctrineAccess = useDoctrineAccess();
-const isAuthorized = computed(() => doctrineAccess.canAccessPage('SCO-003'));
-const canManageFamilies = computed(() => doctrineAccess.canUseAction('scolarite.familles.manage', 'SCO-003'));
-
-const filters = reactive({
-  nomFamille: '',
-  nomResponsable: '',
-  nomEleve: '',
-  page: 1,
-  taillePage: 20,
-});
-
-const createForm = reactive({
-  idFamille: '',
-  codeFamille: '',
-  nomFamille: '',
-  telephonePrincipal: '',
-  email: '',
-  adresse: '',
-});
-
-const editFamilyForm = reactive({
-  nomFamille: '',
-  telephonePrincipal: '',
-  email: '',
-  adresse: '',
-});
-
-const responsableForm = reactive({
-  idResponsableFamille: '',
-  nomComplet: '',
-  telephone: '',
-  telephoneSecondaire: '',
-  profession: '',
-  lienParente: 'PERE' as 'PERE' | 'MERE' | 'TUTEUR' | 'TUTRICE' | 'AUTRE',
-  adresse: '',
-  idUtilisateurAuth: '',
-});
-
-const linkForm = reactive({
-  idEleve: '',
-});
-
-const perimeterMessage = computed(() =>
-  `Lecture et mutation bornees a l ecole active ${context.schoolName}, sans delegation sectionnelle.`,
-);
-
-const totalResponsables = computed(() => mapperTotalResponsables(store.state.entries));
-
-const hasSearch = computed(() =>
-  Boolean(
-    filters.nomFamille.trim()
-    || filters.nomResponsable.trim()
-    || filters.nomEleve.trim(),
-  ),
-);
-
-const canCreate = computed(() =>
-  createForm.idFamille.trim().length > 0
-  && createForm.codeFamille.trim().length > 0
-  && createForm.nomFamille.trim().length > 0
-  && createForm.telephonePrincipal.trim().length > 0,
-);
-
-const canSaveResponsable = computed(() =>
-  responsableForm.idResponsableFamille.trim().length > 0
-  && responsableForm.nomComplet.trim().length > 0
-  && responsableForm.telephone.trim().length > 0,
-);
-
-const canLinkStudent = computed(() => linkForm.idEleve.trim().length > 0 && Boolean(store.state.selected));
-
-function nomComplet(eleve: Pick<EleveItem, 'nom' | 'postNom' | 'prenom'>): string {
-  return construireNomComplet(eleve.nom, eleve.postNom, eleve.prenom);
-}
-
-async function charger(): Promise<void> {
-  await store.chargerListe({ ...filters });
-}
-
-async function ouvrirDetail(idFamille: string): Promise<void> {
-  await store.chargerDetail(idFamille);
-  chargerDepuisSelection();
-  await store.evaluerFamilleNombreuse(idFamille);
-}
-
-async function creer(): Promise<void> {
-  await store.creer({
-    ...createForm,
-    email: createForm.email || undefined,
-    adresse: createForm.adresse || undefined,
-  });
-  if (store.state.selected) {
-    chargerDepuisSelection();
-    await store.evaluerFamilleNombreuse(store.state.selected.idFamille);
-  }
-}
-
-async function modifierFamille(): Promise<void> {
-  if (!store.state.selected) return;
-  await store.modifier(store.state.selected.idFamille, {
-    nomFamille: editFamilyForm.nomFamille || undefined,
-    telephonePrincipal: editFamilyForm.telephonePrincipal || undefined,
-    email: editFamilyForm.email || undefined,
-    adresse: editFamilyForm.adresse || undefined,
-    versionAttendue: store.state.selected.version,
-  });
-}
-
-async function ajouterResponsable(): Promise<void> {
-  if (!store.state.selected) return;
-  await store.ajouterResponsable(store.state.selected.idFamille, {
-    idResponsableFamille: responsableForm.idResponsableFamille,
-    nomComplet: responsableForm.nomComplet,
-    telephone: responsableForm.telephone,
-    telephoneSecondaire: responsableForm.telephoneSecondaire || undefined,
-    profession: responsableForm.profession || undefined,
-    lienParente: responsableForm.lienParente,
-    adresse: responsableForm.adresse || undefined,
-    estPrincipal: false,
-    idUtilisateurAuth: responsableForm.idUtilisateurAuth || undefined,
-    versionAttendue: store.state.selected.version,
-  });
-}
-
-async function modifierResponsable(): Promise<void> {
-  if (!store.state.selected) return;
-  await store.modifierResponsable(store.state.selected.idFamille, responsableForm.idResponsableFamille, {
-    idResponsableFamille: responsableForm.idResponsableFamille,
-    nomComplet: responsableForm.nomComplet,
-    telephone: responsableForm.telephone,
-    telephoneSecondaire: responsableForm.telephoneSecondaire || undefined,
-    profession: responsableForm.profession || undefined,
-    lienParente: responsableForm.lienParente,
-    adresse: responsableForm.adresse || undefined,
-    estPrincipal: false,
-    idUtilisateurAuth: responsableForm.idUtilisateurAuth || undefined,
-    versionAttendue: store.state.selected.version,
-  });
-}
-
-async function retirerResponsable(idResponsableFamille: string): Promise<void> {
-  if (!store.state.selected) return;
-  await store.retirerResponsable(store.state.selected.idFamille, idResponsableFamille, {
-    versionAttendue: store.state.selected.version,
-  });
-}
-
-async function definirPrincipal(idResponsableFamille: string): Promise<void> {
-  if (!store.state.selected) return;
-  await store.definirResponsablePrincipal(store.state.selected.idFamille, idResponsableFamille, {
-    versionAttendue: store.state.selected.version,
-  });
-}
-
-async function chargerFamilleNombreuse(): Promise<void> {
-  if (!store.state.selected) return;
-  await store.evaluerFamilleNombreuse(store.state.selected.idFamille);
-}
-
-async function rattacherEleve(): Promise<void> {
-  if (!store.state.selected) return;
-  await store.rattacherEleve(linkForm.idEleve, {
-    idFamille: store.state.selected.idFamille,
-    versionAttendue: store.state.selected.version,
-  });
-  linkForm.idEleve = '';
-}
-
-async function detacherEleve(idEleve: string): Promise<void> {
-  if (!store.state.selected) return;
-  await store.detacherEleve(idEleve, {
-    versionAttendue: store.state.selected.version,
-  });
-}
-
-function chargerResponsable(responsable: ResponsableFamilleItem): void {
-  responsableForm.idResponsableFamille = responsable.idResponsableFamille;
-  responsableForm.nomComplet = responsable.nomComplet;
-  responsableForm.telephone = responsable.telephone;
-  responsableForm.telephoneSecondaire = responsable.telephoneSecondaire ?? '';
-  responsableForm.profession = responsable.profession ?? '';
-  responsableForm.lienParente = responsable.lienParente;
-  responsableForm.adresse = responsable.adresse ?? '';
-  responsableForm.idUtilisateurAuth = responsable.idUtilisateurAuth ?? '';
-}
-
-function chargerDepuisSelection(): void {
-  if (!store.state.selected) return;
-  editFamilyForm.nomFamille = store.state.selected.nomFamille;
-  editFamilyForm.telephonePrincipal = store.state.selected.telephonePrincipal;
-  editFamilyForm.email = store.state.selected.email ?? '';
-  editFamilyForm.adresse = store.state.selected.adresse ?? '';
-}
-
-function reinitialiserResponsable(): void {
-  responsableForm.idResponsableFamille = '';
-  responsableForm.nomComplet = '';
-  responsableForm.telephone = '';
-  responsableForm.telephoneSecondaire = '';
-  responsableForm.profession = '';
-  responsableForm.lienParente = 'PERE';
-  responsableForm.adresse = '';
-  responsableForm.idUtilisateurAuth = '';
-}
-
-function reinitialiserCreation(): void {
-  createForm.idFamille = '';
-  createForm.codeFamille = '';
-  createForm.nomFamille = '';
-  createForm.telephonePrincipal = '';
-  createForm.email = '';
-  createForm.adresse = '';
-}
-
-function reinitialiserFiltres(): void {
-  filters.nomFamille = '';
-  filters.nomResponsable = '';
-  filters.nomEleve = '';
-  filters.page = 1;
-  filters.taillePage = 20;
-  void charger();
-}
-
-function exporterCsv(): void {
-  const csv = mapperFamillesCsv(store.state.entries);
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = 'familles.csv';
-  link.click();
-  URL.revokeObjectURL(url);
-}
-
-function imprimer(): void {
-  window.print();
-}
-
-void charger();
+const {
+  store,
+  session,
+  context,
+  isAuthorized,
+  canManageFamilies,
+  filters,
+  createForm,
+  editFamilyForm,
+  responsableForm,
+  linkForm,
+  perimeterMessage,
+  totalResponsables,
+  hasSearch,
+  canCreate,
+  canSaveResponsable,
+  canLinkStudent,
+  nomComplet,
+  charger,
+  ouvrirDetail,
+  ouvrirInscriptionFamille,
+  ouvrirElevesFamille,
+  creer,
+  modifierFamille,
+  ajouterResponsable,
+  modifierResponsable,
+  retirerResponsable,
+  definirPrincipal,
+  chargerFamilleNombreuse,
+  rattacherEleve,
+  detacherEleve,
+  chargerResponsable,
+  chargerDepuisSelection,
+  reinitialiserResponsable,
+  reinitialiserCreation,
+  reinitialiserFiltres,
+  exporterCsv,
+  imprimer,
+} = useFamiliesViewModel();
 </script>
 
-<style scoped>
-.scolarite-actions,.scolarite-actions-row,.scolarite-subsection__header{display:flex;flex-wrap:wrap;gap:.75rem;align-items:center;justify-content:space-between}
-.scolarite-pill,.scolarite-primary-action,.scolarite-secondary-action,.scolarite-inline-action{border:1px solid rgba(17,40,63,.14);background:#fff;color:#11283f;border-radius:999px;padding:.75rem 1rem;display:inline-flex;align-items:center;gap:.5rem;font-weight:600;text-decoration:none}
-.scolarite-pill--action,.scolarite-primary-action{background:linear-gradient(135deg,#0b5d7a,#1487a8);color:#fff;border-color:transparent}
-.scolarite-primary-action:disabled{opacity:.55;cursor:not-allowed}
-.scolarite-hero{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap}
-.scolarite-hero__lead{display:flex;align-items:center;gap:1rem}
-.scolarite-hero__icon{width:56px;height:56px;border-radius:18px;display:grid;place-items:center;background:linear-gradient(135deg,#0b5d7a,#1487a8);color:#fff}
-.scolarite-badges{display:flex;flex-wrap:wrap;gap:.75rem;align-items:flex-start}
-.scolarite-form-stack{display:grid;gap:1rem}
-.scolarite-subsection,.scolarite-panel{border-radius:24px;padding:1rem;background:#fff;border:1px solid rgba(17,40,63,.08);box-shadow:0 18px 45px rgba(17,40,63,.08);display:grid;gap:1rem}
-.scolarite-grid,.scolarite-kpi-grid,.scolarite-detail-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem}
-.scolarite-field{display:grid;gap:.45rem}
-.scolarite-field--full{grid-column:1/-1}
-.scolarite-field input,.scolarite-field select{border-radius:16px;border:1px solid rgba(17,40,63,.16);padding:.8rem .9rem;background:#fbfdff}
-.scolarite-inline-note,.scolarite-empty-inline{display:flex;gap:.75rem;align-items:flex-start;border-radius:18px;background:#f7fbfd;padding:.9rem 1rem;color:#456175}
-.scolarite-layout{display:grid;grid-template-columns:minmax(0,2fr) minmax(360px,1fr);gap:1rem}
-.scolarite-table-shell{overflow:auto;border-radius:22px;border:1px solid rgba(17,40,63,.08);background:#fff}
-.scolarite-table{width:100%;border-collapse:collapse;min-width:860px}
-.scolarite-table th,.scolarite-table td{padding:.9rem 1rem;border-bottom:1px solid rgba(17,40,63,.08);text-align:left;vertical-align:top}
-.scolarite-table th{background:#edf4f8;font-size:.85rem;letter-spacing:.03em;text-transform:uppercase}
-.scolarite-row--selected{background:#f7fbfd}
-.scolarite-panel__header{display:flex;justify-content:space-between;align-items:flex-start;gap:.75rem}
-.scolarite-list{display:grid;gap:.8rem;padding-left:1rem;margin:0}
-.scolarite-list li{display:grid;gap:.35rem}
-.scolarite-label{margin:0 0 .2rem;color:#4f6677;font-size:.83rem;text-transform:uppercase;letter-spacing:.08em}
-.scolarite-muted{color:#5d7385;font-size:.82rem}
-.status-chip{display:inline-flex;align-items:center;border-radius:999px;padding:.2rem .65rem;font-size:.82rem;font-weight:600}
-.status-chip--ok{background:#e7f6ee;color:#166534}
-.status-chip--neutral{background:#edf4f8;color:#365066}
-@media (max-width:1080px){.scolarite-layout{grid-template-columns:1fr}.scolarite-hero{flex-direction:column}.scolarite-hero__lead{align-items:flex-start}}
-</style>
+<style src="./GestionFamillesView.css" scoped></style>

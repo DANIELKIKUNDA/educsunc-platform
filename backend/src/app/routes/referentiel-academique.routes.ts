@@ -46,8 +46,16 @@ import {
   CreerOrganisation,
   DesactiverOrganisation,
   ListerOrganisations,
+  MettreAJourOrganisation,
   RenommerOrganisation,
 } from '../../contexts/referentiel-academique/application/use-cases/organisations';
+import { PasswordHashAdapter } from '../../shared/auth/infrastructure';
+import { PostgresUtilisateurAuthRepository } from '../../shared/auth/infrastructure/persistence/postgres/repositories/PostgresUtilisateurAuthRepository';
+import {
+  PostgresAffectationUtilisateurRepository,
+  PostgresRoleRepository,
+} from '../../shared/security/infrastructure';
+import { obtenirMemoireSecurityStore } from '../../shared/security/infrastructure/persistence/postgres/repositories/_memoireSecurityStore';
 import {
   ArchiverProgrammeNiveau,
   ConsulterProgrammeNiveau,
@@ -58,8 +66,10 @@ import {
 } from '../../contexts/referentiel-academique/application/use-cases/programmes';
 import {
   ActiverVersionReferentiel,
+  AjouterLigneVersionReferentielProgramme,
   ComparerDeuxVersionsReferentiel,
   ConsulterReferentielProgramme,
+  CreerVersionTravailReferentielDepuisVersion,
   ImporterClassesAcademiquesDepuisJson,
   ImporterCoursAcademiquesDepuisJson,
   ImporterLignesProgrammeDepuisJson,
@@ -68,7 +78,12 @@ import {
   ImporterSectionsDepuisJson,
   ListerReferentielsCours,
   ListerReferentielsParClasseAcademique,
+  ModifierLigneVersionReferentielProgramme,
+  ModifierPonderationLigneVersionReferentielProgramme,
   PublierVersionReferentiel,
+  ReordonnerLignesVersionReferentielProgramme,
+  RetirerLigneVersionReferentielProgramme,
+  VerifierCoherenceVersionReferentielAvantPublication,
 } from '../../contexts/referentiel-academique/application/use-cases/referentiels';
 import {
   AttribuerResponsableClassePedagogique,
@@ -126,6 +141,7 @@ import {
   type InfrastructurePostgresReferentielAcademique,
   creerInfrastructurePostgresReferentielAcademique,
 } from '../../contexts/referentiel-academique/infrastructure/persistence/postgres';
+import { OrganisationId } from '../../contexts/referentiel-academique/domain/value-objects/OrganisationId';
 import { ServiceJournalAuditReferentielAcademiquePostgres } from '../../contexts/referentiel-academique/infrastructure/services/ServiceJournalAuditReferentielAcademiquePostgres';
 import { ContexteExecutionTenantReferentielAcademique } from '../../contexts/referentiel-academique/infrastructure/tenancy/ContexteExecutionTenantReferentielAcademique';
 import { AutorisationSocleAcademiqueAdapter } from '../adapters/AutorisationSocleAcademiqueAdapter';
@@ -260,14 +276,138 @@ function composerRoutesReferentielAcademique(): CompositionRoutesReferentielAcad
   const autorisationMigrationReferentielAdapter = new AutorisationMigrationReferentielAdapter(
     autorisationSocleAcademiqueAdapter,
   );
+  const depotUtilisateurAuth = new PostgresUtilisateurAuthRepository();
+  const roleRepositorySecurity = new PostgresRoleRepository();
+  const affectationRepositorySecurity = new PostgresAffectationUtilisateurRepository();
+  const passwordHashAdapter = new PasswordHashAdapter();
 
   const controleurOrganisations = new ControleurOrganisations(
-    new CreerOrganisation(depots.depotOrganisation),
+    new CreerOrganisation(depots.depotOrganisation, undefined, {
+      depotUtilisateurAuth,
+      roleRepository: roleRepositorySecurity,
+      affectationRepository: affectationRepositorySecurity,
+      passwordHashPort: passwordHashAdapter,
+      serviceJournalAudit,
+    }),
     new ConsulterOrganisation(depots.depotOrganisation),
     new ListerOrganisations(depots.depotOrganisation),
-    new RenommerOrganisation(depots.depotOrganisation),
-    new ActiverOrganisation(depots.depotOrganisation),
-    new DesactiverOrganisation(depots.depotOrganisation),
+    new MettreAJourOrganisation(
+      depots.depotOrganisation,
+      depotUtilisateurAuth,
+      undefined,
+      serviceJournalAudit,
+    ),
+    new RenommerOrganisation(depots.depotOrganisation, undefined, serviceJournalAudit),
+    new ActiverOrganisation(depots.depotOrganisation, undefined, serviceJournalAudit),
+    new DesactiverOrganisation(depots.depotOrganisation, undefined, serviceJournalAudit),
+    undefined,
+    {
+      consulter: async (idOrganisation: string, idResponsablePrincipal?: string) => {
+        const affectations = Array.from(obtenirMemoireSecurityStore().affectations.values())
+          .filter((record) =>
+            record.id_organisation === idOrganisation
+            && record.etat_affectation === 'ACTIVE'
+          );
+        const totalUtilisateursActifs = new Set(
+          affectations.map((record) => record.id_utilisateur),
+        ).size;
+
+        if (!idResponsablePrincipal) {
+          return {
+            organisationId: idOrganisation,
+            totalUtilisateursActifs,
+          };
+        }
+
+        const utilisateurResponsable =
+          await depotUtilisateurAuth.trouverParId(idResponsablePrincipal);
+
+        return {
+          organisationId: idOrganisation,
+          totalUtilisateursActifs,
+          responsablePrincipal: utilisateurResponsable
+            ? {
+              utilisateurId: idResponsablePrincipal,
+              etatCompte: utilisateurResponsable.obtenirEtatCompte(),
+              dernierAccesLe: utilisateurResponsable.obtenirDernierAccesLe()?.toISOString(),
+              dernierLoginLe: utilisateurResponsable.obtenirDernierLoginLe()?.toISOString(),
+            }
+            : undefined,
+          };
+      },
+    },
+    {
+      lister: async (idOrganisation: string) => {
+        interface LigneHistoriqueOrganisation {
+          id: string;
+          action: string;
+          acteur: string | null;
+          description: string | null;
+          cree_le: string | Date;
+          details: Readonly<Record<string, unknown>> | null;
+        }
+
+        const organisation = await depots.depotOrganisation.trouverParId(
+          new OrganisationId(idOrganisation),
+        );
+
+        const resultat = await infrastructure.clientLecture.executer<LigneHistoriqueOrganisation>(
+          [
+            'SELECT',
+            '  "id",',
+            '  "action",',
+            '  "acteur",',
+            '  "details",',
+            '  "cree_le",',
+            '  CASE',
+            "    WHEN \"action\" = 'CREER_ORGANISATION' THEN 'Organisation creee'",
+            "    WHEN \"action\" = 'RENOMMER_ORGANISATION' THEN 'Organisation renommee'",
+            "    WHEN \"action\" = 'METTRE_A_JOUR_ORGANISATION' THEN 'Organisation mise a jour'",
+            "    WHEN \"action\" = 'ACTIVER_ORGANISATION' THEN 'Organisation activee'",
+            "    WHEN \"action\" = 'DESACTIVER_ORGANISATION' THEN 'Organisation desactivee'",
+            "    ELSE 'Evenement organisation'",
+            '  END AS "description"',
+            'FROM "audit_logs"',
+            'WHERE "id_organisation" = $1',
+            '   OR ("type_ressource" = $2 AND "id_ressource" = $1)',
+            'ORDER BY "cree_le" DESC',
+          ].join(' '),
+          [idOrganisation, 'ORGANISATION'],
+        );
+
+        const evenements = resultat.lignes.map((ligne) => ({
+          id: ligne.id,
+          action: ligne.action,
+          acteur: ligne.acteur ?? undefined,
+          description: ligne.description ?? 'Evenement organisation',
+          creeLe:
+            ligne.cree_le instanceof Date
+              ? ligne.cree_le.toISOString()
+              : String(ligne.cree_le),
+          details: ligne.details ?? undefined,
+        }));
+
+        const aCreationNative = evenements.some((evenement) => evenement.action === 'CREER_ORGANISATION');
+
+        if (organisation && !aCreationNative) {
+          evenements.push({
+            id: `${organisation.obtenirId().obtenirValeur()}-fallback-creation`,
+            action: 'CREER_ORGANISATION',
+            acteur: organisation.obtenirCreePar(),
+            description: 'Organisation creee',
+            creeLe: organisation.obtenirCreeLe().toISOString(),
+            details: {
+              code: organisation.obtenirCode(),
+              nom: organisation.obtenirNom(),
+              typeOrganisation: organisation.obtenirTypeOrganisation(),
+              source: 'fallback-aggregate',
+            },
+          });
+        }
+
+        return evenements.sort((a, b) => Date.parse(b.creeLe) - Date.parse(a.creeLe));
+      },
+    },
   );
 
   const controleurEcoles = new ControleurEcoles(
@@ -425,6 +565,53 @@ function composerRoutesReferentielAcademique(): CompositionRoutesReferentielAcad
       depots.depotClasseAcademique,
     ),
     new ListerReferentielsCours(depots.depotReferentielCours),
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    new CreerVersionTravailReferentielDepuisVersion(
+      depots.depotReferentielProgramme,
+      depots.depotMigrationReferentielProgramme,
+      undefined,
+      serviceJournalAudit,
+    ),
+    new AjouterLigneVersionReferentielProgramme(
+      depots.depotReferentielProgramme,
+      depots.depotMigrationReferentielProgramme,
+      undefined,
+      serviceJournalAudit,
+    ),
+    new ModifierLigneVersionReferentielProgramme(
+      depots.depotReferentielProgramme,
+      depots.depotMigrationReferentielProgramme,
+      undefined,
+      serviceJournalAudit,
+    ),
+    new RetirerLigneVersionReferentielProgramme(
+      depots.depotReferentielProgramme,
+      depots.depotMigrationReferentielProgramme,
+      undefined,
+      serviceJournalAudit,
+    ),
+    new ReordonnerLignesVersionReferentielProgramme(
+      depots.depotReferentielProgramme,
+      depots.depotMigrationReferentielProgramme,
+      undefined,
+      serviceJournalAudit,
+    ),
+    new ModifierPonderationLigneVersionReferentielProgramme(
+      depots.depotReferentielProgramme,
+      depots.depotMigrationReferentielProgramme,
+      undefined,
+      serviceJournalAudit,
+    ),
+    new VerifierCoherenceVersionReferentielAvantPublication(
+      depots.depotReferentielProgramme,
+      depots.depotMigrationReferentielProgramme,
+      undefined,
+      serviceJournalAudit,
+    ),
   );
 
   const controleurProgrammesNiveau = new ControleurProgrammesNiveau(

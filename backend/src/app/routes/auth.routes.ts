@@ -68,8 +68,70 @@ import {
 } from '../../shared/security/infrastructure';
 import { SecurityFacade } from '../../shared/security/application/services/SecurityFacade';
 import { SecurityTenantIsolationService } from '../../shared/security/infrastructure/tenancy/SecurityTenantIsolationService';
+import { configurationApplication } from '../../config/app.config';
+import { UtilisateurAuth } from '../../shared/auth/domain/aggregates/UtilisateurAuth';
+import { AffectationUtilisateur, Role } from '../../shared/security/domain';
+import { PERMISSIONS_SECURITE } from '../../shared/security/domain/value-objects/PermissionSecurite';
 
 const JWT_SECRET_PAR_DEFAUT = 'dev-secret-change-me';
+const MOT_DE_PASSE_SESSION_DEV = 'EducSyn.dev.session.2026';
+const ORGANISATION_DEV_PAR_DEFAUT = 'org-edusync-dev';
+const ECOLE_DEV_PAR_DEFAUT = 'ecole-edusync-dev';
+
+type CodeActeurDeveloppement =
+  | 'MANAGER_SYSTEME'
+  | 'OPERATEUR_SYSTEME'
+  | 'SUPPORT_SYSTEME'
+  | 'PROMOTEUR_ORGANISATION'
+  | 'ADMIN_SYSTEME_ORGANISATION'
+  | 'GESTIONNAIRE_ORGANISATION'
+  | 'ADMIN_SYSTEME_ECOLE'
+  | 'ADMINISTRATEUR_ECOLE'
+  | 'CAISSIER'
+  | 'SECRETAIRE'
+  | 'ENSEIGNANT'
+  | 'TITULAIRE'
+  | 'PREFET_ETUDES'
+  | 'DIRECTEUR_ETUDES'
+  | 'DIRECTEUR_DISCIPLINE'
+  | 'DIRECTEUR_PRIMAIRE'
+  | 'DIRECTEUR_MATERNELLE'
+  | 'PARENT'
+  | 'COMPTABLE';
+
+interface RequeteSessionDeveloppeur {
+  actorCode: CodeActeurDeveloppement;
+  organisationActiveId?: string;
+  ecoleActiveId?: string;
+  deviceId?: string;
+}
+
+interface ProfilSessionDeveloppeur {
+  nomComplet: string;
+  niveauAcces: 'PLATEFORME' | 'ORGANISATION' | 'ECOLE';
+}
+
+const profilsSessionDeveloppeur: Record<CodeActeurDeveloppement, ProfilSessionDeveloppeur> = {
+  MANAGER_SYSTEME: { nomComplet: 'Nadia Ilunga', niveauAcces: 'PLATEFORME' },
+  OPERATEUR_SYSTEME: { nomComplet: 'Joel Banza', niveauAcces: 'PLATEFORME' },
+  SUPPORT_SYSTEME: { nomComplet: 'Sarah Mbuyi', niveauAcces: 'PLATEFORME' },
+  PROMOTEUR_ORGANISATION: { nomComplet: 'Daniel Kikunda', niveauAcces: 'ORGANISATION' },
+  ADMIN_SYSTEME_ORGANISATION: { nomComplet: 'Grace Kabamba', niveauAcces: 'ORGANISATION' },
+  GESTIONNAIRE_ORGANISATION: { nomComplet: 'Patrick Mutombo', niveauAcces: 'ORGANISATION' },
+  ADMIN_SYSTEME_ECOLE: { nomComplet: 'Patrick Mulumba', niveauAcces: 'ECOLE' },
+  ADMINISTRATEUR_ECOLE: { nomComplet: 'Chantal Lukusa', niveauAcces: 'ECOLE' },
+  CAISSIER: { nomComplet: 'Daniel Kikunda', niveauAcces: 'ECOLE' },
+  SECRETAIRE: { nomComplet: 'Rachel Kalonji', niveauAcces: 'ECOLE' },
+  ENSEIGNANT: { nomComplet: 'Michel Kabeya', niveauAcces: 'ECOLE' },
+  TITULAIRE: { nomComplet: 'Junior Mbuyi', niveauAcces: 'ECOLE' },
+  PREFET_ETUDES: { nomComplet: 'Ruth Mukendi', niveauAcces: 'ECOLE' },
+  DIRECTEUR_ETUDES: { nomComplet: 'Jean Kanku', niveauAcces: 'ECOLE' },
+  DIRECTEUR_DISCIPLINE: { nomComplet: 'Didier Banza', niveauAcces: 'ECOLE' },
+  DIRECTEUR_PRIMAIRE: { nomComplet: 'Mireille Tshiaba', niveauAcces: 'ECOLE' },
+  DIRECTEUR_MATERNELLE: { nomComplet: 'Aline Mbayo', niveauAcces: 'ECOLE' },
+  PARENT: { nomComplet: 'Aline Mwepu', niveauAcces: 'ECOLE' },
+  COMPTABLE: { nomComplet: 'Comptable Demo', niveauAcces: 'ECOLE' },
+};
 
 class TenantContextAuthAdapter {
   private readonly securityTenantIsolationService = new SecurityTenantIsolationService();
@@ -104,6 +166,7 @@ class TenantContextAuthAdapter {
 
 interface CompositionRoutesAuth {
   dependancesRoutes: Parameters<typeof creerRoutesAuth>[0];
+  loginUseCase: LoginUseCase;
 }
 
 function verifierMotDePasseSynchrone(motDePasseClair: string, motDePasseHash: string): boolean {
@@ -129,6 +192,12 @@ function genererJwtSynchrone(payload: Record<string, unknown>): string {
 
 function genererRefreshTokenSynchrone(): string {
   return randomBytes(32).toString('hex');
+}
+
+function hacherMotDePasseSynchrone(motDePasseClair: string): string {
+  const sel = randomBytes(16).toString('hex');
+  const hash = scryptSync(String(motDePasseClair || ''), sel, 64, { N: 16384 }).toString('hex');
+  return `scrypt:${sel}:${hash}`;
 }
 
 function hacherRefreshTokenSynchrone(refreshToken: string): string {
@@ -279,6 +348,7 @@ function composerRoutesAuth(): CompositionRoutesAuth {
   const authentificationOfflineUseCase = new AuthentificationOfflineUseCase(authApplicationService);
 
   return {
+    loginUseCase,
     dependancesRoutes: {
       loginController: new LoginController(loginUseCase),
       logoutController: new LogoutController(logoutUseCase),
@@ -314,6 +384,123 @@ function composerRoutesAuth(): CompositionRoutesAuth {
   };
 }
 
+function lireChaineOptionnelleDepuisObjet(
+  donnees: Record<string, unknown>,
+  nomChamp: string,
+): string | undefined {
+  const valeur = donnees[nomChamp];
+  if (typeof valeur !== 'string') {
+    return undefined;
+  }
+
+  const nettoyee = valeur.trim();
+  return nettoyee.length > 0 ? nettoyee : undefined;
+}
+
+function lireRequeteSessionDeveloppeur(corps: unknown): RequeteSessionDeveloppeur {
+  if (typeof corps !== 'object' || corps === null || Array.isArray(corps)) {
+    throw new Error('Le corps de session developpeur est invalide.');
+  }
+
+  const donnees = corps as Record<string, unknown>;
+  const actorCode = lireChaineOptionnelleDepuisObjet(donnees, 'actorCode');
+  if (!actorCode || !(actorCode in profilsSessionDeveloppeur)) {
+    throw new Error("Le champ actorCode est obligatoire pour ouvrir une session developpeur.");
+  }
+
+  return {
+    actorCode: actorCode as CodeActeurDeveloppement,
+    organisationActiveId: lireChaineOptionnelleDepuisObjet(donnees, 'organisationActiveId'),
+    ecoleActiveId: lireChaineOptionnelleDepuisObjet(donnees, 'ecoleActiveId'),
+    deviceId: lireChaineOptionnelleDepuisObjet(donnees, 'deviceId'),
+  };
+}
+
+async function assurerRoleDeveloppeur(
+  roleRepository: PostgresRoleRepository,
+  actorCode: CodeActeurDeveloppement,
+): Promise<Role> {
+  const roleExistant = await roleRepository.trouverParCode(actorCode);
+  if (roleExistant !== null) {
+    return roleExistant;
+  }
+
+  const profil = profilsSessionDeveloppeur[actorCode];
+  const role = Role.creer({
+    codeRole: actorCode,
+    nomRole: profil.nomComplet,
+    niveauAcces: profil.niveauAcces,
+    estSysteme: true,
+    creePar: 'dev-session',
+    permissions: [...PERMISSIONS_SECURITE],
+  });
+  await roleRepository.sauvegarder(role);
+  return role;
+}
+
+async function assurerUtilisateurDeveloppeur(
+  depotUtilisateurAuth: PostgresUtilisateurAuthRepository,
+  actorCode: CodeActeurDeveloppement,
+): Promise<UtilisateurAuth> {
+  const email = `dev.${actorCode.toLowerCase()}@educsync.local`;
+  const utilisateurExistant = await depotUtilisateurAuth.trouverParEmail(email);
+  if (utilisateurExistant !== null) {
+    utilisateurExistant.activerCompte();
+    await depotUtilisateurAuth.sauvegarder(utilisateurExistant);
+    return utilisateurExistant;
+  }
+
+  const profil = profilsSessionDeveloppeur[actorCode];
+  const utilisateur = UtilisateurAuth.creer({
+    nomComplet: profil.nomComplet,
+    email,
+    motDePasseHash: hacherMotDePasseSynchrone(MOT_DE_PASSE_SESSION_DEV),
+    authOfflineAutorisee: true,
+  });
+  await depotUtilisateurAuth.sauvegarder(utilisateur);
+  return utilisateur;
+}
+
+async function assurerAffectationDeveloppeur(
+  affectationUtilisateurRepository: PostgresAffectationUtilisateurRepository,
+  utilisateur: UtilisateurAuth,
+  role: Role,
+  params: RequeteSessionDeveloppeur,
+): Promise<void> {
+  const organisationId = params.organisationActiveId ?? ORGANISATION_DEV_PAR_DEFAUT;
+  const ecoleId = params.ecoleActiveId ?? ECOLE_DEV_PAR_DEFAUT;
+  const affectations = await affectationUtilisateurRepository.listerActivesParUtilisateur(
+    utilisateur.obtenirId(),
+  );
+  const affectationExistante = affectations.find((affectation) =>
+    affectation.obtenirIdRole() === role.obtenirId()
+    && affectation.obtenirIdOrganisation() === organisationId
+    && affectation.obtenirIdEcole() === ecoleId,
+  );
+
+  if (affectationExistante) {
+    return;
+  }
+
+  const niveauAcces = role.obtenirNiveauAcces().obtenirValeur();
+  const affectation = AffectationUtilisateur.creer({
+    idUtilisateur: utilisateur.obtenirId(),
+    idRole: role.obtenirId(),
+    niveauAcces,
+    idOrganisation: organisationId,
+    idEcole: ecoleId,
+    creePar: 'dev-session',
+  });
+
+  if (niveauAcces === 'PLATEFORME') {
+    affectation.ajouterScope('PLATEFORME', 'system');
+  }
+
+  affectation.ajouterScope('ORGANISATION', organisationId);
+  affectation.ajouterScope('ECOLE', ecoleId);
+  await affectationUtilisateurRepository.sauvegarder(affectation);
+}
+
 type PluginRoutesAuth = FastifyPluginAsync & {
   nom: string;
   prefixe: string;
@@ -322,9 +509,59 @@ type PluginRoutesAuth = FastifyPluginAsync & {
 export const routeAuth: PluginRoutesAuth = Object.assign(
   async (serveur: Parameters<FastifyPluginAsync>[0]) => {
     const composition = composerRoutesAuth();
+    const depotUtilisateurAuth = new PostgresUtilisateurAuthRepository();
+    const affectationUtilisateurRepository = new PostgresAffectationUtilisateurRepository();
+    const roleRepository = new PostgresRoleRepository();
 
     await serveur.register(creerRoutesAuth(composition.dependancesRoutes), {
       prefix: routeAuth.prefixe,
+    });
+
+    serveur.post('/api/auth/dev/session', async (requete, reponse) => {
+      if (configurationApplication.environnement !== 'development') {
+        return reponse.code(404).send({
+          success: false,
+          message: 'Route indisponible hors developpement.',
+        });
+      }
+
+      try {
+        const payload = lireRequeteSessionDeveloppeur(requete.body);
+        const utilisateur = await assurerUtilisateurDeveloppeur(
+          depotUtilisateurAuth,
+          payload.actorCode,
+        );
+        const role = await assurerRoleDeveloppeur(roleRepository, payload.actorCode);
+        await assurerAffectationDeveloppeur(
+          affectationUtilisateurRepository,
+          utilisateur,
+          role,
+          payload,
+        );
+
+        const login = await composition.loginUseCase.executer({
+          email: utilisateur.obtenirEmail().obtenirValeur(),
+          motDePasse: MOT_DE_PASSE_SESSION_DEV,
+          organisationActiveId: payload.organisationActiveId ?? ORGANISATION_DEV_PAR_DEFAUT,
+          ecoleActiveId: payload.ecoleActiveId ?? ECOLE_DEV_PAR_DEFAUT,
+          deviceId: payload.deviceId,
+        });
+
+        return reponse.code(200).send(login);
+      } catch (erreur) {
+        serveur.log.warn(
+          {
+            erreur: erreur instanceof Error ? erreur.message : 'dev_session_failed',
+          },
+          'Echec ouverture session developpeur.',
+        );
+        return reponse.code(400).send({
+          success: false,
+          message: erreur instanceof Error
+            ? erreur.message
+            : 'Impossible d ouvrir la session developpeur.',
+        });
+      }
     });
 
     serveur.log.info(

@@ -8,6 +8,7 @@ export class ReferentielProgrammeApplicationMapper {
   // Cette methode projette un referentiel programme de domaine vers un contrat de sortie stable.
   public static versSortie(referentielProgramme: ReferentielProgramme): ReferentielProgrammeSortie {
     const versionProjection = this.selectionnerVersionProjection(referentielProgramme);
+    const versionsTriees = this.trierVersions(referentielProgramme.obtenirVersionsReferentielProgramme());
 
     return {
       id: referentielProgramme.obtenirId().obtenirValeur(),
@@ -16,6 +17,8 @@ export class ReferentielProgrammeApplicationMapper {
       versionProjectionnee: versionProjection === null
         ? null
         : VersionReferentielProgrammeApplicationMapper.versSortie(versionProjection),
+      versions: versionsTriees.map((version) =>
+        VersionReferentielProgrammeApplicationMapper.versSortie(version)),
       actif: referentielProgramme.estActif(),
       creeLe: referentielProgramme.obtenirCreeLe().toISOString(),
       version: referentielProgramme.obtenirVersion(),
@@ -41,5 +44,15 @@ export class ReferentielProgrammeApplicationMapper {
       seconde.obtenirDatePublication().getTime() - premiere.obtenirDatePublication().getTime());
 
     return versionsTriees[0] as VersionReferentielProgramme;
+  }
+
+  private static trierVersions(
+    versions: VersionReferentielProgramme[],
+  ): VersionReferentielProgramme[] {
+    return [...versions].sort((premiere, seconde) =>
+      Number(seconde.estActive()) - Number(premiere.estActive())
+      || Number(seconde.estPubliee()) - Number(premiere.estPubliee())
+      || seconde.obtenirDatePublication().getTime() - premiere.obtenirDatePublication().getTime()
+      || seconde.obtenirCreeLe().getTime() - premiere.obtenirCreeLe().getTime());
   }
 }

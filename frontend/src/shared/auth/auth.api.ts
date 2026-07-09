@@ -13,6 +13,21 @@ export interface BackendContexteActifApiData {
   ecoleActiveId?: string;
 }
 
+export interface BackendDeveloperSessionApiData {
+  accessToken: string;
+  refreshToken: string;
+  sessionId: string;
+  utilisateur: {
+    idUtilisateur: string;
+    nomComplet: string;
+    email: string;
+    etatCompte: string;
+  };
+  organisationActiveId?: string;
+  ecoleActiveId?: string;
+  expireLe?: string;
+}
+
 function construireEntetesAuth(params: {
   accessToken: string;
   sessionId: string;
@@ -30,6 +45,19 @@ function construireEntetesAuth(params: {
 }
 
 export const authApi = {
+  async ouvrirSessionDeveloppeur(params: {
+    actorCode: string;
+    organisationActiveId?: string;
+    ecoleActiveId?: string;
+    deviceId?: string;
+  }): Promise<BackendDeveloperSessionApiData> {
+    return clientApi.envoyer<BackendDeveloperSessionApiData>({
+      chemin: '/api/auth/dev/session',
+      methode: 'POST',
+      corps: params,
+    });
+  },
+
   async obtenirSession(params: {
     accessToken: string;
     sessionId: string;

@@ -4,6 +4,8 @@ import type { FrontendActorCode, FrontendActorProfile, FrontendGovernanceLevel }
 
 export type { FrontendActorCode, FrontendActorProfile, FrontendGovernanceLevel } from '../doctrine/doctrine.types';
 
+const DEV_SESSION_STORAGE_KEY = 'educsync.frontend.dev-session';
+
 export interface FrontendSessionState {
   isAuthenticated: boolean;
   actorCode: FrontendActorCode;
@@ -21,7 +23,37 @@ function findProfile(actorCode: FrontendActorCode): FrontendActorProfile {
   return actorProfiles.find((profile) => profile.code === actorCode) ?? actorProfiles[0];
 }
 
-const initialProfile = findProfile('ADMINISTRATEUR_ECOLE');
+function lireSessionDevPersisted(): { actorCode?: FrontendActorCode } | null {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  const brut = window.localStorage.getItem(DEV_SESSION_STORAGE_KEY);
+  if (!brut) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(brut) as { actorCode?: FrontendActorCode };
+  } catch {
+    return null;
+  }
+}
+
+function persisterSessionDev(actorCode: FrontendActorCode): void {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  window.localStorage.setItem(
+    DEV_SESSION_STORAGE_KEY,
+    JSON.stringify({ actorCode }),
+  );
+}
+
+const initialProfile = findProfile(
+  lireSessionDevPersisted()?.actorCode ?? 'ADMINISTRATEUR_ECOLE',
+);
 
 const state = reactive<FrontendSessionState>({
   isAuthenticated: true,
@@ -54,6 +86,7 @@ export const sessionStore = {
     state.actorLabel = profile.label;
     state.displayName = profile.displayName;
     state.userId = `usr-${profile.code.toLowerCase()}`;
+    persisterSessionDev(profile.code);
   },
   setTransportSession(params: { accessToken: string; sessionId: string }): void {
     state.accessToken = params.accessToken;

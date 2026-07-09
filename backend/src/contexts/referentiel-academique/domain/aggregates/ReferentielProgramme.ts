@@ -1,6 +1,10 @@
 import { RacineAgregat } from '../../../../shared/domain/AggregateRoot';
 import { ValidationError } from '../../../../shared/exceptions/ValidationError';
+import { LigneReferentielProgramme } from '../entities/LigneReferentielProgramme';
 import { ClasseAcademiqueId } from '../value-objects/ClasseAcademiqueId';
+import { LigneReferentielProgrammeId } from '../value-objects/LigneReferentielProgrammeId';
+import { SourceLigneProgramme } from '../value-objects/SourceLigneProgramme';
+import { SourceReferentiel } from '../value-objects/SourceReferentiel';
 import { ReferentielProgrammeId } from '../value-objects/ReferentielProgrammeId';
 import { TypeStructureEvaluation } from '../value-objects/TypeStructureEvaluation';
 import { VersionReferentielProgrammeId } from '../value-objects/VersionReferentielProgrammeId';
@@ -185,6 +189,55 @@ export class ReferentielProgramme extends RacineAgregat<ReferentielProgrammeId> 
     this.incrementerVersionMetier();
   }
 
+  // Cette methode cree une nouvelle version de travail a partir d'une version existante.
+  public creerVersionTravailDepuisVersion(
+    idVersionSource: VersionReferentielProgrammeId,
+    donneesNouvelleVersion: {
+      idVersionReferentielProgramme?: VersionReferentielProgrammeId;
+      codeVersion: string;
+      anneeReference: string;
+      datePublication: Date;
+      sourceImport?: SourceReferentiel;
+      motifPublication?: string;
+      creeLe?: Date;
+    },
+  ): VersionReferentielProgramme {
+    const versionSource = this.trouverVersionParId(idVersionSource);
+
+    if (versionSource === null) {
+      throw new ValidationError(
+        'La version source doit appartenir au referentiel.',
+        'REFERENTIEL_PROGRAMME_VERSION_SOURCE_INTROUVABLE',
+      );
+    }
+
+    if (this.trouverVersionParCode(donneesNouvelleVersion.codeVersion) !== null) {
+      throw new ValidationError(
+        'Le code de la nouvelle version de travail existe deja dans ce referentiel.',
+        'REFERENTIEL_PROGRAMME_CODE_VERSION_DUPLIQUE',
+      );
+    }
+
+    const versionTravail = new VersionReferentielProgramme(
+      donneesNouvelleVersion.idVersionReferentielProgramme ?? new VersionReferentielProgrammeId(),
+      donneesNouvelleVersion.codeVersion,
+      donneesNouvelleVersion.anneeReference,
+      donneesNouvelleVersion.datePublication,
+      donneesNouvelleVersion.sourceImport ?? versionSource.obtenirSourceImport(),
+      donneesNouvelleVersion.motifPublication,
+      false,
+      donneesNouvelleVersion.creeLe ?? new Date(),
+      versionSource.obtenirLignes().map((ligne) => this.clonerLignePourVersionTravail(ligne)),
+      false,
+    );
+
+    versionTravail.verifierCoherenceDesLignes(this.typeStructureEvaluation);
+    this.versionsReferentielProgramme = [...this.versionsReferentielProgramme, versionTravail];
+    this.incrementerVersionMetier();
+
+    return versionTravail;
+  }
+
   // Cette methode active le referentiel racine.
   public activer(): void {
     this.actif = true;
@@ -256,6 +309,23 @@ export class ReferentielProgramme extends RacineAgregat<ReferentielProgrammeId> 
       versionReferentielProgramme.obtenirCreeLe(),
       versionReferentielProgramme.obtenirLignes(),
       versionReferentielProgramme.estPubliee(),
+    );
+  }
+
+  private clonerLignePourVersionTravail(
+    ligne: LigneReferentielProgramme,
+  ): LigneReferentielProgramme {
+    return new LigneReferentielProgramme(
+      new LigneReferentielProgrammeId(),
+      ligne.obtenirReferentielCoursId(),
+      ligne.obtenirOrdreAffichage(),
+      ligne.estObligatoire(),
+      ligne.aExamenAssocie(),
+      ligne.estCalculableDansProgramme(),
+      SourceLigneProgramme.HERITE_ANCIENNE_VERSION,
+      ligne.obtenirPonderation(),
+      ligne.obtenirDomaine(),
+      ligne.obtenirSousDomaine(),
     );
   }
 

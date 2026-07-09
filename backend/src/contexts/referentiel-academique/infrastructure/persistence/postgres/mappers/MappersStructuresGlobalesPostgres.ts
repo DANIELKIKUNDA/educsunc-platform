@@ -31,6 +31,11 @@ export interface PersistanceOrganisationPostgres {
   description?: string | null;
   cree_le: ValeurDatePostgres;
   cree_par?: string | null;
+  promoteur_principal_utilisateur_id?: string | null;
+  promoteur_principal_nom_complet?: string | null;
+  promoteur_principal_email?: string | null;
+  promoteur_principal_telephone?: string | null;
+  promoteur_principal_identifiant?: string | null;
   modifie_le?: ValeurDatePostgres | null;
   modifie_par?: string | null;
   version: number;
@@ -47,6 +52,11 @@ export class MapperOrganisationPostgres extends BaseMapperPostgresReferentielAca
       ligne.type_organisation,
       ligne.description ?? undefined,
       ligne.cree_par ?? undefined,
+      ligne.promoteur_principal_utilisateur_id ?? undefined,
+      ligne.promoteur_principal_nom_complet ?? undefined,
+      ligne.promoteur_principal_email ?? undefined,
+      ligne.promoteur_principal_telephone ?? undefined,
+      ligne.promoteur_principal_identifiant ?? undefined,
       ligne.actif,
       this.versDate(ligne.cree_le, 'cree_le'),
       this.versDateOptionnelle(ligne.modifie_le, 'modifie_le'),
@@ -66,6 +76,16 @@ export class MapperOrganisationPostgres extends BaseMapperPostgresReferentielAca
       description: organisation.obtenirDescription() ?? null,
       cree_le: this.versDatePersistance(organisation.obtenirCreeLe()),
       cree_par: organisation.obtenirCreePar() ?? null,
+      promoteur_principal_utilisateur_id:
+        organisation.obtenirPromoteurPrincipalUtilisateurId() ?? null,
+      promoteur_principal_nom_complet:
+        organisation.obtenirPromoteurPrincipalNomComplet() ?? null,
+      promoteur_principal_email:
+        organisation.obtenirPromoteurPrincipalEmail() ?? null,
+      promoteur_principal_telephone:
+        organisation.obtenirPromoteurPrincipalTelephone() ?? null,
+      promoteur_principal_identifiant:
+        organisation.obtenirPromoteurPrincipalIdentifiant() ?? null,
       modifie_le: this.versDatePersistanceOptionnelle(organisation.obtenirModifieLe()) ?? null,
       modifie_par: organisation.obtenirModifiePar() ?? null,
       version: organisation.obtenirVersion(),

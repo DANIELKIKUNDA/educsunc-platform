@@ -6,6 +6,10 @@ import { OrganisationId } from '../../../domain/value-objects/OrganisationId';
 import { DesactiverOrganisationEntree } from '../../dto/input/DesactiverOrganisationEntree';
 import { OrganisationSortie } from '../../dto/output/OrganisationSortie';
 import { OrganisationApplicationMapper } from '../../mappers/OrganisationApplicationMapper';
+import {
+  ServiceJournalAuditReferentielAcademique,
+  ServiceJournalAuditReferentielAcademiqueSansEffet,
+} from '../../services/ServiceJournalAuditReferentielAcademique';
 
 // Cette interface represente la sortie du cas d'usage DesactiverOrganisation.
 export interface SortieDesactiverOrganisation {
@@ -16,14 +20,18 @@ export interface SortieDesactiverOrganisation {
 export class DesactiverOrganisation implements UseCase<DesactiverOrganisationEntree, SortieDesactiverOrganisation> {
   private readonly depotOrganisation: DepotOrganisation;
   private readonly policyAudit: PolicyAudit;
+  private readonly serviceJournalAudit: ServiceJournalAuditReferentielAcademique;
 
   // Ce constructeur injecte les dependances applicatives necessaires a la desactivation d'une organisation.
   constructor(
     depotOrganisation: DepotOrganisation,
     policyAudit: PolicyAudit = new PolicyAudit(),
+    serviceJournalAudit: ServiceJournalAuditReferentielAcademique =
+      new ServiceJournalAuditReferentielAcademiqueSansEffet(),
   ) {
     this.depotOrganisation = depotOrganisation;
     this.policyAudit = policyAudit;
+    this.serviceJournalAudit = serviceJournalAudit;
   }
 
   // Cette methode desactive une organisation existante si elle est encore active.
@@ -50,6 +58,18 @@ export class DesactiverOrganisation implements UseCase<DesactiverOrganisationEnt
     if (organisation.estActif()) {
       organisation.desactiver(entreeValidee.modifiePar);
       await this.depotOrganisation.sauvegarder(organisation);
+      await this.serviceJournalAudit.journaliser({
+        action: 'DESACTIVER_ORGANISATION',
+        acteur: entreeValidee.modifiePar,
+        typeRessource: 'ORGANISATION',
+        idRessource: organisation.obtenirId().obtenirValeur(),
+        idOrganisation: organisation.obtenirId().obtenirValeur(),
+        details: {
+          nom: organisation.obtenirNom(),
+          actif: organisation.estActif(),
+        },
+        creeLe: horodatageModification,
+      });
     }
 
     return {

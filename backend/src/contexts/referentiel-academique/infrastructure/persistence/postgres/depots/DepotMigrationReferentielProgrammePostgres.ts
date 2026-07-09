@@ -3,6 +3,8 @@ import { MigrationReferentielProgramme } from '../../../../domain/aggregates/Mig
 import { DepotMigrationReferentielProgramme as ContratDepotMigrationReferentielProgramme } from '../../../../domain/repositories/DepotMigrationReferentielProgramme';
 import { MigrationReferentielProgrammeId } from '../../../../domain/value-objects/MigrationReferentielProgrammeId';
 import { ProgrammeNiveauId } from '../../../../domain/value-objects/ProgrammeNiveauId';
+import { StatutMigrationReferentiel } from '../../../../domain/value-objects/StatutMigrationReferentiel';
+import { VersionReferentielProgrammeId } from '../../../../domain/value-objects/VersionReferentielProgrammeId';
 import {
   MapperMigrationReferentielProgrammePostgres,
   PersistanceLigneDiffMigrationPostgres,
@@ -117,6 +119,35 @@ export class DepotMigrationReferentielProgrammePostgres
         );
       },
     );
+  }
+
+  // Cette methode detecte si une version officielle est deja engagee dans une migration non annulee.
+  public async estVersionEngagee(
+    idVersionReferentielProgramme: VersionReferentielProgrammeId,
+  ): Promise<boolean> {
+    const clauseIsolation = this.construireClauseIsolationLectureParEcole(
+      'programme_niveau.id_ecole',
+      3,
+    );
+    const ligne = await this.executerRequeteUnique<{ present: number }>(
+      [
+        'SELECT 1 AS present',
+        'FROM migrations_referentiel_programme',
+        'INNER JOIN programmes_niveau programme_niveau',
+        'ON programme_niveau.id = migrations_referentiel_programme.id_programme_niveau',
+        'WHERE (ancienne_version_referentiel = $1 OR nouvelle_version_referentiel = $1)',
+        'AND statut <> $2',
+        clauseIsolation.clauseSql,
+        'LIMIT 1',
+      ].join(' '),
+      [
+        idVersionReferentielProgramme.obtenirValeur(),
+        StatutMigrationReferentiel.ANNULEE,
+        ...clauseIsolation.parametres,
+      ],
+    );
+
+    return ligne !== null;
   }
 
   // Cette methode persiste l'etat courant d'une migration de referentiel.

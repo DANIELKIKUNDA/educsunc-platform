@@ -69,6 +69,19 @@ export interface OptionEtudeItem {
   modifieLe?: string;
 }
 
+export interface ReferentielCoursItem {
+  id: string;
+  code: string;
+  libelle: string;
+  actif: boolean;
+  creeLe: string;
+  version: number;
+  abreviation?: string;
+  domaine?: string;
+  sousDomaine?: string;
+  modifieLe?: string;
+}
+
 export interface LigneReferentielProgrammeItem {
   id: string;
   idReferentielCours: string;
@@ -100,20 +113,76 @@ export interface ReferentielProgrammeItem {
   idClasseAcademique: string;
   typeStructureEvaluation: string;
   versionProjectionnee: VersionReferentielProgrammeItem | null;
+  versions: VersionReferentielProgrammeItem[];
   actif: boolean;
   creeLe: string;
   version: number;
 }
 
+export interface CreerVersionTravailReferentielRequest {
+  idVersionSource: string;
+  codeVersion: string;
+  anneeReference: string;
+  datePublication: string;
+  sourceImport?: string;
+  motifPublication?: string;
+}
+
+export interface AjouterLigneVersionReferentielRequest {
+  idReferentielCours: string;
+  ordreAffichage: number;
+  obligatoire: boolean;
+  aExamen: boolean;
+  estCalculable: boolean;
+  sourceLigne?: string;
+  ponderation: Record<string, number>;
+  domaine?: string;
+  sousDomaine?: string;
+}
+
+export interface ModifierLigneVersionReferentielRequest {
+  ordreAffichage?: number;
+  obligatoire?: boolean;
+  aExamen?: boolean;
+  estCalculable?: boolean;
+  ponderation?: Record<string, number>;
+  domaine?: string;
+  sousDomaine?: string;
+}
+
+export interface ReordonnerLignesVersionReferentielRequest {
+  lignes: Array<{
+    idLigneReferentielProgramme: string;
+    ordreAffichage: number;
+  }>;
+}
+
+export interface ModifierPonderationLigneVersionReferentielRequest {
+  ponderation: Record<string, number>;
+}
+
+export interface VerificationCoherenceVersionReferentielItem {
+  estCoherente: boolean;
+  erreurs: string[];
+  avertissements: string[];
+  versionReferentielProgramme: VersionReferentielProgrammeItem;
+}
+
 export interface RapportComparaisonReferentielItem {
-  [key: string]: unknown;
+  versionReferentielSource: string;
+  versionReferentielCible: string;
+  differences: LigneDiffMigrationItem[];
 }
 
 export interface LigneDiffMigrationItem {
+  codeCours?: string;
   idReferentielCours?: string;
   typeDiff?: string;
   anciennePonderation?: Record<string, number>;
   nouvellePonderation?: Record<string, number>;
+  ancienOrdre?: number;
+  nouvelOrdre?: number;
+  commentaire?: string;
   [key: string]: unknown;
 }
 

@@ -34,10 +34,10 @@
               <small>{{ entry.description }}</small>
             </span>
           </span>
-          <ChevronDown v-if="!compact" class="erp-sidebar__chevron" />
+          <ChevronDown v-if="!compact && entry.children.length > 0" class="erp-sidebar__chevron" />
         </button>
 
-        <div v-if="!compact && openCode === entry.code" class="erp-sidebar__children">
+        <div v-if="!compact && entry.children.length > 0 && openCode === entry.code" class="erp-sidebar__children">
           <RouterLink
             v-for="child in entry.children"
             :key="child.code"

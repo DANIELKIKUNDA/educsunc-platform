@@ -24,6 +24,7 @@ Ce document doit etre lu comme la declinaison concrete des contrats d'ecran sur 
 
 Ce document s'appuie exclusivement sur :
 
+- [DOCTRINE_REFERENTIEL_OFFICIEL.md](/C:/Users/MON%20PC/Documents/EducSyn/docs/architecture/DOCTRINE_REFERENTIEL_OFFICIEL.md)
 - [06-workflows-academiques.md](/C:/Users/MON%20PC/Documents/EducSyn/docs/frontend/06-workflows-academiques.md)
 - [14-cartographie-finale-workflows.md](/C:/Users/MON%20PC/Documents/EducSyn/docs/frontend/14-cartographie-finale-workflows.md)
 - [16-navigation-par-acteur.md](/C:/Users/MON%20PC/Documents/EducSyn/docs/frontend/16-navigation-par-acteur.md)
@@ -34,6 +35,11 @@ Ce document s'appuie exclusivement sur :
 - [21-contrats-ecran.md](/C:/Users/MON%20PC/Documents/EducSyn/docs/frontend/21-contrats-ecran.md)
 
 Le backend reste la source ultime de verite.
+
+Les contrats d'ecran academiques doivent aussi etre lus avec la separation officielle suivante :
+
+- `Plateforme` gouverne le referentiel officiel
+- `Academique local ecole` exploite ce referentiel sans le muter comme officiel
 
 ## Regles De Lecture
 

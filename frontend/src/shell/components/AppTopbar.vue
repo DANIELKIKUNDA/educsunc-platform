@@ -41,6 +41,18 @@
     <ContextSwitcher v-if="!mobile" class="erp-topbar__context" />
 
     <div v-if="!mobile" class="erp-topbar__signals">
+      <span class="erp-shell-badge erp-shell-badge--level">
+        {{ activeLevelLabel }}
+      </span>
+      <span v-if="context.governanceLevel !== 'PLATEFORME'" class="erp-shell-badge erp-shell-badge--scope">
+        {{ context.organizationName }}
+      </span>
+      <span v-if="context.governanceLevel === 'ECOLE'" class="erp-shell-badge erp-shell-badge--scope">
+        {{ context.schoolName }}
+      </span>
+      <span v-if="context.governanceLevel === 'ECOLE'" class="erp-shell-badge erp-shell-badge--scope">
+        {{ context.schoolYearLabel }}
+      </span>
       <span v-if="session.authMode === 'dev'" class="erp-shell-badge erp-shell-badge--dev-topbar">
         Mode dev
       </span>
@@ -101,6 +113,11 @@ const mobileContextLabel = computed(() => {
   if (context.governanceLevel === 'PLATEFORME') return 'Plateforme';
   if (context.governanceLevel === 'ORGANISATION') return context.organizationName;
   return `${context.schoolName} - ${context.schoolYearLabel}`;
+});
+const activeLevelLabel = computed(() => {
+  if (context.governanceLevel === 'PLATEFORME') return 'Plateforme';
+  if (context.governanceLevel === 'ORGANISATION') return 'Organisation';
+  return `Ecole ${context.sectionName}`;
 });
 
 const breadcrumb = computed(() => {

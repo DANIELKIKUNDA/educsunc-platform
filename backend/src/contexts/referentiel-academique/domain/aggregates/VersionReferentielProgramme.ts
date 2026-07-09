@@ -2,6 +2,8 @@ import { Entite } from '../../../../shared/domain/Entity';
 import { ValidationError } from '../../../../shared/exceptions/ValidationError';
 import { LigneDiffMigration } from '../entities/LigneDiffMigration';
 import { LigneReferentielProgramme } from '../entities/LigneReferentielProgramme';
+import { LigneReferentielProgrammeId } from '../value-objects/LigneReferentielProgrammeId';
+import { PonderationEvaluation } from '../value-objects/PonderationEvaluation';
 import { SourceReferentiel } from '../value-objects/SourceReferentiel';
 import { TypeDiffReferentiel } from '../value-objects/TypeDiffReferentiel';
 import { TypeStructureEvaluation } from '../value-objects/TypeStructureEvaluation';
@@ -89,6 +91,11 @@ export class VersionReferentielProgramme extends Entite<VersionReferentielProgra
   // Cette methode retourne les lignes officielles portees par cette version.
   public obtenirLignes(): LigneReferentielProgramme[] {
     return [...this.lignes];
+  }
+
+  // Cette methode indique si la version peut encore etre editee.
+  public estModifiable(): boolean {
+    return !this.publiee && !this.active;
   }
 
   // Cette methode consacre la version comme publication officielle complete.
@@ -200,6 +207,120 @@ export class VersionReferentielProgramme extends Entite<VersionReferentielProgra
     return differences;
   }
 
+  // Cette methode ajoute une ligne a une version de travail.
+  public ajouterLigne(
+    ligne: LigneReferentielProgramme,
+    typeStructureEvaluation: TypeStructureEvaluation,
+  ): void {
+    this.verifierVersionModifiable();
+
+    if (!(ligne instanceof LigneReferentielProgramme)) {
+      throw new ValidationError(
+        'La ligne a ajouter doit etre valide.',
+        'VERSION_REFERENTIEL_LIGNE_INVALIDE',
+      );
+    }
+
+    this.lignes = [...this.lignes, ligne];
+    this.verifierCoherenceDesLignes(typeStructureEvaluation);
+  }
+
+  // Cette methode modifie une ligne existante sans casser son identite.
+  public modifierLigne(
+    idLigneReferentielProgramme: LigneReferentielProgrammeId,
+    changements: {
+      ordreAffichage?: number;
+      obligatoire?: boolean;
+      aExamen?: boolean;
+      estCalculable?: boolean;
+      ponderation?: PonderationEvaluation;
+      domaine?: string;
+      sousDomaine?: string;
+    },
+    typeStructureEvaluation: TypeStructureEvaluation,
+  ): void {
+    this.verifierVersionModifiable();
+    const ligneExistante = this.trouverLigneOuLever(idLigneReferentielProgramme);
+
+    this.lignes = this.lignes.map((ligne) => {
+      if (!ligne.obtenirId().estEgal(idLigneReferentielProgramme)) {
+        return ligne;
+      }
+
+      return this.reconstruireLigne(ligneExistante, changements);
+    });
+    this.verifierCoherenceDesLignes(typeStructureEvaluation);
+  }
+
+  // Cette methode retire une ligne d'une version de travail.
+  public retirerLigne(
+    idLigneReferentielProgramme: LigneReferentielProgrammeId,
+    typeStructureEvaluation: TypeStructureEvaluation,
+  ): void {
+    this.verifierVersionModifiable();
+    this.trouverLigneOuLever(idLigneReferentielProgramme);
+
+    this.lignes = this.lignes.filter((ligne) =>
+      !ligne.obtenirId().estEgal(idLigneReferentielProgramme));
+    this.verifierCoherenceDesLignes(typeStructureEvaluation);
+  }
+
+  // Cette methode reordonne plusieurs lignes en une seule mutation coherente.
+  public reordonnerLignes(
+    reordonnancement: Array<{
+      idLigne: LigneReferentielProgrammeId;
+      ordreAffichage: number;
+    }>,
+    typeStructureEvaluation: TypeStructureEvaluation,
+  ): void {
+    this.verifierVersionModifiable();
+
+    if (!Array.isArray(reordonnancement) || reordonnancement.length === 0) {
+      throw new ValidationError(
+        'Le reordonnancement des lignes doit contenir au moins une ligne cible.',
+        'VERSION_REFERENTIEL_REORDONNANCEMENT_INVALIDE',
+      );
+    }
+
+    const ordresParLigne = new Map<string, number>();
+
+    for (const element of reordonnancement) {
+      if (!(element.idLigne instanceof LigneReferentielProgrammeId)) {
+        throw new ValidationError(
+          'Chaque ligne reordonnee doit avoir un identifiant valide.',
+          'VERSION_REFERENTIEL_REORDONNANCEMENT_INVALIDE',
+        );
+      }
+
+      this.trouverLigneOuLever(element.idLigne);
+      ordresParLigne.set(element.idLigne.obtenirValeur(), element.ordreAffichage);
+    }
+
+    this.lignes = this.lignes.map((ligne) => {
+      const prochainOrdre = ordresParLigne.get(ligne.obtenirId().obtenirValeur());
+
+      if (prochainOrdre === undefined) {
+        return ligne;
+      }
+
+      return this.reconstruireLigne(ligne, { ordreAffichage: prochainOrdre });
+    });
+    this.verifierCoherenceDesLignes(typeStructureEvaluation);
+  }
+
+  // Cette methode remplace la ponderation d'une ligne de travail.
+  public modifierPonderationLigne(
+    idLigneReferentielProgramme: LigneReferentielProgrammeId,
+    ponderation: PonderationEvaluation,
+    typeStructureEvaluation: TypeStructureEvaluation,
+  ): void {
+    this.modifierLigne(
+      idLigneReferentielProgramme,
+      { ponderation },
+      typeStructureEvaluation,
+    );
+  }
+
   // Cette methode verifie les invariants de lignes pour une structure d'evaluation donnee.
   public verifierCoherenceDesLignes(typeStructureEvaluation: TypeStructureEvaluation): void {
     const coursRencontres = new Set<string>();
@@ -227,6 +348,73 @@ export class VersionReferentielProgramme extends Entite<VersionReferentielProgra
       ordresRencontres.add(ordre);
       ligne.verifierCompatibiliteAvecStructure(typeStructureEvaluation);
     }
+  }
+
+  private verifierVersionModifiable(): void {
+    if (this.active) {
+      throw new ValidationError(
+        'Cette version est active et ne peut plus etre modifiee.',
+        'VERSION_REFERENTIEL_ACTIVE_IMMUTABLE',
+      );
+    }
+
+    if (this.publiee) {
+      throw new ValidationError(
+        'Cette version est publiee et ne peut plus etre modifiee.',
+        'VERSION_REFERENTIEL_PUBLIEE_IMMUTABLE',
+      );
+    }
+  }
+
+  private trouverLigneOuLever(
+    idLigneReferentielProgramme: LigneReferentielProgrammeId,
+  ): LigneReferentielProgramme {
+    if (!(idLigneReferentielProgramme instanceof LigneReferentielProgrammeId)) {
+      throw new ValidationError(
+        "L'identifiant de ligne doit etre valide.",
+        'VERSION_REFERENTIEL_LIGNE_INVALIDE',
+      );
+    }
+
+    const ligne = this.lignes.find((ligneCourante) =>
+      ligneCourante.obtenirId().estEgal(idLigneReferentielProgramme));
+
+    if (ligne === undefined) {
+      throw new ValidationError(
+        'La ligne a modifier doit appartenir a la version.',
+        'VERSION_REFERENTIEL_LIGNE_INTROUVABLE',
+      );
+    }
+
+    return ligne;
+  }
+
+  private reconstruireLigne(
+    ligne: LigneReferentielProgramme,
+    changements: {
+      ordreAffichage?: number;
+      obligatoire?: boolean;
+      aExamen?: boolean;
+      estCalculable?: boolean;
+      ponderation?: PonderationEvaluation;
+      domaine?: string;
+      sousDomaine?: string;
+    },
+  ): LigneReferentielProgramme {
+    const aExamen = changements.aExamen ?? ligne.aExamenAssocie();
+
+    return new LigneReferentielProgramme(
+      ligne.obtenirId(),
+      ligne.obtenirReferentielCoursId(),
+      changements.ordreAffichage ?? ligne.obtenirOrdreAffichage(),
+      changements.obligatoire ?? ligne.estObligatoire(),
+      aExamen,
+      changements.estCalculable ?? ligne.estCalculableDansProgramme(),
+      ligne.obtenirSourceLigne(),
+      changements.ponderation ?? ligne.obtenirPonderation(),
+      changements.domaine ?? ligne.obtenirDomaine(),
+      changements.sousDomaine ?? ligne.obtenirSousDomaine(),
+    );
   }
 
   // Cette methode verifie que les donnees publiees restent completes et coherentes.

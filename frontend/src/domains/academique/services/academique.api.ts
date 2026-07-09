@@ -5,31 +5,18 @@ import {
 } from '../../../shared/session/api-context';
 import type {
   AcademiqueApiContext,
-  AnalyseMigrationRequest,
   AnneeScolaireItem,
-  ApplicationMigrationRequest,
-  ApplicationMigrationResultItem,
   BasculeAnneeScolaireResponse,
   CalendrierAcademiqueItem,
   ClassePedagogiqueItem,
-  ClasseAcademiqueItem,
-  ComparaisonReferentielRequest,
   DetailResponse,
   EtatLocalProgrammeNiveauItem,
   GarantieAnneeActiveResponse,
   ListResponse,
-  MigrationReferentielItem,
-  OptionEtudeItem,
   PreparationAnneeScolaireResponse,
   ProgrammeNiveauItem,
-  PublicationReferentielRequest,
-  RapportComparaisonReferentielItem,
-  RapportMigrationItem,
   ReglesFraisClasseItem,
-  ReferentielProgrammeItem,
   ResponsabiliteClassePedagogiqueItem,
-  SectionScolaireItem,
-  VersionReferentielProgrammeItem,
 } from '../models/academique.model';
 
 function construireQueryString(query: Record<string, string | number | undefined>): string {
@@ -80,134 +67,6 @@ export function lireContexteApiAcademique(): AcademiqueApiContext {
 }
 
 export const academiqueApi = {
-  async listerSectionsScolaires(contexte: AcademiqueApiContext) {
-    return clientApi.envoyer<ListResponse<SectionScolaireItem>>({
-      chemin: '/api/sections-scolaires',
-      entetes: construireEntetesContexte(contexte),
-    });
-  },
-
-  async listerClassesAcademiques(contexte: AcademiqueApiContext) {
-    return clientApi.envoyer<ListResponse<ClasseAcademiqueItem>>({
-      chemin: '/api/classes-academiques',
-      entetes: construireEntetesContexte(contexte),
-    });
-  },
-
-  async listerOptionsEtudes(contexte: AcademiqueApiContext) {
-    return clientApi.envoyer<ListResponse<OptionEtudeItem>>({
-      chemin: '/api/options-etudes',
-      entetes: construireEntetesContexte(contexte),
-    });
-  },
-
-  async listerReferentielsProgrammes(idClasseAcademique: string, contexte: AcademiqueApiContext) {
-    return clientApi.envoyer<ListResponse<ReferentielProgrammeItem>>({
-      chemin: `/api/referentiels/programmes${construireQueryString({ idClasseAcademique })}`,
-      entetes: construireEntetesContexte(contexte),
-    });
-  },
-
-  async consulterReferentielProgramme(idReferentielProgramme: string, contexte: AcademiqueApiContext) {
-    return clientApi.envoyer<DetailResponse<ReferentielProgrammeItem>>({
-      chemin: `/api/referentiels/programmes/${idReferentielProgramme}`,
-      entetes: construireEntetesContexte(contexte),
-    });
-  },
-
-  async publierVersionReferentiel(demande: PublicationReferentielRequest, contexte: AcademiqueApiContext) {
-    return clientApi.envoyer<DetailResponse<VersionReferentielProgrammeItem>>({
-      chemin: '/api/referentiels/versions',
-      methode: 'POST',
-      corps: demande,
-      entetes: construireEntetesMutation(contexte, 'publication-referentiel'),
-    });
-  },
-
-  async activerVersionReferentiel(idVersionReferentielProgramme: string, contexte: AcademiqueApiContext) {
-    return clientApi.envoyer<DetailResponse<VersionReferentielProgrammeItem>>({
-      chemin: `/api/referentiels/versions/${idVersionReferentielProgramme}/activer`,
-      methode: 'POST',
-      corps: {},
-      entetes: construireEntetesMutation(contexte, 'activation-referentiel'),
-    });
-  },
-
-  async importerReferentiel(
-    chemin: string,
-    corps: Record<string, unknown>,
-    contexte: AcademiqueApiContext,
-  ) {
-    return clientApi.envoyer<DetailResponse<Record<string, unknown>>>({
-      chemin,
-      methode: 'POST',
-      corps,
-      entetes: construireEntetesMutation(contexte, 'import-referentiel'),
-    });
-  },
-
-  async comparerVersionsReferentiel(demande: ComparaisonReferentielRequest, contexte: AcademiqueApiContext) {
-    return clientApi.envoyer<DetailResponse<RapportComparaisonReferentielItem>>({
-      chemin: '/api/referentiels/comparer',
-      methode: 'POST',
-      corps: demande,
-      entetes: construireEntetesContexte(contexte),
-    });
-  },
-
-  async listerMigrationsReferentiel(idProgrammeNiveau: string, contexte: AcademiqueApiContext) {
-    return clientApi.envoyer<ListResponse<MigrationReferentielItem>>({
-      chemin: `/api/migrations-referentiel${construireQueryString({ idProgrammeNiveau })}`,
-      entetes: construireEntetesContexte(contexte),
-    });
-  },
-
-  async consulterMigrationReferentiel(idMigrationReferentielProgramme: string, contexte: AcademiqueApiContext) {
-    return clientApi.envoyer<DetailResponse<RapportMigrationItem>>({
-      chemin: `/api/migrations-referentiel/${idMigrationReferentielProgramme}`,
-      entetes: construireEntetesContexte(contexte),
-    });
-  },
-
-  async analyserMigrationReferentiel(demande: AnalyseMigrationRequest, contexte: AcademiqueApiContext) {
-    return clientApi.envoyer<DetailResponse<RapportMigrationItem>>({
-      chemin: '/api/migrations-referentiel/analyser',
-      methode: 'POST',
-      corps: demande,
-      entetes: construireEntetesMutation(contexte, 'analyse-migration-referentiel'),
-    });
-  },
-
-  async appliquerMigrationReferentiel(
-    demande: ApplicationMigrationRequest,
-    contexte: AcademiqueApiContext,
-  ) {
-    return clientApi.envoyer<DetailResponse<ApplicationMigrationResultItem>>({
-      chemin: '/api/migrations-referentiel/appliquer',
-      methode: 'POST',
-      corps: demande,
-      entetes: construireEntetesMutation(contexte, 'application-migration-referentiel'),
-    });
-  },
-
-  async annulerMigrationReferentiel(idMigrationReferentielProgramme: string, contexte: AcademiqueApiContext) {
-    return clientApi.envoyer<DetailResponse<MigrationReferentielItem>>({
-      chemin: `/api/migrations-referentiel/${idMigrationReferentielProgramme}/annuler`,
-      methode: 'POST',
-      corps: {},
-      entetes: construireEntetesMutation(contexte, 'annulation-migration-referentiel'),
-    });
-  },
-
-  async relancerRecalculMigration(idMigrationReferentielProgramme: string, contexte: AcademiqueApiContext) {
-    return clientApi.envoyer<DetailResponse<MigrationReferentielItem>>({
-      chemin: `/api/migrations-referentiel/${idMigrationReferentielProgramme}/relancer-recalcul`,
-      methode: 'POST',
-      corps: {},
-      entetes: construireEntetesMutation(contexte, 'relance-migration-referentiel'),
-    });
-  },
-
   async creerAnneeScolaire(
     demande: {
       idEcole: string;

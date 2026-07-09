@@ -75,6 +75,28 @@ function memoriserSnapshotCourant(): void {
   });
 }
 
+async function ouvrirSessionDeveloppeurPourActeurCourant(): Promise<void> {
+  const sessionDev = await authApi.ouvrirSessionDeveloppeur({
+    actorCode: sessionStore.state.actorCode,
+    organisationActiveId: activeContextStore.state.organizationId,
+    ecoleActiveId: activeContextStore.state.schoolId,
+    deviceId: 'frontend-dev-shell',
+  });
+
+  sessionStore.applyBackendSession({
+    accessToken: sessionDev.accessToken,
+    sessionId: sessionDev.sessionId,
+    userId: sessionDev.utilisateur.idUtilisateur,
+  });
+
+  activeContextStore.applyResolvedContext({
+    organizationId: sessionDev.organisationActiveId ?? activeContextStore.state.organizationId,
+    schoolId: sessionDev.ecoleActiveId ?? activeContextStore.state.schoolId,
+  });
+
+  memoriserSnapshotCourant();
+}
+
 export async function initializeFrontendSession(): Promise<void> {
   if (sessionStore.state.initialized || sessionStore.state.initializing) {
     return;
@@ -84,8 +106,15 @@ export async function initializeFrontendSession(): Promise<void> {
 
   const snapshot = lireSnapshotPersisted();
   if (snapshot === null) {
-    sessionStore.completeInitialization('dev');
-    return;
+    try {
+      await ouvrirSessionDeveloppeurPourActeurCourant();
+      sessionStore.completeInitialization('backend');
+      return;
+    } catch {
+      sessionStore.clearBackendSession();
+      sessionStore.completeInitialization('dev');
+      return;
+    }
   }
 
   try {
@@ -129,6 +158,11 @@ export async function initializeFrontendSession(): Promise<void> {
     sessionStore.clearBackendSession();
     sessionStore.completeInitialization('dev');
   }
+}
+
+export async function ouvrirSessionDeveloppeurActeurSelectionne(): Promise<void> {
+  await ouvrirSessionDeveloppeurPourActeurCourant();
+  sessionStore.completeInitialization('backend');
 }
 
 export async function changerOrganisationActiveFrontend(organizationId: string): Promise<void> {

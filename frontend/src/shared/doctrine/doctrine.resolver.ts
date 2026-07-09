@@ -68,11 +68,16 @@ export function resolveAppEntryRoute(
 export function buildDoctrineNavigation(actorCode = sessionStore.state.actorCode, governanceLevel = activeContextStore.state.governanceLevel) {
   const pages = getAccessiblePages(actorCode, governanceLevel);
 
+  if (actorCode === 'MANAGER_SYSTEME' && governanceLevel === 'PLATEFORME') {
+    return buildManagerSystemNavigation(pages);
+  }
+
   return moduleDoctrine
     .map((module) => {
       const children = pages
         .filter((page) => page.moduleCode === module.code && page.routePath !== module.route)
         .filter((page) => page.pageType !== 'detail')
+        .filter((page) => page.hiddenInNavigation !== true)
         .map((page) => ({
           code: page.code,
           label: page.label,
@@ -102,6 +107,94 @@ export function buildDoctrineNavigation(actorCode = sessionStore.state.actorCode
         actorCodes,
         governanceLevels,
         children,
+      };
+    })
+    .filter((entry): entry is NonNullable<typeof entry> => entry !== null);
+}
+
+function buildManagerSystemNavigation(pages: readonly FrontendPageDoctrine[]) {
+  const definitions = [
+    {
+      code: 'MANAGER-DASHBOARD',
+      routePath: '/app/plateforme',
+      label: 'Tableau de bord',
+      description: "Vue d'ensemble et pilotage global de la plateforme.",
+      icon: 'House',
+    },
+    {
+      code: 'MANAGER-REFERENTIEL',
+      routePath: '/app/plateforme/referentiel',
+      label: 'Referentiel officiel',
+      description: 'Source officielle des sections, options, classes, cours, programmes et versions.',
+      icon: 'LibraryBig',
+    },
+    {
+      code: 'MANAGER-ORGANISATIONS',
+      routePath: '/app/organisation/ecoles',
+      label: 'Organisations',
+      description: 'Registre principal des organisations de la plateforme.',
+      icon: 'Building2',
+    },
+    {
+      code: 'MANAGER-SCHOOLS',
+      routePath: '/app/administration-ecole',
+      label: 'Administration ecole',
+      description: 'Registre et gouvernance des ecoles avant exploitation locale.',
+      icon: 'School',
+    },
+    {
+      code: 'MANAGER-MONITORING',
+      routePath: '/app/monitoring',
+      label: 'Monitoring',
+      description: 'Sante, incidents, alertes, diagnostics, capacite et traces.',
+      icon: 'Activity',
+    },
+    {
+      code: 'MANAGER-AUDIT',
+      routePath: '/app/audit',
+      label: 'Audit',
+      description: 'Lecture des audits plateforme, organisationnels et transverses.',
+      icon: 'Shield',
+    },
+    {
+      code: 'MANAGER-NOTIFICATIONS',
+      routePath: '/app/notifications',
+      label: 'Notifications',
+      description: 'Centre de notifications accessible selon les permissions effectives.',
+      icon: 'Bell',
+    },
+    {
+      code: 'MANAGER-CONFIGURATION',
+      routePath: '/app/configuration',
+      label: 'Configuration',
+      description: 'Pilotage des configurations plateforme, organisationnelles et locales.',
+      icon: 'Settings2',
+    },
+    {
+      code: 'MANAGER-SECURITY',
+      routePath: '/app/security',
+      label: 'Securite',
+      description: 'Socle des roles, affectations, verifications et audit security.',
+      icon: 'LockKeyhole',
+    },
+  ] as const;
+
+  return definitions
+    .map((definition) => {
+      const page = pages.find((entry) => normalizePath(entry.routePath) === normalizePath(definition.routePath));
+      if (!page) {
+        return null;
+      }
+
+      return {
+        code: definition.code,
+        label: definition.label,
+        description: definition.description,
+        route: page.routePath,
+        icon: definition.icon,
+        actorCodes: page.actorCodes,
+        governanceLevels: page.governanceLevels,
+        children: [],
       };
     })
     .filter((entry): entry is NonNullable<typeof entry> => entry !== null);

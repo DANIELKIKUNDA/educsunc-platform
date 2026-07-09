@@ -122,10 +122,14 @@ Permettre a la gouvernance systeme d'administrer le cycle de vie d'une organisat
 En sortie de ce workflow, le systeme doit pouvoir :
 
 - creer une nouvelle organisation
+- provisionner en option un `PROMOTEUR_ORGANISATION` explicite rattache a cette organisation lors de la creation initiale
 - exposer une lecture fiable des organisations existantes
 - renommer une organisation
 - activer ou desactiver une organisation existante
 - tracer l'acteur reel des mutations sans declaration libre par le frontend
+- distinguer clairement :
+  - `creePar` comme trace d'audit systeme
+  - `promoteurPrincipal` comme proprietaire metier affiche
 
 ### Contraintes backend
 
@@ -138,6 +142,12 @@ En sortie de ce workflow, le systeme doit pouvoir :
 
 - `Organisation`
 - `TypeOrganisation`
+- promoteur principal optionnel :
+  - nom complet
+  - email
+  - telephone
+  - identifiant metier optionnel
+  - mot de passe initial en mode developpement
 
 ### Sources backend
 

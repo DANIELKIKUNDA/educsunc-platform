@@ -147,6 +147,118 @@ export const creerRoutesReferentielsAcademiques = (
     );
   });
 
+  serveur.post('/api/referentiels/programmes/:id/versions-travail', async (requete, reponse) => {
+    return executerRouteProtegeeReferentielAcademique(
+      dependances,
+      requete,
+      reponse,
+      () => dependances.executerRouteIdempotente(
+        requete,
+        () => dependances.controleurReferentielsAcademiques
+          .creerVersionTravailReferentielDepuisVersion(requete.params, requete.body, requete.context),
+        {
+          operation: 'CREER_VERSION_TRAVAIL_REFERENTIEL',
+        },
+      ),
+    );
+  });
+
+  serveur.post('/api/referentiels/versions/:id/lignes', async (requete, reponse) => {
+    return executerRouteProtegeeReferentielAcademique(
+      dependances,
+      requete,
+      reponse,
+      () => dependances.executerRouteIdempotente(
+        requete,
+        () => dependances.controleurReferentielsAcademiques
+          .ajouterLigneVersionReferentiel(requete.params, requete.body, requete.context),
+        {
+          operation: 'AJOUTER_LIGNE_VERSION_REFERENTIEL_PROGRAMME',
+        },
+      ),
+    );
+  });
+
+  serveur.patch('/api/referentiels/versions/:id/lignes/:idLigne', async (requete, reponse) => {
+    return executerRouteProtegeeReferentielAcademique(
+      dependances,
+      requete,
+      reponse,
+      () => dependances.executerRouteIdempotente(
+        requete,
+        () => dependances.controleurReferentielsAcademiques
+          .modifierLigneVersionReferentiel(requete.params, requete.body, requete.context),
+        {
+          operation: 'MODIFIER_LIGNE_VERSION_REFERENTIEL_PROGRAMME',
+        },
+      ),
+    );
+  });
+
+  serveur.delete('/api/referentiels/versions/:id/lignes/:idLigne', async (requete, reponse) => {
+    return executerRouteProtegeeReferentielAcademique(
+      dependances,
+      requete,
+      reponse,
+      () => dependances.executerRouteIdempotente(
+        requete,
+        () => dependances.controleurReferentielsAcademiques
+          .retirerLigneVersionReferentiel(requete.params, requete.body, requete.context),
+        {
+          operation: 'RETIRER_LIGNE_VERSION_REFERENTIEL_PROGRAMME',
+        },
+      ),
+    );
+  });
+
+  serveur.post('/api/referentiels/versions/:id/lignes/reordonner', async (requete, reponse) => {
+    return executerRouteProtegeeReferentielAcademique(
+      dependances,
+      requete,
+      reponse,
+      () => dependances.executerRouteIdempotente(
+        requete,
+        () => dependances.controleurReferentielsAcademiques
+          .reordonnerLignesVersionReferentiel(requete.params, requete.body, requete.context),
+        {
+          operation: 'REORDONNER_LIGNES_VERSION_REFERENTIEL_PROGRAMME',
+        },
+      ),
+    );
+  });
+
+  serveur.post('/api/referentiels/versions/:id/lignes/:idLigne/ponderation', async (requete, reponse) => {
+    return executerRouteProtegeeReferentielAcademique(
+      dependances,
+      requete,
+      reponse,
+      () => dependances.executerRouteIdempotente(
+        requete,
+        () => dependances.controleurReferentielsAcademiques
+          .modifierPonderationLigneVersionReferentiel(requete.params, requete.body, requete.context),
+        {
+          operation: 'MODIFIER_PONDERATION_LIGNE_VERSION_REFERENTIEL_PROGRAMME',
+        },
+      ),
+    );
+  });
+
+  serveur.post('/api/referentiels/versions/:id/verifier-coherence', async (requete, reponse) => {
+    return executerRouteProtegeeReferentielAcademique(
+      dependances,
+      requete,
+      reponse,
+      () => dependances.executerRouteIdempotente(
+        requete,
+        () => dependances.controleurReferentielsAcademiques
+          .verifierCoherenceVersionReferentiel(requete.params, requete.body, requete.context),
+        {
+          operation: 'VERIFIER_COHERENCE_VERSION_REFERENTIEL',
+        },
+      ),
+    );
+  });
+
   serveur.post('/api/referentiels/comparer', async (requete, reponse) => {
     return executerRouteProtegeeReferentielAcademique(
       dependances,

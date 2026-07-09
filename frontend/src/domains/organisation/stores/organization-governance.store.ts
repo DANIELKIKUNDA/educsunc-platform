@@ -6,6 +6,7 @@ import type {
   CreerOrganisationPayload,
   EcoleItem,
   InformationsInstitutionnellesPayload,
+  MettreAJourOrganisationPayload,
   OrganisationItem,
   PaginationHttp,
 } from '../models/organization-governance.model';
@@ -13,6 +14,8 @@ import type {
 interface OrganizationGovernanceState {
   status: 'idle' | 'loading' | 'ready' | 'error';
   errorMessage: string | null;
+  statusMessage: string | null;
+  mutationStatus: 'idle' | 'loading';
   organisations: readonly OrganisationItem[];
   organisationsPagination: PaginationHttp | null;
   ecoles: readonly EcoleItem[];
@@ -25,6 +28,8 @@ interface OrganizationGovernanceState {
 const state = reactive<OrganizationGovernanceState>({
   status: 'idle',
   errorMessage: null,
+  statusMessage: null,
+  mutationStatus: 'idle',
   organisations: [],
   organisationsPagination: null,
   ecoles: [],
@@ -34,16 +39,44 @@ const state = reactive<OrganizationGovernanceState>({
   lastMutationMessage: null,
 });
 
-async function executer(action: () => Promise<void>, fallbackMessage: string): Promise<void> {
+async function executer(
+  action: () => Promise<void>,
+  fallbackMessage: string,
+  loadingMessage?: string,
+): Promise<void> {
   state.status = 'loading';
   state.errorMessage = null;
+  state.statusMessage = loadingMessage ?? null;
 
   try {
     await action();
     state.status = 'ready';
+    state.statusMessage = null;
   } catch (error) {
     state.status = 'error';
     state.errorMessage = error instanceof Error ? error.message : fallbackMessage;
+    state.statusMessage = null;
+  }
+}
+
+async function executerMutation(
+  action: () => Promise<void>,
+  fallbackMessage: string,
+  loadingMessage?: string,
+): Promise<void> {
+  state.mutationStatus = 'loading';
+  state.errorMessage = null;
+  state.statusMessage = loadingMessage ?? null;
+
+  try {
+    await action();
+    state.status = 'ready';
+    state.statusMessage = null;
+  } catch (error) {
+    state.errorMessage = error instanceof Error ? error.message : fallbackMessage;
+    state.statusMessage = null;
+  } finally {
+    state.mutationStatus = 'idle';
   }
 }
 
@@ -54,64 +87,105 @@ async function chargerOrganisations(page = 1, taillePage = 20): Promise<void> {
     activeContextStore.remplacerOrganisationsDepuisBackend(response.donnees);
     state.organisationsPagination = response.pagination;
     state.lastMutationMessage = null;
-  }, 'La lecture des organisations a echoue.');
+  }, 'Impossible de charger les organisations.', 'Chargement des organisations...');
 }
 
 async function chargerOrganisation(idOrganisation: string): Promise<void> {
   await executer(async () => {
     const response = await organizationGovernanceApi.consulterOrganisation(idOrganisation);
     state.selectedOrganisation = response.donnee;
-  }, 'La consultation de l organisation a echoue.');
+  }, 'Impossible d ouvrir cette organisation.', 'Ouverture de l organisation...');
 }
 
 async function creerOrganisation(payload: CreerOrganisationPayload): Promise<void> {
-  await executer(async () => {
+  await executerMutation(async () => {
     const response = await organizationGovernanceApi.creerOrganisation(payload);
     state.selectedOrganisation = response.donnee;
     activeContextStore.enregistrerOrganisation(response.donnee);
-    state.lastMutationMessage = `Organisation ${response.donnee.nom} creee.`;
     await chargerOrganisations();
-  }, 'La creation de l organisation a echoue.');
+    if (!state.organisations.some((organisation) => organisation.id === response.donnee.id)) {
+      state.organisations = [response.donnee, ...state.organisations];
+      state.organisationsPagination = state.organisationsPagination === null
+        ? {
+          total: state.organisations.length,
+          page: 1,
+          taillePage: state.organisations.length,
+          totalPages: 1,
+        }
+        : {
+          ...state.organisationsPagination,
+          total: Math.max(state.organisationsPagination.total, state.organisations.length),
+          totalPages: Math.max(state.organisationsPagination.totalPages, 1),
+        };
+    }
+    state.lastMutationMessage = `Organisation ${response.donnee.nom} creee.`;
+  }, 'La creation de l organisation a echoue.', 'Creation de l organisation en cours...');
 }
 
 async function renommerOrganisation(idOrganisation: string, nouveauNom: string): Promise<void> {
-  await executer(async () => {
+  await executerMutation(async () => {
     const response = await organizationGovernanceApi.renommerOrganisation(idOrganisation, nouveauNom);
     state.selectedOrganisation = response.donnee;
     activeContextStore.enregistrerOrganisation(response.donnee);
-    state.lastMutationMessage = `Organisation ${response.donnee.nom} renommee.`;
     await chargerOrganisations();
-  }, 'Le renommage de l organisation a echoue.');
+    state.lastMutationMessage = `Organisation ${response.donnee.nom} renommee.`;
+  }, 'La modification de l organisation a echoue.', 'Modification de l organisation en cours...');
+}
+
+async function mettreAJourOrganisation(
+  idOrganisation: string,
+  payload: MettreAJourOrganisationPayload,
+): Promise<void> {
+  await executerMutation(async () => {
+    const response = await organizationGovernanceApi.mettreAJourOrganisation(idOrganisation, payload);
+    state.selectedOrganisation = response.donnee;
+    activeContextStore.enregistrerOrganisation(response.donnee);
+    await chargerOrganisations();
+    state.lastMutationMessage = `Organisation ${response.donnee.nom} mise a jour.`;
+  }, 'La mise a jour de l organisation a echoue.', 'Mise a jour de l organisation en cours...');
 }
 
 async function activerOrganisation(idOrganisation: string): Promise<void> {
-  await executer(async () => {
+  await executerMutation(async () => {
     const response = await organizationGovernanceApi.activerOrganisation(idOrganisation);
     state.selectedOrganisation = response.donnee;
     activeContextStore.enregistrerOrganisation(response.donnee);
-    state.lastMutationMessage = `Organisation ${response.donnee.nom} activee.`;
     await chargerOrganisations();
-  }, 'L activation de l organisation a echoue.');
+    state.lastMutationMessage = `Organisation ${response.donnee.nom} activee.`;
+  }, 'L activation de l organisation a echoue.', 'Activation de l organisation...');
 }
 
 async function desactiverOrganisation(idOrganisation: string): Promise<void> {
-  await executer(async () => {
+  await executerMutation(async () => {
     const response = await organizationGovernanceApi.desactiverOrganisation(idOrganisation);
     state.selectedOrganisation = response.donnee;
     activeContextStore.enregistrerOrganisation(response.donnee);
-    state.lastMutationMessage = `Organisation ${response.donnee.nom} desactivee.`;
     await chargerOrganisations();
-  }, 'La desactivation de l organisation a echoue.');
+    state.lastMutationMessage = `Organisation ${response.donnee.nom} desactivee.`;
+  }, 'La desactivation de l organisation a echoue.', 'Desactivation de l organisation...');
 }
 
-async function chargerEcolesParOrganisation(idOrganisation: string, page = 1, taillePage = 20): Promise<void> {
+async function chargerEcolesParOrganisation(
+  idOrganisation: string,
+  page = 1,
+  taillePage = 20,
+  append = false,
+): Promise<void> {
   await executer(async () => {
     const response = await organizationGovernanceApi.listerEcolesParOrganisation(idOrganisation, page, taillePage);
-    state.ecoles = response.donnees;
-    activeContextStore.remplacerEcolesDepuisBackend(idOrganisation, response.donnees);
+    const ecolesFusionnees = append
+      ? [
+        ...state.ecoles,
+        ...response.donnees.filter(
+          (ecole) => !state.ecoles.some((existante) => existante.id === ecole.id),
+        ),
+      ]
+      : response.donnees;
+    state.ecoles = ecolesFusionnees;
+    activeContextStore.remplacerEcolesDepuisBackend(idOrganisation, ecolesFusionnees);
     state.ecolesPagination = response.pagination;
     state.lastMutationMessage = null;
-  }, 'La lecture des ecoles a echoue.');
+  }, 'Impossible de charger les ecoles de cette organisation.', 'Chargement des ecoles...');
 }
 
 async function chargerEcole(idEcole: string): Promise<void> {
@@ -185,6 +259,8 @@ async function desactiverEcole(idEcole: string): Promise<void> {
 
 function reinitialiserMessages(): void {
   state.lastMutationMessage = null;
+  state.errorMessage = null;
+  state.statusMessage = null;
 }
 
 export function useOrganizationGovernanceStore() {
@@ -193,6 +269,7 @@ export function useOrganizationGovernanceStore() {
     chargerOrganisations,
     chargerOrganisation,
     creerOrganisation,
+    mettreAJourOrganisation,
     renommerOrganisation,
     activerOrganisation,
     desactiverOrganisation,

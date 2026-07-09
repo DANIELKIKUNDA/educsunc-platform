@@ -13,7 +13,19 @@ export class OrganisationApplicationMapper {
       actif: organisation.estActif(),
       creeLe: organisation.obtenirCreeLe().toISOString(),
       creePar: organisation.obtenirCreePar(),
+      modifieLe: organisation.obtenirModifieLe()?.toISOString(),
+      modifiePar: organisation.obtenirModifiePar(),
       description: organisation.obtenirDescription(),
+      promoteurPrincipal:
+        organisation.obtenirPromoteurPrincipalNomComplet() === undefined
+          ? undefined
+          : {
+            utilisateurId: organisation.obtenirPromoteurPrincipalUtilisateurId(),
+            nomComplet: organisation.obtenirPromoteurPrincipalNomComplet() as string,
+            email: organisation.obtenirPromoteurPrincipalEmail(),
+            telephone: organisation.obtenirPromoteurPrincipalTelephone(),
+            identifiant: organisation.obtenirPromoteurPrincipalIdentifiant(),
+          },
       version: organisation.obtenirVersion(),
     };
   }
