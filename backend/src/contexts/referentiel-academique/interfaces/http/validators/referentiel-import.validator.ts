@@ -309,10 +309,7 @@ export class ValidateurReferentielImportHttp {
     corps: unknown,
     creePar: string,
   ): CreerVersionTravailReferentielDepuisVersionEntree {
-    const donneesParametres = OutilsValidationHttpReferentielAcademique.obtenirObjet(
-      parametres,
-      'parametres',
-    );
+    OutilsValidationHttpReferentielAcademique.obtenirObjet(parametres, 'parametres');
     const donnees = OutilsValidationHttpReferentielAcademique.obtenirObjet(corps, 'corps');
 
     return {

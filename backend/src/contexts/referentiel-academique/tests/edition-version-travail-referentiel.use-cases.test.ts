@@ -10,14 +10,12 @@ import { DepotMigrationReferentielProgramme } from '../domain/repositories/Depot
 import { DepotReferentielProgramme } from '../domain/repositories/DepotReferentielProgramme';
 import { ClasseAcademiqueId } from '../domain/value-objects/ClasseAcademiqueId';
 import { LigneReferentielProgrammeId } from '../domain/value-objects/LigneReferentielProgrammeId';
-import { MigrationReferentielProgrammeId } from '../domain/value-objects/MigrationReferentielProgrammeId';
 import { PonderationEvaluation } from '../domain/value-objects/PonderationEvaluation';
 import { ProgrammeNiveauId } from '../domain/value-objects/ProgrammeNiveauId';
 import { ReferentielCoursId } from '../domain/value-objects/ReferentielCoursId';
 import { ReferentielProgrammeId } from '../domain/value-objects/ReferentielProgrammeId';
 import { SourceLigneProgramme } from '../domain/value-objects/SourceLigneProgramme';
 import { SourceReferentiel } from '../domain/value-objects/SourceReferentiel';
-import { StatutMigrationReferentiel } from '../domain/value-objects/StatutMigrationReferentiel';
 import { TypeStructureEvaluation } from '../domain/value-objects/TypeStructureEvaluation';
 import { VersionReferentielProgrammeId } from '../domain/value-objects/VersionReferentielProgrammeId';
 import {
