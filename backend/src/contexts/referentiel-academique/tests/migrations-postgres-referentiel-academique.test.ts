@@ -36,5 +36,6 @@ test('les migrations sont ordonnees jusqu aux ajouts additifs du referentiel', (
     '010_categorie_technique_options',
     '011_responsabilites_classes_pedagogiques',
     '012_localisation_institutionnelle_ecoles',
+    '013_promoteur_principal_organisations',
   ]);
 });
