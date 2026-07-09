@@ -3,370 +3,313 @@
     <PageHeader
       eyebrow="ADM-01"
       title="Registre des ecoles"
-      description="Creation et pilotage structurel des ecoles rattachees a une organisation valide."
+      description="Creation, lecture et pilotage structurel des ecoles rattachees a une organisation valide."
     >
       <template #actions>
-        <RouterLink class="adm-link" to="/app/administration-ecole">
-          <ArrowLeft />
-          <span>Retour administration ecole</span>
-        </RouterLink>
+        <div class="school-admin__hero-actions">
+          <RouterLink class="school-admin__hero-link" to="/app/administration-ecole">
+            Retour au centre administration ecole
+          </RouterLink>
+        </div>
       </template>
     </PageHeader>
 
-    <SectionBlock title="Creation ecole" description="Le backend cree l ecole, impose l acteur et fixe son identite structurelle.">
-      <div class="adm-grid">
-        <label class="adm-field">
-          <span>Organisation</span>
-          <select v-model="form.idOrganisation">
-            <option value="">Selectionner</option>
-            <option v-for="organisation in store.state.organisations" :key="organisation.id" :value="organisation.id">
-              {{ organisation.code }} - {{ organisation.nom }}
-            </option>
-          </select>
-        </label>
-        <label class="adm-field">
-          <span>Code</span>
-          <input v-model="form.code" type="text" placeholder="ECOLE-001" />
-        </label>
-        <label class="adm-field">
-          <span>Nom</span>
-          <input v-model="form.nom" type="text" placeholder="College Saint Raphael" />
-        </label>
-        <label class="adm-field">
-          <span>Mode exploitation</span>
-          <input v-model="form.modeExploitation" type="text" placeholder="MONO_ECOLE" />
-        </label>
-        <label class="adm-field">
-          <span>Sigle</span>
-          <input v-model="form.sigle" type="text" placeholder="CSR" />
-        </label>
-        <label class="adm-field">
-          <span>Telephone</span>
-          <input v-model="form.telephone" type="text" placeholder="+243..." />
-        </label>
-        <label class="adm-field">
-          <span>Email</span>
-          <input v-model="form.email" type="email" placeholder="contact@ecole.cd" />
-        </label>
-        <label class="adm-field">
-          <span>Province educationnelle</span>
-          <input v-model="form.provinceEducationnelle" type="text" placeholder="Haut-Katanga 1" />
-        </label>
-        <label class="adm-field">
-          <span>Ville</span>
-          <input v-model="form.ville" type="text" placeholder="Lubumbashi" />
-        </label>
-        <label class="adm-field">
-          <span>Commune / territoire</span>
-          <input v-model="form.communeOuTerritoire" type="text" placeholder="Kampemba" />
-        </label>
-        <label class="adm-field adm-field--wide">
-          <span>Adresse</span>
-          <input v-model="form.adresse" type="text" placeholder="Adresse ecole" />
-        </label>
-      </div>
-
-      <div class="adm-actions">
-        <button
-          v-if="canMutateRegistry"
-          class="adm-pill adm-pill--primary"
-          type="button"
-          @click="creerEcole"
-        >
-          Creer ecole
-        </button>
-        <button class="adm-pill" type="button" @click="chargerOrganisations">Relire organisations</button>
-        <button class="adm-pill" type="button" :disabled="!selectedOrganisationId" @click="chargerEcoles">Relire ecoles de l organisation</button>
-      </div>
-    </SectionBlock>
-
-    <SectionBlock title="Lecture organisationnelle" description="La liste des ecoles reste declenchee depuis une organisation explicite.">
-      <div class="adm-actions">
-        <label class="adm-field">
-          <span>Organisation cible</span>
-          <select v-model="selectedOrganisationId">
-            <option value="">Selectionner</option>
-            <option v-for="organisation in store.state.organisations" :key="organisation.id" :value="organisation.id">
-              {{ organisation.code }} - {{ organisation.nom }}
-            </option>
-          </select>
-        </label>
-      </div>
-    </SectionBlock>
-
-    <SectionBlock
-      title="Etape suivante"
-      description="Une ecole creee ou relue doit pouvoir etre activee puis envoyer directement vers les premiers workflows metier reellement utiles."
-    >
-      <div class="adm-next-grid">
-        <button
-          class="adm-next-card"
-          type="button"
-          :disabled="!lastSchoolContext"
-          @click="activerDerniereEcole"
-        >
-          <strong>Activer l ecole dans le contexte</strong>
-          <small>Basculer le shell sur l ecole courante avant de lancer l exploitation locale.</small>
-        </button>
-        <button
-          class="adm-next-card"
-          type="button"
-          :disabled="!lastSchoolContext"
-          @click="ouvrirInscriptionDerniereEcole"
-        >
-          <strong>Ouvrir l inscription</strong>
-          <small>Continuer le parcours vers les familles, eleves et inscriptions de l ecole choisie.</small>
-        </button>
-        <button
-          class="adm-next-card"
-          type="button"
-          :disabled="!lastSchoolContext"
-          @click="ouvrirPaiementDerniereEcole"
-        >
-          <strong>Ouvrir le paiement</strong>
-          <small>Passer directement a la perception financiere dans le bon perimetre ecole.</small>
-        </button>
-      </div>
-    </SectionBlock>
-
-    <LoadingState v-if="store.state.status === 'loading'" title="Administration ecole en cours" message="Lecture ou mutation structurelle en cours." />
-    <ErrorState v-else-if="store.state.status === 'error'" title="Administration ecole indisponible" :message="store.state.errorMessage ?? 'Le registre des ecoles ne peut pas etre charge.'" />
+    <div v-if="store.state.status === 'loading' && store.state.organisations.length === 0" class="school-admin__skeleton-grid">
+      <div v-for="index in 4" :key="index" class="school-admin__skeleton-card" />
+    </div>
+    <ErrorState
+      v-else-if="store.state.status === 'error' && store.state.organisations.length === 0"
+      title="Registre indisponible"
+      :message="store.state.errorMessage ?? 'Le registre des ecoles ne peut pas etre charge pour le moment.'"
+    />
 
     <template v-else>
-      <SectionBlock v-if="store.state.lastMutationMessage" title="Derniere mutation" description="Retour immediat du backend apres la mutation structurelle.">
-        <div class="adm-banner">{{ store.state.lastMutationMessage }}</div>
-      </SectionBlock>
+      <section class="school-admin__stat-grid">
+        <StatCard
+          v-for="card in summaryCards"
+          :key="card.label"
+          :icon="card.icon"
+          :label="card.label"
+          :value="card.value"
+          :hint="card.hint"
+          :tone="card.tone"
+        />
+      </section>
 
       <SectionBlock
-        v-if="!canMutateRegistry"
-        title="Lecture seule"
-        description="Le workflow ADM-01 reste visible, mais les mutations structurelles ne sont pas ouvertes dans ce profil."
+        title="Creation d une ecole"
+        description="Le formulaire ne couvre que les champs reels du backend. L acteur et la tracabilite viennent du contexte authentifie."
       >
-        <div class="adm-banner adm-banner--muted">
-          Cet acteur peut relire les ecoles, sans creer ni muter leur cycle de vie.
+        <div v-if="!canMutateRegistry" class="school-admin__banner school-admin__banner--muted">
+          Ce profil peut consulter le registre, mais pas creer ou muter une ecole.
+        </div>
+
+        <div v-else class="school-admin__panel">
+          <div class="school-admin__panel-header">
+            <h3>Nouvelle ecole</h3>
+            <p>Le rattachement organisationnel est obligatoire dans le domaine actuel. Aucun autre parametre non prouve n est expose.</p>
+          </div>
+
+          <div class="school-admin__form-grid">
+            <div class="school-admin__field">
+              <span>Organisation de rattachement</span>
+              <select v-model="form.idOrganisation">
+                <option value="">Selectionner une organisation</option>
+                <option v-for="organization in store.state.organisations" :key="organization.id" :value="organization.id">
+                  {{ organization.code }} - {{ organization.nom }}
+                </option>
+              </select>
+            </div>
+
+            <div class="school-admin__field">
+              <span>Code ecole</span>
+              <input v-model="form.code" type="text" placeholder="ECOLE-001" />
+            </div>
+
+            <div class="school-admin__field">
+              <span>Nom officiel</span>
+              <input v-model="form.nom" type="text" placeholder="College Saint Raphael" />
+            </div>
+
+            <div class="school-admin__field">
+              <span>Mode d exploitation</span>
+              <select v-model="form.modeExploitation">
+                <option v-for="option in schoolModeOptions" :key="option.value" :value="option.value">
+                  {{ option.label }}
+                </option>
+              </select>
+            </div>
+
+            <div class="school-admin__field">
+              <span>Sigle</span>
+              <input v-model="form.sigle" type="text" placeholder="CSR" />
+            </div>
+
+            <div class="school-admin__field">
+              <span>Telephone</span>
+              <input v-model="form.telephone" type="text" placeholder="+243..." />
+            </div>
+
+            <div class="school-admin__field">
+              <span>Email</span>
+              <input v-model="form.email" type="email" placeholder="contact@ecole.cd" />
+            </div>
+
+            <div class="school-admin__field">
+              <span>Province educationnelle</span>
+              <input v-model="form.provinceEducationnelle" type="text" placeholder="Haut-Katanga 1" />
+            </div>
+
+            <div class="school-admin__field">
+              <span>Ville</span>
+              <input v-model="form.ville" type="text" placeholder="Lubumbashi" />
+            </div>
+
+            <div class="school-admin__field">
+              <span>Commune / territoire</span>
+              <input v-model="form.communeOuTerritoire" type="text" placeholder="Kampemba" />
+            </div>
+
+            <div class="school-admin__field school-admin__field--wide">
+              <span>Adresse</span>
+              <input v-model="form.adresse" type="text" placeholder="Adresse institutionnelle" />
+            </div>
+          </div>
+
+          <div class="school-admin__actions">
+            <button
+              class="school-admin__pill-button school-admin__pill-button--primary"
+              type="button"
+              :disabled="store.state.mutationStatus === 'loading'"
+              @click="createSchool"
+            >
+              {{ store.state.mutationStatus === 'loading' ? 'Creation en cours...' : 'Creer l ecole' }}
+            </button>
+          </div>
         </div>
       </SectionBlock>
 
-      <SectionBlock title="Ecoles rattachees" description="Table de pilotage systeme des ecoles d une organisation.">
+      <ActionToolbar
+        title="Lecture organisationnelle"
+        description="Le registre lit les ecoles a partir d une organisation explicite, puis affine localement l affichage sans inventer de nouvelles donnees."
+      >
+        <template #filters>
+          <div class="school-admin__field">
+            <span>Organisation cible</span>
+            <select v-model="selectedOrganisationId">
+              <option value="">Selectionner une organisation</option>
+              <option v-for="organization in store.state.organisations" :key="organization.id" :value="organization.id">
+                {{ organization.code }} - {{ organization.nom }}
+              </option>
+            </select>
+          </div>
+
+          <div class="school-admin__field">
+            <span>Recherche locale</span>
+            <input v-model="search" type="text" placeholder="Code, nom, sigle, telephone, email..." />
+          </div>
+
+          <div class="school-admin__field">
+            <span>Statut</span>
+            <select v-model="statusFilter">
+              <option value="ALL">Tous</option>
+              <option value="ACTIVE">Actives</option>
+              <option value="INACTIVE">Inactives</option>
+            </select>
+          </div>
+
+          <div class="school-admin__field">
+            <span>Mode</span>
+            <select v-model="modeFilter">
+              <option value="ALL">Tous les modes</option>
+              <option v-for="option in schoolModeOptions" :key="option.value" :value="option.value">
+                {{ option.label }}
+              </option>
+            </select>
+          </div>
+        </template>
+
+        <template #actions>
+          <button class="school-admin__pill-button" type="button" @click="clearFilters">
+            Effacer les filtres
+          </button>
+          <button
+            class="school-admin__pill-button school-admin__pill-button--primary"
+            type="button"
+            :disabled="!selectedOrganisationId"
+            @click="loadSchools"
+          >
+            Relire les ecoles
+          </button>
+        </template>
+      </ActionToolbar>
+
+      <SectionBlock
+        v-if="store.state.lastMutationMessage"
+        title="Derniere mutation"
+        description="Retour utilisateur clair apres la derniere operation backend."
+      >
+        <div class="school-admin__banner">
+          {{ store.state.lastMutationMessage }}
+        </div>
+      </SectionBlock>
+
+      <SectionBlock
+        title="Table structurelle des ecoles"
+        description="Aucune action hors ADM-01 n est ouverte ici. Le registre reste strictement limite a la gouvernance plateforme."
+      >
         <EmptyState
-          v-if="store.state.ecoles.length === 0"
+          v-if="filteredSchools.length === 0"
           title="Aucune ecole visible"
-          message="Selectionnez une organisation puis chargez la liste des ecoles."
+          message="Selectionnez une organisation puis relisez ses ecoles pour ouvrir le registre reel."
         />
-        <div v-else class="adm-table-shell">
-          <table class="adm-table">
+
+        <div v-else class="school-admin__table-shell">
+          <table class="school-admin__table">
             <thead>
               <tr>
                 <th>Code</th>
-                <th>Nom</th>
+                <th>Ecole</th>
                 <th>Mode</th>
-                <th>Etat</th>
-                <th>Contexte</th>
-                <th>Action</th>
+                <th>Statut</th>
+                <th>Contact</th>
+                <th>Trace</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="ecole in store.state.ecoles" :key="ecole.id">
-                <td>{{ ecole.code }}</td>
-                <td>{{ ecole.nom }}</td>
-                <td>{{ ecole.modeExploitation }}</td>
-                <td>{{ ecole.actif ? 'Active' : 'Inactive' }}</td>
+              <tr v-for="school in filteredSchools" :key="school.id">
                 <td>
-                  <div class="adm-inline-actions">
-                    <button class="adm-inline-link adm-inline-link--button" type="button" @click="activerEcoleDansContexte(ecole.idOrganisation, ecole.id)">
-                      Activer contexte
-                    </button>
-                    <button class="adm-inline-link adm-inline-link--button" type="button" @click="ouvrirInscriptionEcole(ecole.idOrganisation, ecole.id)">
-                      Inscription
-                    </button>
-                    <button class="adm-inline-link adm-inline-link--button" type="button" @click="ouvrirPaiementEcole(ecole.idOrganisation, ecole.id)">
-                      Paiement
-                    </button>
-                  </div>
+                  <strong>{{ school.code }}</strong>
+                  <small>{{ school.sigle || 'Sans sigle' }}</small>
                 </td>
                 <td>
-                  <RouterLink class="adm-inline-link" :to="`/app/administration-ecole/ecoles/${ecole.id}`">Ouvrir</RouterLink>
+                  <strong>{{ school.nom }}</strong>
+                  <small>{{ currentOrganization?.nom || 'Organisation cible active' }}</small>
+                </td>
+                <td>
+                  <SchoolModeBadge :mode="school.modeExploitation" />
+                </td>
+                <td>
+                  <SchoolStatusBadge :active="school.actif" />
+                </td>
+                <td>
+                  <strong>{{ school.telephone || '-' }}</strong>
+                  <small>{{ school.email || 'Aucun email expose' }}</small>
+                </td>
+                <td>
+                  <strong>{{ school.modifieLe || school.creeLe }}</strong>
+                  <small>Version {{ school.version }}</small>
+                </td>
+                <td>
+                  <div class="school-admin__inline-actions">
+                    <RouterLink class="school-admin__inline-link" :to="`/app/administration-ecole/ecoles/${school.id}`">
+                      Ouvrir
+                    </RouterLink>
+                    <button
+                      v-if="canMutateRegistry"
+                      class="school-admin__inline-button"
+                      type="button"
+                      @click="openLifecycleModal(school.actif ? 'deactivate' : 'activate', school.id, school.nom)"
+                    >
+                      {{ school.actif ? 'Desactiver' : 'Activer' }}
+                    </button>
+                  </div>
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
       </SectionBlock>
+
+      <SchoolLifecycleModal
+        :open="lifecycleModalOpen"
+        :action="lifecycleAction"
+        :school-name="lifecycleSchoolName"
+        :pending="store.state.mutationStatus === 'loading'"
+        @close="closeLifecycleModal"
+        @confirm="confirmLifecycle"
+      />
     </template>
   </PageContainer>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref, watch } from 'vue';
-import { RouterLink, useRoute, useRouter } from 'vue-router';
-import { ArrowLeft } from 'lucide-vue-next';
+import { RouterLink } from 'vue-router';
+import ActionToolbar from '../../../shared/ui/ActionToolbar.vue';
+import EmptyState from '../../../shared/ui/EmptyState.vue';
+import ErrorState from '../../../shared/ui/ErrorState.vue';
+import StatCard from '../../../shared/ui/StatCard.vue';
 import PageContainer from '../../../shared/layout/PageContainer.vue';
 import PageHeader from '../../../shared/layout/PageHeader.vue';
 import SectionBlock from '../../../shared/layout/SectionBlock.vue';
-import { changerEcoleActiveFrontend, changerOrganisationActiveFrontend } from '../../../shared/auth/session.bootstrap';
-import { activeContextStore } from '../../../shared/session/active-context.store';
-import EmptyState from '../../../shared/ui/EmptyState.vue';
-import ErrorState from '../../../shared/ui/ErrorState.vue';
-import LoadingState from '../../../shared/ui/LoadingState.vue';
-import { useOrganizationGovernanceStore } from '../../organisation/stores/organization-governance.store';
-import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
+import SchoolLifecycleModal from '../components/SchoolLifecycleModal.vue';
+import SchoolModeBadge from '../components/SchoolModeBadge.vue';
+import SchoolStatusBadge from '../components/SchoolStatusBadge.vue';
+import { useSchoolAdministrationRegistryViewModel } from '../viewmodels/useSchoolAdministrationRegistryViewModel';
 
-const store = useOrganizationGovernanceStore();
-const { canUseAction } = useDoctrineAccess();
-const route = useRoute();
-const router = useRouter();
-const selectedOrganisationId = ref('');
-const form = reactive({
-  idOrganisation: '',
-  code: '',
-  nom: '',
-  modeExploitation: 'MONO_ECOLE',
-  sigle: '',
-  telephone: '',
-  email: '',
-  provinceEducationnelle: '',
-  ville: '',
-  communeOuTerritoire: '',
-  adresse: '',
-});
-
-const canMutateRegistry = computed(() => canUseAction('school-administration.write', 'ADM-001'));
-const lastSchoolContext = computed(() => {
-  const lastSchool = store.state.ecoles[store.state.ecoles.length - 1];
-  if (lastSchool) {
-    return { idOrganisation: lastSchool.idOrganisation, idEcole: lastSchool.id };
-  }
-
-  if (activeContextStore.state.organizationId && activeContextStore.state.schoolId) {
-    return {
-      idOrganisation: activeContextStore.state.organizationId,
-      idEcole: activeContextStore.state.schoolId,
-    };
-  }
-
-  return null;
-});
-
-async function chargerOrganisations(): Promise<void> {
-  await store.chargerOrganisations();
-}
-
-async function chargerEcoles(): Promise<void> {
-  if (!selectedOrganisationId.value) return;
-  await store.chargerEcolesParOrganisation(selectedOrganisationId.value);
-}
-
-async function creerEcole(): Promise<void> {
-  if (!form.idOrganisation || !form.code.trim() || !form.nom.trim() || !form.modeExploitation.trim()) {
-    return;
-  }
-
-  await store.creerEcole({
-    idOrganisation: form.idOrganisation,
-    code: form.code.trim(),
-    nom: form.nom.trim(),
-    modeExploitation: form.modeExploitation.trim(),
-    sigle: form.sigle.trim() || undefined,
-    telephone: form.telephone.trim() || undefined,
-    email: form.email.trim() || undefined,
-    provinceEducationnelle: form.provinceEducationnelle.trim() || undefined,
-    ville: form.ville.trim() || undefined,
-    communeOuTerritoire: form.communeOuTerritoire.trim() || undefined,
-    adresse: form.adresse.trim() || undefined,
-  });
-
-  selectedOrganisationId.value = form.idOrganisation;
-  form.code = '';
-  form.nom = '';
-  form.sigle = '';
-  form.telephone = '';
-  form.email = '';
-  form.provinceEducationnelle = '';
-  form.ville = '';
-  form.communeOuTerritoire = '';
-  form.adresse = '';
-}
-
-async function activerEcoleDansContexte(idOrganisation: string, idEcole: string): Promise<void> {
-  await changerOrganisationActiveFrontend(idOrganisation);
-  await changerEcoleActiveFrontend(idEcole);
-  activeContextStore.setGovernanceLevel('ECOLE');
-}
-
-async function activerDerniereEcole(): Promise<void> {
-  if (!lastSchoolContext.value) {
-    return;
-  }
-
-  await activerEcoleDansContexte(lastSchoolContext.value.idOrganisation, lastSchoolContext.value.idEcole);
-}
-
-async function ouvrirInscriptionEcole(idOrganisation: string, idEcole: string): Promise<void> {
-  await activerEcoleDansContexte(idOrganisation, idEcole);
-  await router.push('/app/scolarite/inscriptions');
-}
-
-async function ouvrirPaiementEcole(idOrganisation: string, idEcole: string): Promise<void> {
-  await activerEcoleDansContexte(idOrganisation, idEcole);
-  await router.push('/app/finances/paiements/enregistrer');
-}
-
-async function ouvrirInscriptionDerniereEcole(): Promise<void> {
-  if (!lastSchoolContext.value) {
-    return;
-  }
-
-  await ouvrirInscriptionEcole(lastSchoolContext.value.idOrganisation, lastSchoolContext.value.idEcole);
-}
-
-async function ouvrirPaiementDerniereEcole(): Promise<void> {
-  if (!lastSchoolContext.value) {
-    return;
-  }
-
-  await ouvrirPaiementEcole(lastSchoolContext.value.idOrganisation, lastSchoolContext.value.idEcole);
-}
-
-watch(selectedOrganisationId, (nextOrganisationId) => {
-  form.idOrganisation = nextOrganisationId;
-});
-
-onMounted(async () => {
-  const organisationDepuisRoute = typeof route.query.idOrganisation === 'string' ? route.query.idOrganisation : '';
-  if (organisationDepuisRoute) {
-    selectedOrganisationId.value = organisationDepuisRoute;
-    form.idOrganisation = organisationDepuisRoute;
-  } else if (activeContextStore.state.governanceLevel === 'ORGANISATION') {
-    selectedOrganisationId.value = activeContextStore.state.organizationId;
-    form.idOrganisation = activeContextStore.state.organizationId;
-  }
-
-  await chargerOrganisations();
-
-  if (selectedOrganisationId.value) {
-    await chargerEcoles();
-  }
-});
+const {
+  store,
+  form,
+  schoolModeOptions,
+  selectedOrganisationId,
+  search,
+  statusFilter,
+  modeFilter,
+  canMutateRegistry,
+  currentOrganization,
+  filteredSchools,
+  summaryCards,
+  lifecycleModalOpen,
+  lifecycleAction,
+  lifecycleSchoolName,
+  loadSchools,
+  createSchool,
+  openLifecycleModal,
+  confirmLifecycle,
+  closeLifecycleModal,
+  clearFilters,
+} = useSchoolAdministrationRegistryViewModel();
 </script>
 
-<style scoped>
-.adm-grid,.adm-actions{display:flex;flex-wrap:wrap;gap:.9rem}
-.adm-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin-bottom:1rem}
-.adm-field{display:grid;gap:.45rem;min-width:220px}
-.adm-field--wide{grid-column:1/-1}
-.adm-field input,.adm-field select{border-radius:16px;border:1px solid rgba(17,40,63,.14);padding:.8rem .95rem;background:#fbfdff}
-.adm-pill,.adm-link,.adm-inline-link{border:1px solid rgba(17,40,63,.14);border-radius:999px;padding:.75rem 1rem;background:#fff;color:#11283f;text-decoration:none;font-weight:600;display:inline-flex;align-items:center;gap:.45rem}
-.adm-pill--primary{background:linear-gradient(135deg,#113f67,#1a6aa0);border-color:transparent;color:#fff}
-.adm-banner{padding:1rem 1.1rem;border-radius:20px;background:#eef4ff;color:#102844;font-weight:600}
-.adm-banner--muted{background:#f4f7fb;color:#445b70}
-.adm-next-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem}
-.adm-next-card{display:grid;gap:.55rem;text-align:left;padding:1rem 1.05rem;border-radius:22px;border:1px solid rgba(17,40,63,.08);background:linear-gradient(180deg,#f7faff,#ffffff);box-shadow:0 18px 45px rgba(17,40,63,.08);color:#11283f}
-.adm-next-card:disabled{opacity:.55;cursor:not-allowed}
-.adm-next-card small{color:#587083;line-height:1.5}
-.adm-table-shell{overflow:auto}
-.adm-table{width:100%;border-collapse:collapse}
-.adm-table th,.adm-table td{padding:.85rem 1rem;border-bottom:1px solid rgba(17,40,63,.08);text-align:left}
-.adm-inline-link{padding:.5rem .85rem;font-size:.92rem}
-.adm-inline-link--button{cursor:pointer}
-.adm-inline-actions{display:flex;flex-wrap:wrap;gap:.5rem}
-</style>
+<style src="../school-administration.css"></style>

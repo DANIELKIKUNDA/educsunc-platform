@@ -477,7 +477,7 @@ export const pageDoctrine: readonly FrontendPageDoctrine[] = [
     icon: 'LayoutGrid',
     actorCodes: ['MANAGER_SYSTEME', 'OPERATEUR_SYSTEME', 'SUPPORT_SYSTEME'],
     governanceLevels: ['PLATEFORME'],
-    visibleActions: [{ code: 'school-administration.consulter', label: 'Consulter le centre administration ecole' }],
+    visibleActions: [{ code: 'referentiel.read', label: 'Consulter le centre administration ecole (ADM-01)' }],
   },
   {
     code: 'ADM-001',
@@ -493,13 +493,13 @@ export const pageDoctrine: readonly FrontendPageDoctrine[] = [
     governanceLevels: ['PLATEFORME'],
     visibleActions: [
       {
-        code: 'school-administration.read',
-        label: 'Lire le registre des ecoles',
+        code: 'referentiel.read',
+        label: 'Lire le registre des ecoles (ADM-01)',
         actorCodes: ['MANAGER_SYSTEME', 'OPERATEUR_SYSTEME', 'SUPPORT_SYSTEME'],
       },
       {
-        code: 'school-administration.write',
-        label: 'Creer ou muter une ecole',
+        code: 'referentiel.write',
+        label: 'Creer ou muter une ecole (ADM-01)',
         actorCodes: ['MANAGER_SYSTEME', 'OPERATEUR_SYSTEME'],
       },
     ],
@@ -518,13 +518,13 @@ export const pageDoctrine: readonly FrontendPageDoctrine[] = [
     governanceLevels: ['PLATEFORME'],
     visibleActions: [
       {
-        code: 'school-administration.detail.read',
-        label: 'Lire le detail d une ecole',
+        code: 'referentiel.read',
+        label: 'Lire le detail d une ecole (ADM-01)',
         actorCodes: ['MANAGER_SYSTEME', 'OPERATEUR_SYSTEME', 'SUPPORT_SYSTEME'],
       },
       {
-        code: 'school-administration.detail.write',
-        label: 'Muter une ecole',
+        code: 'referentiel.write',
+        label: 'Muter une ecole (ADM-01)',
         actorCodes: ['MANAGER_SYSTEME', 'OPERATEUR_SYSTEME'],
       },
     ],

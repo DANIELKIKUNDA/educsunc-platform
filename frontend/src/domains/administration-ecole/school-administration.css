@@ -1,0 +1,314 @@
+.school-admin__hero-actions,
+.school-admin__actions,
+.school-admin__inline-actions,
+.school-admin__chip-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:.85rem;
+}
+
+.school-admin__hero-link,
+.school-admin__pill-button,
+.school-admin__inline-button,
+.school-admin__inline-link{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:.5rem;
+  border-radius:999px;
+  padding:.78rem 1.08rem;
+  text-decoration:none;
+  font-weight:700;
+  transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease, background .2s ease;
+}
+
+.school-admin__hero-link,
+.school-admin__pill-button,
+.school-admin__inline-button{
+  border:1px solid rgba(17,40,63,.12);
+  background:#fff;
+  color:#11283f;
+}
+
+.school-admin__hero-link:hover,
+.school-admin__pill-button:hover,
+.school-admin__inline-button:hover,
+.school-admin__inline-link:hover{
+  transform:translateY(-1px);
+}
+
+.school-admin__hero-link--primary,
+.school-admin__pill-button--primary{
+  background:linear-gradient(135deg,#113f67,#1a6aa0);
+  border-color:transparent;
+  box-shadow:0 18px 32px rgba(17,63,103,.2);
+  color:#fff;
+}
+
+.school-admin__pill-button:disabled,
+.school-admin__inline-button:disabled{
+  opacity:.55;
+  cursor:not-allowed;
+  transform:none;
+}
+
+.school-admin__stat-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:1rem;
+}
+
+.school-admin__scope-grid,
+.school-admin__form-grid,
+.school-admin__table-meta,
+.school-admin__identity-grid,
+.school-admin__detail-grid{
+  display:grid;
+  gap:1rem;
+}
+
+.school-admin__scope-grid,
+.school-admin__detail-grid{
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+}
+
+.school-admin__form-grid{
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+}
+
+.school-admin__field{
+  display:grid;
+  gap:.45rem;
+}
+
+.school-admin__field label,
+.school-admin__field span{
+  color:#4d6477;
+  font-weight:700;
+  font-size:.92rem;
+}
+
+.school-admin__field input,
+.school-admin__field select{
+  width:100%;
+  min-height:52px;
+  border-radius:18px;
+  border:1px solid rgba(17,40,63,.14);
+  background:#fbfdff;
+  padding:.85rem .95rem;
+  color:#10243b;
+}
+
+.school-admin__field input:focus,
+.school-admin__field select:focus,
+.school-admin__pill-button:focus-visible,
+.school-admin__inline-button:focus-visible,
+.school-admin__hero-link:focus-visible,
+.school-admin__inline-link:focus-visible{
+  outline:3px solid rgba(20,135,168,.2);
+  outline-offset:2px;
+}
+
+.school-admin__field--wide{
+  grid-column:1 / -1;
+}
+
+.school-admin__panel,
+.school-admin__mutations-card,
+.school-admin__table-shell,
+.school-admin__identity-card,
+.school-admin__scope-card,
+.school-admin__placeholder-card{
+  border-radius:24px;
+  border:1px solid rgba(17,40,63,.08);
+  background:linear-gradient(180deg,rgba(255,255,255,.98),rgba(247,250,255,.95));
+  box-shadow:0 18px 42px rgba(17,40,63,.08);
+}
+
+.school-admin__panel,
+.school-admin__mutations-card,
+.school-admin__identity-card,
+.school-admin__scope-card,
+.school-admin__placeholder-card{
+  padding:1.15rem;
+}
+
+.school-admin__panel-header,
+.school-admin__mutations-card header,
+.school-admin__identity-card header,
+.school-admin__scope-card header{
+  display:grid;
+  gap:.25rem;
+  margin-bottom:1rem;
+}
+
+.school-admin__panel-header h3,
+.school-admin__mutations-card h3,
+.school-admin__identity-card h3,
+.school-admin__scope-card h3{
+  margin:0;
+  color:#10243b;
+}
+
+.school-admin__panel-header p,
+.school-admin__mutations-card p,
+.school-admin__identity-card p,
+.school-admin__scope-card p,
+.school-admin__placeholder-card p{
+  margin:0;
+  color:#587083;
+  line-height:1.6;
+}
+
+.school-admin__banner{
+  padding:1rem 1.1rem;
+  border-radius:20px;
+  background:linear-gradient(180deg,rgba(238,244,255,.98),rgba(245,249,255,.98));
+  color:#123250;
+  font-weight:700;
+}
+
+.school-admin__banner--muted{
+  background:linear-gradient(180deg,rgba(245,248,252,.98),rgba(255,255,255,.98));
+  color:#506779;
+}
+
+.school-admin__table-shell{
+  overflow:auto;
+}
+
+.school-admin__table{
+  width:100%;
+  border-collapse:collapse;
+  min-width:880px;
+}
+
+.school-admin__table th,
+.school-admin__table td{
+  padding:1rem;
+  border-bottom:1px solid rgba(17,40,63,.08);
+  text-align:left;
+  vertical-align:top;
+}
+
+.school-admin__table th{
+  position:sticky;
+  top:0;
+  background:rgba(248,251,255,.98);
+  color:#4f6678;
+  font-size:.84rem;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+  z-index:1;
+}
+
+.school-admin__table td strong{
+  color:#10243b;
+}
+
+.school-admin__table td small{
+  display:block;
+  margin-top:.18rem;
+  color:#61788a;
+}
+
+.school-admin__inline-link{
+  border:1px solid rgba(17,40,63,.12);
+  background:rgba(17,40,63,.04);
+  color:#113f67;
+}
+
+.school-admin__inline-button{
+  padding:.58rem .88rem;
+  font-size:.9rem;
+}
+
+.school-admin__inline-button--danger{
+  border-color:rgba(185,75,75,.18);
+  background:rgba(219,94,94,.08);
+  color:#aa3535;
+}
+
+.school-admin__mutations-card form,
+.school-admin__identity-card form{
+  display:grid;
+  gap:1rem;
+}
+
+.school-admin__helper{
+  color:#61788a;
+  line-height:1.6;
+  font-size:.95rem;
+}
+
+.school-admin__trace-list{
+  display:grid;
+  gap:.9rem;
+}
+
+.school-admin__trace-item{
+  display:flex;
+  justify-content:space-between;
+  gap:1rem;
+  padding-bottom:.9rem;
+  border-bottom:1px dashed rgba(17,40,63,.08);
+}
+
+.school-admin__trace-item:last-child{
+  border-bottom:0;
+  padding-bottom:0;
+}
+
+.school-admin__trace-item span{
+  color:#61788a;
+}
+
+.school-admin__trace-item strong{
+  color:#10243b;
+  text-align:right;
+}
+
+.school-admin__skeleton-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:1rem;
+}
+
+.school-admin__skeleton-card{
+  min-height:160px;
+  border-radius:24px;
+  background:linear-gradient(90deg,rgba(233,239,246,.9) 0%,rgba(246,249,252,.98) 50%,rgba(233,239,246,.9) 100%);
+  background-size:200% 100%;
+  animation:school-admin-shimmer 1.3s linear infinite;
+}
+
+@keyframes school-admin-shimmer{
+  0%{background-position:200% 0}
+  100%{background-position:-200% 0}
+}
+
+@media (max-width: 720px){
+  .school-admin__hero-actions,
+  .school-admin__actions,
+  .school-admin__inline-actions,
+  .school-admin__chip-row{
+    flex-direction:column;
+    align-items:stretch;
+  }
+
+  .school-admin__hero-link,
+  .school-admin__pill-button,
+  .school-admin__inline-button,
+  .school-admin__inline-link{
+    width:100%;
+  }
+
+  .school-admin__trace-item{
+    flex-direction:column;
+  }
+
+  .school-admin__trace-item strong{
+    text-align:left;
+  }
+}
+

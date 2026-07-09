@@ -10,12 +10,12 @@ export interface NotificationMessage {
   actions?: Array<{ libelle: string; action: () => void }>;
 }
 
-// Service de notifications frontend avec compatibilitÃ© prÃ©servÃ©e
+// Service de notifications frontend avec compatibilite preservee
 export const notificationsService = {
-  // PropriÃ©tÃ© existante prÃ©servÃ©e pour compatibilitÃ©
+  // Propriete existante preservee pour compatibilite
   actif: true,
 
-  // Nouvelles fonctionnalitÃ©s
+  // Nouvelles fonctionnalites
   notifications: ref<NotificationMessage[]>([]),
 
   // Ajouter une notification
@@ -25,12 +25,12 @@ export const notificationsService = {
       ...notification,
       id,
       timestamp: new Date(),
-      duree: notification.duree || 5000, // 5 secondes par dÃ©faut
+      duree: notification.duree || 5000, // 5 secondes par defaut
     };
 
     this.notifications.value.push(nouvelleNotification);
 
-    // Auto-dismiss si durÃ©e dÃ©finie
+    // Fermeture automatique si une duree est definie
     if (nouvelleNotification.duree && nouvelleNotification.duree > 0) {
       setTimeout(() => {
         this.retirer(id);
@@ -53,7 +53,7 @@ export const notificationsService = {
     this.notifications.value = [];
   },
 
-  // Notifications prÃ©dÃ©finies
+  // Notifications predefinies
   succes(titre: string, message: string, options?: Partial<Omit<NotificationMessage, 'id' | 'timestamp' | 'titre' | 'message' | 'type'>>) {
     return this.ajouter({ titre, message, type: 'succes', ...options });
   },
@@ -87,7 +87,7 @@ export const notificationsService = {
     return comptes;
   },
 
-  // Obtenir les notifications rÃ©centes (derniÃ¨res N)
+  // Obtenir les notifications recentes (dernieres N)
   recentes(limit: number = 5) {
     return this.notifications.value
       .slice()

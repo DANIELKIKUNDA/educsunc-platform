@@ -1,266 +1,300 @@
 <template>
   <PageContainer>
-    <PageHeader eyebrow="ADM-01" title="Detail administration ecole" description="Pilotage detaille du mode, du nom et de l identite institutionnelle d une ecole.">
+    <PageHeader
+      eyebrow="ADM-02"
+      title="Fiche structurelle d une ecole"
+      description="Consultation, identite institutionnelle et cycle de vie d une ecole dans le cadre strict de ADM-01."
+    >
       <template #actions>
-        <RouterLink class="adm-link" to="/app/administration-ecole/ecoles">
-          <ArrowLeft />
-          <span>Retour registre</span>
-        </RouterLink>
+        <div class="school-admin__hero-actions">
+          <RouterLink class="school-admin__hero-link" to="/app/administration-ecole/ecoles">
+            Retour au registre
+          </RouterLink>
+        </div>
       </template>
     </PageHeader>
 
-    <LoadingState v-if="store.state.status === 'loading'" title="Chargement ecole" message="Le backend relit l ecole cible." />
-    <ErrorState v-else-if="store.state.status === 'error'" title="Ecole indisponible" :message="store.state.errorMessage ?? 'La fiche ecole ne peut pas etre ouverte.'" />
+    <div v-if="store.state.status === 'loading'" class="school-admin__skeleton-grid">
+      <div v-for="index in 4" :key="index" class="school-admin__skeleton-card" />
+    </div>
+    <ErrorState
+      v-else-if="store.state.status === 'error'"
+      title="Fiche indisponible"
+      :message="store.state.errorMessage ?? 'La fiche structurelle de cette ecole ne peut pas etre ouverte.'"
+    />
+    <EmptyState
+      v-else-if="!school"
+      title="Aucune ecole chargee"
+      message="Le detail attend un identifiant d ecole valide pour relire la fiche backend."
+    />
 
-    <template v-else-if="store.state.selectedEcole">
-      <SectionBlock title="Lecture courante" description="Le detail relit le backend avant toute mutation visible.">
-        <div class="adm-kpi-grid">
-          <div class="adm-kpi-card"><small>Code</small><strong>{{ store.state.selectedEcole.code }}</strong></div>
-          <div class="adm-kpi-card"><small>Nom</small><strong>{{ store.state.selectedEcole.nom }}</strong></div>
-          <div class="adm-kpi-card"><small>Mode</small><strong>{{ store.state.selectedEcole.modeExploitation }}</strong></div>
-          <div class="adm-kpi-card"><small>Etat</small><strong>{{ store.state.selectedEcole.actif ? 'Active' : 'Inactive' }}</strong></div>
-        </div>
-      </SectionBlock>
+    <template v-else>
+      <section class="school-admin__stat-grid">
+        <StatCard
+          v-for="card in summaryCards"
+          :key="card.label"
+          :icon="card.icon"
+          :label="card.label"
+          :value="card.value"
+          :hint="card.hint"
+          :tone="card.tone"
+        />
+      </section>
 
-      <SectionBlock title="Promotion du contexte" description="Permet de faire descendre cette ecole dans le Shell actif avant les workflows d exploitation.">
-        <div class="adm-actions">
-          <button class="adm-pill" type="button" @click="activerOrganisationDansContexte">Activer organisation</button>
-          <button class="adm-pill" type="button" @click="activerEcoleDansContexte">Activer ecole</button>
-        </div>
+      <SectionBlock
+        v-if="store.state.lastMutationMessage"
+        title="Derniere mutation"
+        description="Le backend a bien confirme la derniere operation structurelle."
+      >
+        <div class="school-admin__banner">{{ store.state.lastMutationMessage }}</div>
       </SectionBlock>
 
       <SectionBlock
-        title="Operations locales prioritaires"
-        description="Le detail structurel devient aussi un vrai point de lancement pour les workflows ecole apres bascule automatique du contexte."
+        title="Identite institutionnelle"
+        description="Lecture complete des champs reels exposes par le backend pour l ecole selectionnee."
       >
-        <div class="adm-workflow-grid">
-          <button class="adm-workflow-card" type="button" @click="ouvrirWorkflowEcole('/app/academique/annees-scolaires')">
-            <strong>Annees scolaires</strong>
-            <small>Verifier ou relire l annee active avant exploitation locale.</small>
-          </button>
-          <button class="adm-workflow-card" type="button" @click="ouvrirWorkflowEcole('/app/scolarite/inscriptions')">
-            <strong>Inscription scolaire</strong>
-            <small>Ouvrir le flux complet d entree eleve dans la meme ecole active.</small>
-          </button>
-          <button class="adm-workflow-card" type="button" @click="ouvrirWorkflowEcole('/app/finances/paiements/enregistrer')">
-            <strong>Perception de paiement</strong>
-            <small>Basculer directement sur la caisse autorisee de cette ecole.</small>
-          </button>
-          <button class="adm-workflow-card" type="button" @click="ouvrirWorkflowEcole('/app/finances/registre-classe')">
-            <strong>Registre financier</strong>
-            <small>Ouvrir les vues de suivi financier sans repasser par un autre module.</small>
-          </button>
+        <div class="school-admin__identity-grid">
+          <article class="school-admin__identity-card">
+            <header>
+              <h3>Presentation</h3>
+              <p>Vue de lecture structurelle sans ajout de capacites non prouvees.</p>
+            </header>
+            <div class="school-admin__trace-list">
+              <div class="school-admin__trace-item"><span>Nom</span><strong>{{ school.nom }}</strong></div>
+              <div class="school-admin__trace-item"><span>Code</span><strong>{{ school.code }}</strong></div>
+              <div class="school-admin__trace-item"><span>Sigle</span><strong>{{ school.sigle || '-' }}</strong></div>
+              <div class="school-admin__trace-item"><span>Mode</span><strong><SchoolModeBadge :mode="school.modeExploitation" /></strong></div>
+              <div class="school-admin__trace-item"><span>Statut</span><strong><SchoolStatusBadge :active="school.actif" /></strong></div>
+            </div>
+          </article>
+
+          <article class="school-admin__identity-card">
+            <header>
+              <h3>Coordonnees</h3>
+              <p>Les informations institutionnelles peuvent etre mises a jour si `referentiel.write` est reellement ouvert.</p>
+            </header>
+            <div class="school-admin__trace-list">
+              <div class="school-admin__trace-item"><span>Telephone</span><strong>{{ school.telephone || '-' }}</strong></div>
+              <div class="school-admin__trace-item"><span>Email</span><strong>{{ school.email || '-' }}</strong></div>
+              <div class="school-admin__trace-item"><span>Adresse</span><strong>{{ school.adresse || '-' }}</strong></div>
+              <div class="school-admin__trace-item"><span>Province educationnelle</span><strong>{{ school.provinceEducationnelle || '-' }}</strong></div>
+              <div class="school-admin__trace-item"><span>Ville</span><strong>{{ school.ville || '-' }}</strong></div>
+              <div class="school-admin__trace-item"><span>Commune / territoire</span><strong>{{ school.communeOuTerritoire || '-' }}</strong></div>
+            </div>
+          </article>
+
+          <article class="school-admin__identity-card">
+            <header>
+              <h3>Trace structurelle</h3>
+              <p>Historique direct expose par le DTO actuel, sans reconstruction artificielle.</p>
+            </header>
+            <div class="school-admin__trace-list">
+              <div class="school-admin__trace-item"><span>Organisation</span><strong>{{ school.idOrganisation }}</strong></div>
+              <div class="school-admin__trace-item"><span>Cree le</span><strong>{{ school.creeLe }}</strong></div>
+              <div class="school-admin__trace-item"><span>Cree par</span><strong>{{ school.creePar || '-' }}</strong></div>
+              <div class="school-admin__trace-item"><span>Modifie le</span><strong>{{ school.modifieLe || '-' }}</strong></div>
+              <div class="school-admin__trace-item"><span>Modifie par</span><strong>{{ school.modifiePar || '-' }}</strong></div>
+              <div class="school-admin__trace-item"><span>Version</span><strong>{{ school.version }}</strong></div>
+            </div>
+          </article>
         </div>
       </SectionBlock>
 
       <SectionBlock
         v-if="canMutateDetail"
-        title="Mutations structurelles"
-        description="Les actions visibles restent limitees au workflow ADM-01 prouve."
+        title="Mutations structurelles autorisees"
+        description="Cette fiche reste volontairement limitee aux mutations prouvees: renommage, mode, identite institutionnelle, activation et desactivation."
       >
-        <div class="adm-grid">
-          <label class="adm-field">
-            <span>Nouveau nom</span>
-            <input v-model="renameTarget" type="text" placeholder="Nouveau nom" />
-          </label>
-          <label class="adm-field">
-            <span>Nouveau mode</span>
-            <input v-model="modeTarget" type="text" placeholder="MONO_ECOLE" />
-          </label>
-          <label class="adm-field">
-            <span>Sigle</span>
-            <input v-model="sigleTarget" type="text" placeholder="CSR" />
-          </label>
-          <label class="adm-field">
-            <span>Telephone</span>
-            <input v-model="telephoneTarget" type="text" placeholder="+243..." />
-          </label>
-          <label class="adm-field">
-            <span>Email</span>
-            <input v-model="emailTarget" type="email" placeholder="contact@ecole.cd" />
-          </label>
-          <label class="adm-field">
-            <span>Province educationnelle</span>
-            <input v-model="provinceEducationnelleTarget" type="text" placeholder="Haut-Katanga 1" />
-          </label>
-          <label class="adm-field">
-            <span>Ville</span>
-            <input v-model="villeTarget" type="text" placeholder="Lubumbashi" />
-          </label>
-          <label class="adm-field">
-            <span>Commune / territoire</span>
-            <input v-model="communeOuTerritoireTarget" type="text" placeholder="Kampemba" />
-          </label>
-          <label class="adm-field adm-field--wide">
-            <span>Adresse</span>
-            <input v-model="adresseTarget" type="text" placeholder="Adresse ecole" />
-          </label>
-        </div>
+        <div class="school-admin__detail-grid">
+          <article class="school-admin__mutations-card">
+            <header>
+              <h3>Renommer l ecole</h3>
+              <p>Le backend applique le nouveau nom puis conserve la tracabilite.</p>
+            </header>
+            <form @submit.prevent="renameSchool">
+              <div class="school-admin__field">
+                <span>Nouveau nom</span>
+                <input v-model="renameTarget" type="text" placeholder="Nouveau nom officiel" />
+              </div>
+              <div class="school-admin__actions">
+                <button
+                  class="school-admin__pill-button school-admin__pill-button--primary"
+                  type="submit"
+                  :disabled="!renameTarget.trim() || store.state.mutationStatus === 'loading'"
+                >
+                  Renommer
+                </button>
+              </div>
+            </form>
+          </article>
 
-        <div class="adm-actions">
-          <button class="adm-pill" type="button" :disabled="!renameTarget.trim()" @click="renommer">Renommer</button>
-          <button class="adm-pill" type="button" :disabled="!modeTarget.trim()" @click="changerMode">Changer mode</button>
-          <button class="adm-pill" type="button" @click="mettreAJourInformations">Mettre a jour les infos</button>
-          <button class="adm-pill" type="button" @click="activer">Activer</button>
-          <button class="adm-pill" type="button" @click="desactiver">Desactiver</button>
+          <article class="school-admin__mutations-card">
+            <header>
+              <h3>Changer le mode d exploitation</h3>
+              <p>Les seules valeurs exposees proviennent de l enumeration backend.</p>
+            </header>
+            <form @submit.prevent="updateMode">
+              <div class="school-admin__field">
+                <span>Mode cible</span>
+                <select v-model="identityForm.modeExploitation">
+                  <option v-for="option in schoolModeOptions" :key="option.value" :value="option.value">
+                    {{ option.label }}
+                  </option>
+                </select>
+              </div>
+              <div class="school-admin__helper">
+                {{ schoolModeOptions.find((option) => option.value === identityForm.modeExploitation)?.description }}
+              </div>
+              <div class="school-admin__actions">
+                <button
+                  class="school-admin__pill-button school-admin__pill-button--primary"
+                  type="submit"
+                  :disabled="store.state.mutationStatus === 'loading'"
+                >
+                  Mettre a jour le mode
+                </button>
+              </div>
+            </form>
+          </article>
+
+          <article class="school-admin__mutations-card">
+            <header>
+              <h3>Mettre a jour l identite institutionnelle</h3>
+              <p>Les champs exposes correspondent exactement au DTO et a la route de mutation prouvee.</p>
+            </header>
+            <form @submit.prevent="updateInstitutionalInfo">
+              <div class="school-admin__form-grid">
+                <div class="school-admin__field">
+                  <span>Sigle</span>
+                  <input v-model="identityForm.sigle" type="text" placeholder="CSR" />
+                </div>
+                <div class="school-admin__field">
+                  <span>Telephone</span>
+                  <input v-model="identityForm.telephone" type="text" placeholder="+243..." />
+                </div>
+                <div class="school-admin__field">
+                  <span>Email</span>
+                  <input v-model="identityForm.email" type="email" placeholder="contact@ecole.cd" />
+                </div>
+                <div class="school-admin__field">
+                  <span>Province educationnelle</span>
+                  <input v-model="identityForm.provinceEducationnelle" type="text" placeholder="Haut-Katanga 1" />
+                </div>
+                <div class="school-admin__field">
+                  <span>Ville</span>
+                  <input v-model="identityForm.ville" type="text" placeholder="Lubumbashi" />
+                </div>
+                <div class="school-admin__field">
+                  <span>Commune / territoire</span>
+                  <input v-model="identityForm.communeOuTerritoire" type="text" placeholder="Kampemba" />
+                </div>
+                <div class="school-admin__field school-admin__field--wide">
+                  <span>Adresse</span>
+                  <input v-model="identityForm.adresse" type="text" placeholder="Adresse institutionnelle" />
+                </div>
+              </div>
+              <div class="school-admin__actions">
+                <button
+                  class="school-admin__pill-button school-admin__pill-button--primary"
+                  type="submit"
+                  :disabled="store.state.mutationStatus === 'loading'"
+                >
+                  Enregistrer l identite
+                </button>
+              </div>
+            </form>
+          </article>
+
+          <article class="school-admin__mutations-card">
+            <header>
+              <h3>Cycle de vie</h3>
+              <p>L ecole reste visible dans le registre, mais son statut structurel peut etre modifie avec confirmation.</p>
+            </header>
+            <div class="school-admin__actions">
+              <button
+                class="school-admin__pill-button school-admin__pill-button--primary"
+                type="button"
+                :disabled="school.actif || store.state.mutationStatus === 'loading'"
+                @click="openLifecycleModal('activate')"
+              >
+                Activer l ecole
+              </button>
+              <button
+                class="school-admin__pill-button"
+                type="button"
+                :disabled="!school.actif || store.state.mutationStatus === 'loading'"
+                @click="openLifecycleModal('deactivate')"
+              >
+                Desactiver l ecole
+              </button>
+            </div>
+          </article>
         </div>
       </SectionBlock>
 
       <SectionBlock
         v-else
         title="Lecture seule"
-        description="Le detail d ecole reste visible, mais les mutations ne sont pas ouvertes dans ce profil."
+        description="Le detail reste ouvert, mais ce profil ne peut pas muter l existence ni l identite de l ecole."
       >
-        <div class="adm-banner adm-banner--muted">
-          Cet acteur peut consulter la fiche ecole sans renommer, activer, desactiver ni modifier son identite institutionnelle.
+        <div class="school-admin__banner school-admin__banner--muted">
+          La fiche respecte le backend actuel: lecture structurelle oui, mutations non.
         </div>
       </SectionBlock>
 
-      <SectionBlock v-if="store.state.lastMutationMessage" title="Derniere mutation" description="Confirmation de la derniere operation backend.">
-        <div class="adm-banner">{{ store.state.lastMutationMessage }}</div>
-      </SectionBlock>
-
-      <SectionBlock title="Identite institutionnelle" description="Lecture complete des champs structurels exposes par le backend.">
-        <div class="adm-kpi-grid">
-          <div class="adm-kpi-card"><small>Sigle</small><strong>{{ store.state.selectedEcole.sigle || '-' }}</strong></div>
-          <div class="adm-kpi-card"><small>Telephone</small><strong>{{ store.state.selectedEcole.telephone || '-' }}</strong></div>
-          <div class="adm-kpi-card"><small>Email</small><strong>{{ store.state.selectedEcole.email || '-' }}</strong></div>
-          <div class="adm-kpi-card"><small>Adresse</small><strong>{{ store.state.selectedEcole.adresse || '-' }}</strong></div>
-          <div class="adm-kpi-card"><small>Province educationnelle</small><strong>{{ store.state.selectedEcole.provinceEducationnelle || '-' }}</strong></div>
-          <div class="adm-kpi-card"><small>Ville</small><strong>{{ store.state.selectedEcole.ville || '-' }}</strong></div>
-          <div class="adm-kpi-card"><small>Commune / territoire</small><strong>{{ store.state.selectedEcole.communeOuTerritoire || '-' }}</strong></div>
-          <div class="adm-kpi-card"><small>Organisation</small><strong>{{ store.state.selectedEcole.idOrganisation }}</strong></div>
+      <SectionBlock
+        title="Projection future"
+        description="Cette fiche constitue un point d entree vers le futur niveau Ecole, sans deja ouvrir ses workflows d exploitation."
+      >
+        <div class="school-admin__placeholder-card">
+          <p>
+            Le niveau Ecole sera branche plus tard. Cette vue reste volontairement limitee a l existence et a l identite structurelle de l ecole.
+          </p>
         </div>
       </SectionBlock>
+
+      <SchoolLifecycleModal
+        :open="lifecycleModalOpen"
+        :action="lifecycleAction"
+        :school-name="school.nom"
+        :pending="store.state.mutationStatus === 'loading'"
+        @close="closeLifecycleModal"
+        @confirm="confirmLifecycle"
+      />
     </template>
-
-    <EmptyState v-else title="Aucune ecole chargee" message="Le detail n a pas encore pu relire l ecole cible." />
   </PageContainer>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
-import { useRoute, useRouter, RouterLink } from 'vue-router';
-import { ArrowLeft } from 'lucide-vue-next';
+import { RouterLink } from 'vue-router';
+import EmptyState from '../../../shared/ui/EmptyState.vue';
+import ErrorState from '../../../shared/ui/ErrorState.vue';
+import StatCard from '../../../shared/ui/StatCard.vue';
 import PageContainer from '../../../shared/layout/PageContainer.vue';
 import PageHeader from '../../../shared/layout/PageHeader.vue';
 import SectionBlock from '../../../shared/layout/SectionBlock.vue';
-import { changerEcoleActiveFrontend, changerOrganisationActiveFrontend } from '../../../shared/auth/session.bootstrap';
-import EmptyState from '../../../shared/ui/EmptyState.vue';
-import ErrorState from '../../../shared/ui/ErrorState.vue';
-import LoadingState from '../../../shared/ui/LoadingState.vue';
-import { useOrganizationGovernanceStore } from '../../organisation/stores/organization-governance.store';
-import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
-import { activeContextStore } from '../../../shared/session/active-context.store';
+import SchoolLifecycleModal from '../components/SchoolLifecycleModal.vue';
+import SchoolModeBadge from '../components/SchoolModeBadge.vue';
+import SchoolStatusBadge from '../components/SchoolStatusBadge.vue';
+import { useSchoolAdministrationDetailViewModel } from '../viewmodels/useSchoolAdministrationDetailViewModel';
 
-const route = useRoute();
-const router = useRouter();
-const store = useOrganizationGovernanceStore();
-const { canUseAction } = useDoctrineAccess();
-const renameTarget = ref('');
-const modeTarget = ref('MONO_ECOLE');
-const sigleTarget = ref('');
-const telephoneTarget = ref('');
-const emailTarget = ref('');
-const provinceEducationnelleTarget = ref('');
-const villeTarget = ref('');
-const communeOuTerritoireTarget = ref('');
-const adresseTarget = ref('');
-const canMutateDetail = computed(() => canUseAction('school-administration.detail.write', 'ADM-002'));
-
-async function charger(): Promise<void> {
-  const idEcole = typeof route.params.idEcole === 'string' ? route.params.idEcole : '';
-  if (!idEcole) return;
-  await store.chargerEcole(idEcole);
-
-  const ecole = store.state.selectedEcole;
-  if (!ecole) return;
-  modeTarget.value = ecole.modeExploitation || 'MONO_ECOLE';
-  sigleTarget.value = ecole.sigle || '';
-  telephoneTarget.value = ecole.telephone || '';
-  emailTarget.value = ecole.email || '';
-  provinceEducationnelleTarget.value = ecole.provinceEducationnelle || '';
-  villeTarget.value = ecole.ville || '';
-  communeOuTerritoireTarget.value = ecole.communeOuTerritoire || '';
-  adresseTarget.value = ecole.adresse || '';
-}
-
-async function renommer(): Promise<void> {
-  const idEcole = store.state.selectedEcole?.id;
-  if (!idEcole || !renameTarget.value.trim()) return;
-  await store.renommerEcole(idEcole, renameTarget.value.trim());
-  renameTarget.value = '';
-}
-
-async function changerMode(): Promise<void> {
-  const idEcole = store.state.selectedEcole?.id;
-  if (!idEcole || !modeTarget.value.trim()) return;
-  await store.changerModeEcole(idEcole, modeTarget.value.trim());
-}
-
-async function mettreAJourInformations(): Promise<void> {
-  const idEcole = store.state.selectedEcole?.id;
-  if (!idEcole) return;
-  await store.mettreAJourInformationsEcole(idEcole, {
-    sigle: sigleTarget.value.trim() || undefined,
-    telephone: telephoneTarget.value.trim() || undefined,
-    email: emailTarget.value.trim() || undefined,
-    provinceEducationnelle: provinceEducationnelleTarget.value.trim() || undefined,
-    ville: villeTarget.value.trim() || undefined,
-    communeOuTerritoire: communeOuTerritoireTarget.value.trim() || undefined,
-    adresse: adresseTarget.value.trim() || undefined,
-  });
-}
-
-async function activer(): Promise<void> {
-  const idEcole = store.state.selectedEcole?.id;
-  if (!idEcole) return;
-  await store.activerEcole(idEcole);
-}
-
-async function desactiver(): Promise<void> {
-  const idEcole = store.state.selectedEcole?.id;
-  if (!idEcole) return;
-  await store.desactiverEcole(idEcole);
-}
-
-async function activerOrganisationDansContexte(): Promise<void> {
-  const idOrganisation = store.state.selectedEcole?.idOrganisation;
-  if (!idOrganisation) return;
-  await changerOrganisationActiveFrontend(idOrganisation);
-  activeContextStore.setGovernanceLevel('ORGANISATION');
-}
-
-async function activerEcoleDansContexte(): Promise<void> {
-  const idOrganisation = store.state.selectedEcole?.idOrganisation;
-  const idEcole = store.state.selectedEcole?.id;
-  if (!idOrganisation || !idEcole) return;
-  await changerOrganisationActiveFrontend(idOrganisation);
-  await changerEcoleActiveFrontend(idEcole);
-  activeContextStore.setGovernanceLevel('ECOLE');
-}
-
-async function ouvrirWorkflowEcole(cible: string): Promise<void> {
-  await activerEcoleDansContexte();
-  await router.push(cible);
-}
-
-onMounted(async () => {
-  await charger();
-});
+const {
+  store,
+  school,
+  canMutateDetail,
+  renameTarget,
+  identityForm,
+  schoolModeOptions,
+  summaryCards,
+  lifecycleModalOpen,
+  lifecycleAction,
+  renameSchool,
+  updateMode,
+  updateInstitutionalInfo,
+  openLifecycleModal,
+  closeLifecycleModal,
+  confirmLifecycle,
+} = useSchoolAdministrationDetailViewModel();
 </script>
 
-<style scoped>
-.adm-link,.adm-pill{border:1px solid rgba(17,40,63,.14);border-radius:999px;padding:.75rem 1rem;background:#fff;color:#11283f;text-decoration:none;font-weight:600;display:inline-flex;align-items:center;gap:.45rem}
-.adm-kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem}
-.adm-kpi-card{border-radius:22px;padding:1rem;background:#fff;border:1px solid rgba(17,40,63,.08);box-shadow:0 18px 45px rgba(17,40,63,.08);display:grid;gap:.35rem}
-.adm-grid,.adm-actions{display:flex;flex-wrap:wrap;gap:.9rem}
-.adm-grid,.adm-workflow-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
-.adm-field{display:grid;gap:.45rem;min-width:220px}
-.adm-field--wide{grid-column:1/-1}
-.adm-field input{border-radius:16px;border:1px solid rgba(17,40,63,.14);padding:.8rem .95rem;background:#fbfdff}
-.adm-banner{padding:1rem 1.1rem;border-radius:20px;background:#eef4ff;color:#102844;font-weight:600}
-.adm-banner--muted{background:#f4f7fb;color:#445b70}
-.adm-workflow-card{display:grid;gap:.55rem;text-align:left;padding:1rem 1.05rem;border-radius:22px;border:1px solid rgba(17,40,63,.08);background:linear-gradient(180deg,#f7fbfd,#ffffff);box-shadow:0 18px 45px rgba(17,40,63,.08);color:#11283f}
-.adm-workflow-card small{color:#587083;line-height:1.5}
-</style>
+<style src="../school-administration.css"></style>

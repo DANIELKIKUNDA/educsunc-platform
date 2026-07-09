@@ -35,10 +35,10 @@ export function useOrganizationAttachedSchoolsViewModel() {
   const isLoading = computed(() => store.state.status === 'loading' && store.state.ecoles.length === 0);
   const isBusy = computed(() => store.state.mutationStatus === 'loading' || chargementSupplementaire.value);
   const errorMessage = computed(() => store.state.errorMessage);
-  const canCreateSchool = computed(() => canUseAction('school-administration.write', 'ADM-001'));
+  const canCreateSchool = computed(() => canUseAction('referentiel.write', 'ADM-001'));
   const canViewSchool = computed(() => canUseAction('organization.school.detail.read', 'ORG-001-SCHOOLS') || canAccessPage('ORG-002'));
   const canConfigureSchool = computed(() => canAccessPage('CFG-ECO-001'));
-  const canToggleSchoolStatus = computed(() => canUseAction('school-administration.detail.write', 'ADM-002'));
+  const canToggleSchoolStatus = computed(() => canUseAction('referentiel.write', 'ADM-002'));
   const canOpenSchoolWorkspace = computed(() => canAccessPage('ADM-002'));
 
   const availableStatuses = computed(() => {

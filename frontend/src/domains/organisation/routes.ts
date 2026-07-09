@@ -40,7 +40,7 @@ export const routesOrganisation: RouteRecordRaw[] = [
   {
     path: 'organisation/configuration',
     name: 'organization-configuration',
-    component: () => import('../configuration/views/ConfigurationOrganizationView.vue'),
+    component: () => import('../configuration/views/ConfigurationCenterView.vue'),
     meta: { title: 'Configuration organisationnelle' },
   },
 ];
