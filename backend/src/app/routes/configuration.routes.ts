@@ -30,6 +30,7 @@ import {
   PropagateConfigurationUseCase,
   ReloadRuntimeConfigurationUseCase,
   RepositoryConfigurationMemoire,
+  RepositoryConfigurationMemoirePersistante,
   RepositoryConfigurationSnapshotMemoire,
   type DependancesRoutesConfiguration,
   type EffectiveConfigurationReadModel,
@@ -44,10 +45,19 @@ import {
   creerRoutesSnapshotsConfiguration,
   creerRoutesValidationConfiguration,
 } from '../../shared/configuration';
+import { configurationApplication } from '../../config/app.config';
+import { ConfigurationInitialisationOfficielleService } from '../services/ConfigurationInitialisationOfficielleService';
 import type { PortSuppressionConfiguration } from '../../shared/configuration/application/ports';
 import { ConfigurationSnapshotMapper } from '../../shared/configuration/application/mappers/ConfigurationSnapshotMapper';
 import { ConfigurationApplicationMapper } from '../../shared/configuration/application/mappers/ConfigurationApplicationMapper';
-import { ConfigurationId, ConfigurationKey, ConfigurationScope, ConfigurationValue, type Configuration } from '../../shared/configuration/domain';
+import {
+  CATALOGUE_MODULES_CONFIGURATION,
+  ConfigurationId,
+  ConfigurationKey,
+  ConfigurationScope,
+  ConfigurationValue,
+  type Configuration,
+} from '../../shared/configuration/domain';
 
 type PluginRoutesConfiguration = FastifyPluginAsync & {
   nom: string;
@@ -81,6 +91,10 @@ const ROLES_ECOLE_CONFIGURATION = new Set([
 const infrastructureConfiguration = new FacadeInfrastructureConfiguration();
 const registreConfiguration = infrastructureConfiguration.composants();
 const politiqueClassificationConfiguration = new PolitiqueClassificationConfiguration();
+const repositoryConfiguration =
+  configurationApplication.environnement === 'test'
+    ? new RepositoryConfigurationMemoire()
+    : new RepositoryConfigurationMemoirePersistante();
 
 class AuditConfigurationMemoirePort implements PortAuditConfiguration {
   public readonly journal: Array<{ configurationId: string; evenements: readonly object[] }> = [];
@@ -305,8 +319,8 @@ class ServiceActivationModulesConfiguration {
       ecoleId: params.ecoleId,
     });
 
-    const modulesAutorisesOrganisation = this.extraireModules(allowedConfig?.details().valeur);
-    const modulesActivesEcole = this.extraireModules(enabledConfig?.details().valeur);
+    const modulesAutorisesOrganisation = this.extraireModulesAutorises(allowedConfig?.details().valeur);
+    const modulesActivesEcole = this.extraireModulesActifs(enabledConfig?.details().valeur);
     const modulesEffectifs = modulesActivesEcole.filter((module) =>
       modulesAutorisesOrganisation.includes(module),
     );
@@ -336,9 +350,16 @@ class ServiceActivationModulesConfiguration {
     return resolution.modulesEffectifs.includes(params.module);
   }
 
-  private extraireModules(value: ValeurConfiguration | undefined): readonly TypeModuleConfiguration[] {
+  private extraireModulesAutorises(value: ValeurConfiguration | undefined): readonly TypeModuleConfiguration[] {
     if (!Array.isArray(value)) {
       return MODULES_CONFIGURATION;
+    }
+    return this.normaliserModules(value as readonly string[]);
+  }
+
+  private extraireModulesActifs(value: ValeurConfiguration | undefined): readonly TypeModuleConfiguration[] {
+    if (!Array.isArray(value)) {
+      return [];
     }
     return this.normaliserModules(value as readonly string[]);
   }
@@ -376,7 +397,7 @@ class ServiceActivationModulesConfiguration {
 
 const auditConfiguration = new AuditConfigurationMemoirePort();
 const readModelConfiguration = new ConfigurationReadModelMemoire(
-  registreConfiguration.repositoryConfiguration,
+  repositoryConfiguration,
 );
 const effectiveReadModelConfiguration = new EffectiveConfigurationReadModelMemoire(
   readModelConfiguration,
@@ -385,15 +406,19 @@ const snapshotsReadModelConfiguration = new ConfigurationSnapshotReadModelMemoir
   registreConfiguration.repositorySnapshots,
 );
 const createConfigurationUseCase = new CreateConfigurationUseCase(
-  registreConfiguration.repositoryConfiguration,
+  repositoryConfiguration,
   auditConfiguration,
   registreConfiguration.monitoring,
 );
 const updateConfigurationUseCase = new UpdateConfigurationUseCase(
-  registreConfiguration.repositoryConfiguration,
+  repositoryConfiguration,
   registreConfiguration.repositoryVersions,
   auditConfiguration,
   registreConfiguration.monitoring,
+);
+export const configurationInitialisationService = new ConfigurationInitialisationOfficielleService(
+  createConfigurationUseCase,
+  () => readModelConfiguration.listerConfigurations(),
 );
 const configurationModulesService = new ServiceActivationModulesConfiguration(
   readModelConfiguration,
@@ -405,7 +430,7 @@ export const moduleActivationConfigurationService = configurationModulesService;
 
 function composerRoutesConfiguration(): DependancesRoutesConfiguration {
   const suppression = new SuppressionConfigurationMemoirePort(
-    registreConfiguration.repositoryConfiguration,
+    repositoryConfiguration,
   );
   const configurationController = new ControleurConfigurationHttp(
     createConfigurationUseCase,
@@ -418,19 +443,19 @@ function composerRoutesConfiguration(): DependancesRoutesConfiguration {
       registreConfiguration.monitoring,
     ),
     new LockConfigurationUseCase(
-      registreConfiguration.repositoryConfiguration,
+      repositoryConfiguration,
       auditConfiguration,
       registreConfiguration.monitoring,
     ),
     new UnlockConfigurationUseCase(
-      registreConfiguration.repositoryConfiguration,
+      repositoryConfiguration,
       auditConfiguration,
       registreConfiguration.monitoring,
     ),
     new GetConfigurationUseCase(readModelConfiguration),
     new GetEffectiveConfigurationUseCase(effectiveReadModelConfiguration),
     new OverrideConfigurationUseCase(
-      registreConfiguration.repositoryConfiguration,
+      repositoryConfiguration,
       auditConfiguration,
       registreConfiguration.monitoring,
     ),
@@ -453,7 +478,7 @@ function composerRoutesConfiguration(): DependancesRoutesConfiguration {
   );
   const snapshotsController = new ControleurSnapshotsConfigurationHttp(
     new CreateSnapshotConfigurationUseCase(
-      registreConfiguration.repositoryConfiguration,
+      repositoryConfiguration,
       registreConfiguration.repositorySnapshots,
       auditConfiguration,
       registreConfiguration.monitoring,
@@ -931,6 +956,7 @@ async function verifierPorteeModules(
 
 export const routeConfiguration: PluginRoutesConfiguration = Object.assign(
   async (serveur: Parameters<FastifyPluginAsync>[0]) => {
+    const bootstrapSysteme = await configurationInitialisationService.amorcerSysteme();
     const dependances = composerRoutesConfiguration();
 
     await serveur.register(creerRoutesConfiguration(dependances));
@@ -975,6 +1001,20 @@ export const routeConfiguration: PluginRoutesConfiguration = Object.assign(
         succes: true,
         code: 200,
         donnees: resolution,
+      });
+    });
+
+    serveur.get('/api/v1/configuration/modules/catalogue', async (requete, reponse) => {
+      if (!(await appliquerMiddlewaresModules(dependances, requete, reponse, 'configuration.modules.read'))) {
+        return;
+      }
+
+      reponse.code(200).send({
+        succes: true,
+        code: 200,
+        donnees: {
+          modules: CATALOGUE_MODULES_CONFIGURATION,
+        },
       });
     });
 
@@ -1077,6 +1117,8 @@ export const routeConfiguration: PluginRoutesConfiguration = Object.assign(
         contexte: {
           bc: 'shared-configuration',
           prefixe: routeConfiguration.prefixe,
+          bootstrapSystemeCree: bootstrapSysteme.createdKeys.length,
+          bootstrapSystemeIgnores: bootstrapSysteme.skippedKeys.length,
         },
       },
       'Routes Configuration enregistrees.',

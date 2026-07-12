@@ -15,9 +15,11 @@ import type { TypeModuleConfiguration } from '../../shared/configuration/domain/
 
 type RouteGlobale = FastifyPluginAsync & { prefixe: string };
 
-function routeReferentielAcademiqueEstGlobale(url: string): boolean {
+export function routeReferentielAcademiqueEstGouvernancePlateforme(url: string): boolean {
   return (
-    url.startsWith('/api/sections-scolaires')
+    url.startsWith('/api/organisations')
+    || url.startsWith('/api/ecoles')
+    || url.startsWith('/api/sections-scolaires')
     || url.startsWith('/api/classes-academiques')
     || url.startsWith('/api/options-etudes')
     || url.startsWith('/api/referentiels')
@@ -72,7 +74,7 @@ async function enregistrerRouteModule(
     instance.addHook('preHandler', async (requete, reponse) => {
       const organisationId = requete.context?.organisationActiveId;
       const ecoleId = (
-        module === 'REFERENTIEL_ACADEMIQUE' && routeReferentielAcademiqueEstGlobale(requete.url)
+        module === 'REFERENTIEL_ACADEMIQUE' && routeReferentielAcademiqueEstGouvernancePlateforme(requete.url)
       )
         ? undefined
         : requete.context?.ecoleActiveId;

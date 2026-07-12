@@ -80,7 +80,6 @@ async function executeLoad(
     state.status = 'error';
     state.errorMessage = extractMessage(error, fallbackMessage);
     state.statusMessage = null;
-    notificationsService.danger('Administration ecole', state.errorMessage);
   }
 }
 
@@ -88,7 +87,7 @@ async function executeMutation(
   action: () => Promise<void>,
   fallbackMessage: string,
   loadingMessage?: string,
-): Promise<void> {
+): Promise<boolean> {
   state.mutationStatus = 'loading';
   state.errorMessage = null;
   state.statusMessage = loadingMessage ?? null;
@@ -97,10 +96,12 @@ async function executeMutation(
     await action();
     state.status = 'ready';
     state.statusMessage = null;
+    return true;
   } catch (error) {
     state.errorMessage = extractMessage(error, fallbackMessage);
     state.statusMessage = null;
     notificationsService.danger('Action impossible', state.errorMessage);
+    return false;
   } finally {
     state.mutationStatus = 'idle';
   }
@@ -133,22 +134,25 @@ async function loadSchool(idEcole: string): Promise<void> {
   await executeLoad(async () => {
     const response = await readSchool(idEcole);
     state.selectedEcole = response.donnee;
+    state.selectedOrganisationId = response.donnee.idOrganisation;
   }, 'La fiche ecole ne peut pas etre relue.', 'Ouverture de la fiche ecole...');
 }
 
 async function refreshCurrentOrganizationSchools(): Promise<void> {
-  if (!state.selectedOrganisationId) {
+  const organizationId = state.selectedOrganisationId ?? state.selectedEcole?.idOrganisation ?? null;
+  if (!organizationId) {
     return;
   }
 
-  const response = await readSchoolsByOrganization(state.selectedOrganisationId);
+  const response = await readSchoolsByOrganization(organizationId);
   state.ecoles = response.donnees;
   state.ecolesPagination = response.pagination;
-  activeContextStore.remplacerEcolesDepuisBackend(state.selectedOrganisationId, response.donnees);
+  state.selectedOrganisationId = organizationId;
+  activeContextStore.remplacerEcolesDepuisBackend(organizationId, response.donnees);
 }
 
-async function createSchool(payload: CreateSchoolPayload): Promise<void> {
-  await executeMutation(async () => {
+async function createSchool(payload: CreateSchoolPayload): Promise<boolean> {
+  return executeMutation(async () => {
     const response = await schoolAdministrationApi.createSchool(payload);
     state.selectedEcole = response.donnee;
     state.selectedOrganisationId = payload.idOrganisation;
@@ -156,38 +160,38 @@ async function createSchool(payload: CreateSchoolPayload): Promise<void> {
     activeContextStore.enregistrerEcole(response.donnee);
     await refreshCurrentOrganizationSchools();
     notificationsService.succes('Ecole creee', `${response.donnee.nom} est maintenant disponible dans le registre.`);
-  }, 'La creation de l ecole a echoue.', 'Creation de l ecole...');
+  }, "La creation de l'ecole a echoue.", "Creation de l'ecole...");
 }
 
-async function renameSchool(idEcole: string, nouveauNom: string): Promise<void> {
-  await executeMutation(async () => {
+async function renameSchool(idEcole: string, nouveauNom: string): Promise<boolean> {
+  return executeMutation(async () => {
     const response = await schoolAdministrationApi.renameSchool(idEcole, nouveauNom);
     state.selectedEcole = response.donnee;
     state.selectedOrganisationId = response.donnee.idOrganisation;
     state.lastMutationMessage = `Nom mis a jour pour ${response.donnee.nom}.`;
     activeContextStore.enregistrerEcole(response.donnee);
     await refreshCurrentOrganizationSchools();
-    notificationsService.succes('Nom mis a jour', 'Le renommage a ete enregistre avec succes.');
-  }, 'Le renommage de l ecole a echoue.', 'Renommage en cours...');
+    notificationsService.succes('Nom mis a jour', "Le renommage a ete enregistre avec succes.");
+  }, "Le renommage de l'ecole a echoue.", 'Renommage en cours...');
 }
 
-async function changeSchoolMode(idEcole: string, nouveauModeExploitation: string): Promise<void> {
-  await executeMutation(async () => {
+async function changeSchoolMode(idEcole: string, nouveauModeExploitation: string): Promise<boolean> {
+  return executeMutation(async () => {
     const response = await schoolAdministrationApi.changeSchoolMode(idEcole, nouveauModeExploitation);
     state.selectedEcole = response.donnee;
     state.selectedOrganisationId = response.donnee.idOrganisation;
-    state.lastMutationMessage = `Mode d exploitation mis a jour pour ${response.donnee.nom}.`;
+    state.lastMutationMessage = `Mode d'exploitation mis a jour pour ${response.donnee.nom}.`;
     activeContextStore.enregistrerEcole(response.donnee);
     await refreshCurrentOrganizationSchools();
-    notificationsService.succes('Mode mis a jour', 'Le mode d exploitation a ete synchronise avec le backend.');
-  }, 'Le changement de mode de l ecole a echoue.', 'Changement du mode d exploitation...');
+    notificationsService.succes('Mode mis a jour', "Le mode d'exploitation a ete mis a jour avec succes.");
+  }, "Le changement de mode de l'ecole a echoue.", "Changement du mode d'exploitation...");
 }
 
 async function updateSchoolInstitutionalInfo(
   idEcole: string,
   payload: SchoolInstitutionalInfoPayload,
-): Promise<void> {
-  await executeMutation(async () => {
+): Promise<boolean> {
+  return executeMutation(async () => {
     const response = await schoolAdministrationApi.updateSchoolInstitutionalInfo(idEcole, payload);
     state.selectedEcole = response.donnee;
     state.selectedOrganisationId = response.donnee.idOrganisation;
@@ -195,31 +199,31 @@ async function updateSchoolInstitutionalInfo(
     activeContextStore.enregistrerEcole(response.donnee);
     await refreshCurrentOrganizationSchools();
     notificationsService.succes('Identite mise a jour', 'Les informations institutionnelles sont maintenant a jour.');
-  }, 'La mise a jour des informations institutionnelles a echoue.', 'Mise a jour de l identite institutionnelle...');
+  }, "La mise a jour des informations institutionnelles a echoue.", "Mise a jour de l'identite institutionnelle...");
 }
 
-async function activateSchool(idEcole: string): Promise<void> {
-  await executeMutation(async () => {
+async function activateSchool(idEcole: string): Promise<boolean> {
+  return executeMutation(async () => {
     const response = await schoolAdministrationApi.activateSchool(idEcole);
     state.selectedEcole = response.donnee;
     state.selectedOrganisationId = response.donnee.idOrganisation;
     state.lastMutationMessage = `Ecole ${response.donnee.nom} activee.`;
     activeContextStore.enregistrerEcole(response.donnee);
     await refreshCurrentOrganizationSchools();
-    notificationsService.succes('Ecole activee', 'L ecole est a nouveau exploitable dans le registre structurel.');
-  }, 'L activation de l ecole a echoue.', 'Activation de l ecole...');
+    notificationsService.succes('Ecole activee', "L'ecole est a nouveau active dans le registre.");
+  }, "L'activation de l'ecole a echoue.", "Activation de l'ecole...");
 }
 
-async function deactivateSchool(idEcole: string): Promise<void> {
-  await executeMutation(async () => {
+async function deactivateSchool(idEcole: string): Promise<boolean> {
+  return executeMutation(async () => {
     const response = await schoolAdministrationApi.deactivateSchool(idEcole);
     state.selectedEcole = response.donnee;
     state.selectedOrganisationId = response.donnee.idOrganisation;
     state.lastMutationMessage = `Ecole ${response.donnee.nom} desactivee.`;
     activeContextStore.enregistrerEcole(response.donnee);
     await refreshCurrentOrganizationSchools();
-    notificationsService.attention('Ecole desactivee', 'L ecole reste visible mais son statut structurel a change.');
-  }, 'La desactivation de l ecole a echoue.', 'Desactivation de l ecole...');
+    notificationsService.attention('Ecole desactivee', "L'ecole reste visible dans le registre avec son nouveau statut.");
+  }, "La desactivation de l'ecole a echoue.", "Desactivation de l'ecole...");
 }
 
 function resetFeedback(): void {
@@ -243,4 +247,3 @@ export function useSchoolAdministrationStore() {
     resetFeedback,
   };
 }
-

@@ -1,7 +1,7 @@
 import { clientApi } from '../../../services/api';
 import {
   construireEntetesPilotageActif,
-  lireContexteApiActif,
+  lireContexteApiGouvernancePlateforme,
 } from '../../../shared/session/api-context';
 import type {
   CreerEcolePayload,
@@ -38,7 +38,7 @@ function genererIdempotencyKey(prefixe: string): string {
 }
 
 function construireEntetesLecture() {
-  const contexte = lireContexteApiActif();
+  const contexte = lireContexteApiGouvernancePlateforme();
 
   return construireEntetesPilotageActif(contexte);
 }
@@ -125,7 +125,7 @@ export const organizationGovernanceApi = {
   },
 
   async listerEcolesParOrganisation(idOrganisation: string, page = 1, taillePage = 20) {
-    const contexte = lireContexteApiActif();
+    const contexte = lireContexteApiGouvernancePlateforme();
 
     return clientApi.envoyer<ListResponse<EcoleItem>>({
       chemin: `/api/organisations/${idOrganisation}/ecoles${construireQueryString({ page, taillePage })}`,
@@ -137,13 +137,11 @@ export const organizationGovernanceApi = {
   },
 
   async consulterEcole(idEcole: string) {
-    const contexte = lireContexteApiActif();
+    const contexte = lireContexteApiGouvernancePlateforme();
 
     return clientApi.envoyer<DetailResponse<EcoleItem>>({
       chemin: `/api/ecoles/${idEcole}`,
-      entetes: construireEntetesPilotageActif(contexte, {
-        ecoleId: idEcole,
-      }),
+      entetes: construireEntetesPilotageActif(contexte),
     });
   },
 
@@ -157,28 +155,28 @@ export const organizationGovernanceApi = {
   },
 
   async renommerEcole(idEcole: string, nouveauNom: string) {
-    const contexte = lireContexteApiActif();
+    const contexte = lireContexteApiGouvernancePlateforme();
 
     return clientApi.envoyer<DetailResponse<EcoleItem>>({
       chemin: `/api/ecoles/${idEcole}/renommer`,
       methode: 'PATCH',
       corps: { nouveauNom },
       entetes: {
-        ...construireEntetesPilotageActif(contexte, { ecoleId: idEcole }),
+        ...construireEntetesPilotageActif(contexte),
         'idempotency-key': genererIdempotencyKey('ecole-rename'),
       },
     });
   },
 
   async changerModeExploitationEcole(idEcole: string, nouveauModeExploitation: string) {
-    const contexte = lireContexteApiActif();
+    const contexte = lireContexteApiGouvernancePlateforme();
 
     return clientApi.envoyer<DetailResponse<EcoleItem>>({
       chemin: `/api/ecoles/${idEcole}/changer-mode`,
       methode: 'POST',
       corps: { nouveauModeExploitation },
       entetes: {
-        ...construireEntetesPilotageActif(contexte, { ecoleId: idEcole }),
+        ...construireEntetesPilotageActif(contexte),
         'idempotency-key': genererIdempotencyKey('ecole-mode'),
       },
     });
@@ -188,42 +186,42 @@ export const organizationGovernanceApi = {
     idEcole: string,
     payload: InformationsInstitutionnellesPayload,
   ) {
-    const contexte = lireContexteApiActif();
+    const contexte = lireContexteApiGouvernancePlateforme();
 
     return clientApi.envoyer<DetailResponse<EcoleItem>>({
       chemin: `/api/ecoles/${idEcole}/informations-institutionnelles`,
       methode: 'PATCH',
       corps: payload,
       entetes: {
-        ...construireEntetesPilotageActif(contexte, { ecoleId: idEcole }),
+        ...construireEntetesPilotageActif(contexte),
         'idempotency-key': genererIdempotencyKey('ecole-institutions'),
       },
     });
   },
 
   async activerEcole(idEcole: string) {
-    const contexte = lireContexteApiActif();
+    const contexte = lireContexteApiGouvernancePlateforme();
 
     return clientApi.envoyer<DetailResponse<EcoleItem>>({
       chemin: `/api/ecoles/${idEcole}/activer`,
       methode: 'POST',
       corps: {},
       entetes: {
-        ...construireEntetesPilotageActif(contexte, { ecoleId: idEcole }),
+        ...construireEntetesPilotageActif(contexte),
         'idempotency-key': genererIdempotencyKey('ecole-activate'),
       },
     });
   },
 
   async desactiverEcole(idEcole: string) {
-    const contexte = lireContexteApiActif();
+    const contexte = lireContexteApiGouvernancePlateforme();
 
     return clientApi.envoyer<DetailResponse<EcoleItem>>({
       chemin: `/api/ecoles/${idEcole}/desactiver`,
       methode: 'POST',
       corps: {},
       entetes: {
-        ...construireEntetesPilotageActif(contexte, { ecoleId: idEcole }),
+        ...construireEntetesPilotageActif(contexte),
         'idempotency-key': genererIdempotencyKey('ecole-deactivate'),
       },
     });

@@ -94,6 +94,18 @@ Elle correspond aux configurations de niveau `SYSTEM`.
 
 Elle couvre les parametres generaux de la plateforme, sans ouvrir la gouvernance locale d'une organisation, d'une ecole ou d'un utilisateur.
 
+Les familles visibles de ce niveau sont officiellement :
+
+- `Parametres de la plateforme`
+- `Autres reglages globaux`
+- `Configuration appliquee`
+- `Versions enregistrees`
+
+Correspondances backend reelles :
+
+- `runtime.*`
+- autres cles `SYSTEM` hors `runtime.*`
+
 ### Organisation
 
 La portee `Organisation` gouverne les politiques communes applicables a l'ensemble des ecoles de l'organisation.
@@ -107,6 +119,22 @@ Elle couvre notamment :
 - les limites organisationnelles
 - les modules autorises pour les ecoles
 
+Les familles visibles de ce niveau sont officiellement :
+
+- `Politiques communes`
+- `Modules autorises`
+- `Regles de gouvernance`
+- `Limites de fonctionnement`
+- `Autres reglages de l organisation`
+
+Correspondances backend reelles :
+
+- `modules.allowed`
+- `policies.*`
+- `governance.*`
+- `limits.*`
+- `organization.*`
+
 ### Ecole
 
 La portee `Ecole` gouverne les parametres locaux d'une ecole donnee.
@@ -115,10 +143,27 @@ Elle correspond aux configurations de niveau `SCHOOL`.
 
 Elle couvre notamment :
 
-- les modules actifs
+- les modules actives
+- les modules disponibles dans l ecole
 - l'identite visuelle locale
 - les notifications locales
 - les parametres propres a l'ecole
+
+Les familles visibles de ce niveau sont officiellement :
+
+- `Modules actives`
+- `Modules disponibles dans l ecole`
+- `Identite visuelle`
+- `Notifications`
+- `Autres reglages de l ecole`
+
+Correspondances backend reelles :
+
+- `modules.enabled`
+- resolution des modules autorises et actives
+- `branding.*`
+- `notifications.*`
+- `school.*`
 
 ### Utilisateur
 
@@ -132,6 +177,18 @@ Elle ne couvre jamais :
 - la licence
 - les parametres generaux de la plateforme
 - la gouvernance globale
+
+Les familles visibles de ce niveau sont officiellement :
+
+- `Preferences personnelles`
+- `Preferences de notification`
+- `Configuration appliquee a mon compte`
+
+Correspondances backend reelles :
+
+- `preferences.*`
+- `user.preferences.*`
+- `notifications.preferences.*`
 
 ## Gouvernance Modulaire Officielle
 
@@ -258,12 +315,19 @@ Le Centre `Configuration` doit etre organise autour de familles comprehensibles,
 Les sections cibles sont :
 
 - `Parametres de la plateforme`
-- `Politiques organisationnelles`
+- `Autres reglages globaux`
+- `Politiques communes`
+- `Regles de gouvernance`
+- `Limites de fonctionnement`
+- `Autres reglages de l organisation`
 - `Modules autorises`
-- `Modules actifs`
+- `Modules actives`
+- `Modules disponibles dans l ecole`
 - `Identite visuelle`
 - `Notifications`
+- `Autres reglages de l ecole`
 - `Preferences personnelles`
+- `Preferences de notification`
 - `Historique des modifications`
 - `Configuration appliquee`
 

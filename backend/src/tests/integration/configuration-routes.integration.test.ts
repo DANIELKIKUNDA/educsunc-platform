@@ -10,6 +10,7 @@ import {
   routeConfiguration,
 } from '../../app/routes/configuration.routes';
 import { routeMonitoring } from '../../app/routes/monitoring.routes';
+import { TYPES_MODULE_CONFIGURATION } from '../../shared/configuration';
 import { ROLE_FIXTURES, TENANT_FIXTURES } from '../../shared/tests/fixtures/GlobalFixtures';
 import { injecterCommeActeur } from '../../shared/tests/helpers/GlobalTestHelpers';
 import { GlobalTestBootstrap } from '../../shared/tests/setup/GlobalTestBootstrap';
@@ -70,6 +71,71 @@ test('les routes configuration exposent la gouvernance modulaire organisation et
   await serveur.close();
 });
 
+test('le backend expose un catalogue officiel des modules lisible par les acteurs autorises', async () => {
+  const bootstrap = new GlobalTestBootstrap();
+  const adminSystemeEcole = await bootstrap.creerActeur({
+    ...ROLE_FIXTURES.ADMIN_SYSTEME_ECOLE,
+    organisationId: TENANT_FIXTURES.organisationA,
+    ecoleId: TENANT_FIXTURES.ecoleA1,
+  });
+
+  const serveur = Fastify();
+  await serveur.register(async (instance) => {
+    await requestContextPlugin(instance, {});
+    await authenticationPlugin(instance, {});
+    await securityPlugin(instance, {});
+    await tenancyPlugin(instance, {});
+    await instance.register(routeConfiguration);
+  });
+
+  const lectureCatalogue = await injecterCommeActeur(serveur, adminSystemeEcole, {
+    method: 'GET',
+    url: '/api/v1/configuration/modules/catalogue',
+  });
+
+  assert.equal(lectureCatalogue.statusCode, 200, lectureCatalogue.body);
+  assert.deepEqual(
+    lectureCatalogue.json().donnees.modules.map((module: { code: string }) => module.code),
+    TYPES_MODULE_CONFIGURATION,
+  );
+  assert.equal(
+    lectureCatalogue.json().donnees.modules.find((module: { code: string }) => module.code === 'PAIEMENTS_FACTURATION')?.libelle,
+    'Paiements facturation',
+  );
+
+  await serveur.close();
+});
+
+test("la lecture modulaire n'active jamais implicitement tous les modules d'une ecole", async () => {
+  const bootstrap = new GlobalTestBootstrap();
+  const adminSystemeEcole = await bootstrap.creerActeur({
+    ...ROLE_FIXTURES.ADMIN_SYSTEME_ECOLE,
+    organisationId: TENANT_FIXTURES.organisationB,
+    ecoleId: TENANT_FIXTURES.ecoleB1,
+  });
+
+  const serveur = Fastify();
+  await serveur.register(async (instance) => {
+    await requestContextPlugin(instance, {});
+    await authenticationPlugin(instance, {});
+    await securityPlugin(instance, {});
+    await tenancyPlugin(instance, {});
+    await instance.register(routeConfiguration);
+  });
+
+  const lectureEffective = await injecterCommeActeur(serveur, adminSystemeEcole, {
+    method: 'GET',
+    url: `/api/v1/configuration/modules/effective?organisationId=${TENANT_FIXTURES.organisationB}&ecoleId=${TENANT_FIXTURES.ecoleB1}`,
+  });
+
+  assert.equal(lectureEffective.statusCode, 200, lectureEffective.body);
+  assert.deepEqual(lectureEffective.json().donnees.modulesAutorisesOrganisation, TYPES_MODULE_CONFIGURATION);
+  assert.deepEqual(lectureEffective.json().donnees.modulesActivesEcole, []);
+  assert.deepEqual(lectureEffective.json().donnees.modulesEffectifs, []);
+
+  await serveur.close();
+});
+
 test('la garde modulaire bloque un workflow transverse desactive pour l ecole', async () => {
   const bootstrap = new GlobalTestBootstrap();
   const manager = await bootstrap.creerActeur({
@@ -110,6 +176,25 @@ test('la garde modulaire bloque un workflow transverse desactive pour l ecole', 
     });
     await instance.register(routeMonitoring);
   });
+
+  const configurationOrganisation = await injecterCommeActeur(serveur, manager, {
+    method: 'PUT',
+    url: `/api/v1/configuration/modules/organisations/${TENANT_FIXTURES.organisationB}`,
+    payload: {
+      modules: ['MONITORING', 'PAIEMENTS_FACTURATION'],
+    },
+  });
+  assert.equal(configurationOrganisation.statusCode, 200, configurationOrganisation.body);
+
+  const activationInitiale = await injecterCommeActeur(serveur, adminSystemeEcole, {
+    method: 'PUT',
+    url: `/api/v1/configuration/modules/ecoles/${TENANT_FIXTURES.ecoleB1}`,
+    payload: {
+      organisationId: TENANT_FIXTURES.organisationB,
+      modules: ['MONITORING'],
+    },
+  });
+  assert.equal(activationInitiale.statusCode, 200, activationInitiale.body);
 
   const avant = await injecterCommeActeur(serveur, manager, {
     method: 'GET',

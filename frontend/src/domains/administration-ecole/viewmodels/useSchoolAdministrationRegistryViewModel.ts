@@ -1,14 +1,16 @@
+import { Building2, CircleOff, School, Wifi, WifiOff } from 'lucide-vue-next';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
-import { useRoute } from 'vue-router';
-import { School, ShieldCheck, Waypoints, Workflow } from 'lucide-vue-next';
+import { useRoute, useRouter } from 'vue-router';
 import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
 import { activeContextStore } from '../../../shared/session/active-context.store';
-import { schoolModeOptions, type SchoolModeValue } from '../models/school-administration.model';
+import { schoolModeOptions, type CreateSchoolPayload, type SchoolModeValue } from '../models/school-administration.model';
 import { useSchoolAdministrationStore } from '../stores/school-administration.store';
+import { evaluateCreateSchoolForm } from './school-administration.logic';
 
 type LifecycleAction = 'activate' | 'deactivate';
 
 export function useSchoolAdministrationRegistryViewModel() {
+  const router = useRouter();
   const route = useRoute();
   const store = useSchoolAdministrationStore();
   const { canUseAction } = useDoctrineAccess();
@@ -21,12 +23,15 @@ export function useSchoolAdministrationRegistryViewModel() {
   const lifecycleAction = ref<LifecycleAction>('activate');
   const lifecycleSchoolId = ref('');
   const lifecycleSchoolName = ref('');
+  const creationModalOpen = ref(false);
+  const rowsPerPage = ref(10);
+  const currentPage = ref(1);
 
-  const form = reactive({
+  const form = reactive<CreateSchoolPayload>({
     idOrganisation: '',
     code: '',
     nom: '',
-    modeExploitation: 'SYNC' as SchoolModeValue,
+    modeExploitation: 'SYNC',
     sigle: '',
     telephone: '',
     email: '',
@@ -51,8 +56,8 @@ export function useSchoolAdministrationRegistryViewModel() {
           school.code,
           school.nom,
           school.sigle,
-          school.telephone,
-          school.email,
+          school.ville,
+          school.communeOuTerritoire,
         ].some((value) => value?.toLowerCase().includes(normalizedSearch));
       const matchesStatus = statusFilter.value === 'ALL'
         || (statusFilter.value === 'ACTIVE' ? school.actif : !school.actif);
@@ -62,38 +67,111 @@ export function useSchoolAdministrationRegistryViewModel() {
     });
   });
 
+  const createEvaluation = computed(() => evaluateCreateSchoolForm(form, store.state.mutationStatus === 'loading'));
+  const totalPages = computed(() => Math.max(1, Math.ceil(filteredSchools.value.length / rowsPerPage.value)));
+  const paginatedSchools = computed(() => {
+    const start = (currentPage.value - 1) * rowsPerPage.value;
+    return filteredSchools.value.slice(start, start + rowsPerPage.value);
+  });
+  const paginationEnd = computed(() => Math.min(filteredSchools.value.length, currentPage.value * rowsPerPage.value));
+  const activeSchoolsCount = computed(() => filteredSchools.value.filter((school) => school.actif).length);
+  const inactiveSchoolsCount = computed(() => filteredSchools.value.filter((school) => !school.actif).length);
+  const syncSchoolsCount = computed(() => filteredSchools.value.filter((school) => school.modeExploitation === 'SYNC').length);
+
   const summaryCards = computed(() => [
     {
-      label: 'Ecoles visibles',
+      label: 'Organisation selectionnee',
+      value: currentOrganization.value?.code ?? 'A choisir',
+      hint: currentOrganization.value?.nom ?? "Selectionnez une organisation pour consulter ses ecoles.",
+      icon: Building2,
+      tone: 'neutral' as const,
+      filter: () => {
+        currentPage.value = 1;
+      },
+    },
+    {
+      label: 'Ecoles enregistrees',
       value: filteredSchools.value.length,
-      hint: 'Resultat filtre dans le registre courant.',
+      hint: currentOrganization.value ? "Resultat visible dans l'organisation ouverte." : "Aucune organisation n'est encore selectionnee.",
       icon: School,
       tone: 'primary' as const,
+      filter: () => {
+        statusFilter.value = 'ALL';
+        modeFilter.value = 'ALL';
+        currentPage.value = 1;
+      },
     },
     {
-      label: 'Organisation cible',
-      value: currentOrganization.value?.code ?? 'A definir',
-      hint: currentOrganization.value?.nom ?? 'Selectionnez une organisation pour lire ou creer des ecoles.',
-      icon: Workflow,
-      tone: 'neutral' as const,
-    },
-    {
-      label: 'Lecture',
-      value: 'referentiel.read',
-      hint: 'Lecture reelle prouvee par le backend pour ADM-01.',
-      icon: ShieldCheck,
+      label: 'Ecoles actives',
+      value: activeSchoolsCount.value,
+      hint: "Etablissements immediatement exploitables dans l'affichage courant.",
+      icon: Wifi,
       tone: 'success' as const,
+      filter: () => {
+        statusFilter.value = 'ACTIVE';
+        currentPage.value = 1;
+      },
     },
     {
-      label: 'Mutation',
-      value: canMutateRegistry.value ? 'referentiel.write' : 'Non ouverte',
-      hint: canMutateRegistry.value
-        ? 'Creation et cycle de vie autorises dans ce profil.'
-        : 'Le backend n ouvrira pas les mutations pour ce profil.',
-      icon: Waypoints,
-      tone: canMutateRegistry.value ? 'warning' as const : 'neutral' as const,
+      label: 'Ecoles inactives',
+      value: inactiveSchoolsCount.value,
+      hint: "Etablissements visibles mais suspendus dans l'affichage courant.",
+      icon: CircleOff,
+      tone: 'warning' as const,
+      filter: () => {
+        statusFilter.value = 'INACTIVE';
+        currentPage.value = 1;
+      },
+    },
+    {
+      label: 'Mode synchronise',
+      value: syncSchoolsCount.value,
+      hint: "Ecoles actuellement reglees en fonctionnement synchronise.",
+      icon: WifiOff,
+      tone: 'neutral' as const,
+      filter: () => {
+        modeFilter.value = 'SYNC';
+        currentPage.value = 1;
+      },
     },
   ]);
+
+  const emptyState = computed(() => {
+    if (!selectedOrganisationId.value) {
+      return {
+        title: 'Selectionnez une organisation',
+        message: 'Choisissez une organisation pour consulter les ecoles rattachees a ce perimetre.',
+        actionLabel: 'Choisir une organisation',
+        action: () => {
+          const fallback = store.state.organisations[0]?.id ?? '';
+          if (fallback) {
+            selectedOrganisationId.value = fallback;
+            form.idOrganisation = fallback;
+          }
+        },
+      };
+    }
+
+    if (store.state.ecoles.length === 0) {
+      return {
+        title: 'Cette organisation ne possede encore aucune ecole',
+        message: 'Creez le premier etablissement pour commencer le pilotage administratif.',
+        actionLabel: 'Creer une ecole',
+        action: () => {
+          if (canMutateRegistry.value) {
+            creationModalOpen.value = true;
+          }
+        },
+      };
+    }
+
+    return {
+      title: 'Aucune ecole ne correspond a votre recherche',
+      message: "Ajustez vos filtres ou revenez a l'affichage complet.",
+      actionLabel: 'Effacer les filtres',
+      action: () => clearFilters(),
+    };
+  });
 
   function resetForm(): void {
     form.code = '';
@@ -121,26 +199,32 @@ export function useSchoolAdministrationRegistryViewModel() {
   }
 
   async function createSchool(): Promise<void> {
-    if (!form.idOrganisation || !form.code.trim() || !form.nom.trim()) {
+    if (!createEvaluation.value.canSubmit) {
       return;
     }
 
-    await store.createSchool({
+    const success = await store.createSchool({
       idOrganisation: form.idOrganisation,
       code: form.code.trim(),
       nom: form.nom.trim(),
       modeExploitation: form.modeExploitation,
-      sigle: form.sigle.trim() || undefined,
-      telephone: form.telephone.trim() || undefined,
-      email: form.email.trim() || undefined,
-      provinceEducationnelle: form.provinceEducationnelle.trim() || undefined,
-      ville: form.ville.trim() || undefined,
-      communeOuTerritoire: form.communeOuTerritoire.trim() || undefined,
-      adresse: form.adresse.trim() || undefined,
+      sigle: form.sigle?.trim() || undefined,
+      telephone: form.telephone?.trim() || undefined,
+      email: form.email?.trim() || undefined,
+      provinceEducationnelle: form.provinceEducationnelle?.trim() || undefined,
+      ville: form.ville?.trim() || undefined,
+      communeOuTerritoire: form.communeOuTerritoire?.trim() || undefined,
+      adresse: form.adresse?.trim() || undefined,
     });
+
+    if (!success) {
+      return;
+    }
 
     selectedOrganisationId.value = form.idOrganisation;
     resetForm();
+    creationModalOpen.value = false;
+    currentPage.value = 1;
   }
 
   function openLifecycleModal(action: LifecycleAction, schoolId: string, schoolName: string): void {
@@ -155,13 +239,16 @@ export function useSchoolAdministrationRegistryViewModel() {
       return;
     }
 
+    let success = false;
     if (lifecycleAction.value === 'activate') {
-      await store.activateSchool(lifecycleSchoolId.value);
+      success = await store.activateSchool(lifecycleSchoolId.value);
     } else {
-      await store.deactivateSchool(lifecycleSchoolId.value);
+      success = await store.deactivateSchool(lifecycleSchoolId.value);
     }
 
-    lifecycleModalOpen.value = false;
+    if (success) {
+      lifecycleModalOpen.value = false;
+    }
   }
 
   function closeLifecycleModal(): void {
@@ -172,10 +259,47 @@ export function useSchoolAdministrationRegistryViewModel() {
     search.value = '';
     statusFilter.value = 'ALL';
     modeFilter.value = 'ALL';
+    currentPage.value = 1;
+  }
+
+  function openCreationModal(): void {
+    if (!form.idOrganisation && selectedOrganisationId.value) {
+      form.idOrganisation = selectedOrganisationId.value;
+    }
+    creationModalOpen.value = true;
+  }
+
+  function closeCreationModal(): void {
+    creationModalOpen.value = false;
+  }
+
+  function openSchool(idEcole: string): void {
+    void router.push(`/app/administration-ecole/ecoles/${idEcole}`);
+  }
+
+  function formatDate(value: string | undefined): string {
+    if (!value) {
+      return 'Information non disponible';
+    }
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return value;
+    }
+
+    return new Intl.DateTimeFormat('fr-FR', {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+    }).format(date);
   }
 
   watch(selectedOrganisationId, (next) => {
     form.idOrganisation = next;
+    currentPage.value = 1;
+  });
+
+  watch([search, statusFilter, modeFilter, rowsPerPage], () => {
+    currentPage.value = 1;
   });
 
   onMounted(async () => {
@@ -189,6 +313,24 @@ export function useSchoolAdministrationRegistryViewModel() {
     }
 
     await loadOrganizations();
+
+    const organizationFromQuery = typeof route.query.organizationId === 'string' ? route.query.organizationId : '';
+    if (organizationFromQuery) {
+      selectedOrganisationId.value = organizationFromQuery;
+      form.idOrganisation = organizationFromQuery;
+    }
+    const statusFromQuery = typeof route.query.statut === 'string' ? route.query.statut : '';
+    if (statusFromQuery === 'ACTIVE' || statusFromQuery === 'INACTIVE') {
+      statusFilter.value = statusFromQuery;
+    }
+    const modeFromQuery = typeof route.query.mode === 'string' ? route.query.mode : '';
+    if (modeFromQuery === 'SYNC' || modeFromQuery === 'OFFLINE_ONLY' || modeFromQuery === 'MIGRATION') {
+      modeFilter.value = modeFromQuery;
+    }
+    const createFromQuery = route.query.creation === '1';
+    if (createFromQuery && canMutateRegistry.value) {
+      creationModalOpen.value = true;
+    }
 
     if (selectedOrganisationId.value) {
       await loadSchools();
@@ -208,15 +350,27 @@ export function useSchoolAdministrationRegistryViewModel() {
     currentOrganization,
     filteredSchools,
     summaryCards,
+    emptyState,
+    createEvaluation,
+    creationModalOpen,
+    rowsPerPage,
+    currentPage,
+    totalPages,
+    paginatedSchools,
+    paginationEnd,
     lifecycleModalOpen,
     lifecycleAction,
     lifecycleSchoolName,
     loadOrganizations,
     loadSchools,
     createSchool,
+    openCreationModal,
+    closeCreationModal,
+    openSchool,
     openLifecycleModal,
     confirmLifecycle,
     closeLifecycleModal,
     clearFilters,
+    formatDate,
   };
 }

@@ -31,6 +31,13 @@ interface PromoteurProvisionne {
   affectation: AffectationUtilisateur;
 }
 
+interface InitialisationConfigurationOrganisationPort {
+  amorcerOrganisation(params: {
+    readonly organisationId: string;
+    readonly actorId?: string;
+  }): Promise<unknown>;
+}
+
 const PERMISSIONS_PAR_DEFAUT_PROMOTEUR_ORGANISATION = [
   'referentiel.read',
   'eleves.read',
@@ -86,6 +93,7 @@ export class CreerOrganisation implements UseCase<CreerOrganisationEntree, Sorti
       affectationRepository?: AffectationUtilisateurRepositoryPort;
       passwordHashPort?: PasswordHashPort;
       serviceJournalAudit?: ServiceJournalAuditReferentielAcademique;
+      initialisationConfiguration?: InitialisationConfigurationOrganisationPort;
     },
   ) {
     this.depotOrganisation = depotOrganisation;
@@ -97,7 +105,10 @@ export class CreerOrganisation implements UseCase<CreerOrganisationEntree, Sorti
     this.serviceJournalAudit =
       dependances?.serviceJournalAudit
       ?? new ServiceJournalAuditReferentielAcademiqueSansEffet();
+    this.initialisationConfiguration = dependances?.initialisationConfiguration;
   }
+
+  private readonly initialisationConfiguration?: InitialisationConfigurationOrganisationPort;
 
   // Cette methode cree une organisation apres validation de l'entree et controle d'unicite.
   public async executer(entree: CreerOrganisationEntree): Promise<SortieCreerOrganisation> {
@@ -139,6 +150,10 @@ export class CreerOrganisation implements UseCase<CreerOrganisationEntree, Sorti
       await this.depotUtilisateurAuth?.sauvegarder(promoteurProvisionne.utilisateur);
       await this.affectationRepository?.sauvegarder(promoteurProvisionne.affectation);
     }
+    await this.initialisationConfiguration?.amorcerOrganisation({
+      organisationId: organisation.obtenirId().obtenirValeur(),
+      actorId: entreeValidee.creePar,
+    });
     await this.serviceJournalAudit.journaliser({
       action: 'CREER_ORGANISATION',
       acteur: entreeValidee.creePar,

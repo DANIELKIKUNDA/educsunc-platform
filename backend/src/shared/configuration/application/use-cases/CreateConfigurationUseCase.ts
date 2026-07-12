@@ -62,7 +62,7 @@ export class CreateConfigurationUseCase {
           requestId: commande.requestId,
           correlationId: commande.correlationId,
           changedAt: new Date(),
-          metadata: {},
+          metadata: commande.metadata ?? {},
         }),
       );
     }

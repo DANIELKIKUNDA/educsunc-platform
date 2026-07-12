@@ -1,9 +1,9 @@
 <template>
   <PageContainer>
     <PageHeader
-      eyebrow="ADM-HOME"
-      title="Centre administration ecole"
-      description="Gouvernance plateforme des ecoles: registre, detail et cycle de vie structurel, sans exploitation locale."
+      eyebrow="Administration ecole"
+      title="Administration des ecoles"
+      description="Creez, consultez et gerez les etablissements rattaches a vos organisations depuis un centre de pilotage unique."
     >
       <template #actions>
         <div class="school-admin__hero-actions">
@@ -12,7 +12,14 @@
             class="school-admin__hero-link school-admin__hero-link--primary"
             to="/app/administration-ecole/ecoles"
           >
-            Ouvrir le registre des ecoles
+            Ouvrir le registre
+          </RouterLink>
+          <RouterLink
+            v-if="canReadRegistry"
+            class="school-admin__hero-link"
+            to="/app/administration-ecole/ecoles?creation=1"
+          >
+            Nouvelle ecole
           </RouterLink>
         </div>
       </template>
@@ -24,7 +31,7 @@
     <ErrorState
       v-else-if="store.state.status === 'error' && store.state.organisations.length === 0"
       title="Centre indisponible"
-      :message="store.state.errorMessage ?? 'Le module administration ecole ne peut pas etre charge pour le moment.'"
+      :message="store.state.errorMessage ?? 'Le centre administration ecole ne peut pas etre charge pour le moment.'"
     />
 
     <template v-else>
@@ -32,70 +39,63 @@
         <StatCard
           v-for="card in summaryCards"
           :key="card.label"
-          :icon="LayoutGrid"
+          :icon="card.icon"
           :label="card.label"
           :value="card.value"
           :hint="card.hint"
-          tone="primary"
+          :tone="card.tone"
+          clickable
+          @click="card.action"
         />
       </section>
 
       <SectionBlock
-        title="Cadre officiel ADM-01"
-        description="Le backend prouve un noyau strict: l ecole existe, se lit, se renomme, change de mode, met a jour son identite puis s active ou se desactive."
+        title="Vue d'ensemble"
+        description="Retrouvez l'organisation actuellement selectionnee, ouvrez rapidement le registre et poursuivez vos actions administratives sans vocabulaire technique."
       >
-        <div class="school-admin__scope-grid">
+        <div v-if="currentOrganization" class="school-admin__scope-grid">
           <article class="school-admin__scope-card">
             <header>
-              <h3>Perimetre</h3>
-              <p>Niveau plateforme uniquement. Aucune exploitation quotidienne n est ouverte ici.</p>
+              <h3>Organisation selectionnee</h3>
+              <p>{{ currentOrganization.code }} - {{ currentOrganization.nom }}</p>
             </header>
-            <div class="school-admin__chip-row">
-              <SchoolModeBadge mode="OFFLINE_ONLY" />
-              <SchoolModeBadge mode="SYNC" />
-              <SchoolModeBadge mode="MIGRATION" />
+            <div class="school-admin__actions">
+              <RouterLink class="school-admin__inline-link" :to="`/app/administration-ecole/ecoles?organizationId=${currentOrganization.id}`">
+                Voir les ecoles de cette organisation
+              </RouterLink>
             </div>
           </article>
 
           <article class="school-admin__scope-card">
             <header>
-              <h3>Permissions backend</h3>
-              <p>Les actions visibles restent alignees sur `referentiel.read` et `referentiel.write`.</p>
+              <h3>Gestion administrative</h3>
+              <p>Le centre couvre la creation, la consultation, le renommage, la mise a jour institutionnelle et le cycle de vie des ecoles.</p>
             </header>
-            <div class="school-admin__chip-row">
-              <span class="school-admin__banner">referentiel.read</span>
-              <span class="school-admin__banner school-admin__banner--muted">referentiel.write</span>
-            </div>
           </article>
+        </div>
 
-          <article class="school-admin__scope-card">
-            <header>
-              <h3>Organisation active</h3>
-              <p>
-                <template v-if="currentOrganization">
-                  {{ currentOrganization.code }} - {{ currentOrganization.nom }}
-                </template>
-                <template v-else>
-                  Aucune organisation active dans le shell. Le registre permet d en choisir une proprement.
-                </template>
-              </p>
-            </header>
-          </article>
+        <div v-else class="school-admin__placeholder-card">
+          <p>Selectionnez d'abord une organisation pour consulter ses ecoles et lancer les actions autorisees.</p>
+          <div class="school-admin__actions">
+            <RouterLink class="school-admin__hero-link school-admin__hero-link--primary" to="/app/administration-ecole/ecoles">
+              Choisir une organisation
+            </RouterLink>
+          </div>
         </div>
       </SectionBlock>
 
       <SectionBlock
-        title="Ecoles chargees dans le contexte courant"
-        description="Le centre peut precharger les ecoles de l organisation active et ouvrir leur fiche structurelle sans sortir du module."
+        title="Ecoles mises en avant"
+        description="Accedez rapidement aux premiers etablissements relus dans l'organisation en cours."
       >
         <EmptyState
-          v-if="store.state.ecoles.length === 0"
-          title="Aucune ecole prechargee"
-          message="Ouvrez le registre pour choisir une organisation puis relire ses ecoles."
+          v-if="highlightedSchools.length === 0"
+          title="Aucune ecole encore visible"
+          message="Ouvrez le registre pour choisir une organisation et relire ses etablissements."
         />
 
         <div v-else class="school-admin__scope-grid">
-          <article v-for="school in store.state.ecoles" :key="school.id" class="school-admin__scope-card">
+          <article v-for="school in highlightedSchools" :key="school.id" class="school-admin__scope-card">
             <header>
               <h3>{{ school.nom }}</h3>
               <p>{{ school.code }}</p>
@@ -117,7 +117,6 @@
 </template>
 
 <script setup lang="ts">
-import { LayoutGrid } from 'lucide-vue-next';
 import { RouterLink } from 'vue-router';
 import PageContainer from '../../../shared/layout/PageContainer.vue';
 import PageHeader from '../../../shared/layout/PageHeader.vue';
@@ -134,6 +133,7 @@ const {
   canReadRegistry,
   currentOrganization,
   summaryCards,
+  highlightedSchools,
 } = useSchoolAdministrationHomeViewModel();
 </script>
 

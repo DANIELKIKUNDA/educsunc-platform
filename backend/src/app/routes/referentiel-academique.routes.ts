@@ -147,6 +147,7 @@ import { ContexteExecutionTenantReferentielAcademique } from '../../contexts/ref
 import { AutorisationSocleAcademiqueAdapter } from '../adapters/AutorisationSocleAcademiqueAdapter';
 import { AutorisationMigrationReferentielAdapter } from '../adapters/AutorisationMigrationReferentielAdapter';
 import { EligibiliteResponsableClassePedagogiqueAdapter } from '../adapters/EligibiliteResponsableClassePedagogiqueAdapter';
+import { configurationInitialisationService } from './configuration.routes';
 
 // Cette interface regroupe les depots PostgreSQL utiles au BC une fois compose.
 interface DepotsReferentielAcademique {
@@ -170,6 +171,54 @@ interface DepotsReferentielAcademique {
 interface CompositionRoutesReferentielAcademique {
   infrastructure: InfrastructurePostgresReferentielAcademique;
   dependancesRoutes: DependancesRoutesReferentielAcademique;
+}
+
+async function rattraperConfigurationsInitialesExistantes(
+  depots: DepotsReferentielAcademique,
+): Promise<{ organisations: number; ecoles: number }> {
+  const taillePage = 500;
+  let page = 1;
+  let organisationsTraitees = 0;
+  let ecolesTraitees = 0;
+
+  while (true) {
+    const resultat = await depots.depotOrganisation.lister({ page, taillePage });
+    for (const organisation of resultat.donnees) {
+      await configurationInitialisationService.amorcerOrganisation({
+        organisationId: organisation.obtenirId().obtenirValeur(),
+      });
+      organisationsTraitees += 1;
+    }
+
+    if (resultat.donnees.length < taillePage) {
+      break;
+    }
+
+    page += 1;
+  }
+
+  page = 1;
+  while (true) {
+    const resultat = await depots.depotEcole.lister({ page, taillePage });
+    for (const ecole of resultat.donnees) {
+      await configurationInitialisationService.amorcerEcole({
+        organisationId: ecole.obtenirOrganisationId().obtenirValeur(),
+        ecoleId: ecole.obtenirId().obtenirValeur(),
+      });
+      ecolesTraitees += 1;
+    }
+
+    if (resultat.donnees.length < taillePage) {
+      break;
+    }
+
+    page += 1;
+  }
+
+  return {
+    organisations: organisationsTraitees,
+    ecoles: ecolesTraitees,
+  };
 }
 
 // Cette fonction instancie les depots PostgreSQL du BC sur un meme pool et une meme unite de travail.
@@ -288,6 +337,7 @@ function composerRoutesReferentielAcademique(): CompositionRoutesReferentielAcad
       affectationRepository: affectationRepositorySecurity,
       passwordHashPort: passwordHashAdapter,
       serviceJournalAudit,
+      initialisationConfiguration: configurationInitialisationService,
     }),
     new ConsulterOrganisation(depots.depotOrganisation),
     new ListerOrganisations(depots.depotOrganisation),
@@ -411,7 +461,12 @@ function composerRoutesReferentielAcademique(): CompositionRoutesReferentielAcad
   );
 
   const controleurEcoles = new ControleurEcoles(
-    new CreerEcole(depots.depotEcole, depots.depotOrganisation),
+    new CreerEcole(
+      depots.depotEcole,
+      depots.depotOrganisation,
+      undefined,
+      configurationInitialisationService,
+    ),
     new ConsulterEcole(depots.depotEcole),
     new ListerEcoles(depots.depotEcole),
     new ListerEcolesParOrganisation(depots.depotEcole),
@@ -742,6 +797,13 @@ export const routeReferentielAcademique: PluginRoutesReferentielAcademique = Obj
     const composition = composerRoutesReferentielAcademique();
     const bilanMigrations =
       await composition.infrastructure.migrateur.executerMigrationsEnAttente();
+    const depotsRattrapage = creerDepotsReferentielAcademique(
+      composition.infrastructure,
+      new ContexteExecutionTenantReferentielAcademique(),
+    );
+    const rattrapageConfiguration = await rattraperConfigurationsInitialesExistantes(
+      depotsRattrapage,
+    );
 
     serveur.addHook('onClose', async () => {
       await composition.infrastructure.pool.end();
@@ -758,6 +820,8 @@ export const routeReferentielAcademique: PluginRoutesReferentielAcademique = Obj
           prefixe: routeReferentielAcademique.prefixe,
           migrationsExecutees: bilanMigrations.executees,
           migrationsSautees: bilanMigrations.sautees,
+          configurationsRattrapeesOrganisations: rattrapageConfiguration.organisations,
+          configurationsRattrapeesEcoles: rattrapageConfiguration.ecoles,
         },
       },
       'Routes du BC referentiel academique enregistrees.',

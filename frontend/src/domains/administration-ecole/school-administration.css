@@ -60,7 +60,6 @@
 
 .school-admin__scope-grid,
 .school-admin__form-grid,
-.school-admin__table-meta,
 .school-admin__identity-grid,
 .school-admin__detail-grid{
   display:grid;
@@ -68,7 +67,8 @@
 }
 
 .school-admin__scope-grid,
-.school-admin__detail-grid{
+.school-admin__detail-grid,
+.school-admin__identity-grid{
   grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
 }
 
@@ -115,7 +115,6 @@
 
 .school-admin__panel,
 .school-admin__mutations-card,
-.school-admin__table-shell,
 .school-admin__identity-card,
 .school-admin__scope-card,
 .school-admin__placeholder-card{
@@ -171,45 +170,6 @@
 .school-admin__banner--muted{
   background:linear-gradient(180deg,rgba(245,248,252,.98),rgba(255,255,255,.98));
   color:#506779;
-}
-
-.school-admin__table-shell{
-  overflow:auto;
-}
-
-.school-admin__table{
-  width:100%;
-  border-collapse:collapse;
-  min-width:880px;
-}
-
-.school-admin__table th,
-.school-admin__table td{
-  padding:1rem;
-  border-bottom:1px solid rgba(17,40,63,.08);
-  text-align:left;
-  vertical-align:top;
-}
-
-.school-admin__table th{
-  position:sticky;
-  top:0;
-  background:rgba(248,251,255,.98);
-  color:#4f6678;
-  font-size:.84rem;
-  text-transform:uppercase;
-  letter-spacing:.06em;
-  z-index:1;
-}
-
-.school-admin__table td strong{
-  color:#10243b;
-}
-
-.school-admin__table td small{
-  display:block;
-  margin-top:.18rem;
-  color:#61788a;
 }
 
 .school-admin__inline-link{
@@ -268,6 +228,10 @@
   text-align:right;
 }
 
+.school-admin__placeholder-card .school-admin__actions{
+  margin-top:1rem;
+}
+
 .school-admin__skeleton-grid{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
@@ -311,4 +275,3 @@
     text-align:left;
   }
 }
-

@@ -189,11 +189,18 @@ Le centre doit afficher ses familles sous forme d'onglets internes.
 Ordre officiel retenu :
 
 1. `Parametres de la plateforme`
-2. `Politiques organisationnelles`
-3. `Modules de l'ecole`
-4. `Identite visuelle`
-5. `Notifications`
-6. `Preferences personnelles`
+2. `Autres reglages globaux`
+3. `Politiques communes`
+4. `Modules autorises`
+5. `Regles de gouvernance`
+6. `Limites de fonctionnement`
+7. `Autres reglages de l organisation`
+8. `Modules actives`
+9. `Identite visuelle`
+10. `Notifications`
+11. `Autres reglages de l ecole`
+12. `Preferences personnelles`
+13. `Preferences de notification`
 
 Règle de visibilite :
 
@@ -203,11 +210,18 @@ Règle de visibilite :
 ### Correspondance avec les ecrans reels
 
 - `SCR-CFG-001` -> `Parametres de la plateforme`
-- `SCR-CFG-002` -> `Politiques organisationnelles`
-- `SCR-CFG-003` -> `Modules de l'ecole`
+- `SCR-CFG-001` -> `Autres reglages globaux`
+- `SCR-CFG-002` -> `Politiques communes`
+- `SCR-CFG-002` -> `Modules autorises`
+- `SCR-CFG-002` -> `Regles de gouvernance`
+- `SCR-CFG-002` -> `Limites de fonctionnement`
+- `SCR-CFG-002` -> `Autres reglages de l organisation`
+- `SCR-CFG-003` -> `Modules actives`
 - `SCR-CFG-004` -> `Identite visuelle`
 - `SCR-CFG-005` -> `Notifications`
+- `SCR-CFG-003` -> `Autres reglages de l ecole`
 - `SCR-CFG-006` -> `Preferences personnelles`
+- `SCR-CFG-006` -> `Preferences de notification`
 
 ## Version Desktop
 
@@ -238,9 +252,9 @@ Le bandeau doit toujours afficher :
 Exemples :
 
 - `Vous pilotez ici les parametres globaux de la plateforme.`
-- `Vous consultez ici les politiques communes de votre organisation.`
-- `Vous gerez ici les reglages propres a cette ecole dans le cadre autorise.`
-- `Vous retrouvez ici vos preferences personnelles.`
+- `Vous configurez actuellement l organisation Groupe scolaire X.`
+- `Vous configurez actuellement l ecole College Y.`
+- `Vous modifiez vos preferences personnelles.`
 
 ### Bloc 2 - Barre de synthese
 
@@ -266,14 +280,19 @@ Exemples par onglet :
   - reglages verrouilles
   - versions enregistrees
   - points a verifier
-- `Politiques organisationnelles`
-  - politiques visibles
-  - modules autorises
+- `Politiques communes`
+  - reglages visibles
+  - reglages personnalises
   - versions enregistrees
   - points a verifier
-- `Modules de l'ecole`
+- `Modules autorises`
+  - modules visibles
   - modules autorises
-  - modules actifs
+  - versions enregistrees
+  - modules a verifier
+- `Modules actives`
+  - modules autorises
+  - modules actives
   - modules disponibles
   - points a verifier
 - `Identite visuelle`
@@ -452,11 +471,11 @@ Le detail doit afficher :
 - actualiser
 - voir la configuration appliquee
 
-## Onglet 2 - Politiques organisationnelles
+## Onglet 2 - Politiques communes
 
 ### Objectif
 
-Gerer les regles communes de l'organisation et les modules qu'elle autorise pour ses ecoles.
+Gerer les regles communes de l'organisation.
 
 ### Tableau principal
 
@@ -473,7 +492,6 @@ Colonnes officielles :
 ### Cartes specifiques
 
 - politiques visibles
-- modules autorises
 - reglages personnalises
 - points a verifier
 
@@ -502,11 +520,58 @@ Le detail doit afficher :
 - appliquer aux niveaux concernes
 - voir la configuration appliquee
 
-## Onglet 3 - Modules de l'ecole
+## Onglet 3 - Modules autorises
 
 ### Objectif
 
-Permettre de lire et gerer les modules actifs de l'ecole dans le cadre autorise par l'organisation, tout en rendant visible la disponibilite reelle.
+Permettre a l organisation de choisir les modules qu elle ouvre a ses ecoles, sans exposer la cle technique du backend.
+
+### Tableau principal
+
+Colonnes officielles :
+
+- module
+- cadre
+- statut
+- disponibilite
+
+### Lecture obligatoire
+
+Le tableau doit permettre de comprendre sans ambiguite :
+
+- quels modules sont visibles dans le catalogue
+- quels modules sont autorises pour l organisation
+- quels modules restent encore fermes
+
+### Actions visibles
+
+- enregistrer les modules autorises
+- verifier
+- ouvrir un reglage existant si necessaire
+
+## Onglet 4 - Regles de gouvernance
+
+### Objectif
+
+Afficher et gerer les regles de gouvernance commune de l organisation.
+
+## Onglet 5 - Limites de fonctionnement
+
+### Objectif
+
+Afficher et gerer les seuils et limites communs de l organisation.
+
+## Onglet 6 - Autres reglages de l organisation
+
+### Objectif
+
+Afficher les autres reglages propres au fonctionnement general de l organisation.
+
+## Onglet 7 - Modules actives de l'ecole
+
+### Objectif
+
+Permettre de lire et gerer les modules actives de l'ecole dans le cadre autorise par l'organisation, tout en rendant visible la disponibilite reelle.
 
 ### Tableau principal
 
@@ -532,7 +597,7 @@ Il ne faut jamais fusionner ces trois informations dans un seul badge confus.
 ### Cartes specifiques
 
 - modules autorises
-- modules actifs
+- modules actives
 - modules disponibles
 - modules a verifier
 
@@ -548,7 +613,7 @@ Actions explicitement interdites dans cet onglet :
 - autoriser un module au niveau organisation si le contexte courant est ecole
 - modifier une configuration plateforme
 
-## Onglet 4 - Identite visuelle
+## Onglet 8 - Identite visuelle
 
 ### Objectif
 
@@ -589,7 +654,7 @@ Le detail doit afficher :
 - voir la configuration appliquee
 - personnaliser ici
 
-## Onglet 5 - Notifications
+## Onglet 9 - Notifications
 
 ### Objectif
 
@@ -627,7 +692,13 @@ Colonnes officielles :
 - voir la configuration appliquee
 - personnaliser ici
 
-## Onglet 6 - Preferences personnelles
+## Onglet 10 - Autres reglages de l ecole
+
+### Objectif
+
+Afficher les reglages `school.*` deja portes par le backend, sans inventer de champs absents.
+
+## Onglet 11 - Preferences personnelles
 
 ### Objectif
 
@@ -655,6 +726,12 @@ Actions explicitement interdites :
 - appliquer aux niveaux concernes
 - actualiser un parametre global
 - gerer les modules
+
+## Onglet 12 - Preferences de notification
+
+### Objectif
+
+Permettre a l utilisateur de regler ses preferences personnelles de notification sans agir sur les reglages globaux de l ecole ou de la plateforme.
 
 ## Tableaux
 

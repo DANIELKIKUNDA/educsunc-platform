@@ -27,7 +27,7 @@ defineEmits<{
 </script>
 
 <style scoped>
-.modal-shell-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.46);display:grid;place-items:center;padding:1.5rem;z-index:70}
+.modal-shell-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.46);display:grid;place-items:center;padding:1.5rem;z-index:2300}
 .modal-shell{width:min(980px,100%);max-height:calc(100vh - 3rem);display:grid;grid-template-rows:auto 1fr auto;overflow:hidden;background:#fff;border:1px solid rgba(17,40,63,.08);box-shadow:0 24px 60px rgba(15,23,42,.08);border-radius:28px}
 .modal-shell__header,.modal-shell__footer{padding:1.2rem 1.3rem}
 .modal-shell__body{padding:1.3rem;overflow:auto;display:grid;gap:1.1rem;background:#fbfdff}

@@ -11,6 +11,7 @@ export interface CreateConfigurationCommand {
   readonly actorId?: string;
   readonly requestId?: string;
   readonly correlationId?: string;
+  readonly metadata?: Readonly<Record<string, unknown>>;
   readonly gouvernance?: {
     readonly proprietaireNiveau?: NiveauConfiguration;
     readonly heritable?: boolean;

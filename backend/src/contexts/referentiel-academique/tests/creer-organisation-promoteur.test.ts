@@ -157,3 +157,25 @@ test('CreerOrganisation initialise automatiquement le role promoteur s il est ab
   assert.equal(rolePromoteur?.obtenirCodeRole().obtenirValeur(), 'PROMOTEUR_ORGANISATION');
   assert.equal(sortie.organisation.promoteurPrincipal?.nomComplet, 'Paul Kalonji');
 });
+
+test('CreerOrganisation declenche l initialisation officielle de configuration', async () => {
+  const depotOrganisation = new DepotOrganisationMemoire();
+  const initialisations: string[] = [];
+
+  const useCase = new CreerOrganisation(depotOrganisation, undefined, {
+    initialisationConfiguration: {
+      amorcerOrganisation: async ({ organisationId }) => {
+        initialisations.push(organisationId);
+      },
+    },
+  });
+
+  const sortie = await useCase.executer({
+    code: 'ORG-CONFIG',
+    nom: 'Organisation configuration',
+    typeOrganisation: TypeOrganisation.PROMOTEUR,
+    creePar: 'manager-systeme',
+  });
+
+  assert.deepEqual(initialisations, [sortie.organisation.id]);
+});

@@ -1,12 +1,15 @@
 import { clientApi } from '../../../services/api';
 import {
+  construireEntetesPilotageActif,
   construireEntetesContexteActif,
   lireContexteApiActif,
+  lireContexteApiPlateformeGlobal,
 } from '../../../shared/session/api-context';
 import type {
   ConfigurationApiEnvelope,
   ConfigurationDiffItem,
   ConfigurationItem,
+  ConfigurationModuleCatalogItem,
   ConfigurationModulesResolution,
   ConfigurationScope,
   ConfigurationSnapshotItem,
@@ -54,12 +57,62 @@ function construireEntetesContexte(contexte: ConfigurationApiContext): Record<st
   return construireEntetesContexteActif(contexte);
 }
 
+function construireEntetesSelonNiveau(
+  contexte: ConfigurationApiContext,
+  niveau?: ConfigurationScope['niveau'],
+): Record<string, string> {
+  if (niveau === 'SYSTEM') {
+    return construireEntetesPilotageActif(lireContexteApiPlateformeGlobal());
+  }
+
+  return construireEntetesContexte(contexte);
+}
+
+function construireEntetesPorteeConfiguration(
+  contexte: ConfigurationApiContext,
+  scope: {
+    niveau: ConfigurationScope['niveau'];
+    organisationId?: string;
+    ecoleId?: string;
+  },
+): Record<string, string> {
+  if (scope.niveau === 'SYSTEM') {
+    return construireEntetesPilotageActif(lireContexteApiPlateformeGlobal());
+  }
+
+  if (
+    scope.niveau === 'ORGANIZATION'
+    && scope.organisationId
+    && contexte.ecoleId === null
+  ) {
+    return construireEntetesPilotageActif(lireContexteApiPlateformeGlobal(), {
+      organisationId: scope.organisationId,
+      lectureOrganisationnelle: true,
+    });
+  }
+
+  if (
+    scope.niveau === 'SCHOOL'
+    && scope.organisationId
+    && scope.ecoleId
+    && contexte.ecoleId === null
+  ) {
+    return construireEntetesPilotageActif(lireContexteApiPlateformeGlobal(), {
+      organisationId: scope.organisationId,
+      ecoleId: scope.ecoleId,
+    });
+  }
+
+  return construireEntetesContexte(contexte);
+}
+
 function construireEntetesMutation(
   contexte: ConfigurationApiContext,
   prefixe: string,
+  niveau?: ConfigurationScope['niveau'],
 ): Record<string, string> {
   return {
-    ...construireEntetesContexte(contexte),
+    ...construireEntetesSelonNiveau(contexte, niveau),
     'idempotency-key': genererIdempotencyKey(prefixe),
   };
 }
@@ -83,7 +136,7 @@ export const configurationApi = {
       chemin: '/api/v1/configuration',
       methode: 'POST',
       corps: payload,
-      entetes: construireEntetesMutation(contexte, 'configuration-create'),
+      entetes: construireEntetesMutation(contexte, 'configuration-create', payload.scope.niveau),
     });
   },
 
@@ -166,7 +219,11 @@ export const configurationApi = {
   ) {
     return clientApi.envoyer<ConfigurationApiEnvelope<EffectiveConfigurationItem | null>>({
       chemin: `/api/v1/configuration/effective${construireQueryString(query)}`,
-      entetes: construireEntetesContexte(contexte),
+      entetes: construireEntetesPorteeConfiguration(contexte, {
+        niveau: query.niveau,
+        organisationId: query.organisationId,
+        ecoleId: query.ecoleId,
+      }),
     });
   },
 
@@ -182,7 +239,7 @@ export const configurationApi = {
       chemin: '/api/v1/configuration/validate',
       methode: 'POST',
       corps: payload,
-      entetes: construireEntetesMutation(contexte, 'configuration-validate'),
+      entetes: construireEntetesMutation(contexte, 'configuration-validate', payload.scope?.niveau),
     });
   },
 
@@ -252,7 +309,13 @@ export const configurationApi = {
       chemin: `/api/v1/configuration/modules/organisations/${organisationId}`,
       methode: 'PUT',
       corps: payload,
-      entetes: construireEntetesMutation(contexte, 'configuration-modules-organization'),
+      entetes: {
+        ...construireEntetesPorteeConfiguration(contexte, {
+          niveau: 'ORGANIZATION',
+          organisationId,
+        }),
+        'idempotency-key': genererIdempotencyKey('configuration-modules-organization'),
+      },
     });
   },
 
@@ -274,7 +337,14 @@ export const configurationApi = {
       chemin: `/api/v1/configuration/modules/ecoles/${ecoleId}`,
       methode: 'PUT',
       corps: payload,
-      entetes: construireEntetesMutation(contexte, 'configuration-modules-school'),
+      entetes: {
+        ...construireEntetesPorteeConfiguration(contexte, {
+          niveau: 'SCHOOL',
+          organisationId: payload.organisationId,
+          ecoleId,
+        }),
+        'idempotency-key': genererIdempotencyKey('configuration-modules-school'),
+      },
     });
   },
 
@@ -287,7 +357,20 @@ export const configurationApi = {
   ) {
     return clientApi.envoyer<ConfigurationApiEnvelope<ConfigurationModulesResolution>>({
       chemin: `/api/v1/configuration/modules/effective${construireQueryString(query)}`,
-      entetes: construireEntetesContexte(contexte),
+      entetes: construireEntetesPorteeConfiguration(contexte, {
+        niveau: 'SCHOOL',
+        organisationId: query.organisationId,
+        ecoleId: query.ecoleId,
+      }),
+    });
+  },
+
+  async consulterCatalogueModules(contexte: ConfigurationApiContext) {
+    return clientApi.envoyer<ConfigurationApiEnvelope<{
+      modules: readonly ConfigurationModuleCatalogItem[];
+    }>>({
+      chemin: '/api/v1/configuration/modules/catalogue',
+      entetes: construireEntetesSelonNiveau(contexte, 'SYSTEM'),
     });
   },
 };

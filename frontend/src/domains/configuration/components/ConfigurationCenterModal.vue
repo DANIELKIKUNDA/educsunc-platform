@@ -1,15 +1,22 @@
 <template>
   <Teleport to="body">
     <div v-if="open" class="configuration-modal">
-      <button class="configuration-modal__backdrop" type="button" aria-label="Fermer la fenetre" @click="$emit('close')" />
-      <section class="configuration-modal__dialog" role="dialog" aria-modal="true" :aria-labelledby="`${id}-title`">
+      <button class="configuration-modal__backdrop" type="button" aria-label="Fermer la fenetre" @click="$emit('close', 'backdrop')" />
+      <section
+        ref="dialogRef"
+        class="configuration-modal__dialog"
+        role="dialog"
+        aria-modal="true"
+        tabindex="-1"
+        :aria-labelledby="`${id}-title`"
+      >
         <header class="configuration-modal__header">
           <div>
             <small>{{ eyebrow }}</small>
             <h2 :id="`${id}-title`">{{ title }}</h2>
             <p v-if="description">{{ description }}</p>
           </div>
-          <button class="configuration-modal__close" type="button" aria-label="Fermer" @click="$emit('close')">
+          <button class="configuration-modal__close" type="button" aria-label="Fermer" @click="$emit('close', 'button')">
             x
           </button>
         </header>
@@ -27,7 +34,9 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{
+import { nextTick, onBeforeUnmount, ref, watch } from 'vue';
+
+const props = defineProps<{
   open: boolean;
   id: string;
   eyebrow: string;
@@ -35,9 +44,33 @@ defineProps<{
   description?: string;
 }>();
 
-defineEmits<{
-  close: [];
+const emit = defineEmits<{
+  close: [reason: 'cancel' | 'escape' | 'backdrop' | 'button'];
 }>();
+
+const dialogRef = ref<HTMLElement | null>(null);
+
+function handleKeydown(event: KeyboardEvent): void {
+  if (event.key === 'Escape' && props.open) {
+    event.preventDefault();
+    emit('close', 'escape');
+  }
+}
+
+watch(() => props.open, async (open) => {
+  if (open) {
+    await nextTick();
+    dialogRef.value?.focus();
+    window.addEventListener('keydown', handleKeydown);
+    return;
+  }
+
+  window.removeEventListener('keydown', handleKeydown);
+}, { immediate: true });
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleKeydown);
+});
 </script>
 
 <style scoped>

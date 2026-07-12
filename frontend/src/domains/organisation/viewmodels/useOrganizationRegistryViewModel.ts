@@ -116,6 +116,11 @@ export function useOrganizationRegistryViewModel() {
   const visibleSchoolsTotal = computed(() =>
     filteredOrganisations.value.reduce((total, organisation) => total + (schoolCountByOrganisation[organisation.id] ?? 0), 0),
   );
+  const recentlyCreatedOrganisation = computed(() =>
+    store.state.lastMutationMessage?.toLowerCase().includes('cree')
+      ? store.state.selectedOrganisation
+      : null,
+  );
   const canSubmitCreation = computed(() =>
     canMutateOrganisation.value
     && organisationForm.code.trim().length > 0
@@ -127,15 +132,6 @@ export function useOrganizationRegistryViewModel() {
   watch([searchTerm, typeFilter, statusFilter, rowsPerPage], () => {
     currentPage.value = 1;
   });
-
-  watch(
-    () => store.state.errorMessage,
-    (message) => {
-      if (message && !isCreationModalOpen.value && !isStatusDialogOpen.value) {
-        notificationsService.danger('Action impossible', message);
-      }
-    },
-  );
 
   watch(
     () => store.state.lastMutationMessage,
@@ -246,6 +242,13 @@ export function useOrganizationRegistryViewModel() {
 
   async function ouvrirOrganisation(idOrganisation: string): Promise<void> {
     await router.push(`/app/organisation/organisations/${idOrganisation}`);
+  }
+
+  async function ouvrirConfigurationModulesOrganisation(idOrganisation: string): Promise<void> {
+    await router.push({
+      path: `/app/organisation/organisations/${idOrganisation}`,
+      query: { tab: 'modules' },
+    });
   }
 
   async function ouvrirEditionOrganisation(idOrganisation: string): Promise<void> {
@@ -481,6 +484,7 @@ export function useOrganizationRegistryViewModel() {
     activeCount,
     inactiveCount,
     visibleSchoolsTotal,
+    recentlyCreatedOrganisation,
     canSubmitCreation,
     schoolCountByOrganisation,
     ouvrirCreationModal,
@@ -490,6 +494,7 @@ export function useOrganizationRegistryViewModel() {
     toggleOrganisationStatus,
     ouvrirAdministrationEcolesPourOrganisation,
     ouvrirOrganisation,
+    ouvrirConfigurationModulesOrganisation,
     ouvrirEditionOrganisation,
     confirmerChangementStatut,
     fermerDialogueStatut,

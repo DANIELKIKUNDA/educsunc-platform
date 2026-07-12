@@ -3,14 +3,14 @@
     <template #header>
       <div class="school-lifecycle-modal__header">
         <div>
-          <small>Confirmation structurelle</small>
-          <h2>{{ action === 'activate' ? 'Activer l ecole' : 'Desactiver l ecole' }}</h2>
+          <small>Confirmation</small>
+          <h2>{{ action === 'activate' ? "Activer l'ecole" : "Desactiver l'ecole" }}</h2>
           <p>
             <template v-if="action === 'activate'">
-              Vous etes sur le point de rendre <strong>{{ schoolName }}</strong> de nouveau active dans le registre structurel.
+              Vous etes sur le point de rendre <strong>{{ schoolName }}</strong> de nouveau active dans le registre.
             </template>
             <template v-else>
-              Vous etes sur le point de desactiver <strong>{{ schoolName }}</strong>. L ecole restera visible dans le registre avec son nouveau statut.
+              Vous etes sur le point de desactiver <strong>{{ schoolName }}</strong>. L'ecole restera visible dans le registre avec son nouveau statut.
             </template>
           </p>
         </div>
@@ -20,9 +20,9 @@
     <section class="school-lifecycle-modal__panel">
       <strong>Controle avant confirmation</strong>
       <ul>
-        <li>Le backend conservera l historique de la mutation.</li>
-        <li>L acteur courant n est pas saisi par le formulaire: il vient du contexte authentifie.</li>
-        <li>Aucune autre capacite hors ADM-01 n est ouverte ici.</li>
+        <li>La trace de cette action restera disponible dans la fiche de l'ecole.</li>
+        <li>Cette confirmation ne modifie pas les autres informations de l'etablissement.</li>
+        <li>Le registre sera relu automatiquement apres validation.</li>
       </ul>
     </section>
 
@@ -38,7 +38,7 @@
           :disabled="pending"
           @click="$emit('confirm')"
         >
-          {{ pending ? 'Validation en cours...' : action === 'activate' ? 'Confirmer l activation' : 'Confirmer la desactivation' }}
+          {{ pending ? 'Validation en cours...' : action === 'activate' ? "Activer l'ecole" : "Desactiver l'ecole" }}
         </button>
       </div>
     </template>
@@ -137,4 +137,3 @@ defineEmits<{
   }
 }
 </style>
-

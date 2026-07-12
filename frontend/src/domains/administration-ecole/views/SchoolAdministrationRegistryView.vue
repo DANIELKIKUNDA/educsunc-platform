@@ -1,15 +1,24 @@
 <template>
   <PageContainer>
     <PageHeader
-      eyebrow="ADM-01"
+      eyebrow="Administration ecole"
       title="Registre des ecoles"
-      description="Creation, lecture et pilotage structurel des ecoles rattachees a une organisation valide."
+      description="Consultez les etablissements, filtrez l'affichage et lancez les actions administratives deja prevues par le backend."
     >
       <template #actions>
         <div class="school-admin__hero-actions">
           <RouterLink class="school-admin__hero-link" to="/app/administration-ecole">
-            Retour au centre administration ecole
+            Retour au centre
           </RouterLink>
+          <button
+            v-if="canMutateRegistry"
+            class="school-admin__hero-link school-admin__hero-link--primary"
+            type="button"
+            :disabled="store.state.mutationStatus === 'loading' || store.state.organisations.length === 0"
+            @click="openCreationModal"
+          >
+            Nouvelle ecole
+          </button>
         </div>
       </template>
     </PageHeader>
@@ -33,161 +42,32 @@
           :value="card.value"
           :hint="card.hint"
           :tone="card.tone"
+          clickable
+          @click="card.filter"
         />
       </section>
 
-      <SectionBlock
-        title="Creation d une ecole"
-        description="Le formulaire ne couvre que les champs reels du backend. L acteur et la tracabilite viennent du contexte authentifie."
-      >
-        <div v-if="!canMutateRegistry" class="school-admin__banner school-admin__banner--muted">
-          Ce profil peut consulter le registre, mais pas creer ou muter une ecole.
-        </div>
-
-        <div v-else class="school-admin__panel">
-          <div class="school-admin__panel-header">
-            <h3>Nouvelle ecole</h3>
-            <p>Le rattachement organisationnel est obligatoire dans le domaine actuel. Aucun autre parametre non prouve n est expose.</p>
-          </div>
-
-          <div class="school-admin__form-grid">
-            <div class="school-admin__field">
-              <span>Organisation de rattachement</span>
-              <select v-model="form.idOrganisation">
-                <option value="">Selectionner une organisation</option>
-                <option v-for="organization in store.state.organisations" :key="organization.id" :value="organization.id">
-                  {{ organization.code }} - {{ organization.nom }}
-                </option>
-              </select>
-            </div>
-
-            <div class="school-admin__field">
-              <span>Code ecole</span>
-              <input v-model="form.code" type="text" placeholder="ECOLE-001" />
-            </div>
-
-            <div class="school-admin__field">
-              <span>Nom officiel</span>
-              <input v-model="form.nom" type="text" placeholder="College Saint Raphael" />
-            </div>
-
-            <div class="school-admin__field">
-              <span>Mode d exploitation</span>
-              <select v-model="form.modeExploitation">
-                <option v-for="option in schoolModeOptions" :key="option.value" :value="option.value">
-                  {{ option.label }}
-                </option>
-              </select>
-            </div>
-
-            <div class="school-admin__field">
-              <span>Sigle</span>
-              <input v-model="form.sigle" type="text" placeholder="CSR" />
-            </div>
-
-            <div class="school-admin__field">
-              <span>Telephone</span>
-              <input v-model="form.telephone" type="text" placeholder="+243..." />
-            </div>
-
-            <div class="school-admin__field">
-              <span>Email</span>
-              <input v-model="form.email" type="email" placeholder="contact@ecole.cd" />
-            </div>
-
-            <div class="school-admin__field">
-              <span>Province educationnelle</span>
-              <input v-model="form.provinceEducationnelle" type="text" placeholder="Haut-Katanga 1" />
-            </div>
-
-            <div class="school-admin__field">
-              <span>Ville</span>
-              <input v-model="form.ville" type="text" placeholder="Lubumbashi" />
-            </div>
-
-            <div class="school-admin__field">
-              <span>Commune / territoire</span>
-              <input v-model="form.communeOuTerritoire" type="text" placeholder="Kampemba" />
-            </div>
-
-            <div class="school-admin__field school-admin__field--wide">
-              <span>Adresse</span>
-              <input v-model="form.adresse" type="text" placeholder="Adresse institutionnelle" />
-            </div>
-          </div>
-
-          <div class="school-admin__actions">
-            <button
-              class="school-admin__pill-button school-admin__pill-button--primary"
-              type="button"
-              :disabled="store.state.mutationStatus === 'loading'"
-              @click="createSchool"
-            >
-              {{ store.state.mutationStatus === 'loading' ? 'Creation en cours...' : 'Creer l ecole' }}
-            </button>
-          </div>
-        </div>
-      </SectionBlock>
-
-      <ActionToolbar
-        title="Lecture organisationnelle"
-        description="Le registre lit les ecoles a partir d une organisation explicite, puis affine localement l affichage sans inventer de nouvelles donnees."
-      >
-        <template #filters>
-          <div class="school-admin__field">
-            <span>Organisation cible</span>
-            <select v-model="selectedOrganisationId">
-              <option value="">Selectionner une organisation</option>
-              <option v-for="organization in store.state.organisations" :key="organization.id" :value="organization.id">
-                {{ organization.code }} - {{ organization.nom }}
-              </option>
-            </select>
-          </div>
-
-          <div class="school-admin__field">
-            <span>Recherche locale</span>
-            <input v-model="search" type="text" placeholder="Code, nom, sigle, telephone, email..." />
-          </div>
-
-          <div class="school-admin__field">
-            <span>Statut</span>
-            <select v-model="statusFilter">
-              <option value="ALL">Tous</option>
-              <option value="ACTIVE">Actives</option>
-              <option value="INACTIVE">Inactives</option>
-            </select>
-          </div>
-
-          <div class="school-admin__field">
-            <span>Mode</span>
-            <select v-model="modeFilter">
-              <option value="ALL">Tous les modes</option>
-              <option v-for="option in schoolModeOptions" :key="option.value" :value="option.value">
-                {{ option.label }}
-              </option>
-            </select>
-          </div>
-        </template>
-
-        <template #actions>
-          <button class="school-admin__pill-button" type="button" @click="clearFilters">
-            Effacer les filtres
-          </button>
-          <button
-            class="school-admin__pill-button school-admin__pill-button--primary"
-            type="button"
-            :disabled="!selectedOrganisationId"
-            @click="loadSchools"
-          >
-            Relire les ecoles
-          </button>
-        </template>
-      </ActionToolbar>
+      <SchoolAdministrationToolbar
+        :search="search"
+        :organization-id="selectedOrganisationId"
+        :status-filter="statusFilter"
+        :mode-filter="modeFilter"
+        :organizations="store.state.organisations"
+        :can-create="canMutateRegistry"
+        :busy="store.state.status === 'loading' || store.state.mutationStatus === 'loading'"
+        @update:search="search = $event"
+        @update:organization-id="selectedOrganisationId = $event"
+        @update:status-filter="statusFilter = $event"
+        @update:mode-filter="modeFilter = $event"
+        @clear-filters="clearFilters"
+        @refresh="loadSchools"
+        @create="openCreationModal"
+      />
 
       <SectionBlock
         v-if="store.state.lastMutationMessage"
-        title="Derniere mutation"
-        description="Retour utilisateur clair apres la derniere operation backend."
+        title="Derniere action"
+        description="Le centre confirme ici la derniere operation reussie."
       >
         <div class="school-admin__banner">
           {{ store.state.lastMutationMessage }}
@@ -195,72 +75,49 @@
       </SectionBlock>
 
       <SectionBlock
-        title="Table structurelle des ecoles"
-        description="Aucune action hors ADM-01 n est ouverte ici. Le registre reste strictement limite a la gouvernance plateforme."
+        title="Tableau principal"
+        :description="currentOrganization ? `Ecoles rattachees a ${currentOrganization.nom}.` : `Choisissez une organisation pour afficher son registre.`"
       >
-        <EmptyState
-          v-if="filteredSchools.length === 0"
-          title="Aucune ecole visible"
-          message="Selectionnez une organisation puis relisez ses ecoles pour ouvrir le registre reel."
-        />
-
-        <div v-else class="school-admin__table-shell">
-          <table class="school-admin__table">
-            <thead>
-              <tr>
-                <th>Code</th>
-                <th>Ecole</th>
-                <th>Mode</th>
-                <th>Statut</th>
-                <th>Contact</th>
-                <th>Trace</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="school in filteredSchools" :key="school.id">
-                <td>
-                  <strong>{{ school.code }}</strong>
-                  <small>{{ school.sigle || 'Sans sigle' }}</small>
-                </td>
-                <td>
-                  <strong>{{ school.nom }}</strong>
-                  <small>{{ currentOrganization?.nom || 'Organisation cible active' }}</small>
-                </td>
-                <td>
-                  <SchoolModeBadge :mode="school.modeExploitation" />
-                </td>
-                <td>
-                  <SchoolStatusBadge :active="school.actif" />
-                </td>
-                <td>
-                  <strong>{{ school.telephone || '-' }}</strong>
-                  <small>{{ school.email || 'Aucun email expose' }}</small>
-                </td>
-                <td>
-                  <strong>{{ school.modifieLe || school.creeLe }}</strong>
-                  <small>Version {{ school.version }}</small>
-                </td>
-                <td>
-                  <div class="school-admin__inline-actions">
-                    <RouterLink class="school-admin__inline-link" :to="`/app/administration-ecole/ecoles/${school.id}`">
-                      Ouvrir
-                    </RouterLink>
-                    <button
-                      v-if="canMutateRegistry"
-                      class="school-admin__inline-button"
-                      type="button"
-                      @click="openLifecycleModal(school.actif ? 'deactivate' : 'activate', school.id, school.nom)"
-                    >
-                      {{ school.actif ? 'Desactiver' : 'Activer' }}
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        <div v-if="filteredSchools.length === 0" class="school-admin__placeholder-card">
+          <EmptyState :title="emptyState.title" :message="emptyState.message" />
+          <div class="school-admin__actions">
+            <button class="school-admin__pill-button school-admin__pill-button--primary" type="button" @click="emptyState.action">
+              {{ emptyState.actionLabel }}
+            </button>
+          </div>
         </div>
+
+        <SchoolAdministrationRegistryTable
+          v-else
+          :schools="paginatedSchools"
+          :organization-name="currentOrganization?.nom ?? 'Organisation non renseignee'"
+          :can-mutate="canMutateRegistry"
+          :total-items="filteredSchools.length"
+          :rows-per-page="rowsPerPage"
+          :current-page="currentPage"
+          :total-pages="totalPages"
+          :pagination-end="paginationEnd"
+          :busy="store.state.mutationStatus === 'loading'"
+          :format-date="formatDate"
+          @open="openSchool"
+          @toggle-status="openLifecycleModal($event.actif ? 'deactivate' : 'activate', $event.id, $event.nom)"
+          @update:rows-per-page="rowsPerPage = $event"
+          @update:current-page="currentPage = $event"
+        />
       </SectionBlock>
+
+      <SchoolCreationModal
+        :open="creationModalOpen"
+        :form="form"
+        :organizations="store.state.organisations"
+        :can-submit="createEvaluation.canSubmit"
+        :busy="store.state.mutationStatus === 'loading'"
+        :disable-reason="createEvaluation.disableReason"
+        :error-message="store.state.errorMessage"
+        @close="closeCreationModal"
+        @submit="createSchool"
+        @update:form="Object.assign(form, $event)"
+      />
 
       <SchoolLifecycleModal
         :open="lifecycleModalOpen"
@@ -276,22 +133,21 @@
 
 <script setup lang="ts">
 import { RouterLink } from 'vue-router';
-import ActionToolbar from '../../../shared/ui/ActionToolbar.vue';
 import EmptyState from '../../../shared/ui/EmptyState.vue';
 import ErrorState from '../../../shared/ui/ErrorState.vue';
 import StatCard from '../../../shared/ui/StatCard.vue';
 import PageContainer from '../../../shared/layout/PageContainer.vue';
 import PageHeader from '../../../shared/layout/PageHeader.vue';
 import SectionBlock from '../../../shared/layout/SectionBlock.vue';
+import SchoolAdministrationRegistryTable from '../components/SchoolAdministrationRegistryTable.vue';
+import SchoolAdministrationToolbar from '../components/SchoolAdministrationToolbar.vue';
+import SchoolCreationModal from '../components/SchoolCreationModal.vue';
 import SchoolLifecycleModal from '../components/SchoolLifecycleModal.vue';
-import SchoolModeBadge from '../components/SchoolModeBadge.vue';
-import SchoolStatusBadge from '../components/SchoolStatusBadge.vue';
 import { useSchoolAdministrationRegistryViewModel } from '../viewmodels/useSchoolAdministrationRegistryViewModel';
 
 const {
   store,
   form,
-  schoolModeOptions,
   selectedOrganisationId,
   search,
   statusFilter,
@@ -300,15 +156,27 @@ const {
   currentOrganization,
   filteredSchools,
   summaryCards,
+  emptyState,
+  createEvaluation,
+  creationModalOpen,
+  rowsPerPage,
+  currentPage,
+  totalPages,
+  paginatedSchools,
+  paginationEnd,
   lifecycleModalOpen,
   lifecycleAction,
   lifecycleSchoolName,
   loadSchools,
   createSchool,
+  openCreationModal,
+  closeCreationModal,
+  openSchool,
   openLifecycleModal,
   confirmLifecycle,
   closeLifecycleModal,
   clearFilters,
+  formatDate,
 } = useSchoolAdministrationRegistryViewModel();
 </script>
 

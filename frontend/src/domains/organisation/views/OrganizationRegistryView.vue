@@ -42,6 +42,23 @@
         @export-pdf="exporterPdf"
       />
 
+      <div v-if="recentlyCreatedOrganisation" class="org-notice-banner org-notice-banner--success">
+        <div>
+          <strong>Organisation creee avec succes</strong>
+          <p>
+            {{ recentlyCreatedOrganisation.nom }} est maintenant disponible dans le registre.
+            Vous pouvez poursuivre en configurant ses modules autorises.
+          </p>
+        </div>
+        <button
+          class="org-secondary-button"
+          type="button"
+          @click="ouvrirConfigurationModulesOrganisation(recentlyCreatedOrganisation.id)"
+        >
+          Configurer les modules
+        </button>
+      </div>
+
       <LoadingState
         v-if="store.state.status === 'loading' && store.state.organisations.length === 0"
         :title="loadingTitle"
@@ -168,6 +185,7 @@ const {
   activeCount,
   inactiveCount,
   visibleSchoolsTotal,
+  recentlyCreatedOrganisation,
   canSubmitCreation,
   schoolCountByOrganisation,
   ouvrirCreationModal,
@@ -177,6 +195,7 @@ const {
   toggleOrganisationStatus,
   ouvrirAdministrationEcolesPourOrganisation,
   ouvrirOrganisation,
+  ouvrirConfigurationModulesOrganisation,
   ouvrirEditionOrganisation,
   confirmerChangementStatut,
   fermerDialogueStatut,
@@ -192,8 +211,13 @@ const {
 .org-primary-button{
   display:inline-flex;align-items:center;justify-content:center;gap:.5rem;font-weight:700;border-radius:18px;padding:.86rem 1.2rem;border:1px solid rgba(9,95,118,.22);background:linear-gradient(135deg,#0b5d7a 0%, #1180a3 52%, #1ca6bf 100%);color:#fff;box-shadow:0 18px 34px rgba(14,110,138,.24);
 }
+.org-secondary-button{
+  display:inline-flex;align-items:center;justify-content:center;gap:.5rem;font-weight:700;border-radius:18px;padding:.82rem 1.15rem;border:1px solid rgba(9,95,118,.14);background:#fff;color:#0b5d7a;box-shadow:0 14px 28px rgba(15,23,42,.08);
+}
 .org-primary-button:hover{transform:translateY(-1px);box-shadow:0 24px 40px rgba(14,110,138,.28)}
+.org-secondary-button:hover{transform:translateY(-1px);box-shadow:0 18px 34px rgba(15,23,42,.12)}
 .org-primary-button:disabled{opacity:.6;cursor:not-allowed;box-shadow:none;transform:none}
+.org-secondary-button:disabled{opacity:.6;cursor:not-allowed;box-shadow:none;transform:none}
 .org-notice-banner{display:flex;gap:.85rem;align-items:flex-start;padding:1rem 1.1rem;border-radius:22px;background:#eef8fb;color:#103040;margin:1rem 0;border:1px solid rgba(17,128,163,.12);box-shadow:0 16px 36px rgba(15,23,42,.05)}
 .org-notice-banner p{margin:.2rem 0 0;color:#40606f;line-height:1.55}
 .org-notice-banner--muted{background:#f5f8fb}
@@ -203,5 +227,6 @@ const {
 
 @media (max-width: 720px){
   .org-header-actions{flex-direction:column;align-items:stretch}
+  .org-secondary-button{width:100%}
 }
 </style>

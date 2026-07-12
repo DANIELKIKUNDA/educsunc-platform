@@ -257,6 +257,94 @@ Etat technique :
 - compile stricte backend : OK
 - noyau de tests Configuration : vert
 
+## Amorcage Officiel
+
+L amorcage officiel des configurations initiales est industrialise autour de
+`ConfigurationInitialisationOfficielleService`.
+
+Objectif :
+- initialiser seulement les cles officiellement prouvees
+- ne jamais inventer une valeur par defaut non documentee
+- ne jamais ecraser une personnalisation existante
+- rester idempotent
+- garder une trace exploitable de chaque passage
+
+Moments d amorcage actuellement branches :
+- `SYSTEM` : bootstrap global du module Configuration
+- `ORGANIZATION` : creation d organisation et rattrapage idempotent au demarrage du BC
+- `SCHOOL` : creation d ecole et rattrapage idempotent au demarrage du BC
+- `USER` : aucun defaut persiste officiel n est encore prouve, donc aucun reglage n est cree arbitrairement
+
+Inventaire officiel actuellement prouve :
+- `modules.allowed`
+  - scope : `ORGANIZATION`
+  - valeur initiale : catalogue complet des modules connus
+  - justification : l absence de cette cle etait deja interpretee comme une autorisation globale
+- `modules.enabled`
+  - scope : `SCHOOL`
+  - valeur initiale : `[]`
+  - justification : aucun module ne doit devenir actif automatiquement pour une ecole
+
+Inventaire officiellement reconnu mais sans defaut persiste obligatoire a ce jour :
+- `runtime.retry.maxAttempts`
+- `runtime.replay.enabled`
+- `runtime.cache.ttlSeconds`
+- `branding.logo.primary`
+- `notifications.templates.default`
+- `preferences.theme`
+
+Principe fondamental :
+- une cle connue n implique pas automatiquement une valeur initiale obligatoire
+
+## Persistance Locale Reelle
+
+Le module ne repose plus uniquement sur de la memoire volatile pour les configurations creees.
+
+Le repository `RepositoryConfigurationMemoirePersistante` :
+- recharge les configurations existantes depuis le disque
+- persiste chaque creation, mise a jour et suppression
+- rehydrate les agregats avec leur compteur de versions
+
+Fichiers locaux utilises :
+- `stockage-local/configuration/configurations.json`
+- `stockage-local/configuration/bootstrap-journal.json`
+
+Le premier fichier porte la persistence locale exploitable.
+Le second journalise les passages d amorcage officiel pour diagnostic et rattrapage.
+
+## Semantique Des Modules
+
+La gouvernance des modules suit strictement cette doctrine :
+
+- Organisation :
+  - `modules.allowed`
+  - definit les modules autorises pour les ecoles de l organisation
+- Ecole :
+  - `modules.enabled`
+  - definit les modules explicitement actives localement
+- Resolution effective :
+  - `modulesEffectifs = modules.allowed ∩ modules.enabled`
+
+Regle critique :
+- l absence de `modules.allowed` peut etre traitee comme catalogue autorisable complet
+- l absence de `modules.enabled` ne doit jamais signifier activation implicite de tous les modules
+
+Autrement dit :
+- autorisation par defaut possible au niveau organisation
+- activation automatique interdite au niveau ecole
+
+## Rattrapage Des Contextes Existants
+
+Au demarrage du BC `referentiel-academique`, un rattrapage idempotent parcourt :
+- les organisations existantes
+- les ecoles existantes
+
+But :
+- combler les contextes historiques deja presents avant l industrialisation
+- sans doublons
+- sans ecrasement
+- sans mutation arbitraire
+
 ## Regle Fondamentale
 
 `Configuration` ne contient pas le metier des autres modules.

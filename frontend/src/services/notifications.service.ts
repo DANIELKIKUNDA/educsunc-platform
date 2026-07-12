@@ -20,6 +20,16 @@ export const notificationsService = {
 
   // Ajouter une notification
   ajouter(notification: Omit<NotificationMessage, 'id' | 'timestamp'>) {
+    const dejaVisible = this.notifications.value.some((existante) =>
+      existante.type === notification.type
+      && existante.titre === notification.titre
+      && existante.message === notification.message,
+    );
+
+    if (dejaVisible) {
+      return null;
+    }
+
     const id = `notif-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const nouvelleNotification: NotificationMessage = {
       ...notification,

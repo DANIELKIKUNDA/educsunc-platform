@@ -15,6 +15,14 @@ import { CreerEcoleEntree } from '../../dto/input/CreerEcoleEntree';
 import { EcoleSortie } from '../../dto/output/EcoleSortie';
 import { EcoleApplicationMapper } from '../../mappers/EcoleApplicationMapper';
 
+interface InitialisationConfigurationEcolePort {
+  amorcerEcole(params: {
+    readonly organisationId: string;
+    readonly ecoleId: string;
+    readonly actorId?: string;
+  }): Promise<unknown>;
+}
+
 // Cette interface represente la sortie du cas d'usage CreerEcole.
 export interface SortieCreerEcole {
   ecole: EcoleSortie;
@@ -31,6 +39,7 @@ export class CreerEcole implements UseCase<CreerEcoleEntree, SortieCreerEcole> {
     depotEcole: DepotEcole,
     depotOrganisation: DepotOrganisation,
     policyAudit: PolicyAudit = new PolicyAudit(),
+    private readonly initialisationConfiguration?: InitialisationConfigurationEcolePort,
   ) {
     this.depotEcole = depotEcole;
     this.depotOrganisation = depotOrganisation;
@@ -91,6 +100,11 @@ export class CreerEcole implements UseCase<CreerEcoleEntree, SortieCreerEcole> {
     );
 
     await this.depotEcole.sauvegarder(ecole);
+    await this.initialisationConfiguration?.amorcerEcole({
+      organisationId: organisation.obtenirId().obtenirValeur(),
+      ecoleId: ecole.obtenirId().obtenirValeur(),
+      actorId: entreeValidee.creePar,
+    });
 
     return {
       ecole: EcoleApplicationMapper.versSortie(ecole),

@@ -60,6 +60,10 @@ export function lireContexteApiPlateformeGlobal(): SharedApiContext {
   };
 }
 
+export function lireContexteApiGouvernancePlateforme(): SharedApiContext {
+  return lireContexteApiPlateformeGlobal();
+}
+
 export function lireEntetesAuthentificationActive(): Record<string, string> {
   const entetes: Record<string, string> = {};
 

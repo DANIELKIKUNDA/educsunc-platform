@@ -1,9 +1,14 @@
+import { Building2, CircleOff, MapPin, School, Wifi } from 'lucide-vue-next';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import { Building2, Fingerprint, ShieldCheck, Waypoints } from 'lucide-vue-next';
 import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
 import { schoolModeOptions, type SchoolModeValue } from '../models/school-administration.model';
 import { useSchoolAdministrationStore } from '../stores/school-administration.store';
+import {
+  evaluateRenameSchool,
+  evaluateSchoolInstitutionalInfoUpdate,
+  evaluateSchoolModeUpdate,
+} from './school-administration.logic';
 
 type LifecycleAction = 'activate' | 'deactivate';
 
@@ -30,6 +35,22 @@ export function useSchoolAdministrationDetailViewModel() {
   const canReadDetail = computed(() => canUseAction('referentiel.read', 'ADM-002'));
   const canMutateDetail = computed(() => canUseAction('referentiel.write', 'ADM-002'));
   const school = computed(() => store.state.selectedEcole);
+  const organization = computed(
+    () => store.state.organisations.find((item) => item.id === school.value?.idOrganisation) ?? null,
+  );
+  const renameEvaluation = computed(
+    () => evaluateRenameSchool(school.value?.nom, renameTarget.value, store.state.mutationStatus === 'loading'),
+  );
+  const modeEvaluation = computed(
+    () => evaluateSchoolModeUpdate(
+      school.value?.modeExploitation,
+      identityForm.modeExploitation,
+      store.state.mutationStatus === 'loading',
+    ),
+  );
+  const identityEvaluation = computed(
+    () => evaluateSchoolInstitutionalInfoUpdate(school.value, identityForm, store.state.mutationStatus === 'loading'),
+  );
 
   const summaryCards = computed(() => {
     if (!school.value) {
@@ -38,34 +59,39 @@ export function useSchoolAdministrationDetailViewModel() {
 
     return [
       {
-        label: 'Code ecole',
-        value: school.value.code,
-        hint: 'Identifiant structurel relu depuis le backend.',
-        icon: Fingerprint,
+        label: 'Ecole',
+        value: school.value.nom,
+        hint: school.value.code,
+        icon: School,
         tone: 'primary' as const,
       },
       {
         label: 'Organisation',
-        value: school.value.idOrganisation,
-        hint: 'Rattachement structurel reel de cette ecole.',
+        value: organization.value?.nom ?? 'Organisation non relue',
+        hint: organization.value?.code ?? "Rattachement administratif de l'etablissement.",
         icon: Building2,
         tone: 'neutral' as const,
       },
       {
-        label: 'Lecture',
-        value: 'referentiel.read',
-        hint: 'Lecture detaillee autorisee par ADM-01.',
-        icon: ShieldCheck,
+        label: "Mode d'exploitation",
+        value: schoolModeOptions.find((option) => option.value === school.value?.modeExploitation)?.label ?? school.value.modeExploitation,
+        hint: 'Reglage actuellement applique a cette ecole.',
+        icon: Wifi,
         tone: 'success' as const,
       },
       {
-        label: 'Mutation',
-        value: canMutateDetail.value ? 'referentiel.write' : 'Lecture seule',
-        hint: canMutateDetail.value
-          ? 'Mutations structurelles backend disponibles.'
-          : 'Le backend n ouvrira pas les mutations dans ce profil.',
-        icon: Waypoints,
-        tone: canMutateDetail.value ? 'warning' as const : 'neutral' as const,
+        label: 'Statut',
+        value: school.value.actif ? 'Active' : 'Inactive',
+        hint: school.value.modifieLe ? `Mise a jour le ${formatDate(school.value.modifieLe)}` : "Aucune modification recente n'a ete relue.",
+        icon: CircleOff,
+        tone: school.value.actif ? 'success' as const : 'warning' as const,
+      },
+      {
+        label: 'Localisation',
+        value: school.value.ville || 'Non renseignee',
+        hint: school.value.communeOuTerritoire || school.value.provinceEducationnelle || 'A completer dans la fiche.',
+        icon: MapPin,
+        tone: 'neutral' as const,
       },
     ];
   });
@@ -91,21 +117,24 @@ export function useSchoolAdministrationDetailViewModel() {
       return;
     }
 
+    await store.loadOrganizations();
     await store.loadSchool(idEcole);
     syncFormFromSchool();
   }
 
   async function renameSchool(): Promise<void> {
-    if (!school.value?.id || !renameTarget.value.trim()) {
+    if (!school.value?.id || !renameEvaluation.value.canSubmit) {
       return;
     }
 
-    await store.renameSchool(school.value.id, renameTarget.value.trim());
-    renameTarget.value = '';
+    const success = await store.renameSchool(school.value.id, renameTarget.value.trim());
+    if (success) {
+      renameTarget.value = '';
+    }
   }
 
   async function updateMode(): Promise<void> {
-    if (!school.value?.id) {
+    if (!school.value?.id || !modeEvaluation.value.canSubmit) {
       return;
     }
 
@@ -113,7 +142,7 @@ export function useSchoolAdministrationDetailViewModel() {
   }
 
   async function updateInstitutionalInfo(): Promise<void> {
-    if (!school.value?.id) {
+    if (!school.value?.id || !identityEvaluation.value.canSubmit) {
       return;
     }
 
@@ -142,13 +171,32 @@ export function useSchoolAdministrationDetailViewModel() {
       return;
     }
 
+    let success = false;
     if (lifecycleAction.value === 'activate') {
-      await store.activateSchool(school.value.id);
+      success = await store.activateSchool(school.value.id);
     } else {
-      await store.deactivateSchool(school.value.id);
+      success = await store.deactivateSchool(school.value.id);
     }
 
-    lifecycleModalOpen.value = false;
+    if (success) {
+      lifecycleModalOpen.value = false;
+    }
+  }
+
+  function formatDate(value: string | undefined): string {
+    if (!value) {
+      return 'Information non disponible';
+    }
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return value;
+    }
+
+    return new Intl.DateTimeFormat('fr-FR', {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+    }).format(date);
   }
 
   watch(school, () => {
@@ -162,14 +210,19 @@ export function useSchoolAdministrationDetailViewModel() {
   return {
     store,
     school,
+    organization,
     canReadDetail,
     canMutateDetail,
     renameTarget,
     identityForm,
     schoolModeOptions,
     summaryCards,
+    renameEvaluation,
+    modeEvaluation,
+    identityEvaluation,
     lifecycleModalOpen,
     lifecycleAction,
+    formatDate,
     load,
     renameSchool,
     updateMode,

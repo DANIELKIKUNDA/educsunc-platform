@@ -157,6 +157,27 @@
             </div>
           </SectionBlock>
 
+          <SectionBlock title="Modules activés" description="L ecole n active ici que les modules deja autorises par son organisation.">
+            <OrganizationModulesSection
+              :model-value="modulesActivesDraft"
+              :cards="modulesCards"
+              :loading="modulesLoading"
+              :save-busy="modulesSaving"
+              :save-disabled="!canSaveModules"
+              title="Modules activés"
+              description="Cette section pilote uniquement les modules utilisables dans cette ecole. Activer l ecole dans le contexte ne modifie jamais ces modules."
+              empty-title="Aucun module disponible pour cette ecole"
+              empty-message="Cette organisation n a encore autorise aucun module pour cette ecole."
+              :selection-summary="modulesSelectionSummary"
+              footer-message="Seuls les modules deja autorises par l organisation peuvent etre activés dans cette ecole."
+              save-label="Enregistrer les changements"
+              :error-message="modulesErrorMessage"
+              helper-message="Les modules disponibles proviennent du cadre defini au niveau de l organisation."
+              @update:model-value="definirModulesActives"
+              @save="ouvrirConfirmationModules"
+            />
+          </SectionBlock>
+
           <SectionBlock title="Ouvrir les workflows locaux" description="Ces raccourcis activent le contexte ecole avant ouverture, sans resaisie manuelle.">
             <div class="school-detail__workflow-grid">
               <button class="school-detail__workflow-card" type="button" @click="ouvrirWorkflowEcole('/app/scolarite/inscriptions')">
@@ -220,11 +241,23 @@
       title="Aucune ecole chargee"
       message="Le backend n a retourne aucune ecole pour la route demandee."
     />
+
+    <OrganizationConfirmDialog
+      :open="modulesConfirmDialogOpen"
+      :busy="modulesSaving"
+      title="Enregistrer les modules activés"
+      message="Cette action met a jour les modules utilisables dans cette ecole, a l interieur du cadre autorise par l organisation."
+      details="Activer le contexte ouvre seulement votre perimetre de travail. Seul cet enregistrement modifie les modules activés de l ecole."
+      confirm-label="Enregistrer"
+      processing-label="Enregistrement en cours..."
+      @close="fermerConfirmationModules"
+      @confirm="enregistrerModulesActives"
+    />
   </PageContainer>
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter, RouterLink } from 'vue-router';
 import {
   ArrowLeft,
@@ -243,21 +276,74 @@ import {
 import PageContainer from '../../../shared/layout/PageContainer.vue';
 import PageHeader from '../../../shared/layout/PageHeader.vue';
 import SectionBlock from '../../../shared/layout/SectionBlock.vue';
+import { notificationsService } from '../../../services/notifications.service';
 import { changerEcoleActiveFrontend, changerOrganisationActiveFrontend } from '../../../shared/auth/session.bootstrap';
 import { activeContextStore } from '../../../shared/session/active-context.store';
 import EmptyState from '../../../shared/ui/EmptyState.vue';
 import ErrorState from '../../../shared/ui/ErrorState.vue';
 import LoadingState from '../../../shared/ui/LoadingState.vue';
+import type {
+  ConfigurationModuleCatalogItem,
+  ConfigurationModuleCode,
+} from '../../configuration/models/configuration.model';
+import { configurationModuleCatalog } from '../../configuration/models/configuration.model';
+import { configurationApi, lireContexteApiConfiguration } from '../../configuration/services/configuration.api';
+import OrganizationConfirmDialog from '../components/OrganizationConfirmDialog.vue';
+import OrganizationModulesSection from '../components/OrganizationModulesSection.vue';
 import { useOrganizationGovernanceStore } from '../stores/organization-governance.store';
 
 const route = useRoute();
 const router = useRouter();
 const store = useOrganizationGovernanceStore();
+const modulesLoading = ref(false);
+const modulesSaving = ref(false);
+const modulesErrorMessage = ref<string | null>(null);
+const modulesConfirmDialogOpen = ref(false);
+const modulesAutorisesOrganisation = ref<ConfigurationModuleCode[]>([]);
+const modulesActivesDraft = ref<ConfigurationModuleCode[]>([]);
+const modulesActivesReference = ref<ConfigurationModuleCode[]>([]);
+const modulesEffectifs = ref<ConfigurationModuleCode[]>([]);
+const moduleCatalog = ref<readonly ConfigurationModuleCatalogItem[]>(configurationModuleCatalog);
+
+const modulesCards = computed(() => {
+  if (modulesAutorisesOrganisation.value.length === 0) {
+    return [];
+  }
+
+  return moduleCatalog.value
+    .filter((module) => modulesAutorisesOrganisation.value.includes(module.code))
+    .map((module) => ({
+      code: module.code,
+      label: module.label,
+      description: module.description,
+      helper: modulesEffectifs.value.includes(module.code)
+        ? 'Actif dans cette ecole.'
+        : 'Disponible pour activation dans cette ecole.',
+      stateLabel: modulesEffectifs.value.includes(module.code) ? 'Actif' : 'Disponible',
+    }));
+});
+const canSaveModules = computed(() =>
+  !modulesLoading.value
+  && !modulesSaving.value
+  && !areSchoolModuleListsEqual(modulesActivesDraft.value, modulesActivesReference.value),
+);
+const modulesSelectionSummary = computed(() => {
+  const count = modulesActivesDraft.value.length;
+  if (count === 0) {
+    return 'Aucun module actif dans cette ecole pour le moment.';
+  }
+
+  return count === 1
+    ? '1 module actif actuellement.'
+    : `${count} modules actifs actuellement.`;
+});
 
 onMounted(async () => {
   const idEcole = typeof route.params.idEcole === 'string' ? route.params.idEcole : '';
   if (idEcole) {
     await store.chargerEcole(idEcole);
+    await chargerCatalogueModules();
+    await chargerModulesEcole();
   }
 });
 
@@ -282,6 +368,106 @@ async function ouvrirWorkflowEcole(cible: string): Promise<void> {
   await router.push(cible);
 }
 
+async function chargerModulesEcole(): Promise<void> {
+  const ecole = store.state.selectedEcole;
+  if (!ecole) {
+    modulesAutorisesOrganisation.value = [];
+    modulesActivesDraft.value = [];
+    modulesActivesReference.value = [];
+    modulesEffectifs.value = [];
+    return;
+  }
+
+  modulesLoading.value = true;
+  modulesErrorMessage.value = null;
+
+  try {
+    const response = await configurationApi.resoudreModulesEffectifs(
+      { organisationId: ecole.idOrganisation, ecoleId: ecole.id },
+      lireContexteApiConfiguration(),
+    );
+    modulesAutorisesOrganisation.value = [...response.donnees.modulesAutorisesOrganisation];
+    modulesActivesDraft.value = [...response.donnees.modulesActivesEcole];
+    modulesActivesReference.value = [...response.donnees.modulesActivesEcole];
+    modulesEffectifs.value = [...response.donnees.modulesEffectifs];
+  } catch {
+    modulesErrorMessage.value = "Impossible de relire les modules disponibles pour cette ecole.";
+    modulesAutorisesOrganisation.value = [];
+    modulesActivesDraft.value = [];
+    modulesActivesReference.value = [];
+    modulesEffectifs.value = [];
+  } finally {
+    modulesLoading.value = false;
+  }
+}
+
+async function chargerCatalogueModules(): Promise<void> {
+  try {
+    const response = await configurationApi.consulterCatalogueModules(lireContexteApiConfiguration());
+    moduleCatalog.value = response.donnees.modules.length > 0
+      ? response.donnees.modules
+      : configurationModuleCatalog;
+  } catch {
+    moduleCatalog.value = configurationModuleCatalog;
+  }
+}
+
+function definirModulesActives(valeur: string[]): void {
+  const autorises = new Set(modulesAutorisesOrganisation.value);
+  modulesActivesDraft.value = valeur.filter(
+    (module): module is ConfigurationModuleCode =>
+      autorises.has(module as ConfigurationModuleCode),
+  );
+}
+
+function ouvrirConfirmationModules(): void {
+  if (!canSaveModules.value) {
+    return;
+  }
+
+  modulesConfirmDialogOpen.value = true;
+}
+
+function fermerConfirmationModules(): void {
+  modulesConfirmDialogOpen.value = false;
+}
+
+async function enregistrerModulesActives(): Promise<void> {
+  const ecole = store.state.selectedEcole;
+  if (!ecole || modulesSaving.value) {
+    return;
+  }
+
+  modulesSaving.value = true;
+  modulesErrorMessage.value = null;
+
+  try {
+    await configurationApi.configurerModulesEcole(
+      ecole.id,
+      {
+        organisationId: ecole.idOrganisation,
+        modules: modulesActivesDraft.value,
+      },
+      lireContexteApiConfiguration(),
+    );
+    modulesActivesReference.value = [...modulesActivesDraft.value];
+    modulesEffectifs.value = [...modulesActivesDraft.value];
+    modulesConfirmDialogOpen.value = false;
+    notificationsService.succes(
+      'Modules activés mis a jour',
+      `${ecole.nom} utilise maintenant la selection locale enregistree.`,
+    );
+  } catch {
+    modulesErrorMessage.value = "Les modules activés n'ont pas pu etre enregistres. Votre selection a ete conservee.";
+    notificationsService.danger(
+      'Enregistrement impossible',
+      "Les modules activés n'ont pas pu etre enregistres pour cette ecole.",
+    );
+  } finally {
+    modulesSaving.value = false;
+  }
+}
+
 function formaterDate(value?: string, withTime = false): string {
   if (!value) return 'Non renseigne';
   const date = new Date(value);
@@ -300,6 +486,19 @@ function lireDerniereModification(): string {
     store.state.selectedEcole?.modifieLe ?? store.state.selectedEcole?.creeLe,
     true,
   );
+}
+
+function areSchoolModuleListsEqual(
+  current: readonly ConfigurationModuleCode[],
+  reference: readonly ConfigurationModuleCode[],
+): boolean {
+  if (current.length !== reference.length) {
+    return false;
+  }
+
+  const left = [...current].sort();
+  const right = [...reference].sort();
+  return left.every((value, index) => value === right[index]);
 }
 </script>
 

@@ -1,9 +1,9 @@
 <template>
   <PageContainer>
     <PageHeader
-      eyebrow="ADM-02"
-      title="Fiche structurelle d une ecole"
-      description="Consultation, identite institutionnelle et cycle de vie d une ecole dans le cadre strict de ADM-01."
+      eyebrow="Administration ecole"
+      title="Fiche ecole"
+      description="Consultez l'identite de l'etablissement, ses coordonnees et ses actions administratives autorisees."
     >
       <template #actions>
         <div class="school-admin__hero-actions">
@@ -20,12 +20,12 @@
     <ErrorState
       v-else-if="store.state.status === 'error'"
       title="Fiche indisponible"
-      :message="store.state.errorMessage ?? 'La fiche structurelle de cette ecole ne peut pas etre ouverte.'"
+      :message="store.state.errorMessage ?? 'La fiche de cette ecole ne peut pas etre ouverte.'"
     />
     <EmptyState
       v-else-if="!school"
-      title="Aucune ecole chargee"
-      message="Le detail attend un identifiant d ecole valide pour relire la fiche backend."
+      title="Aucune ecole disponible"
+      message="Retournez au registre pour ouvrir la fiche d'un etablissement."
     />
 
     <template v-else>
@@ -43,40 +43,48 @@
 
       <SectionBlock
         v-if="store.state.lastMutationMessage"
-        title="Derniere mutation"
-        description="Le backend a bien confirme la derniere operation structurelle."
+        title="Derniere action"
+        description="Cette confirmation provient de la derniere operation reussie."
       >
         <div class="school-admin__banner">{{ store.state.lastMutationMessage }}</div>
       </SectionBlock>
 
       <SectionBlock
-        title="Identite institutionnelle"
-        description="Lecture complete des champs reels exposes par le backend pour l ecole selectionnee."
+        title="Identite et coordonnees"
+        description="La fiche est organisee par informations metier pour faciliter la lecture et les mises a jour."
       >
         <div class="school-admin__identity-grid">
           <article class="school-admin__identity-card">
             <header>
-              <h3>Presentation</h3>
-              <p>Vue de lecture structurelle sans ajout de capacites non prouvees.</p>
+              <h3>Identite</h3>
+              <p>Informations principales de l'etablissement.</p>
             </header>
             <div class="school-admin__trace-list">
               <div class="school-admin__trace-item"><span>Nom</span><strong>{{ school.nom }}</strong></div>
               <div class="school-admin__trace-item"><span>Code</span><strong>{{ school.code }}</strong></div>
               <div class="school-admin__trace-item"><span>Sigle</span><strong>{{ school.sigle || '-' }}</strong></div>
-              <div class="school-admin__trace-item"><span>Mode</span><strong><SchoolModeBadge :mode="school.modeExploitation" /></strong></div>
-              <div class="school-admin__trace-item"><span>Statut</span><strong><SchoolStatusBadge :active="school.actif" /></strong></div>
+              <div class="school-admin__trace-item"><span>Organisation</span><strong>{{ organization?.nom || 'Information non disponible' }}</strong></div>
             </div>
           </article>
 
           <article class="school-admin__identity-card">
             <header>
               <h3>Coordonnees</h3>
-              <p>Les informations institutionnelles peuvent etre mises a jour si `referentiel.write` est reellement ouvert.</p>
+              <p>Coordonnees administratives et contact de l'etablissement.</p>
             </header>
             <div class="school-admin__trace-list">
               <div class="school-admin__trace-item"><span>Telephone</span><strong>{{ school.telephone || '-' }}</strong></div>
               <div class="school-admin__trace-item"><span>Email</span><strong>{{ school.email || '-' }}</strong></div>
               <div class="school-admin__trace-item"><span>Adresse</span><strong>{{ school.adresse || '-' }}</strong></div>
+            </div>
+          </article>
+
+          <article class="school-admin__identity-card">
+            <header>
+              <h3>Localisation</h3>
+              <p>Elements geographiques utiles a l'identification de l'ecole.</p>
+            </header>
+            <div class="school-admin__trace-list">
               <div class="school-admin__trace-item"><span>Province educationnelle</span><strong>{{ school.provinceEducationnelle || '-' }}</strong></div>
               <div class="school-admin__trace-item"><span>Ville</span><strong>{{ school.ville || '-' }}</strong></div>
               <div class="school-admin__trace-item"><span>Commune / territoire</span><strong>{{ school.communeOuTerritoire || '-' }}</strong></div>
@@ -85,15 +93,25 @@
 
           <article class="school-admin__identity-card">
             <header>
-              <h3>Trace structurelle</h3>
-              <p>Historique direct expose par le DTO actuel, sans reconstruction artificielle.</p>
+              <h3>Mode et statut</h3>
+              <p>Situation actuelle de l'ecole dans le registre administratif.</p>
             </header>
             <div class="school-admin__trace-list">
-              <div class="school-admin__trace-item"><span>Organisation</span><strong>{{ school.idOrganisation }}</strong></div>
-              <div class="school-admin__trace-item"><span>Cree le</span><strong>{{ school.creeLe }}</strong></div>
-              <div class="school-admin__trace-item"><span>Cree par</span><strong>{{ school.creePar || '-' }}</strong></div>
-              <div class="school-admin__trace-item"><span>Modifie le</span><strong>{{ school.modifieLe || '-' }}</strong></div>
-              <div class="school-admin__trace-item"><span>Modifie par</span><strong>{{ school.modifiePar || '-' }}</strong></div>
+              <div class="school-admin__trace-item"><span>Mode d'exploitation</span><strong><SchoolModeBadge :mode="school.modeExploitation" /></strong></div>
+              <div class="school-admin__trace-item"><span>Statut</span><strong><SchoolStatusBadge :active="school.actif" /></strong></div>
+            </div>
+          </article>
+
+          <article class="school-admin__identity-card">
+            <header>
+              <h3>Tracabilite</h3>
+              <p>Repere de creation et de derniere mise a jour relus depuis le backend.</p>
+            </header>
+            <div class="school-admin__trace-list">
+              <div class="school-admin__trace-item"><span>Cree le</span><strong>{{ formatDate(school.creeLe) }}</strong></div>
+              <div class="school-admin__trace-item"><span>Cree par</span><strong>{{ school.creePar || 'Information non disponible' }}</strong></div>
+              <div class="school-admin__trace-item"><span>Derniere modification</span><strong>{{ formatDate(school.modifieLe) }}</strong></div>
+              <div class="school-admin__trace-item"><span>Modifie par</span><strong>{{ school.modifiePar || 'Information non disponible' }}</strong></div>
               <div class="school-admin__trace-item"><span>Version</span><strong>{{ school.version }}</strong></div>
             </div>
           </article>
@@ -102,25 +120,26 @@
 
       <SectionBlock
         v-if="canMutateDetail"
-        title="Mutations structurelles autorisees"
-        description="Cette fiche reste volontairement limitee aux mutations prouvees: renommage, mode, identite institutionnelle, activation et desactivation."
+        title="Actions disponibles"
+        description="Seules les mutations reelles du backend sont exposees ici."
       >
         <div class="school-admin__detail-grid">
           <article class="school-admin__mutations-card">
             <header>
-              <h3>Renommer l ecole</h3>
-              <p>Le backend applique le nouveau nom puis conserve la tracabilite.</p>
+              <h3>Renommer l'ecole</h3>
+              <p>Utilisez un nouveau nom officiel. La trace de la modification restera visible dans la fiche.</p>
             </header>
             <form @submit.prevent="renameSchool">
               <div class="school-admin__field">
                 <span>Nouveau nom</span>
                 <input v-model="renameTarget" type="text" placeholder="Nouveau nom officiel" />
               </div>
+              <div class="school-admin__helper">{{ renameEvaluation.disableReason ?? "Le nouveau nom sera applique apres validation du backend." }}</div>
               <div class="school-admin__actions">
                 <button
                   class="school-admin__pill-button school-admin__pill-button--primary"
                   type="submit"
-                  :disabled="!renameTarget.trim() || store.state.mutationStatus === 'loading'"
+                  :disabled="!renameEvaluation.canSubmit"
                 >
                   Renommer
                 </button>
@@ -130,8 +149,8 @@
 
           <article class="school-admin__mutations-card">
             <header>
-              <h3>Changer le mode d exploitation</h3>
-              <p>Les seules valeurs exposees proviennent de l enumeration backend.</p>
+              <h3>Changer le mode d'exploitation</h3>
+              <p>Selectionnez un autre mode parmi les valeurs officiellement reconnues.</p>
             </header>
             <form @submit.prevent="updateMode">
               <div class="school-admin__field">
@@ -145,13 +164,14 @@
               <div class="school-admin__helper">
                 {{ schoolModeOptions.find((option) => option.value === identityForm.modeExploitation)?.description }}
               </div>
+              <div class="school-admin__helper">{{ modeEvaluation.disableReason ?? "Le nouveau mode sera applique apres validation." }}</div>
               <div class="school-admin__actions">
                 <button
                   class="school-admin__pill-button school-admin__pill-button--primary"
                   type="submit"
-                  :disabled="store.state.mutationStatus === 'loading'"
+                  :disabled="!modeEvaluation.canSubmit"
                 >
-                  Mettre a jour le mode
+                  Enregistrer le mode
                 </button>
               </div>
             </form>
@@ -159,8 +179,8 @@
 
           <article class="school-admin__mutations-card">
             <header>
-              <h3>Mettre a jour l identite institutionnelle</h3>
-              <p>Les champs exposes correspondent exactement au DTO et a la route de mutation prouvee.</p>
+              <h3>Modifier les informations institutionnelles</h3>
+              <p>Mettez a jour les coordonnees administratives de l'etablissement sans perdre votre brouillon en cas d'erreur.</p>
             </header>
             <form @submit.prevent="updateInstitutionalInfo">
               <div class="school-admin__form-grid">
@@ -193,13 +213,14 @@
                   <input v-model="identityForm.adresse" type="text" placeholder="Adresse institutionnelle" />
                 </div>
               </div>
+              <div class="school-admin__helper">{{ identityEvaluation.disableReason ?? "Les champs modifies seront relus apres confirmation du backend." }}</div>
               <div class="school-admin__actions">
                 <button
                   class="school-admin__pill-button school-admin__pill-button--primary"
                   type="submit"
-                  :disabled="store.state.mutationStatus === 'loading'"
+                  :disabled="!identityEvaluation.canSubmit"
                 >
-                  Enregistrer l identite
+                  Enregistrer les informations
                 </button>
               </div>
             </form>
@@ -208,7 +229,7 @@
           <article class="school-admin__mutations-card">
             <header>
               <h3>Cycle de vie</h3>
-              <p>L ecole reste visible dans le registre, mais son statut structurel peut etre modifie avec confirmation.</p>
+              <p>L'ecole reste visible dans le registre, mais son statut peut etre modifie avec confirmation.</p>
             </header>
             <div class="school-admin__actions">
               <button
@@ -217,7 +238,7 @@
                 :disabled="school.actif || store.state.mutationStatus === 'loading'"
                 @click="openLifecycleModal('activate')"
               >
-                Activer l ecole
+                Activer l'ecole
               </button>
               <button
                 class="school-admin__pill-button"
@@ -225,7 +246,7 @@
                 :disabled="!school.actif || store.state.mutationStatus === 'loading'"
                 @click="openLifecycleModal('deactivate')"
               >
-                Desactiver l ecole
+                Desactiver l'ecole
               </button>
             </div>
           </article>
@@ -235,21 +256,10 @@
       <SectionBlock
         v-else
         title="Lecture seule"
-        description="Le detail reste ouvert, mais ce profil ne peut pas muter l existence ni l identite de l ecole."
+        description="La fiche reste consultable, mais les modifications ne sont pas autorisees pour ce profil."
       >
         <div class="school-admin__banner school-admin__banner--muted">
-          La fiche respecte le backend actuel: lecture structurelle oui, mutations non.
-        </div>
-      </SectionBlock>
-
-      <SectionBlock
-        title="Projection future"
-        description="Cette fiche constitue un point d entree vers le futur niveau Ecole, sans deja ouvrir ses workflows d exploitation."
-      >
-        <div class="school-admin__placeholder-card">
-          <p>
-            Le niveau Ecole sera branche plus tard. Cette vue reste volontairement limitee a l existence et a l identite structurelle de l ecole.
-          </p>
+          Vous pouvez consulter cette ecole, sans modifier son nom, ses informations ni son statut.
         </div>
       </SectionBlock>
 
@@ -281,13 +291,18 @@ import { useSchoolAdministrationDetailViewModel } from '../viewmodels/useSchoolA
 const {
   store,
   school,
+  organization,
   canMutateDetail,
   renameTarget,
   identityForm,
   schoolModeOptions,
   summaryCards,
+  renameEvaluation,
+  modeEvaluation,
+  identityEvaluation,
   lifecycleModalOpen,
   lifecycleAction,
+  formatDate,
   renameSchool,
   updateMode,
   updateInstitutionalInfo,

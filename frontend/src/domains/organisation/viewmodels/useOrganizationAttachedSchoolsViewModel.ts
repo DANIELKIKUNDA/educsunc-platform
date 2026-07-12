@@ -34,7 +34,7 @@ export function useOrganizationAttachedSchoolsViewModel() {
   const ecoles = computed(() => store.state.ecoles);
   const isLoading = computed(() => store.state.status === 'loading' && store.state.ecoles.length === 0);
   const isBusy = computed(() => store.state.mutationStatus === 'loading' || chargementSupplementaire.value);
-  const errorMessage = computed(() => store.state.errorMessage);
+  const errorMessage = computed(() => traduireMessageErreur(store.state.errorMessage));
   const canCreateSchool = computed(() => canUseAction('referentiel.write', 'ADM-001'));
   const canViewSchool = computed(() => canUseAction('organization.school.detail.read', 'ORG-001-SCHOOLS') || canAccessPage('ORG-002'));
   const canConfigureSchool = computed(() => canAccessPage('CFG-ECO-001'));
@@ -75,6 +75,28 @@ export function useOrganizationAttachedSchoolsViewModel() {
       month: '2-digit',
       year: 'numeric',
     }).format(date);
+  }
+
+  function traduireMessageErreur(message: string | null): string | null {
+    if (!message) {
+      return null;
+    }
+
+    const lower = message.toLowerCase();
+
+    if (lower.includes('session') || lower.includes('token') || lower.includes('401') || lower.includes('auth')) {
+      return "Impossible d'ouvrir les ecoles rattachees avec la session courante. Verifiez la session active puis reessayez.";
+    }
+
+    if (lower.includes('permission') || lower.includes('forbidden') || lower.includes('403') || lower.includes('autorise')) {
+      return "Le role courant ne peut pas consulter ces ecoles dans le perimetre actuellement selectionne.";
+    }
+
+    if (lower.includes('fetch') || lower.includes('network') || lower.includes('serveur') || lower.includes('connexion')) {
+      return "La liste des ecoles n'a pas pu etre chargee pour le moment. Reessayez dans un instant.";
+    }
+
+    return "Impossible de charger les ecoles rattachees a cette organisation pour le moment.";
   }
 
   function lireSectionsOrganisees(): string {

@@ -58,6 +58,10 @@
               <BadgeCheck :size="16" />
               <span>Activer dans le contexte</span>
             </button>
+            <button class="org-detail__button org-detail__button--ghost" type="button" @click="ouvrirConfigurationModules">
+              <Layers3 :size="16" />
+              <span>Configurer les modules</span>
+            </button>
             <RouterLink class="org-detail__button org-detail__button--ghost org-detail__button-link" :to="`/app/organisation/organisations/${organisation.id}/ecoles`">
               <School :size="16" />
               <span>Voir toutes les ecoles</span>
@@ -69,7 +73,7 @@
       <section class="org-detail__stats">
         <StatCard label="Ecoles rattachees" :value="stats.ecoles" hint="structure organisationnelle" :icon="Building2" tone="primary" />
         <StatCard label="Utilisateurs" :value="stats.utilisateurs" hint="dans le perimetre visible" :icon="Users" tone="success" />
-        <StatCard label="Modules actives" :value="stats.modules" hint="socle courant" :icon="Layers3" tone="neutral" />
+        <StatCard label="Modules autorises" :value="stats.modules" hint="catalogue ouvert a l organisation" :icon="Layers3" tone="neutral" />
         <StatCard label="Derniere modification" :value="stats.derniereModification" hint="trace la plus recente" :icon="Clock3" tone="warning" />
       </section>
 
@@ -175,6 +179,31 @@
           </SectionBlock>
 
           <SectionBlock
+            v-else-if="activeTab === 'modules'"
+            title="Modules autorises"
+            description="Attribuez ici les modules que cette organisation peut ensuite ouvrir a ses ecoles."
+          >
+            <OrganizationModulesSection
+              :model-value="modulesDraft"
+              :cards="modulesCards"
+              :loading="modulesStatus === 'loading'"
+              :save-busy="modulesMutationStatus === 'loading'"
+              :save-disabled="!canSaveModules"
+              title="Modules autorises"
+              description="Cette attribution reste propre a l organisation. Activer le contexte ne change jamais ces modules."
+              empty-title="Aucun module disponible"
+              empty-message="Le catalogue officiel des modules n est pas encore disponible pour cette organisation."
+              :selection-summary="modulesSelectionSummary"
+              footer-message="Enregistrez seulement lorsque la selection correspond bien au cadre que vous souhaitez autoriser aux ecoles rattachees."
+              save-label="Enregistrer les changements"
+              :error-message="modulesErrorMessage"
+              helper-message="Les ecoles rattachees ne pourront activer que les modules autorises ici."
+              @update:model-value="definirModulesOrganisation"
+              @save="demanderEnregistrementModules"
+            />
+          </SectionBlock>
+
+          <SectionBlock
             v-else-if="activeTab === 'ecoles'"
             title="Ecoles rattachees"
             description="Apercu des ecoles actuellement rattachees a cette organisation."
@@ -198,7 +227,7 @@
                       <th>Nom de l ecole</th>
                       <th>Province educationnelle</th>
                       <th>Sections organisees</th>
-                      <th>Modules actives</th>
+                      <th>Modules activés</th>
                       <th>Statut</th>
                     </tr>
                   </thead>
@@ -289,6 +318,18 @@
       @close="fermerDialogueStatut"
       @confirm="confirmerChangementStatut"
     />
+
+    <OrganizationConfirmDialog
+      :open="modulesConfirmDialogOpen"
+      :busy="modulesMutationStatus === 'loading'"
+      title="Enregistrer les modules autorises"
+      message="Cette action met a jour les modules que cette organisation pourra ensuite ouvrir a ses ecoles."
+      details="Activer le contexte reste une simple selection de travail. Seul cet enregistrement modifie les modules autorises."
+      confirm-label="Enregistrer"
+      processing-label="Enregistrement en cours..."
+      @close="fermerDialogueModules"
+      @confirm="confirmerEnregistrementModules"
+    />
   </PageContainer>
 </template>
 
@@ -318,6 +359,7 @@ import PremiumTabs from '../../../shared/ui/PremiumTabs.vue';
 import StatCard from '../../../shared/ui/StatCard.vue';
 import OrganizationConfirmDialog from '../components/OrganizationConfirmDialog.vue';
 import OrganizationDetailSkeleton from '../components/OrganizationDetailSkeleton.vue';
+import OrganizationModulesSection from '../components/OrganizationModulesSection.vue';
 import { useOrganizationDetailViewModel } from '../viewmodels/useOrganizationDetailViewModel';
 
 const {
@@ -330,15 +372,28 @@ const {
   activeTab,
   infoRapide,
   historique,
+  modulesCards,
+  modulesDraft,
+  modulesStatus,
+  modulesMutationStatus,
+  modulesErrorMessage,
+  modulesSelectionSummary,
+  canSaveModules,
+  modulesConfirmDialogOpen,
   statusDialogOpen,
   activerOrganisationDansContexte,
   ouvrirActionResponsable,
   ouvrirEdition,
+  ouvrirConfigurationModules,
   retournerRegistre,
   ouvrirDialogueStatut,
   fermerDialogueStatut,
   confirmerChangementStatut,
   selectionnerOnglet,
+  demanderEnregistrementModules,
+  fermerDialogueModules,
+  confirmerEnregistrementModules,
+  definirModulesOrganisation,
   lirePromoteurPrincipal,
   lireDescriptionOrganisation,
   lireVersion,
@@ -352,6 +407,7 @@ const {
 const tabs = computed(() => [
   { code: 'general', label: 'Informations generales', icon: Info },
   { code: 'responsable', label: 'Responsable', icon: ShieldUser },
+  { code: 'modules', label: 'Modules autorises', icon: Layers3 },
   { code: 'ecoles', label: 'Ecoles rattachees', icon: School },
   { code: 'historique', label: 'Historique', icon: History },
 ] as const);

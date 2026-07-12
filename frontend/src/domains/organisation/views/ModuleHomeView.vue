@@ -1,7 +1,7 @@
 <template>
   <PageContainer>
     <PageHeader
-      eyebrow="ORG-HOME"
+      eyebrow="Organisation"
       title="Centre organisation"
       description="Point d'entree organisationnel pour relire le contexte actif, ouvrir le registre et descendre proprement vers les ecoles rattachees."
     >
@@ -84,7 +84,7 @@
         <EmptyState
           v-if="!canAccessRegistry"
           title="Registre systeme non ouvert"
-          message="Cette vue reste disponible pour le contexte organisationnel et la configuration. La lecture structurelle des organisations et des ecoles rattachees via ORG-01 et ADM-01 reste reservee aux acteurs systeme preuves."
+          message="Cette vue reste disponible pour le contexte organisationnel et la configuration. La lecture structurelle des organisations et des ecoles rattachees reste reservee aux acteurs systeme autorises."
         />
         <EmptyState
           v-else-if="store.state.ecoles.length === 0"
