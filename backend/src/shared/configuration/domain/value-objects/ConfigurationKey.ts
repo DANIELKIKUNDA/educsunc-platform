@@ -9,7 +9,7 @@ export class ConfigurationKey {
   /** Cette methode cree une cle normalisee a partir d une notation pointee. */
   public static creer(valeur: string): ConfigurationKey {
     const normalisee = valeur.trim();
-    if (!/^[a-z0-9]+(?:[._-][a-z0-9]+)*$/u.test(normalisee)) {
+    if (!/^[A-Za-z0-9]+(?:[._-][A-Za-z0-9]+)*$/u.test(normalisee)) {
       throw new ExceptionConfigurationIncoherente(
         'La cle de configuration doit suivre une notation alphanumerique simple.',
       );

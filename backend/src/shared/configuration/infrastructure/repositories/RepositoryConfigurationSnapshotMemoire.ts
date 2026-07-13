@@ -14,9 +14,9 @@ export class RepositoryConfigurationSnapshotMemoire implements PortRepositoryCon
   /** Cette methode persiste un snapshot dans le stockage local. */
   public async sauvegarder(snapshot: ConfigurationSnapshot): Promise<void> {
     const details = snapshot.details();
-    this.stockage.ajouter(ConfigurationId.creer(details.identifiantSnapshot), {
+    this.stockage.ajouter(ConfigurationId.creer(details.configurationId), {
       snapshot,
-      configurationId: details.identifiantSnapshot,
+      configurationId: details.configurationId,
       sauvegardeLe: new Date(),
     });
   }

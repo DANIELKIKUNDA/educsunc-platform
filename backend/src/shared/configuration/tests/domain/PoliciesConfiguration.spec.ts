@@ -42,6 +42,14 @@ test('la classification impose le proprietaire runtime plateforme', () => {
   assert.equal(regle.overridableParDefaut, false);
 });
 
+test('la classification reserve les notifications globales au niveau plateforme', () => {
+  const politique = new PolitiqueClassificationConfiguration();
+  const regle = politique.classifier('notifications.retry.enabled', 'SYSTEM');
+
+  assert.equal(regle.famille, 'CFG-PLAT-NOTIFICATIONS');
+  assert.equal(regle.proprietaireNiveau, 'SYSTEM');
+});
+
 test('la classification reserve les preferences utilisateur au proprietaire cible', () => {
   const politique = new PolitiqueClassificationConfiguration();
 
@@ -70,5 +78,18 @@ test('la classification reserve les preferences utilisateur au proprietaire cibl
       },
     ),
     false,
+  );
+  assert.equal(
+    politique.autoriserRole(
+      'WRITE',
+      'UTILISATEUR_CONFIGURATION',
+      'notifications.preferences.muted',
+      'USER',
+      {
+        utilisateurId: FIXTURE_SCOPE_UTILISATEUR.utilisateurId,
+        cibleUtilisateurId: FIXTURE_SCOPE_UTILISATEUR.utilisateurId,
+      },
+    ),
+    true,
   );
 });

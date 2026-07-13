@@ -6,6 +6,7 @@ import { EffectiveValue } from '../value-objects';
 export class ConfigurationSnapshot {
   constructor(
     private readonly identifiantSnapshot: string,
+    private readonly configurationId: string,
     private readonly valeurs: readonly EffectiveValue[],
     private readonly creeLe: Date = new Date(),
   ) {}
@@ -13,11 +14,13 @@ export class ConfigurationSnapshot {
   /** Cette methode retourne la lecture brute du snapshot. */
   public details(): {
     readonly identifiantSnapshot: string;
+    readonly configurationId: string;
     readonly valeurs: readonly ReturnType<EffectiveValue['details']>[];
     readonly creeLe: Date;
   } {
     return {
       identifiantSnapshot: this.identifiantSnapshot,
+      configurationId: this.configurationId,
       valeurs: this.valeurs.map((valeur) => valeur.details()),
       creeLe: this.creeLe,
     };

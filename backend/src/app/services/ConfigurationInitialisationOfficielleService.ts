@@ -1,13 +1,15 @@
 import { randomUUID } from 'node:crypto';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 
 import {
+  CATALOGUE_CONFIGURATION_OFFICIELLE,
   type Configuration,
+  ConfigurationBootstrapJournalStoreFichier,
   CreateConfigurationUseCase,
   type CreateConfigurationCommand,
   type NiveauConfiguration,
-  type PorteeConfigurationProps,
+  type JournalInitialisationConfigurationEntry,
+  type ConfigurationBootstrapJournalStore,
   TYPES_MODULE_CONFIGURATION,
 } from '../../shared/configuration';
 
@@ -27,119 +29,46 @@ export interface ConfigurationInitialeInventaireItem {
     | 'AUCUN_DEFAUT_OFFICIEL';
 }
 
-interface JournalInitialisationConfigurationEntry {
-  readonly executionId: string;
-  readonly executedAt: string;
-  readonly type: string;
-  readonly scope: PorteeConfigurationProps;
-  readonly createdKeys: readonly string[];
-  readonly skippedKeys: readonly string[];
-}
-
 const ACTEUR_SYSTEME_CONFIGURATION = 'SYSTEM_CONFIGURATION_BOOTSTRAP';
 const CHEMIN_JOURNAL_PAR_DEFAUT = path.resolve(
   process.cwd(),
   'stockage-local/configuration/bootstrap-journal.json',
 );
 
-const INVENTAIRE_CONFIGURATIONS_INITIALES: readonly ConfigurationInitialeInventaireItem[] = [
-  {
-    key: 'runtime.retry.maxAttempts',
-    libelleMetier: 'Tentatives maximales de reprise plateforme',
-    scope: 'SYSTEM',
-    typeValeur: 'aucun',
-    valeurInitiale: null,
-    source:
-      "ConfigurationKeys.ts reference la cle, mais aucun defaut persiste officiel n'est prouve dans le domaine courant.",
-    obligatoire: false,
-    momentInitialisation: 'AUCUN_DEFAUT_OFFICIEL',
-  },
-  {
-    key: 'runtime.replay.enabled',
-    libelleMetier: 'Relecture automatique plateforme',
-    scope: 'SYSTEM',
-    typeValeur: 'aucun',
-    valeurInitiale: null,
-    source:
-      "ConfigurationKeys.ts reference la cle, mais aucun defaut persiste officiel n'est prouve dans le domaine courant.",
-    obligatoire: false,
-    momentInitialisation: 'AUCUN_DEFAUT_OFFICIEL',
-  },
-  {
-    key: 'runtime.cache.ttlSeconds',
-    libelleMetier: 'Duree de cache plateforme',
-    scope: 'SYSTEM',
-    typeValeur: 'aucun',
-    valeurInitiale: null,
-    source:
-      "ConfigurationKeys.ts reference la cle, mais aucun defaut persiste officiel n'est prouve dans le domaine courant.",
-    obligatoire: false,
-    momentInitialisation: 'AUCUN_DEFAUT_OFFICIEL',
-  },
-  {
-    key: 'modules.allowed',
-    libelleMetier: 'Modules autorises pour une organisation',
-    scope: 'ORGANIZATION',
-    typeValeur: 'liste',
-    valeurInitiale: [...TYPES_MODULE_CONFIGURATION],
-    source:
-      "La resolution modulaire existante traite deja l'absence de modules.allowed comme catalogue complet autorisable.",
-    obligatoire: true,
-    momentInitialisation: 'CREATION_ORGANISATION',
-  },
-  {
-    key: 'modules.enabled',
-    libelleMetier: 'Modules actives dans une ecole',
-    scope: 'SCHOOL',
-    typeValeur: 'liste',
-    valeurInitiale: [],
-    source:
-      "La doctrine officielle interdit toute activation automatique; l'ecole doit activer explicitement ses modules autorises.",
-    obligatoire: true,
-    momentInitialisation: 'CREATION_ECOLE',
-  },
-  {
-    key: 'branding.logo.primary',
-    libelleMetier: 'Logo principal de l ecole',
-    scope: 'SCHOOL',
-    typeValeur: 'aucun',
-    valeurInitiale: null,
-    source:
-      "La cle officielle existe, mais aucun asset documentaire initial obligatoire n'est prouve pour toutes les ecoles.",
-    obligatoire: false,
-    momentInitialisation: 'AUCUN_DEFAUT_OFFICIEL',
-  },
-  {
-    key: 'notifications.templates.default',
-    libelleMetier: 'Template principal de notification',
-    scope: 'SCHOOL',
-    typeValeur: 'aucun',
-    valeurInitiale: null,
-    source:
-      "La cle officielle existe, mais aucun template persiste initial obligatoire n'est prouve dans le module Configuration.",
-    obligatoire: false,
-    momentInitialisation: 'AUCUN_DEFAUT_OFFICIEL',
-  },
-  {
-    key: 'preferences.theme',
-    libelleMetier: 'Theme personnel de l utilisateur',
-    scope: 'USER',
-    typeValeur: 'aucun',
-    valeurInitiale: null,
-    source:
-      "La famille utilisateur existe, mais aucune preference persistee par defaut n'est officiellement prouvee cote backend.",
-    obligatoire: false,
-    momentInitialisation: 'AUCUN_DEFAUT_OFFICIEL',
-  },
-] as const;
+const INVENTAIRE_CONFIGURATIONS_INITIALES: readonly ConfigurationInitialeInventaireItem[] =
+  CATALOGUE_CONFIGURATION_OFFICIELLE.map((definition) => ({
+    key: definition.key,
+    libelleMetier: definition.libelleMetier,
+    scope: definition.scope,
+    typeValeur: definition.typeValeur === 'enum'
+      ? 'texte'
+      : definition.typeValeur === 'duree-secondes' || definition.typeValeur === 'duree-millisecondes'
+        ? 'nombre'
+        : definition.typeValeur === 'entier'
+          ? 'nombre'
+          : definition.typeValeur === 'booleen'
+            ? 'booleen'
+            : definition.typeValeur === 'liste'
+              ? 'liste'
+              : 'texte',
+    valeurInitiale: definition.valeurParDefaut,
+    source: definition.preuve,
+    obligatoire: definition.obligatoire,
+    momentInitialisation: definition.momentInitialisation,
+  }));
 
 /** Cette classe industrialise l amorcage officiel des configurations initiales sans ecrasement. */
 export class ConfigurationInitialisationOfficielleService {
+  private readonly journalStore: ConfigurationBootstrapJournalStore;
+
   constructor(
     private readonly createConfigurationUseCase: CreateConfigurationUseCase,
-    private readonly listerConfigurations: () => readonly Configuration[],
-    private readonly cheminJournal = CHEMIN_JOURNAL_PAR_DEFAUT,
-  ) {}
+    private readonly listerConfigurations: () => Promise<readonly Configuration[]> | readonly Configuration[],
+    cheminJournal = CHEMIN_JOURNAL_PAR_DEFAUT,
+    journalStore?: ConfigurationBootstrapJournalStore,
+  ) {
+    this.journalStore = journalStore ?? new ConfigurationBootstrapJournalStoreFichier(cheminJournal);
+  }
 
   /** Cette methode retourne l inventaire officiel des cles candidates. */
   public inventorier(): readonly ConfigurationInitialeInventaireItem[] {
@@ -152,6 +81,26 @@ export class ConfigurationInitialisationOfficielleService {
     readonly skippedKeys: readonly string[];
   }> {
     const resultat = { createdKeys: [] as string[], skippedKeys: [] as string[] };
+    for (const definition of CATALOGUE_CONFIGURATION_OFFICIELLE.filter(
+      (entry) => entry.momentInitialisation === 'BOOTSTRAP_SYSTEME',
+    )) {
+      await this.creerSiAbsent(
+        {
+          key: definition.key,
+          value: definition.valeurParDefaut as CreateConfigurationCommand['value'],
+          scope: { niveau: 'SYSTEM' },
+          actorId: ACTEUR_SYSTEME_CONFIGURATION,
+          metadata: {
+            sourceInitialisation: 'OFFICIAL_CONFIGURATION_BOOTSTRAP',
+            niveauInitialisation: 'SYSTEM',
+            natureInitialisation: 'SYSTEM_DEFAULT',
+            moteurConsommateur: definition.moteurConsommateur,
+          },
+        },
+        resultat,
+      );
+    }
+
     await this.journaliser({
       type: 'BOOTSTRAP_SYSTEME',
       scope: { niveau: 'SYSTEM' },
@@ -262,22 +211,44 @@ export class ConfigurationInitialisationOfficielleService {
     return resultat;
   }
 
-  /** Cette methode respecte la doctrine actuelle: aucune preference utilisateur arbitraire n'est creee. */
+  /** Cette methode initialise les preferences officielles du premier usage sans ecrasement. */
   public async amorcerUtilisateur(params: {
-    readonly organisationId: string;
-    readonly ecoleId: string;
+    readonly organisationId?: string;
+    readonly ecoleId?: string;
     readonly utilisateurId: string;
   }): Promise<{
     readonly createdKeys: readonly string[];
     readonly skippedKeys: readonly string[];
   }> {
     const resultat = { createdKeys: [] as string[], skippedKeys: [] as string[] };
+
+    for (const definition of CATALOGUE_CONFIGURATION_OFFICIELLE.filter(
+      (entry) => entry.momentInitialisation === 'PREMIERE_UTILISATION',
+    )) {
+      await this.creerSiAbsent(
+        {
+          key: definition.key,
+          value: definition.valeurParDefaut as CreateConfigurationCommand['value'],
+          scope: {
+            niveau: 'USER',
+            utilisateurId: params.utilisateurId,
+          },
+          actorId: params.utilisateurId,
+          metadata: {
+            sourceInitialisation: 'OFFICIAL_CONFIGURATION_BOOTSTRAP',
+            niveauInitialisation: 'USER',
+            natureInitialisation: 'USER_DEFAULT',
+            moteurConsommateur: definition.moteurConsommateur,
+          },
+        },
+        resultat,
+      );
+    }
+
     await this.journaliser({
       type: 'PREMIERE_UTILISATION',
       scope: {
         niveau: 'USER',
-        organisationId: params.organisationId,
-        ecoleId: params.ecoleId,
         utilisateurId: params.utilisateurId,
       },
       createdKeys: resultat.createdKeys,
@@ -290,12 +261,22 @@ export class ConfigurationInitialisationOfficielleService {
     commande: CreateConfigurationCommand,
     resultat: { createdKeys: string[]; skippedKeys: string[] },
   ): Promise<void> {
-    const existeDeja = this.listerConfigurations().some((configuration) => {
+    const configurations = await this.listerConfigurations();
+    const existeDeja = configurations.some((configuration) => {
       const details = configuration.details();
+      if (
+        details.key !== commande.key
+        || details.scope.niveau !== commande.scope.niveau
+      ) {
+        return false;
+      }
+
+      if (commande.scope.niveau === 'USER') {
+        return details.scope.utilisateurId === commande.scope.utilisateurId;
+      }
+
       return (
-        details.key === commande.key
-        && details.scope.niveau === commande.scope.niveau
-        && details.scope.organisationId === commande.scope.organisationId
+        details.scope.organisationId === commande.scope.organisationId
         && details.scope.ecoleId === commande.scope.ecoleId
         && details.scope.utilisateurId === commande.scope.utilisateurId
       );
@@ -317,30 +298,10 @@ export class ConfigurationInitialisationOfficielleService {
   private async journaliser(
     entry: Omit<JournalInitialisationConfigurationEntry, 'executionId' | 'executedAt'>,
   ): Promise<void> {
-    const existantes = this.lireJournal();
-    const prochaine = [
-      ...existantes,
-      {
-        executionId: randomUUID(),
-        executedAt: new Date().toISOString(),
-        ...entry,
-      },
-    ];
-    const dossier = path.dirname(this.cheminJournal);
-    mkdirSync(dossier, { recursive: true });
-    writeFileSync(this.cheminJournal, JSON.stringify(prochaine, null, 2), 'utf8');
-  }
-
-  private lireJournal(): readonly JournalInitialisationConfigurationEntry[] {
-    if (!existsSync(this.cheminJournal)) {
-      return [];
-    }
-
-    const contenu = readFileSync(this.cheminJournal, 'utf8').trim();
-    if (contenu.length === 0) {
-      return [];
-    }
-
-    return JSON.parse(contenu) as JournalInitialisationConfigurationEntry[];
+    await this.journalStore.journaliser({
+      executionId: randomUUID(),
+      executedAt: new Date().toISOString(),
+      ...entry,
+    });
   }
 }

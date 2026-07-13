@@ -17,3 +17,15 @@ test('une portee USER incomplete est rejetee', () => {
     ExceptionScopeInvalide,
   );
 });
+
+test('une portee USER de plateforme exige uniquement son utilisateur', () => {
+  const scope = ConfigurationScope.creer({
+    niveau: 'USER',
+    utilisateurId: 'manager-systeme-1',
+  });
+
+  assert.deepEqual(scope.valeur(), {
+    niveau: 'USER',
+    utilisateurId: 'manager-systeme-1',
+  });
+});

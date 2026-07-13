@@ -1,5 +1,6 @@
 // Ce fichier centralise les exports de la couche infrastructure du module Configuration.
 export * from './persistence';
+export * from './persistence/postgres';
 export * from './repositories';
 export * from './cache';
 export * from './propagation';

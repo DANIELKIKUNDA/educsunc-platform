@@ -7,11 +7,20 @@ import { ResultatReloadConfiguration } from './TypesReloadConfiguration';
 export class RechargeurRuntimeConfiguration implements PortReloadRuntimeConfiguration {
   private readonly journalReloads: ResultatReloadConfiguration[] = [];
 
+  constructor(
+    private readonly synchroniserRuntime?: (
+      configurationId: string,
+      forcer: boolean,
+    ) => Promise<void>,
+  ) {}
+
   /** Cette methode execute techniquement un rechargement runtime local. */
   public async rechargerConfigurationRuntime(
     configurationId: string,
     forcer: boolean,
   ): Promise<void> {
+    await this.synchroniserRuntime?.(configurationId, forcer);
+
     this.journalReloads.push({
       configurationId,
       type: 'RUNTIME',

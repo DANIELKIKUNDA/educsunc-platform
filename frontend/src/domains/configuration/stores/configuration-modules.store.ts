@@ -1,10 +1,15 @@
 import { reactive } from 'vue';
-import type { ConfigurationModulesResolution, ConfigurationModuleCode } from '../models/configuration.model';
+import type {
+  ConfigurationModuleCatalogItem,
+  ConfigurationModulesResolution,
+  ConfigurationModuleCode,
+} from '../models/configuration.model';
 import { configurationApi, lireContexteApiConfiguration } from '../services/configuration.api';
 
 interface ConfigurationModulesState {
   status: 'idle' | 'loading' | 'ready' | 'error';
   errorMessage: string | null;
+  catalog: readonly ConfigurationModuleCatalogItem[];
   organizationConfiguration: {
     organisationId: string;
     configurationId: string;
@@ -23,6 +28,7 @@ export function useConfigurationModulesStore() {
   const state = reactive<ConfigurationModulesState>({
     status: 'idle',
     errorMessage: null,
+    catalog: [],
     organizationConfiguration: null,
     schoolConfiguration: null,
     effective: null,
@@ -38,6 +44,7 @@ export function useConfigurationModulesStore() {
     } catch (error) {
       state.status = 'error';
       state.errorMessage = error instanceof Error ? error.message : fallbackMessage;
+      throw error;
     }
   }
 
@@ -77,9 +84,21 @@ export function useConfigurationModulesStore() {
   async function resoudre(organisationId: string, ecoleId: string): Promise<void> {
     await executer(async () => {
       const contexte = lireContexteApiConfiguration();
-      const response = await configurationApi.resoudreModulesEffectifs({ organisationId, ecoleId }, contexte);
-      state.effective = response.donnees;
+      const [resolution, catalogue] = await Promise.all([
+        configurationApi.resoudreModulesEffectifs({ organisationId, ecoleId }, contexte),
+        configurationApi.consulterCatalogueModules(contexte),
+      ]);
+      state.effective = resolution.donnees;
+      state.catalog = catalogue.donnees.modules;
     }, 'La resolution des modules effectifs a echoue.');
+  }
+
+  async function chargerCatalogue(): Promise<void> {
+    await executer(async () => {
+      const contexte = lireContexteApiConfiguration();
+      const response = await configurationApi.consulterCatalogueModules(contexte);
+      state.catalog = response.donnees.modules;
+    }, 'Le catalogue des modules ne peut pas etre charge pour le moment.');
   }
 
   return {
@@ -87,6 +106,6 @@ export function useConfigurationModulesStore() {
     configurerOrganisation,
     configurerEcole,
     resoudre,
+    chargerCatalogue,
   };
 }
-

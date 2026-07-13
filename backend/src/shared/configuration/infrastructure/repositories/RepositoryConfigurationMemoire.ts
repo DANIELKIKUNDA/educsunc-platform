@@ -9,6 +9,8 @@ export class RepositoryConfigurationMemoire implements PortRepositoryConfigurati
 
   /** Cette methode persiste une configuration dans le stockage local. */
   public async sauvegarder(configuration: Configuration): Promise<void> {
+    const revisionCourante = configuration.details().revisionPersistence;
+    configuration.confirmerPersistance(revisionCourante === null ? 0 : revisionCourante + 1);
     this.stockage.enregistrer(ConfigurationId.creer(configuration.details().identifiant), {
       configuration,
       sauvegardeLe: new Date(),

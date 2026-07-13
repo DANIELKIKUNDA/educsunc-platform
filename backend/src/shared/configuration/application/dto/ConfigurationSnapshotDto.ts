@@ -5,6 +5,7 @@ import { NiveauConfiguration, ValeurConfiguration } from '../../domain';
 /** Cette interface represente un instantane lisible de configuration. */
 export interface ConfigurationSnapshotDto {
   readonly identifiantSnapshot: string;
+  readonly configurationId: string;
   readonly creeLe: Date;
   readonly valeurs: readonly {
     readonly key: string;

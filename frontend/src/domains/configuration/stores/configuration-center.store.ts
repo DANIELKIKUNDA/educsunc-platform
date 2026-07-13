@@ -47,6 +47,7 @@ export function useConfigurationCenterStore() {
     } catch (error) {
       state.status = 'error';
       state.errorMessage = error instanceof Error ? error.message : fallbackMessage;
+      throw error;
     }
   }
 
@@ -64,10 +65,10 @@ export function useConfigurationCenterStore() {
     }, 'La creation de configuration a echoue.');
   }
 
-  async function consulter(id: string): Promise<void> {
+  async function consulter(id: string, niveau?: ConfigurationScope['niveau']): Promise<void> {
     await executer(async () => {
       const contexte = lireContexteApiConfiguration();
-      const response = await configurationApi.consulterConfiguration(id, contexte);
+      const response = await configurationApi.consulterConfiguration(id, contexte, niveau);
       state.configuration = response.donnees;
     }, 'La consultation de configuration a echoue.');
   }
@@ -76,18 +77,18 @@ export function useConfigurationCenterStore() {
     value: ConfigurationValue;
     actorId?: string;
     metadata?: Readonly<Record<string, unknown>>;
-  }): Promise<void> {
+  }, niveau?: ConfigurationScope['niveau']): Promise<void> {
     await executer(async () => {
       const contexte = lireContexteApiConfiguration();
-      const response = await configurationApi.mettreAJourConfiguration(id, payload, contexte);
+      const response = await configurationApi.mettreAJourConfiguration(id, payload, contexte, niveau);
       state.configuration = response.donnees;
     }, 'La mise a jour de configuration a echoue.');
   }
 
-  async function supprimer(id: string, payload: { actorId?: string; raison?: string }): Promise<void> {
+  async function supprimer(id: string, payload: { actorId?: string; raison?: string }, niveau?: ConfigurationScope['niveau']): Promise<void> {
     await executer(async () => {
       const contexte = lireContexteApiConfiguration();
-      const response = await configurationApi.supprimerConfiguration(id, payload, contexte);
+      const response = await configurationApi.supprimerConfiguration(id, payload, contexte, niveau);
       state.deletion = response.donnees;
       state.configuration = null;
     }, 'La suppression de configuration a echoue.');
@@ -97,18 +98,18 @@ export function useConfigurationCenterStore() {
     niveauMinimalAutorise: ConfigurationScope['niveau'];
     actorId: string;
     raison?: string;
-  }): Promise<void> {
+  }, niveau?: ConfigurationScope['niveau']): Promise<void> {
     await executer(async () => {
       const contexte = lireContexteApiConfiguration();
-      const response = await configurationApi.verrouillerConfiguration(id, payload, contexte);
+      const response = await configurationApi.verrouillerConfiguration(id, payload, contexte, niveau);
       state.configuration = response.donnees;
     }, 'Le verrouillage de configuration a echoue.');
   }
 
-  async function deverrouiller(id: string, payload: { actorId?: string }): Promise<void> {
+  async function deverrouiller(id: string, payload: { actorId?: string }, niveau?: ConfigurationScope['niveau']): Promise<void> {
     await executer(async () => {
       const contexte = lireContexteApiConfiguration();
-      const response = await configurationApi.deverrouillerConfiguration(id, payload, contexte);
+      const response = await configurationApi.deverrouillerConfiguration(id, payload, contexte, niveau);
       state.configuration = response.donnees;
     }, 'Le deverrouillage de configuration a echoue.');
   }
@@ -139,34 +140,34 @@ export function useConfigurationCenterStore() {
     }, 'La validation de configuration a echoue.');
   }
 
-  async function creerSnapshot(id: string, payload: { snapshotId?: string; actorId?: string }): Promise<void> {
+  async function creerSnapshot(id: string, payload: { snapshotId?: string; actorId?: string }, niveau?: ConfigurationScope['niveau']): Promise<void> {
     await executer(async () => {
       const contexte = lireContexteApiConfiguration();
-      const response = await configurationApi.creerSnapshotConfiguration(id, payload, contexte);
+      const response = await configurationApi.creerSnapshotConfiguration(id, payload, contexte, niveau);
       state.snapshot = response.donnees;
     }, 'La creation du snapshot a echoue.');
   }
 
-  async function comparerSnapshots(id: string, query: { sourceId: string; cibleId: string }): Promise<void> {
+  async function comparerSnapshots(id: string, query: { sourceId: string; cibleId: string }, niveau?: ConfigurationScope['niveau']): Promise<void> {
     await executer(async () => {
       const contexte = lireContexteApiConfiguration();
-      const response = await configurationApi.comparerSnapshotsConfiguration(id, query, contexte);
+      const response = await configurationApi.comparerSnapshotsConfiguration(id, query, contexte, niveau);
       state.diff = response.donnees;
     }, 'La comparaison des snapshots a echoue.');
   }
 
-  async function propager(id: string, payload: { actorId?: string; canauxCibles?: readonly string[] }): Promise<void> {
+  async function propager(id: string, payload: { actorId?: string; canauxCibles?: readonly string[] }, niveau?: ConfigurationScope['niveau']): Promise<void> {
     await executer(async () => {
       const contexte = lireContexteApiConfiguration();
-      const response = await configurationApi.propagerConfiguration(id, payload, contexte);
+      const response = await configurationApi.propagerConfiguration(id, payload, contexte, niveau);
       state.propagation = response.donnees;
     }, 'La propagation a echoue.');
   }
 
-  async function recharger(id: string, payload: { actorId?: string; forcer?: boolean }): Promise<void> {
+  async function recharger(id: string, payload: { actorId?: string; forcer?: boolean }, niveau?: ConfigurationScope['niveau']): Promise<void> {
     await executer(async () => {
       const contexte = lireContexteApiConfiguration();
-      const response = await configurationApi.rechargerConfiguration(id, payload, contexte);
+      const response = await configurationApi.rechargerConfiguration(id, payload, contexte, niveau);
       state.reload = response.donnees;
     }, 'Le reload a echoue.');
   }
@@ -184,6 +185,10 @@ export function useConfigurationCenterStore() {
     state.reload = null;
   }
 
+  function oublierConfiguration(): void {
+    state.configuration = null;
+  }
+
   return {
     state,
     creer,
@@ -198,6 +203,7 @@ export function useConfigurationCenterStore() {
     comparerSnapshots,
     propager,
     recharger,
+    oublierConfiguration,
     reinitialiser,
   };
 }

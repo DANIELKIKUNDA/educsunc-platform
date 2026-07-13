@@ -57,6 +57,10 @@ export interface EffectiveConfigurationItem {
     readonly herite: boolean;
     readonly verrouille: boolean;
     readonly explanation: string;
+    readonly sourceConfigurationId?: string;
+    readonly sourceStatut?: string;
+    readonly sourceTotalVersions?: number;
+    readonly sourceCreeLe?: string | Date;
   }[];
 }
 
@@ -131,6 +135,10 @@ export interface OfficialSystemConfigurationDefinition {
   readonly defaultValueLabel: string;
   readonly required: boolean;
   readonly proofLabel: string;
+  readonly allowedValues?: readonly ConfigurationValue[];
+  readonly minimum?: number;
+  readonly maximum?: number;
+  readonly unit?: string;
 }
 
 export interface OfficialUserConfigurationDefinition {
@@ -142,6 +150,10 @@ export interface OfficialUserConfigurationDefinition {
   readonly defaultValueLabel: string;
   readonly required: boolean;
   readonly proofLabel: string;
+  readonly allowedValues?: readonly ConfigurationValue[];
+  readonly minimum?: number;
+  readonly maximum?: number;
+  readonly unit?: string;
 }
 
 export type ConfigurationModuleCode =
@@ -199,148 +211,66 @@ export const configurationModuleCatalog: readonly ConfigurationModuleCatalogItem
 ] as const;
 
 export const officialSystemConfigurationCatalog: readonly OfficialSystemConfigurationDefinition[] = [
-  {
-    key: 'runtime.retry.maxAttempts',
-    label: 'Tentatives de reprise',
-    description: 'Definit le nombre maximal de reprises automatiques lorsque la plateforme doit relancer un traitement.',
-    categoryLabel: 'Parametres de la plateforme',
-    dataTypeLabel: 'Nombre',
-    defaultValueLabel: 'Aucune valeur initiale imposee',
-    required: false,
-    proofLabel: 'Cle reconnue par la liste officielle et classee SYSTEM par la politique de configuration.',
-  },
-  {
-    key: 'runtime.replay.enabled',
-    label: 'Relecture automatique',
-    description: 'Indique si la plateforme peut relancer automatiquement une operation de reprise deja prevue.',
-    categoryLabel: 'Parametres de la plateforme',
-    dataTypeLabel: 'Oui / Non',
-    defaultValueLabel: 'Aucune valeur initiale imposee',
-    required: false,
-    proofLabel: 'Cle reconnue par la liste officielle et classee SYSTEM par la politique de configuration.',
-  },
-  {
-    key: 'runtime.cache.ttlSeconds',
-    label: 'Duree du cache',
-    description: 'Definit la duree de conservation du cache de plateforme lorsqu une valeur est explicitement renseignee.',
-    categoryLabel: 'Parametres de la plateforme',
-    dataTypeLabel: 'Nombre de secondes',
-    defaultValueLabel: 'Aucune valeur initiale imposee',
-    required: false,
-    proofLabel: 'Cle reconnue par la liste officielle et classee SYSTEM par la politique de configuration.',
-  },
-  {
-    key: 'branding.logo.primary',
-    label: 'Logo principal',
-    description: "Reference du logo principal utilise dans l'identite visuelle de l'ecole.",
-    categoryLabel: 'Identite visuelle',
-    dataTypeLabel: 'Texte court',
-    defaultValueLabel: 'Aucune valeur initiale imposee',
-    required: false,
-    proofLabel: "Cle officiellement reconnue pour l'identite visuelle des etablissements.",
-  },
-  {
-    key: 'branding.colors.primary',
-    label: 'Couleur principale',
-    description: "Couleur principale appliquee a l'identite visuelle de l'ecole.",
-    categoryLabel: 'Identite visuelle',
-    dataTypeLabel: 'Couleur',
-    defaultValueLabel: 'Aucune valeur initiale imposee',
-    required: false,
-    proofLabel: "Cle officiellement reconnue pour l'identite visuelle des etablissements.",
-  },
-  {
-    key: 'branding.colors.secondary',
-    label: 'Couleur secondaire',
-    description: "Couleur secondaire appliquee a l'identite visuelle de l'ecole.",
-    categoryLabel: 'Identite visuelle',
-    dataTypeLabel: 'Couleur',
-    defaultValueLabel: 'Aucune valeur initiale imposee',
-    required: false,
-    proofLabel: "Cle officiellement reconnue pour l'identite visuelle des etablissements.",
-  },
-  {
-    key: 'branding.footer',
-    label: 'Message de bas de page',
-    description: "Texte de bas de page utilise dans les documents et supports de l'ecole.",
-    categoryLabel: 'Identite visuelle',
-    dataTypeLabel: 'Texte long',
-    defaultValueLabel: 'Aucune valeur initiale imposee',
-    required: false,
-    proofLabel: "Cle effectivement relue dans les scenarios d'integration de configuration.",
-  },
-  {
-    key: 'branding.palette',
-    label: 'Palette visuelle',
-    description: "Nom ou description courte de la palette visuelle retenue pour l'identite de l'ecole.",
-    categoryLabel: 'Identite visuelle',
-    dataTypeLabel: 'Texte court',
-    defaultValueLabel: 'Aucune valeur initiale imposee',
-    required: false,
-    proofLabel: "Cle effectivement relue dans les scenarios d'integration de configuration.",
-  },
-  {
-    key: 'notifications.quotas.sms',
-    label: 'Quota SMS',
-    description: 'Nombre de SMS pouvant etre mobilises dans le niveau courant.',
-    categoryLabel: 'Notifications',
-    dataTypeLabel: 'Nombre',
-    defaultValueLabel: 'Aucune valeur initiale imposee',
-    required: false,
-    proofLabel: 'Cle reconnue par la liste officielle de configuration.',
-  },
-  {
-    key: 'notifications.templates.default',
-    label: 'Message par defaut',
-    description: "Modele de message utilise lorsqu'aucun contenu local n'a encore ete personnalise.",
-    categoryLabel: 'Notifications',
-    dataTypeLabel: 'Texte long',
-    defaultValueLabel: 'Aucune valeur initiale imposee',
-    required: false,
-    proofLabel: 'Cle officiellement reconnue pour les communications configurees.',
-  },
-  {
-    key: 'policies.branding.sigle',
-    label: 'Sigle de communication',
-    description: "Sigle commun utilise par l'organisation dans les communications partagees.",
-    categoryLabel: 'Politiques organisationnelles',
-    dataTypeLabel: 'Texte court',
-    defaultValueLabel: 'Aucune valeur initiale imposee',
-    required: false,
-    proofLabel: "Cle effectivement relue dans les scenarios d'integration de configuration.",
-  },
-  {
-    key: 'policies.notifications.digest',
-    label: 'Frequence du digest',
-    description: "Rythme de synthese des notifications partagees par l'organisation.",
-    categoryLabel: 'Politiques organisationnelles',
-    dataTypeLabel: 'Texte court',
-    defaultValueLabel: 'Aucune valeur initiale imposee',
-    required: false,
-    proofLabel: "Cle effectivement relue dans les scenarios d'integration de configuration.",
-  },
-  {
-    key: 'school.theme',
-    label: "Theme de l'ecole",
-    description: "Variation de presentation locale lorsque l'ecole applique un habillage particulier.",
-    categoryLabel: "Reglages propres a l'ecole",
-    dataTypeLabel: 'Texte court',
-    defaultValueLabel: 'Aucune valeur initiale imposee',
-    required: false,
-    proofLabel: "Cle effectivement relue dans les scenarios d'integration de configuration.",
-  },
-] as const;
+  { key: 'runtime.retry.maxAttempts', label: 'Tentatives de reprise', description: 'Nombre maximal de reprises automatiques des traitements de la plateforme.', categoryLabel: 'Paramètres de la plateforme', dataTypeLabel: 'Nombre', defaultValueLabel: '3 tentatives', required: true, proofLabel: 'Réglage officiel initialisé par la plateforme.', minimum: 1, maximum: 10, unit: 'tentatives' },
+  { key: 'runtime.replay.enabled', label: 'Relecture automatique', description: 'Autorise la reprise automatique des opérations qui peuvent être relancées sans risque.', categoryLabel: 'Paramètres de la plateforme', dataTypeLabel: 'Oui / Non', defaultValueLabel: 'Oui', required: true, proofLabel: 'Réglage officiel initialisé par la plateforme.', allowedValues: [true, false] },
+  { key: 'runtime.cache.ttlSeconds', label: 'Durée de conservation temporaire', description: 'Durée pendant laquelle les informations temporaires restent disponibles avant leur actualisation.', categoryLabel: 'Paramètres de la plateforme', dataTypeLabel: 'Nombre de secondes', defaultValueLabel: '120 secondes', required: true, proofLabel: 'Réglage officiel initialisé par la plateforme.', minimum: 30, maximum: 86400, unit: 'secondes' },
+  { key: 'notifications.providers.in_app.enabled', label: "Notifications dans l'application", description: "Active les notifications visibles directement dans l'application.", categoryLabel: 'Diffusion des notifications', dataTypeLabel: 'Oui / Non', defaultValueLabel: 'Oui', required: true, proofLabel: 'Canal officiel reconnu par la plateforme.', allowedValues: [true, false] },
+  { key: 'notifications.providers.sms.enabled', label: 'Notifications par SMS', description: 'Active les envois par SMS lorsque ce canal est disponible.', categoryLabel: 'Diffusion des notifications', dataTypeLabel: 'Oui / Non', defaultValueLabel: 'Oui', required: true, proofLabel: 'Canal officiel reconnu par la plateforme.', allowedValues: [true, false] },
+  { key: 'notifications.providers.email.enabled', label: 'Notifications par e-mail', description: 'Active les envois par e-mail lorsque ce canal est disponible.', categoryLabel: 'Diffusion des notifications', dataTypeLabel: 'Oui / Non', defaultValueLabel: 'Oui', required: true, proofLabel: 'Canal officiel reconnu par la plateforme.', allowedValues: [true, false] },
+  { key: 'notifications.providers.whatsapp.enabled', label: 'Notifications WhatsApp', description: 'Active les envois WhatsApp lorsque ce canal est disponible.', categoryLabel: 'Diffusion des notifications', dataTypeLabel: 'Oui / Non', defaultValueLabel: 'Non', required: true, proofLabel: 'Canal officiel reconnu par la plateforme.', allowedValues: [true, false] },
+  { key: 'notifications.providers.push.enabled', label: 'Notifications push', description: 'Active les notifications push lorsque ce canal est disponible.', categoryLabel: 'Diffusion des notifications', dataTypeLabel: 'Oui / Non', defaultValueLabel: 'Non', required: true, proofLabel: 'Canal officiel reconnu par la plateforme.', allowedValues: [true, false] },
+  { key: 'notifications.providers.webhook.enabled', label: 'Diffusion vers les services connectés', description: 'Active les transmissions vers les services externes déjà configurés.', categoryLabel: 'Diffusion des notifications', dataTypeLabel: 'Oui / Non', defaultValueLabel: 'Non', required: true, proofLabel: 'Canal officiel reconnu par la plateforme.', allowedValues: [true, false] },
+  { key: 'notifications.retry.enabled', label: 'Reprise des notifications échouées', description: 'Autorise la reprise automatique des notifications qui peuvent être renvoyées.', categoryLabel: 'Diffusion des notifications', dataTypeLabel: 'Oui / Non', defaultValueLabel: 'Oui', required: true, proofLabel: 'Réglage officiel initialisé par la plateforme.', allowedValues: [true, false] },
+  { key: 'notifications.retry.maxAttempts', label: 'Tentatives de reprise des notifications', description: "Nombre maximal de tentatives avant de déclarer l'envoi en échec.", categoryLabel: 'Diffusion des notifications', dataTypeLabel: 'Nombre', defaultValueLabel: '5 tentatives', required: true, proofLabel: 'Réglage officiel initialisé par la plateforme.', minimum: 1, maximum: 20, unit: 'tentatives' },
+  { key: 'notifications.retry.defaultBackoffMs', label: 'Délai entre deux tentatives', description: "Temps d'attente appliqué entre deux tentatives d'envoi.", categoryLabel: 'Diffusion des notifications', dataTypeLabel: 'Nombre de millisecondes', defaultValueLabel: '60 000 millisecondes', required: true, proofLabel: 'Réglage officiel initialisé par la plateforme.', minimum: 1000, maximum: 86400000, unit: 'millisecondes' },
+  { key: 'notifications.replay.enabled', label: 'Relecture des notifications', description: 'Autorise la reprise des notifications marquées comme pouvant être renvoyées.', categoryLabel: 'Diffusion des notifications', dataTypeLabel: 'Oui / Non', defaultValueLabel: 'Oui', required: true, proofLabel: 'Réglage officiel initialisé par la plateforme.', allowedValues: [true, false] },
+  { key: 'notifications.replay.batchSize', label: 'Notifications traitées par lot', description: 'Nombre maximal de notifications traitées ensemble lors d’une reprise.', categoryLabel: 'Diffusion des notifications', dataTypeLabel: 'Nombre', defaultValueLabel: '100 notifications', required: true, proofLabel: 'Réglage officiel initialisé par la plateforme.', minimum: 1, maximum: 1000, unit: 'notifications' },
+];
 
 export const officialUserConfigurationCatalog: readonly OfficialUserConfigurationDefinition[] = [
   {
     key: 'preferences.theme',
-    label: "Theme de l'espace personnel",
-    description: "Permet a l'utilisateur de conserver sa preference d'affichage personnelle pour son propre compte.",
-    categoryLabel: 'Preferences personnelles',
-    dataTypeLabel: 'Texte court',
-    defaultValueLabel: 'Aucune valeur initiale imposee',
-    required: false,
-    proofLabel: "Preference officielle disponible pour l'espace personnel.",
+    label: "Thème de l'espace personnel",
+    description: "Choisissez l'apparence utilisée dans votre espace personnel.",
+    categoryLabel: 'Préférences personnelles',
+    dataTypeLabel: 'Choix',
+    defaultValueLabel: "Selon l'appareil",
+    required: true,
+    proofLabel: 'Préférence personnelle officielle.',
+    allowedValues: ['light', 'dark', 'system'],
+  },
+  {
+    key: 'notifications.preferences.muted',
+    label: 'Suspendre les notifications personnelles',
+    description: 'Permet de suspendre les notifications personnelles non critiques.',
+    categoryLabel: 'Préférences de notification',
+    dataTypeLabel: 'Oui / Non',
+    defaultValueLabel: 'Non',
+    required: true,
+    proofLabel: 'Préférence personnelle officielle.',
+    allowedValues: [true, false],
+  },
+  {
+    key: 'notifications.preferences.preferredChannel',
+    label: 'Canal de notification préféré',
+    description: 'Choisissez le canal à privilégier lorsque plusieurs moyens de contact sont disponibles.',
+    categoryLabel: 'Préférences de notification',
+    dataTypeLabel: 'Choix',
+    defaultValueLabel: "Dans l'application",
+    required: true,
+    proofLabel: 'Préférence personnelle officielle.',
+    allowedValues: ['IN_APP', 'SMS', 'EMAIL', 'WHATSAPP', 'PUSH', 'WEBHOOK'],
+  },
+  {
+    key: 'notifications.preferences.enabledChannels',
+    label: 'Canaux de notification acceptés',
+    description: 'Sélectionnez les canaux personnels que vous acceptez parmi ceux disponibles.',
+    categoryLabel: 'Préférences de notification',
+    dataTypeLabel: 'Liste de choix',
+    defaultValueLabel: "Dans l'application et par e-mail",
+    required: true,
+    proofLabel: 'Préférence personnelle officielle.',
+    allowedValues: ['IN_APP', 'SMS', 'EMAIL', 'WHATSAPP', 'PUSH', 'WEBHOOK'],
   },
 ] as const;
 

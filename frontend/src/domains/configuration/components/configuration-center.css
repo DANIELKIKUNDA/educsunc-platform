@@ -213,6 +213,30 @@
   gap:1rem;
 }
 
+.configuration-center__family-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:1rem;
+  margin-top:1.15rem;
+}
+
+.configuration-center__family-hero{
+  display:flex;
+  justify-content:space-between;
+  gap:1rem;
+  align-items:flex-start;
+  padding:1.35rem 1.45rem;
+  border-radius:28px;
+  border:1px solid rgba(17,40,63,.08);
+  background:radial-gradient(circle at top left,#f4f8ff 0,#fff 54%,#f7fbff 100%);
+  box-shadow:0 24px 60px rgba(15,23,42,.08);
+}
+
+.configuration-center__family-copy{display:grid;gap:.45rem}
+.configuration-center__family-copy small{font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;color:#6b7f91;font-weight:800}
+.configuration-center__family-copy strong{font-size:1.35rem;color:#11283f}
+.configuration-center__family-copy p{margin:0;max-width:70ch;color:#587083;line-height:1.7}
+
 .configuration-center__family-card{
   display:grid;
   grid-template-columns:auto minmax(0,1fr);
@@ -724,4 +748,62 @@
   .configuration-center__toolbar-field{
     min-width:100%;
   }
+
+  .configuration-center__family-hero{
+    padding:1.05rem;
+    flex-direction:column;
+  }
+
+  .configuration-center__family-grid{
+    grid-template-columns:1fr;
+  }
+
+  .configuration-center__table-wrap{
+    overflow:visible;
+  }
+
+  .configuration-center__table,
+  .configuration-center__table tbody,
+  .configuration-center__table tr,
+  .configuration-center__table td{
+    display:block;
+    width:100%;
+  }
+
+  .configuration-center__table thead{
+    position:absolute;
+    width:1px;
+    height:1px;
+    padding:0;
+    margin:-1px;
+    overflow:hidden;
+    clip:rect(0,0,0,0);
+  }
+
+  .configuration-center__table tbody tr{
+    margin-bottom:.85rem;
+    padding:.95rem;
+    border:1px solid rgba(17,40,63,.09);
+    border-radius:18px;
+    background:#fff;
+  }
+
+  .configuration-center__table td{
+    padding:.42rem 0;
+    border:0;
+  }
+
+  .configuration-center__table td:not(:first-child)::before{
+    display:block;
+    margin-bottom:.18rem;
+    color:#71889a;
+    font-size:.7rem;
+    font-weight:800;
+    letter-spacing:.07em;
+    text-transform:uppercase;
+  }
+
+  .configuration-center__table td:nth-child(2)::before{content:'Origine'}
+  .configuration-center__table td:nth-child(3)::before{content:'Statut'}
+  .configuration-center__table td:nth-child(4)::before{content:'Valeur'}
 }

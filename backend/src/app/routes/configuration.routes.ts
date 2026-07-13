@@ -2,6 +2,10 @@ import { randomUUID } from 'node:crypto';
 import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
 import {
   CompareSnapshotsConfigurationUseCase,
+  AuditConfigurationPostgresPort,
+  ClientPoolPostgresConfiguration,
+  ConfigurationBootstrapJournalStorePostgres,
+  ConfigurationReadModelPostgres,
   ControleurConfigurationHttp,
   ControleurPropagationConfigurationHttp,
   ControleurReloadRuntimeConfigurationHttp,
@@ -11,17 +15,22 @@ import {
   CreateSnapshotConfigurationUseCase,
   DeleteConfigurationUseCase,
   FacadeInfrastructureConfiguration,
+  EffectiveConfigurationReadModelPostgres,
   type EffectiveConfigurationDto,
   GetConfigurationUseCase,
   GetEffectiveConfigurationUseCase,
   LockConfigurationUseCase,
+  MigrateurPostgresConfiguration,
+  PortSuppressionConfigurationPostgres,
   type NiveauConfiguration,
   type PortAuditConfiguration,
   type PorteeConfigurationProps,
   PolitiqueClassificationConfiguration,
   type ConfigurationDto,
   type ConfigurationSnapshotDto,
+  ConfigurationSnapshotReadModelPostgres,
   OverrideConfigurationUseCase,
+  RepositoryConfigurationPostgres,
   ServiceApplicationConfigurationEffective,
   ServiceApplicationPropagationConfiguration,
   type TypeModuleConfiguration,
@@ -32,12 +41,18 @@ import {
   RepositoryConfigurationMemoire,
   RepositoryConfigurationMemoirePersistante,
   RepositoryConfigurationSnapshotMemoire,
+  RepositoryConfigurationSnapshotPostgres,
+  RepositoryConfigurationVersionPostgres,
+  RechargeurRuntimeConfiguration,
+  creerConfigurationPoolPostgresConfiguration,
+  creerPoolPostgresConfiguration,
   type DependancesRoutesConfiguration,
   type EffectiveConfigurationReadModel,
   type ConfigurationReadModel,
   type ConfigurationSnapshotReadModel,
   UnlockConfigurationUseCase,
   UpdateConfigurationUseCase,
+  UniteTravailConfigurationImmediate,
   ValidateConfigurationUseCase,
   creerRoutesConfiguration,
   creerRoutesPropagationConfiguration,
@@ -47,6 +62,8 @@ import {
 } from '../../shared/configuration';
 import { configurationApplication } from '../../config/app.config';
 import { ConfigurationInitialisationOfficielleService } from '../services/ConfigurationInitialisationOfficielleService';
+import { ConfigurationPreferencesUtilisateurService } from '../services/ConfigurationPreferencesUtilisateurService';
+import { ConfigurationRuntimeSynchronisationService } from '../services/ConfigurationRuntimeSynchronisationService';
 import type { PortSuppressionConfiguration } from '../../shared/configuration/application/ports';
 import { ConfigurationSnapshotMapper } from '../../shared/configuration/application/mappers/ConfigurationSnapshotMapper';
 import { ConfigurationApplicationMapper } from '../../shared/configuration/application/mappers/ConfigurationApplicationMapper';
@@ -91,10 +108,40 @@ const ROLES_ECOLE_CONFIGURATION = new Set([
 const infrastructureConfiguration = new FacadeInfrastructureConfiguration();
 const registreConfiguration = infrastructureConfiguration.composants();
 const politiqueClassificationConfiguration = new PolitiqueClassificationConfiguration();
-const repositoryConfiguration =
-  configurationApplication.environnement === 'test'
+
+type ModeStockageConfiguration = 'memory' | 'local-json' | 'postgres';
+
+function determinerModeStockageConfiguration(): ModeStockageConfiguration {
+  if (configurationApplication.environnement === 'test') {
+    return 'memory';
+  }
+
+  const mode = process.env.EDUCSYN_CONFIGURATION_STORAGE?.trim().toLowerCase();
+  if (mode === 'memory') {
+    return 'memory';
+  }
+  if (mode === 'local-json' || mode === 'json') {
+    return 'local-json';
+  }
+
+  return 'postgres';
+}
+
+const modeStockageConfiguration = determinerModeStockageConfiguration();
+const poolPostgresConfiguration =
+  modeStockageConfiguration === 'postgres'
+    ? creerPoolPostgresConfiguration(creerConfigurationPoolPostgresConfiguration())
+    : null;
+const clientSqlConfiguration =
+  poolPostgresConfiguration ? new ClientPoolPostgresConfiguration(poolPostgresConfiguration) : null;
+const migrateurPostgresConfiguration =
+  poolPostgresConfiguration ? new MigrateurPostgresConfiguration(poolPostgresConfiguration) : null;
+const repositoryConfigurationMemoireLike =
+  modeStockageConfiguration === 'memory'
     ? new RepositoryConfigurationMemoire()
-    : new RepositoryConfigurationMemoirePersistante();
+    : modeStockageConfiguration === 'local-json'
+      ? new RepositoryConfigurationMemoirePersistante()
+      : null;
 
 class AuditConfigurationMemoirePort implements PortAuditConfiguration {
   public readonly journal: Array<{ configurationId: string; evenements: readonly object[] }> = [];
@@ -115,7 +162,11 @@ class SuppressionConfigurationMemoirePort implements PortSuppressionConfiguratio
   }
 }
 
-class ConfigurationReadModelMemoire implements ConfigurationReadModel {
+interface ConfigurationReadModelAvecListage extends ConfigurationReadModel {
+  listerConfigurations(): Promise<readonly Configuration[]>;
+}
+
+class ConfigurationReadModelMemoire implements ConfigurationReadModelAvecListage {
   private readonly mapper = new ConfigurationApplicationMapper();
 
   constructor(private readonly repository: RepositoryConfigurationMemoire) {}
@@ -125,7 +176,7 @@ class ConfigurationReadModelMemoire implements ConfigurationReadModel {
     return configuration ? this.mapper.versDto(configuration) : null;
   }
 
-  public listerConfigurations(): readonly Configuration[] {
+  public async listerConfigurations(): Promise<readonly Configuration[]> {
     return this.repository
       .stockageMemoire()
       .lister()
@@ -136,13 +187,13 @@ class ConfigurationReadModelMemoire implements ConfigurationReadModel {
 class EffectiveConfigurationReadModelMemoire implements EffectiveConfigurationReadModel {
   private readonly service = new ServiceApplicationConfigurationEffective();
 
-  constructor(private readonly readModel: ConfigurationReadModelMemoire) {}
+  constructor(private readonly readModel: ConfigurationReadModelAvecListage) {}
 
   public async trouver(
     scope: PorteeConfigurationProps,
     keyPrefix?: string,
   ): Promise<EffectiveConfigurationDto | null> {
-    const configurations = this.readModel.listerConfigurations();
+    const configurations = await this.readModel.listerConfigurations();
     const entrees = configurations.flatMap((configuration) => {
       const details = configuration.details();
       const verrouille = details.lock !== null;
@@ -156,6 +207,10 @@ class EffectiveConfigurationReadModelMemoire implements EffectiveConfigurationRe
         scope: ConfigurationScope.creer(details.scope),
         value: ConfigurationValue.creer(details.valeur),
         verrouille,
+        sourceConfigurationId: details.identifiant,
+        sourceStatut: details.statut,
+        sourceTotalVersions: details.totalVersions,
+        sourceCreeLe: details.creeLe,
       };
       const overrides = details.overrides
         .filter(() => !keyPrefix || cle.startsWith(keyPrefix))
@@ -164,6 +219,10 @@ class EffectiveConfigurationReadModelMemoire implements EffectiveConfigurationRe
           scope: ConfigurationScope.creer(entreeOverride.scope.valeur()),
           value: ConfigurationValue.creer(entreeOverride.value.valeur()),
           verrouille,
+          sourceConfigurationId: details.identifiant,
+          sourceStatut: details.statut,
+          sourceTotalVersions: details.totalVersions,
+          sourceCreeLe: details.creeLe,
         }));
 
       return [base, ...overrides];
@@ -179,12 +238,12 @@ class ConfigurationSnapshotReadModelMemoire implements ConfigurationSnapshotRead
   constructor(private readonly repository: RepositoryConfigurationSnapshotMemoire) {}
 
   public async trouverParId(
-    _configurationId: string,
+    configurationId: string,
     snapshotId: string,
   ): Promise<ConfigurationSnapshotDto | null> {
     const snapshots = this.repository
       .stockageMemoire()
-      .listerParConfiguration(ConfigurationId.creer(snapshotId));
+      .listerParConfiguration(ConfigurationId.creer(configurationId));
     const snapshot = snapshots.find(
       (enregistrement) => enregistrement.snapshot.details().identifiantSnapshot === snapshotId,
     )?.snapshot;
@@ -209,7 +268,7 @@ interface ResolutionModulesEcole {
 
 class ServiceActivationModulesConfiguration {
   constructor(
-    private readonly readModel: ConfigurationReadModelMemoire,
+    private readonly readModel: ConfigurationReadModelAvecListage,
     private readonly createUseCase: CreateConfigurationUseCase,
     private readonly updateUseCase: UpdateConfigurationUseCase,
   ) {}
@@ -223,7 +282,7 @@ class ServiceActivationModulesConfiguration {
   }): Promise<{ configurationId: string; modules: readonly TypeModuleConfiguration[] }> {
     const modules = this.normaliserModules(params.modules);
     const scope = { niveau: 'ORGANIZATION' as const, organisationId: params.organisationId };
-    const configuration = this.trouverParCleEtScope(CLE_MODULES_ALLOWED, scope);
+    const configuration = await this.trouverParCleEtScope(CLE_MODULES_ALLOWED, scope);
 
     if (configuration) {
       await this.updateUseCase.executer({
@@ -271,7 +330,7 @@ class ServiceActivationModulesConfiguration {
       organisationId: params.organisationId,
       ecoleId: params.ecoleId,
     };
-    const configuration = this.trouverParCleEtScope(CLE_MODULES_ENABLED, scope);
+    const configuration = await this.trouverParCleEtScope(CLE_MODULES_ENABLED, scope);
 
     if (configuration) {
       await this.updateUseCase.executer({
@@ -309,11 +368,11 @@ class ServiceActivationModulesConfiguration {
     organisationId: string;
     ecoleId: string;
   }): Promise<ResolutionModulesEcole> {
-    const allowedConfig = this.trouverParCleEtScope(CLE_MODULES_ALLOWED, {
+    const allowedConfig = await this.trouverParCleEtScope(CLE_MODULES_ALLOWED, {
       niveau: 'ORGANIZATION',
       organisationId: params.organisationId,
     });
-    const enabledConfig = this.trouverParCleEtScope(CLE_MODULES_ENABLED, {
+    const enabledConfig = await this.trouverParCleEtScope(CLE_MODULES_ENABLED, {
       niveau: 'SCHOOL',
       organisationId: params.organisationId,
       ecoleId: params.ecoleId,
@@ -379,10 +438,10 @@ class ServiceActivationModulesConfiguration {
       ecoleId?: string;
       utilisateurId?: string;
     },
-  ): Configuration | null {
+  ): Promise<Configuration | null> {
     return this.readModel
       .listerConfigurations()
-      .find((configuration) => {
+      .then((configurations) => configurations.find((configuration) => {
         const details = configuration.details();
         return (
           details.key === key
@@ -391,34 +450,77 @@ class ServiceActivationModulesConfiguration {
           && details.scope.ecoleId === scope.ecoleId
           && details.scope.utilisateurId === scope.utilisateurId
         );
-      }) ?? null;
+      }) ?? null);
   }
 }
 
-const auditConfiguration = new AuditConfigurationMemoirePort();
-const readModelConfiguration = new ConfigurationReadModelMemoire(
-  repositoryConfiguration,
+const auditConfiguration: PortAuditConfiguration = clientSqlConfiguration
+  ? new AuditConfigurationPostgresPort(clientSqlConfiguration)
+  : new AuditConfigurationMemoirePort();
+const uniteTravailConfiguration = clientSqlConfiguration
+  ?? new UniteTravailConfigurationImmediate();
+const repositoryConfiguration = repositoryConfigurationMemoireLike
+  ?? new RepositoryConfigurationPostgres(clientSqlConfiguration!);
+const repositoryVersions = clientSqlConfiguration
+  ? new RepositoryConfigurationVersionPostgres(clientSqlConfiguration)
+  : registreConfiguration.repositoryVersions;
+const repositorySnapshots = clientSqlConfiguration
+  ? new RepositoryConfigurationSnapshotPostgres(clientSqlConfiguration)
+  : registreConfiguration.repositorySnapshots;
+const readModelConfigurationPostgres = clientSqlConfiguration
+  ? new ConfigurationReadModelPostgres(clientSqlConfiguration)
+  : null;
+const readModelConfigurationMemoire = repositoryConfigurationMemoireLike
+  ? new ConfigurationReadModelMemoire(repositoryConfigurationMemoireLike)
+  : null;
+const readModelConfiguration: ConfigurationReadModelAvecListage =
+  readModelConfigurationPostgres ?? readModelConfigurationMemoire!;
+const effectiveReadModelConfiguration: EffectiveConfigurationReadModel = clientSqlConfiguration
+  ? new EffectiveConfigurationReadModelPostgres(
+    readModelConfigurationPostgres!,
+  )
+  : new EffectiveConfigurationReadModelMemoire(readModelConfiguration);
+const snapshotsReadModelConfiguration: ConfigurationSnapshotReadModel = clientSqlConfiguration
+  ? new ConfigurationSnapshotReadModelPostgres(clientSqlConfiguration)
+  : new ConfigurationSnapshotReadModelMemoire(repositorySnapshots as RepositoryConfigurationSnapshotMemoire);
+const synchronisationRuntimeConfiguration = new ConfigurationRuntimeSynchronisationService(
+  () => readModelConfiguration.listerConfigurations(),
 );
-const effectiveReadModelConfiguration = new EffectiveConfigurationReadModelMemoire(
-  readModelConfiguration,
-);
-const snapshotsReadModelConfiguration = new ConfigurationSnapshotReadModelMemoire(
-  registreConfiguration.repositorySnapshots,
+const rechargeurRuntimeConfiguration = new RechargeurRuntimeConfiguration(
+  async (configurationId: string, forcer: boolean) => {
+    await synchronisationRuntimeConfiguration.rechargerConfiguration(configurationId, forcer);
+  },
 );
 const createConfigurationUseCase = new CreateConfigurationUseCase(
   repositoryConfiguration,
   auditConfiguration,
   registreConfiguration.monitoring,
+  undefined,
+  undefined,
+  undefined,
+  repositoryVersions,
+  uniteTravailConfiguration,
 );
 const updateConfigurationUseCase = new UpdateConfigurationUseCase(
   repositoryConfiguration,
-  registreConfiguration.repositoryVersions,
+  repositoryVersions,
   auditConfiguration,
   registreConfiguration.monitoring,
+  undefined,
+  undefined,
+  uniteTravailConfiguration,
 );
 export const configurationInitialisationService = new ConfigurationInitialisationOfficielleService(
   createConfigurationUseCase,
   () => readModelConfiguration.listerConfigurations(),
+  undefined,
+  clientSqlConfiguration ? new ConfigurationBootstrapJournalStorePostgres(clientSqlConfiguration) : undefined,
+);
+const configurationPreferencesUtilisateurService = new ConfigurationPreferencesUtilisateurService(
+  configurationInitialisationService,
+  () => readModelConfiguration.listerConfigurations(),
+  effectiveReadModelConfiguration,
+  updateConfigurationUseCase,
 );
 const configurationModulesService = new ServiceActivationModulesConfiguration(
   readModelConfiguration,
@@ -429,9 +531,11 @@ const configurationModulesService = new ServiceActivationModulesConfiguration(
 export const moduleActivationConfigurationService = configurationModulesService;
 
 function composerRoutesConfiguration(): DependancesRoutesConfiguration {
-  const suppression = new SuppressionConfigurationMemoirePort(
-    repositoryConfiguration,
-  );
+  const suppression: PortSuppressionConfiguration = clientSqlConfiguration
+    ? new PortSuppressionConfigurationPostgres(clientSqlConfiguration)
+    : new SuppressionConfigurationMemoirePort(
+      repositoryConfiguration as RepositoryConfigurationMemoire,
+    );
   const configurationController = new ControleurConfigurationHttp(
     createConfigurationUseCase,
     updateConfigurationUseCase,
@@ -441,16 +545,22 @@ function composerRoutesConfiguration(): DependancesRoutesConfiguration {
       registreConfiguration.propagateur,
       auditConfiguration,
       registreConfiguration.monitoring,
+      uniteTravailConfiguration,
     ),
     new LockConfigurationUseCase(
       repositoryConfiguration,
       auditConfiguration,
       registreConfiguration.monitoring,
+      undefined,
+      undefined,
+      uniteTravailConfiguration,
     ),
     new UnlockConfigurationUseCase(
       repositoryConfiguration,
       auditConfiguration,
       registreConfiguration.monitoring,
+      undefined,
+      uniteTravailConfiguration,
     ),
     new GetConfigurationUseCase(readModelConfiguration),
     new GetEffectiveConfigurationUseCase(effectiveReadModelConfiguration),
@@ -458,6 +568,9 @@ function composerRoutesConfiguration(): DependancesRoutesConfiguration {
       repositoryConfiguration,
       auditConfiguration,
       registreConfiguration.monitoring,
+      undefined,
+      undefined,
+      uniteTravailConfiguration,
     ),
   );
 
@@ -470,7 +583,7 @@ function composerRoutesConfiguration(): DependancesRoutesConfiguration {
   const reloadController = new ControleurReloadRuntimeConfigurationHttp(
     new ReloadRuntimeConfigurationUseCase(
       readModelConfiguration,
-      registreConfiguration.rechargeurRuntime,
+      rechargeurRuntimeConfiguration,
     ),
   );
   const validationController = new ControleurValidationConfigurationHttp(
@@ -479,9 +592,11 @@ function composerRoutesConfiguration(): DependancesRoutesConfiguration {
   const snapshotsController = new ControleurSnapshotsConfigurationHttp(
     new CreateSnapshotConfigurationUseCase(
       repositoryConfiguration,
-      registreConfiguration.repositorySnapshots,
+      repositorySnapshots,
       auditConfiguration,
       registreConfiguration.monitoring,
+      undefined,
+      uniteTravailConfiguration,
     ),
     new CompareSnapshotsConfigurationUseCase(snapshotsReadModelConfiguration),
   );
@@ -585,6 +700,13 @@ function composerRoutesConfiguration(): DependancesRoutesConfiguration {
           };
         }
 
+        if (nom.includes('ConflitVersion')) {
+          return {
+            statutHttp: 409,
+            corps: { code: 'CONFIGURATION_VERSION_CONFLICT', message },
+          };
+        }
+
         if (nom.includes('Validation') || nom.includes('Invalide') || nom.includes('Interdit')) {
           return {
             statutHttp: 400,
@@ -637,7 +759,7 @@ function hasEcoleScope(contexte: FastifyRequest['context'], ecoleId?: string): b
 async function resoudrePorteeConfiguration(
   politique: PolitiqueScopeConfiguration,
   requete: FastifyRequest,
-  readModel: ConfigurationReadModelMemoire,
+  readModel: ConfigurationReadModel,
 ): Promise<PorteeConfigurationProps | null> {
   if (politique === 'SYSTEM') {
     return { niveau: 'SYSTEM' };
@@ -666,7 +788,7 @@ async function resoudrePorteeConfiguration(
 
 async function resoudreCleEtPorteeConfigurationDepuisRequete(
   requete: FastifyRequest,
-  readModel: ConfigurationReadModelMemoire,
+  readModel: ConfigurationReadModel,
 ): Promise<{ key: string | null; scope: PorteeConfigurationProps | null }> {
   const body = requete.body as { key?: unknown; scope?: unknown } | undefined;
   if (typeof body?.key === 'string') {
@@ -956,7 +1078,12 @@ async function verifierPorteeModules(
 
 export const routeConfiguration: PluginRoutesConfiguration = Object.assign(
   async (serveur: Parameters<FastifyPluginAsync>[0]) => {
+    if (migrateurPostgresConfiguration) {
+      await migrateurPostgresConfiguration.executerToutes();
+    }
+
     const bootstrapSysteme = await configurationInitialisationService.amorcerSysteme();
+    await synchronisationRuntimeConfiguration.synchroniserAuDemarrage();
     const dependances = composerRoutesConfiguration();
 
     await serveur.register(creerRoutesConfiguration(dependances));
@@ -964,6 +1091,79 @@ export const routeConfiguration: PluginRoutesConfiguration = Object.assign(
     await serveur.register(creerRoutesValidationConfiguration(dependances));
     await serveur.register(creerRoutesPropagationConfiguration(dependances));
     await serveur.register(creerRoutesReloadConfiguration(dependances));
+
+    serveur.get('/api/v1/configuration/me/theme', async (requete, reponse) => {
+      await dependances.middlewares?.auth?.(requete, reponse);
+      if (reponse.sent) {
+        return;
+      }
+
+      const utilisateurId = requete.context?.utilisateurId;
+      if (!utilisateurId) {
+        reponse.code(401).send({
+          code: 'CONFIGURATION_AUTH_REQUIRED',
+          message: 'Authentification requise.',
+        });
+        return;
+      }
+
+      const theme = await configurationPreferencesUtilisateurService.lireTheme({
+        utilisateurId,
+        organisationId: requete.context?.organisationActiveId,
+        ecoleId: requete.context?.ecoleActiveId,
+      });
+
+      reponse.code(200).send({
+        succes: true,
+        code: 200,
+        donnees: { theme },
+      });
+    });
+
+    serveur.put('/api/v1/configuration/me/theme', async (requete, reponse) => {
+      await dependances.middlewares?.auth?.(requete, reponse);
+      if (reponse.sent) {
+        return;
+      }
+
+      const utilisateurId = requete.context?.utilisateurId;
+      if (!utilisateurId) {
+        reponse.code(401).send({
+          code: 'CONFIGURATION_AUTH_REQUIRED',
+          message: 'Authentification requise.',
+        });
+        return;
+      }
+
+      try {
+        const body = (requete.body ?? {}) as { theme?: unknown };
+        const theme = await configurationPreferencesUtilisateurService.enregistrerTheme(
+          {
+            utilisateurId,
+            organisationId: requete.context?.organisationActiveId,
+            ecoleId: requete.context?.ecoleActiveId,
+          },
+          body.theme,
+          {
+            requestId: requete.id,
+            correlationId: requete.headers['x-correlation-id'] as string | undefined,
+          },
+        );
+
+        reponse.code(200).send({
+          succes: true,
+          code: 200,
+          donnees: { theme },
+        });
+      } catch (error) {
+        reponse.code(400).send({
+          code: 'CONFIGURATION_THEME_INVALIDE',
+          message: error instanceof Error
+            ? error.message
+            : 'Le theme choisi ne peut pas etre enregistre.',
+        });
+      }
+    });
 
     serveur.get('/api/v1/configuration/modules/effective', async (requete, reponse) => {
       if (!(await appliquerMiddlewaresModules(dependances, requete, reponse, 'configuration.modules.read'))) {
@@ -1117,12 +1317,19 @@ export const routeConfiguration: PluginRoutesConfiguration = Object.assign(
         contexte: {
           bc: 'shared-configuration',
           prefixe: routeConfiguration.prefixe,
+          modeStockageConfiguration,
           bootstrapSystemeCree: bootstrapSysteme.createdKeys.length,
           bootstrapSystemeIgnores: bootstrapSysteme.skippedKeys.length,
         },
       },
       'Routes Configuration enregistrees.',
     );
+
+    serveur.addHook('onClose', async () => {
+      if (poolPostgresConfiguration) {
+        await poolPostgresConfiguration.end();
+      }
+    });
   },
   {
     nom: 'configuration',

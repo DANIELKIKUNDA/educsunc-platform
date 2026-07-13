@@ -1,7 +1,7 @@
 <template>
   <Teleport to="body">
-    <div v-if="open" class="configuration-modal">
-      <button class="configuration-modal__backdrop" type="button" aria-label="Fermer la fenetre" @click="$emit('close', 'backdrop')" />
+    <div v-if="open" class="configuration-modal" :aria-hidden="active === false ? 'true' : undefined">
+      <button class="configuration-modal__backdrop" type="button" tabindex="-1" aria-label="Fermer la fenêtre" @click="emitClose('backdrop')" />
       <section
         ref="dialogRef"
         class="configuration-modal__dialog"
@@ -9,15 +9,17 @@
         aria-modal="true"
         tabindex="-1"
         :aria-labelledby="`${id}-title`"
+        :aria-describedby="description ? `${id}-description` : undefined"
+        :aria-busy="busy"
       >
         <header class="configuration-modal__header">
           <div>
             <small>{{ eyebrow }}</small>
             <h2 :id="`${id}-title`">{{ title }}</h2>
-            <p v-if="description">{{ description }}</p>
+            <p v-if="description" :id="`${id}-description`">{{ description }}</p>
           </div>
-          <button class="configuration-modal__close" type="button" aria-label="Fermer" @click="$emit('close', 'button')">
-            x
+          <button class="configuration-modal__close" type="button" aria-label="Fermer" :disabled="busy" @click="emitClose('button')">
+            <X :size="18" aria-hidden="true" />
           </button>
         </header>
 
@@ -35,6 +37,7 @@
 
 <script setup lang="ts">
 import { nextTick, onBeforeUnmount, ref, watch } from 'vue';
+import { X } from 'lucide-vue-next';
 
 const props = defineProps<{
   open: boolean;
@@ -42,6 +45,8 @@ const props = defineProps<{
   eyebrow: string;
   title: string;
   description?: string;
+  active?: boolean;
+  busy?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -49,27 +54,84 @@ const emit = defineEmits<{
 }>();
 
 const dialogRef = ref<HTMLElement | null>(null);
+let previouslyFocused: HTMLElement | null = null;
+let ownsScrollLock = false;
+
+function updateBodyScrollLock(lock: boolean): void {
+  if (lock && !ownsScrollLock) {
+    const count = Number(document.body.dataset.configurationModalLocks ?? '0') + 1;
+    document.body.dataset.configurationModalLocks = String(count);
+    document.body.style.overflow = 'hidden';
+    ownsScrollLock = true;
+    return;
+  }
+  if (!lock && ownsScrollLock) {
+    const count = Math.max(Number(document.body.dataset.configurationModalLocks ?? '1') - 1, 0);
+    document.body.dataset.configurationModalLocks = String(count);
+    if (count === 0) document.body.style.removeProperty('overflow');
+    ownsScrollLock = false;
+  }
+}
+
+function getFocusableElements(): HTMLElement[] {
+  if (!dialogRef.value) return [];
+  return Array.from(dialogRef.value.querySelectorAll<HTMLElement>(
+    'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [href], [tabindex]:not([tabindex="-1"])',
+  )).filter((element) => !element.hasAttribute('hidden'));
+}
+
+function emitClose(reason: 'cancel' | 'escape' | 'backdrop' | 'button'): void {
+  if (!props.busy && props.active !== false) emit('close', reason);
+}
 
 function handleKeydown(event: KeyboardEvent): void {
-  if (event.key === 'Escape' && props.open) {
+  if (!props.open || props.active === false) return;
+
+  if (event.key === 'Escape') {
     event.preventDefault();
-    emit('close', 'escape');
+    emitClose('escape');
+    return;
+  }
+
+  if (event.key === 'Tab') {
+    const focusable = getFocusableElements();
+    if (focusable.length === 0) {
+      event.preventDefault();
+      dialogRef.value?.focus();
+      return;
+    }
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last?.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first?.focus();
+    }
   }
 }
 
 watch(() => props.open, async (open) => {
   if (open) {
+    previouslyFocused = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    updateBodyScrollLock(true);
     await nextTick();
-    dialogRef.value?.focus();
+    dialogRef.value?.querySelector<HTMLElement>('[data-autofocus]')?.focus();
+    if (!dialogRef.value?.contains(document.activeElement)) dialogRef.value?.focus();
     window.addEventListener('keydown', handleKeydown);
     return;
   }
 
   window.removeEventListener('keydown', handleKeydown);
+  updateBodyScrollLock(false);
+  previouslyFocused?.focus();
+  previouslyFocused = null;
 }, { immediate: true });
 
 onBeforeUnmount(() => {
   window.removeEventListener('keydown', handleKeydown);
+  updateBodyScrollLock(false);
 });
 </script>
 
@@ -96,7 +158,9 @@ onBeforeUnmount(() => {
   z-index:1;
   width:min(760px,100%);
   max-height:min(88vh,920px);
-  overflow:auto;
+  overflow:hidden;
+  display:grid;
+  grid-template-rows:auto minmax(0,1fr) auto;
   border-radius:30px;
   border:1px solid rgba(17,40,63,.08);
   background:linear-gradient(180deg,rgba(255,255,255,.98),rgba(248,251,255,.98));
@@ -147,12 +211,23 @@ onBeforeUnmount(() => {
 
 .configuration-modal__body{
   padding:1.25rem 1.45rem;
+  overflow:auto;
+  overscroll-behavior:contain;
 }
 
 .configuration-modal__footer{
   display:flex;
   justify-content:flex-end;
   gap:.85rem;
-  padding:0 1.45rem 1.35rem;
+  padding:1rem 1.45rem 1.35rem;
+  border-top:1px solid rgba(17,40,63,.08);
+  background:rgba(255,255,255,.94);
+}
+
+@media (max-width: 640px){
+  .configuration-modal{padding:.65rem;align-items:end}
+  .configuration-modal__dialog{max-height:94vh;border-radius:24px 24px 18px 18px}
+  .configuration-modal__header,.configuration-modal__body{padding-left:1rem;padding-right:1rem}
+  .configuration-modal__footer{padding:1rem;display:grid;grid-template-columns:1fr}
 }
 </style>

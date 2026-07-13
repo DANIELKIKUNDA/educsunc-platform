@@ -17,6 +17,10 @@ export class EffectiveConfigurationMapper {
         herite: valeur.herite,
         verrouille: valeur.verrouille,
         explanation: valeur.explanation,
+        sourceConfigurationId: valeur.sourceConfigurationId,
+        sourceStatut: valeur.sourceStatut,
+        sourceTotalVersions: valeur.sourceTotalVersions,
+        sourceCreeLe: valeur.sourceCreeLe,
       })),
     };
   }

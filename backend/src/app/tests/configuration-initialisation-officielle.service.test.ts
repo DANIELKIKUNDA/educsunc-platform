@@ -6,6 +6,7 @@ import test from 'node:test';
 
 import { ConfigurationInitialisationOfficielleService } from '../services/ConfigurationInitialisationOfficielleService';
 import {
+  type ConfigurationBootstrapJournalStore,
   CreateConfigurationUseCase,
   RepositoryConfigurationMemoire,
 } from '../../shared/configuration';
@@ -13,6 +14,30 @@ import {
   AuditConfigurationTestDouble,
   MonitoringConfigurationTestDouble,
 } from '../../shared/configuration/tests/support/ConfigurationTestSupport';
+
+class JournalBootstrapMemoireTestDouble implements ConfigurationBootstrapJournalStore {
+  public readonly entries: Array<{
+    executionId: string;
+    executedAt: string;
+    type: string;
+    scope: Record<string, unknown>;
+    createdKeys: readonly string[];
+    skippedKeys: readonly string[];
+  }> = [];
+
+  public async journaliser(
+    entry: {
+      executionId: string;
+      executedAt: string;
+      type: string;
+      scope: Record<string, unknown>;
+      createdKeys: readonly string[];
+      skippedKeys: readonly string[];
+    },
+  ): Promise<void> {
+    this.entries.push(entry);
+  }
+}
 
 test('ConfigurationInitialisationOfficielleService initialise une organisation de facon idempotente', async () => {
   const repository = new RepositoryConfigurationMemoire();
@@ -35,7 +60,7 @@ test('ConfigurationInitialisationOfficielleService initialise une organisation d
   assert.equal(repository.stockageMemoire().lister().length, 1);
 });
 
-test('ConfigurationInitialisationOfficielleService ne cree aucune cle systeme sans valeur initiale officiellement prouvee', async () => {
+test('ConfigurationInitialisationOfficielleService initialise les cles systeme officielles avec leurs valeurs par defaut', async () => {
   const repository = new RepositoryConfigurationMemoire();
   const service = new ConfigurationInitialisationOfficielleService(
     new CreateConfigurationUseCase(
@@ -49,9 +74,24 @@ test('ConfigurationInitialisationOfficielleService ne cree aucune cle systeme sa
 
   const resultat = await service.amorcerSysteme();
 
-  assert.deepEqual(resultat.createdKeys, []);
+  assert.deepEqual(resultat.createdKeys, [
+    'runtime.retry.maxAttempts',
+    'runtime.replay.enabled',
+    'runtime.cache.ttlSeconds',
+    'notifications.providers.in_app.enabled',
+    'notifications.providers.sms.enabled',
+    'notifications.providers.email.enabled',
+    'notifications.providers.whatsapp.enabled',
+    'notifications.providers.push.enabled',
+    'notifications.providers.webhook.enabled',
+    'notifications.retry.enabled',
+    'notifications.retry.maxAttempts',
+    'notifications.retry.defaultBackoffMs',
+    'notifications.replay.enabled',
+    'notifications.replay.batchSize',
+  ]);
   assert.deepEqual(resultat.skippedKeys, []);
-  assert.equal(repository.stockageMemoire().lister().length, 0);
+  assert.equal(repository.stockageMemoire().lister().length, 14);
 });
 
 test("ConfigurationInitialisationOfficielleService n'ecrase jamais une configuration organisation deja personnalisee", async () => {
@@ -110,4 +150,114 @@ test("ConfigurationInitialisationOfficielleService initialise l'ecole sans activ
   assert.deepEqual(configuration?.details().valeur, []);
 
   rmSync(dossierTemporaire, { recursive: true, force: true });
+});
+
+test("ConfigurationInitialisationOfficielleService initialise les preferences officielles du premier usage utilisateur", async () => {
+  const dossierTemporaire = mkdtempSync(path.join(tmpdir(), 'educsyn-config-user-'));
+  const repository = new RepositoryConfigurationMemoire();
+  const service = new ConfigurationInitialisationOfficielleService(
+    new CreateConfigurationUseCase(
+      repository,
+      new AuditConfigurationTestDouble(),
+      new MonitoringConfigurationTestDouble(),
+    ),
+    () => repository.stockageMemoire().lister().map((entry) => entry.configuration),
+    path.join(dossierTemporaire, 'journal.json'),
+  );
+
+  const resultat = await service.amorcerUtilisateur({
+    organisationId: 'org-user',
+    ecoleId: 'school-user',
+    utilisateurId: 'user-1',
+  });
+  const configurations = repository.stockageMemoire().lister().map((entry) => entry.configuration.details());
+
+  assert.deepEqual(resultat.createdKeys, [
+    'preferences.theme',
+    'notifications.preferences.muted',
+    'notifications.preferences.preferredChannel',
+    'notifications.preferences.enabledChannels',
+  ]);
+  assert.equal(configurations.find((entry) => entry.key === 'preferences.theme')?.valeur, 'system');
+  assert.deepEqual(
+    configurations.find((entry) => entry.key === 'notifications.preferences.enabledChannels')?.valeur,
+    ['IN_APP', 'EMAIL'],
+  );
+
+  rmSync(dossierTemporaire, { recursive: true, force: true });
+});
+
+test("ConfigurationInitialisationOfficielleService initialise aussi un compte plateforme sans ecole", async () => {
+  const repository = new RepositoryConfigurationMemoire();
+  const service = new ConfigurationInitialisationOfficielleService(
+    new CreateConfigurationUseCase(
+      repository,
+      new AuditConfigurationTestDouble(),
+      new MonitoringConfigurationTestDouble(),
+    ),
+    () => repository.stockageMemoire().lister().map((entry) => entry.configuration),
+    path.join(mkdtempSync(path.join(tmpdir(), 'educsyn-config-platform-user-')), 'journal.json'),
+  );
+
+  const resultat = await service.amorcerUtilisateur({
+    utilisateurId: 'manager-systeme-1',
+  });
+  const themes = repository.stockageMemoire().lister()
+    .map((entry) => entry.configuration.details())
+    .filter((entry) => entry.key === 'preferences.theme');
+
+  assert.equal(resultat.createdKeys.includes('preferences.theme'), true);
+  assert.equal(themes.length, 1);
+  assert.deepEqual(themes[0]?.scope, {
+    niveau: 'USER',
+    utilisateurId: 'manager-systeme-1',
+  });
+});
+
+test("ConfigurationInitialisationOfficielleService ne duplique pas les preferences quand le contexte utilisateur change", async () => {
+  const repository = new RepositoryConfigurationMemoire();
+  const service = new ConfigurationInitialisationOfficielleService(
+    new CreateConfigurationUseCase(
+      repository,
+      new AuditConfigurationTestDouble(),
+      new MonitoringConfigurationTestDouble(),
+    ),
+    () => repository.stockageMemoire().lister().map((entry) => entry.configuration),
+  );
+
+  await service.amorcerUtilisateur({
+    organisationId: 'org-1',
+    ecoleId: 'ecole-1',
+    utilisateurId: 'user-mobile-1',
+  });
+  const secondPassage = await service.amorcerUtilisateur({
+    organisationId: 'org-2',
+    ecoleId: 'ecole-2',
+    utilisateurId: 'user-mobile-1',
+  });
+
+  assert.deepEqual(secondPassage.createdKeys, []);
+  assert.equal(repository.stockageMemoire().lister().length, 4);
+});
+
+test('ConfigurationInitialisationOfficielleService supporte un lister asynchrone et journalise via un store externe', async () => {
+  const repository = new RepositoryConfigurationMemoire();
+  const journal = new JournalBootstrapMemoireTestDouble();
+  const service = new ConfigurationInitialisationOfficielleService(
+    new CreateConfigurationUseCase(
+      repository,
+      new AuditConfigurationTestDouble(),
+      new MonitoringConfigurationTestDouble(),
+    ),
+    async () => repository.stockageMemoire().lister().map((entry) => entry.configuration),
+    undefined,
+    journal,
+  );
+
+  const resultat = await service.amorcerSysteme();
+
+  assert.equal(resultat.createdKeys.length, 14);
+  assert.equal(journal.entries.length, 1);
+  assert.equal(journal.entries[0]?.type, 'BOOTSTRAP_SYSTEME');
+  assert.equal(journal.entries[0]?.createdKeys.length, 14);
 });

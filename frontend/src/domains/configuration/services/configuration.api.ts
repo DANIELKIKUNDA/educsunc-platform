@@ -24,6 +24,8 @@ export interface ConfigurationApiContext {
   utilisateurId: string | null;
 }
 
+export type UserThemePreference = 'light' | 'dark' | 'system';
+
 function genererIdempotencyKey(prefixe: string): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
     return `${prefixe}-${crypto.randomUUID()}`;
@@ -61,7 +63,7 @@ function construireEntetesSelonNiveau(
   contexte: ConfigurationApiContext,
   niveau?: ConfigurationScope['niveau'],
 ): Record<string, string> {
-  if (niveau === 'SYSTEM') {
+  if (niveau === 'SYSTEM' || niveau === 'USER') {
     return construireEntetesPilotageActif(lireContexteApiPlateformeGlobal());
   }
 
@@ -78,6 +80,13 @@ function construireEntetesPorteeConfiguration(
 ): Record<string, string> {
   if (scope.niveau === 'SYSTEM') {
     return construireEntetesPilotageActif(lireContexteApiPlateformeGlobal());
+  }
+
+  if (scope.niveau === 'USER') {
+    return construireEntetesPilotageActif(lireContexteApiPlateformeGlobal(), {
+      organisationId: scope.organisationId,
+      ecoleId: scope.ecoleId,
+    });
   }
 
   if (
@@ -122,6 +131,25 @@ export function lireContexteApiConfiguration(): ConfigurationApiContext {
 }
 
 export const configurationApi = {
+  async consulterThemeUtilisateur() {
+    return clientApi.envoyer<ConfigurationApiEnvelope<{ theme: UserThemePreference }>>({
+      chemin: '/api/v1/configuration/me/theme',
+      entetes: construireEntetesPilotageActif(lireContexteApiPlateformeGlobal()),
+    });
+  },
+
+  async enregistrerThemeUtilisateur(theme: UserThemePreference) {
+    return clientApi.envoyer<ConfigurationApiEnvelope<{ theme: UserThemePreference }>>({
+      chemin: '/api/v1/configuration/me/theme',
+      methode: 'PUT',
+      corps: { theme },
+      entetes: {
+        ...construireEntetesPilotageActif(lireContexteApiPlateformeGlobal()),
+        'idempotency-key': genererIdempotencyKey('configuration-user-theme'),
+      },
+    });
+  },
+
   async creerConfiguration(
     payload: {
       configurationId?: string;
@@ -140,10 +168,14 @@ export const configurationApi = {
     });
   },
 
-  async consulterConfiguration(id: string, contexte: ConfigurationApiContext) {
+  async consulterConfiguration(
+    id: string,
+    contexte: ConfigurationApiContext,
+    niveau?: ConfigurationScope['niveau'],
+  ) {
     return clientApi.envoyer<ConfigurationApiEnvelope<ConfigurationItem>>({
       chemin: `/api/v1/configuration/${id}`,
-      entetes: construireEntetesContexte(contexte),
+      entetes: construireEntetesSelonNiveau(contexte, niveau),
     });
   },
 
@@ -155,12 +187,13 @@ export const configurationApi = {
       metadata?: Readonly<Record<string, unknown>>;
     },
     contexte: ConfigurationApiContext,
+    niveau?: ConfigurationScope['niveau'],
   ) {
     return clientApi.envoyer<ConfigurationApiEnvelope<ConfigurationItem>>({
       chemin: `/api/v1/configuration/${id}`,
       methode: 'PUT',
       corps: payload,
-      entetes: construireEntetesMutation(contexte, 'configuration-update'),
+      entetes: construireEntetesMutation(contexte, 'configuration-update', niveau),
     });
   },
 
@@ -168,12 +201,13 @@ export const configurationApi = {
     id: string,
     payload: { actorId?: string; raison?: string },
     contexte: ConfigurationApiContext,
+    niveau?: ConfigurationScope['niveau'],
   ) {
     return clientApi.envoyer<ConfigurationApiEnvelope<{ configurationId: string; supprime: true }>>({
       chemin: `/api/v1/configuration/${id}`,
       methode: 'DELETE',
       corps: payload,
-      entetes: construireEntetesMutation(contexte, 'configuration-delete'),
+      entetes: construireEntetesMutation(contexte, 'configuration-delete', niveau),
     });
   },
 
@@ -185,12 +219,13 @@ export const configurationApi = {
       raison?: string;
     },
     contexte: ConfigurationApiContext,
+    niveau?: ConfigurationScope['niveau'],
   ) {
     return clientApi.envoyer<ConfigurationApiEnvelope<ConfigurationItem>>({
       chemin: `/api/v1/configuration/${id}/lock`,
       methode: 'POST',
       corps: payload,
-      entetes: construireEntetesMutation(contexte, 'configuration-lock'),
+      entetes: construireEntetesMutation(contexte, 'configuration-lock', niveau),
     });
   },
 
@@ -198,12 +233,13 @@ export const configurationApi = {
     id: string,
     payload: { actorId?: string },
     contexte: ConfigurationApiContext,
+    niveau?: ConfigurationScope['niveau'],
   ) {
     return clientApi.envoyer<ConfigurationApiEnvelope<ConfigurationItem>>({
       chemin: `/api/v1/configuration/${id}/unlock`,
       methode: 'POST',
       corps: payload,
-      entetes: construireEntetesMutation(contexte, 'configuration-unlock'),
+      entetes: construireEntetesMutation(contexte, 'configuration-unlock', niveau),
     });
   },
 
@@ -247,12 +283,13 @@ export const configurationApi = {
     id: string,
     payload: { snapshotId?: string; actorId?: string },
     contexte: ConfigurationApiContext,
+    niveau?: ConfigurationScope['niveau'],
   ) {
     return clientApi.envoyer<ConfigurationApiEnvelope<ConfigurationSnapshotItem>>({
       chemin: `/api/v1/configuration/${id}/snapshots`,
       methode: 'POST',
       corps: payload,
-      entetes: construireEntetesMutation(contexte, 'configuration-snapshot'),
+      entetes: construireEntetesMutation(contexte, 'configuration-snapshot', niveau),
     });
   },
 
@@ -260,10 +297,11 @@ export const configurationApi = {
     id: string,
     query: { sourceId: string; cibleId: string },
     contexte: ConfigurationApiContext,
+    niveau?: ConfigurationScope['niveau'],
   ) {
     return clientApi.envoyer<ConfigurationApiEnvelope<ConfigurationDiffItem>>({
       chemin: `/api/v1/configuration/${id}/snapshots/compare${construireQueryString(query)}`,
-      entetes: construireEntetesContexte(contexte),
+      entetes: construireEntetesSelonNiveau(contexte, niveau),
     });
   },
 
@@ -271,12 +309,13 @@ export const configurationApi = {
     id: string,
     payload: { actorId?: string; canauxCibles?: readonly string[] },
     contexte: ConfigurationApiContext,
+    niveau?: ConfigurationScope['niveau'],
   ) {
     return clientApi.envoyer<ConfigurationApiEnvelope<{ configurationId: string; propagationDemandee: true }>>({
       chemin: `/api/v1/configuration/${id}/propagate`,
       methode: 'POST',
       corps: payload,
-      entetes: construireEntetesMutation(contexte, 'configuration-propagate'),
+      entetes: construireEntetesMutation(contexte, 'configuration-propagate', niveau),
     });
   },
 
@@ -284,12 +323,13 @@ export const configurationApi = {
     id: string,
     payload: { actorId?: string; forcer?: boolean },
     contexte: ConfigurationApiContext,
+    niveau?: ConfigurationScope['niveau'],
   ) {
     return clientApi.envoyer<ConfigurationApiEnvelope<{ configurationId: string; reloadDemande: true }>>({
       chemin: `/api/v1/configuration/${id}/reload`,
       methode: 'POST',
       corps: payload,
-      entetes: construireEntetesMutation(contexte, 'configuration-reload'),
+      entetes: construireEntetesMutation(contexte, 'configuration-reload', niveau),
     });
   },
 

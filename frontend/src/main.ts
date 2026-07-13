@@ -4,6 +4,7 @@ import { configurationOffline } from './config/offline.config';
 import App from './App.vue';
 import { routeur } from './router';
 import { initializeFrontendSession } from './shared/auth/session.bootstrap';
+import { useTheme } from './composables/useTheme';
 import { registerServiceWorker } from './shared/pwa/register-sw';
 import './styles/variables.css';
 import './styles/base.css';
@@ -19,6 +20,7 @@ void configurationOffline;
 
 async function demarrerFrontend(): Promise<void> {
   await initializeFrontendSession();
+  await useTheme().initTheme();
 
   const application = createApp(App);
 

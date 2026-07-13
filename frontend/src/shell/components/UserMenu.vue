@@ -53,6 +53,14 @@
         <span>Utilisateur</span>
         <strong>{{ session.userId }}</strong>
       </div>
+
+      <div class="erp-user-menu__context-copy erp-user-menu__theme">
+        <div>
+          <span>Apparence</span>
+          <strong>Theme de mon espace</strong>
+        </div>
+        <ThemeToggle />
+      </div>
     </div>
   </details>
 </template>
@@ -64,6 +72,7 @@ import { ouvrirSessionDeveloppeurActeurSelectionne } from '../../shared/auth/ses
 import { sessionStore } from '../../shared/auth/session.store';
 import { getFirstAccessibleRoute } from '../../shared/doctrine/doctrine.resolver';
 import { activeContextStore } from '../../shared/session/active-context.store';
+import ThemeToggle from '../../shared/ui/ThemeToggle.vue';
 
 const session = sessionStore.state;
 const context = activeContextStore.state;

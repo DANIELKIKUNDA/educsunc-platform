@@ -7,11 +7,17 @@ import {
   ConfigurationScope,
   ConfigurationValue,
   PortRepositoryConfiguration,
+  type PortRepositoryConfigurationVersion,
 } from '../../domain';
 import { CreateConfigurationCommand } from '../commands';
 import { ConfigurationDto } from '../dto';
 import { ConfigurationApplicationMapper } from '../mappers';
-import { PortAuditConfiguration, PortMonitoringConfiguration } from '../ports';
+import {
+  PortAuditConfiguration,
+  PortMonitoringConfiguration,
+  type PortUniteTravailConfiguration,
+  UniteTravailConfigurationImmediate,
+} from '../ports';
 import { ValidateurCreateConfiguration } from '../validators';
 
 // Ce fichier declare le use case de creation.
@@ -25,6 +31,8 @@ export class CreateConfigurationUseCase {
     private readonly validateur = new ValidateurCreateConfiguration(),
     private readonly politiqueClassification = new PolitiqueClassificationConfiguration(),
     private readonly mapper = new ConfigurationApplicationMapper(),
+    private readonly versionRepository?: PortRepositoryConfigurationVersion,
+    private readonly uniteTravail: PortUniteTravailConfiguration = new UniteTravailConfigurationImmediate(),
   ) {}
 
   /** Cette methode execute la creation applicative d une configuration. */
@@ -67,11 +75,18 @@ export class CreateConfigurationUseCase {
       );
     }
 
-    await this.repository.sauvegarder(configuration);
-    await this.audit.enregistrerEvenementsConfiguration(
-      configuration.details().identifiant,
-      configuration.relacherEvenements(),
-    );
+    const evenements = configuration.relacherEvenements();
+    const versionInitiale = configuration.versionsHistorisees().at(-1);
+    await this.uniteTravail.dansTransaction(async () => {
+      await this.repository.sauvegarder(configuration);
+      if (versionInitiale && this.versionRepository) {
+        await this.versionRepository.sauvegarder(versionInitiale);
+      }
+      await this.audit.enregistrerEvenementsConfiguration(
+        configuration.details().identifiant,
+        evenements,
+      );
+    });
     await this.monitoring.publierSignalConfiguration('CREATED', configuration.details().identifiant);
 
     return this.mapper.versDto(configuration);

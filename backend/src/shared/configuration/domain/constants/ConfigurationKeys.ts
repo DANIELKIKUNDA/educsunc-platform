@@ -1,15 +1,8 @@
-// Ce fichier centralise les cles de configuration les plus importantes du domaine.
+import { CATALOGUE_CONFIGURATION_OFFICIELLE } from './CatalogueConfigurationOfficielle';
 
-/** Cette constante expose un noyau de cles officielles de configuration. */
-export const CLES_CONFIGURATION = [
-  'branding.logo.primary',
-  'branding.colors.primary',
-  'branding.colors.secondary',
-  'modules.allowed',
-  'modules.enabled',
-  'notifications.quotas.sms',
-  'notifications.templates.default',
-  'runtime.retry.maxAttempts',
-  'runtime.replay.enabled',
-  'runtime.cache.ttlSeconds',
-] as const;
+// Ce fichier centralise les cles de configuration officiellement cataloguees.
+
+/** Cette constante expose le catalogue courant des cles officielles de configuration. */
+export const CLES_CONFIGURATION = CATALOGUE_CONFIGURATION_OFFICIELLE.map(
+  (definition) => definition.key,
+);

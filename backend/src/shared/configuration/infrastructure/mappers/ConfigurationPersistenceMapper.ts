@@ -24,6 +24,7 @@ export interface ProjectionPersistenceConfiguration {
   readonly lock: ReturnType<Configuration['details']>['lock'];
   readonly totalVersions: number;
   readonly creeLe: Date;
+  readonly revisionPersistence: number | null;
 }
 
 /** Cette classe transforme un agregat domaine en projection de persistence. */
@@ -52,6 +53,7 @@ export class ConfigurationPersistenceMapper {
       lock: details.lock ? { ...details.lock } : null,
       totalVersions: details.totalVersions,
       creeLe: details.creeLe,
+      revisionPersistence: details.revisionPersistence,
     };
   }
 }

@@ -50,6 +50,8 @@ import {
   SurveillanceProvidersNotification,
   SurveillanceQueuesNotification,
 } from '../../shared/notifications';
+import type { NotificationConfigurationChange } from '../../shared/notifications/integration/configuration';
+import { NotificationsConfigurationIntegrationOrchestrator } from '../../shared/notifications/integration/configuration';
 import type {
   CommandeCreerNotification,
   DtoCommandeCreationNotification,
@@ -88,6 +90,10 @@ class NotificationsRuntimeFacade {
     this.surveillanceProvidersNotification,
   );
   private readonly configurationNotificationRuntime = new ConfigurationNotificationRuntime();
+  private readonly integrationConfigurationNotifications =
+    new NotificationsConfigurationIntegrationOrchestrator({
+      configurationNotificationRuntime: this.configurationNotificationRuntime,
+    });
   private readonly depotNotifications = new DepotNotificationsMemoire(this.registreNotificationsMemoire);
   private readonly depotModelesNotifications = new DepotModelesNotificationsMemoire(
     this.registreNotificationsMemoire,
@@ -146,6 +152,16 @@ class NotificationsRuntimeFacade {
     this.registreProvidersNotification.enregistrer(new ProviderNotificationEmail());
     this.routesDependances = this.creerDependancesRoutes();
     this.enregistrerHandlersSharedBus();
+  }
+
+  public async appliquerConfiguration(
+    changement: NotificationConfigurationChange,
+  ): Promise<void> {
+    await this.integrationConfigurationNotifications.appliquerChangement(changement);
+  }
+
+  public obtenirSnapshotConfiguration() {
+    return this.integrationConfigurationNotifications.obtenirSnapshot();
   }
 
   private creerDependancesRoutes(): DependancesRoutesNotifications {

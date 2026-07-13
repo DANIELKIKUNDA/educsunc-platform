@@ -24,13 +24,8 @@ export class ConfigurationScope {
     if (props.niveau === 'SCHOOL' && (!props.organisationId || !props.ecoleId)) {
       throw new ExceptionScopeInvalide('Une portee SCHOOL exige organisationId et ecoleId.');
     }
-    if (
-      props.niveau === 'USER'
-      && (!props.organisationId || !props.ecoleId || !props.utilisateurId)
-    ) {
-      throw new ExceptionScopeInvalide(
-        'Une portee USER exige organisationId, ecoleId et utilisateurId.',
-      );
+    if (props.niveau === 'USER' && !props.utilisateurId) {
+      throw new ExceptionScopeInvalide('Une portee USER exige un identifiant utilisateur.');
     }
     return new ConfigurationScope({ ...props });
   }

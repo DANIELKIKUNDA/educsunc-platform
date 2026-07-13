@@ -30,6 +30,7 @@ interface ProjectionPersistanteConfiguration {
   readonly totalVersions: number;
   readonly creeLe: string;
   readonly sauvegardeLe: string;
+  readonly revisionPersistence?: number;
 }
 
 /** Ce depot persiste les configurations sur disque tout en conservant le comportement memoire existant. */
@@ -86,6 +87,7 @@ export class RepositoryConfigurationMemoirePersistante extends RepositoryConfigu
           }
           : null,
         totalVersions: projection.totalVersions,
+        revisionPersistence: projection.revisionPersistence ?? 0,
       });
 
       this.stockageMemoire().enregistrer(ConfigurationId.creer(projection.identifiant), {

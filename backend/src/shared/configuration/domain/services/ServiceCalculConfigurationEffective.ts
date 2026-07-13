@@ -16,6 +16,10 @@ export interface EntreeCalculConfigurationEffective {
   readonly scope: ConfigurationScope;
   readonly value: ConfigurationValue;
   readonly verrouille: boolean;
+  readonly sourceConfigurationId?: string;
+  readonly sourceStatut?: string;
+  readonly sourceTotalVersions?: number;
+  readonly sourceCreeLe?: Date;
 }
 
 /** Cette classe centralise la resolution d une configuration effective a partir de plusieurs portees. */
@@ -58,6 +62,10 @@ export class ServiceCalculConfigurationEffective {
         herite: entreeRetenue.scope.niveau() !== cible.niveau(),
         verrouille: lock !== null || entreeRetenue.verrouille,
         explanation: '',
+        sourceConfigurationId: entreeRetenue.sourceConfigurationId,
+        sourceStatut: entreeRetenue.sourceStatut,
+        sourceTotalVersions: entreeRetenue.sourceTotalVersions,
+        sourceCreeLe: entreeRetenue.sourceCreeLe,
       });
 
       valeurs.set(

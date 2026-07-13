@@ -3,6 +3,7 @@ import { ExceptionConfigurationIncoherente } from '../exceptions';
 
 export type FamilleClassificationConfiguration =
   | 'CFG-PLAT-RUNTIME'
+  | 'CFG-PLAT-NOTIFICATIONS'
   | 'CFG-ORG-POLICIES'
   | 'CFG-ECOLE-MODULES'
   | 'CFG-ECOLE-BRANDING'
@@ -38,6 +39,38 @@ export class PolitiqueClassificationConfiguration {
     if (key.startsWith('runtime.')) {
       return {
         famille: 'CFG-PLAT-RUNTIME',
+        proprietaireNiveau: 'SYSTEM',
+        heritableParDefaut: false,
+        overridableParDefaut: false,
+        visiblePourParDefaut: ['SYSTEM'],
+        rolesLecture: ['MANAGER_SYSTEME', 'OPERATEUR_SYSTEME', 'SUPPORT_SYSTEME'],
+        rolesMutation: ['MANAGER_SYSTEME', 'OPERATEUR_SYSTEME'],
+      };
+    }
+
+    if (key.startsWith('notifications.preferences.')) {
+      return {
+        famille: 'CFG-USER-PREFERENCES',
+        proprietaireNiveau: 'USER',
+        heritableParDefaut: false,
+        overridableParDefaut: false,
+        visiblePourParDefaut: ['SYSTEM', 'ORGANIZATION', 'SCHOOL', 'USER'],
+        rolesLecture: [],
+        rolesMutation: [],
+      };
+    }
+
+    if (
+      key.startsWith('notifications.providers.')
+      || key.startsWith('notifications.retry.')
+      || key.startsWith('notifications.replay.')
+      || key.startsWith('notifications.templates.')
+      || key.startsWith('notifications.quotas.')
+      || key.startsWith('notifications.runtime.')
+      || key.startsWith('notifications.monitoring.')
+    ) {
+      return {
+        famille: 'CFG-PLAT-NOTIFICATIONS',
         proprietaireNiveau: 'SYSTEM',
         heritableParDefaut: false,
         overridableParDefaut: false,
@@ -108,7 +141,6 @@ export class PolitiqueClassificationConfiguration {
     if (
       key.startsWith('preferences.')
       || key.startsWith('user.preferences.')
-      || key.startsWith('notifications.preferences.')
     ) {
       return {
         famille: 'CFG-USER-PREFERENCES',

@@ -8,7 +8,12 @@ import { LockConfigurationCommand } from '../commands';
 import { ConfigurationDto } from '../dto';
 import { ExceptionConfigurationIntrouvable } from '../exceptions';
 import { ConfigurationApplicationMapper } from '../mappers';
-import { PortAuditConfiguration, PortMonitoringConfiguration } from '../ports';
+import {
+  PortAuditConfiguration,
+  PortMonitoringConfiguration,
+  type PortUniteTravailConfiguration,
+  UniteTravailConfigurationImmediate,
+} from '../ports';
 import { ValidateurLockConfiguration } from '../validators';
 
 // Ce fichier declare le use case de verrouillage.
@@ -21,6 +26,7 @@ export class LockConfigurationUseCase {
     private readonly monitoring: PortMonitoringConfiguration,
     private readonly validateur = new ValidateurLockConfiguration(),
     private readonly mapper = new ConfigurationApplicationMapper(),
+    private readonly uniteTravail: PortUniteTravailConfiguration = new UniteTravailConfigurationImmediate(),
   ) {}
 
   /** Cette methode execute le verrouillage applicatif d une configuration. */
@@ -41,11 +47,14 @@ export class LockConfigurationUseCase {
       }),
     );
 
-    await this.repository.sauvegarder(configuration);
-    await this.audit.enregistrerEvenementsConfiguration(
-      configuration.details().identifiant,
-      configuration.relacherEvenements(),
-    );
+    const evenements = configuration.relacherEvenements();
+    await this.uniteTravail.dansTransaction(async () => {
+      await this.repository.sauvegarder(configuration);
+      await this.audit.enregistrerEvenementsConfiguration(
+        configuration.details().identifiant,
+        evenements,
+      );
+    });
     await this.monitoring.publierSignalConfiguration('LOCKED', configuration.details().identifiant);
 
     return this.mapper.versDto(configuration);

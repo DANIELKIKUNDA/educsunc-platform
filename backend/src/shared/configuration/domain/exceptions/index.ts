@@ -4,3 +4,4 @@ export * from './ExceptionLockViolation';
 export * from './ExceptionScopeInvalide';
 export * from './ExceptionConfigurationIncoherente';
 export * from './ExceptionCrossTenantConfiguration';
+export * from './ExceptionConflitVersionConfiguration';

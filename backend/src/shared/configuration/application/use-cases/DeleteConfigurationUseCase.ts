@@ -6,6 +6,8 @@ import {
   PortMonitoringConfiguration,
   PortPropagationConfiguration,
   PortSuppressionConfiguration,
+  type PortUniteTravailConfiguration,
+  UniteTravailConfigurationImmediate,
 } from '../ports';
 import { ExceptionConfigurationIntrouvable } from '../exceptions';
 
@@ -19,6 +21,7 @@ export class DeleteConfigurationUseCase {
     private readonly propagation: PortPropagationConfiguration,
     private readonly audit: PortAuditConfiguration,
     private readonly monitoring: PortMonitoringConfiguration,
+    private readonly uniteTravail: PortUniteTravailConfiguration = new UniteTravailConfigurationImmediate(),
   ) {}
 
   /** Cette methode execute la suppression applicative d une configuration. */
@@ -28,9 +31,7 @@ export class DeleteConfigurationUseCase {
       throw new ExceptionConfigurationIntrouvable(commande.configurationId);
     }
 
-    await this.suppression.supprimer(ConfigurationId.creer(commande.configurationId));
-    await this.propagation.propagerSuppressionConfiguration(commande.configurationId);
-    await this.audit.enregistrerEvenementsConfiguration(commande.configurationId, [
+    const evenements = [
       {
         type: 'ConfigurationDeleted',
         actorId: commande.actorId,
@@ -39,7 +40,12 @@ export class DeleteConfigurationUseCase {
         raison: commande.raison,
         deletedAt: new Date(),
       },
-    ]);
+    ];
+    await this.uniteTravail.dansTransaction(async () => {
+      await this.suppression.supprimer(ConfigurationId.creer(commande.configurationId));
+      await this.audit.enregistrerEvenementsConfiguration(commande.configurationId, evenements);
+    });
+    await this.propagation.propagerSuppressionConfiguration(commande.configurationId);
     await this.monitoring.publierSignalConfiguration('DELETED', commande.configurationId);
   }
 }

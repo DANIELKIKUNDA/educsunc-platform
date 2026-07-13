@@ -10,6 +10,7 @@ export class ConfigurationSnapshotMapper {
     const details = snapshot.details();
     return {
       identifiantSnapshot: details.identifiantSnapshot,
+      configurationId: details.configurationId,
       creeLe: details.creeLe,
       valeurs: details.valeurs.map((valeur) => ({
         key: valeur.key.valeur(),

@@ -100,8 +100,6 @@ export function buildScopeFromLevel(
 
   return {
     niveau,
-    organisationId: context.organisationId,
-    ecoleId: context.ecoleId,
     utilisateurId: context.utilisateurId,
   };
 }

@@ -17,5 +17,9 @@ export interface EffectiveConfigurationDto {
     readonly herite: boolean;
     readonly verrouille: boolean;
     readonly explanation: string;
+    readonly sourceConfigurationId?: string;
+    readonly sourceStatut?: string;
+    readonly sourceTotalVersions?: number;
+    readonly sourceCreeLe?: Date;
   }[];
 }

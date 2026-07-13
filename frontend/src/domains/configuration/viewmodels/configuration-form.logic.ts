@@ -9,7 +9,7 @@ type FormAction = 'create' | 'edit';
 
 interface EvaluateConfigurationFormParams {
   readonly action: FormAction;
-  readonly rawValue: string;
+  readonly rawValue: string | number;
   readonly initialValue: unknown;
   readonly fieldDefinition: ConfigurationFieldDefinition;
   readonly isLoaded: boolean;
@@ -27,47 +27,23 @@ interface EvaluateConfigurationFormResult {
   readonly isDirty: boolean;
 }
 
-function normalizeBoolean(rawValue: string): boolean | null {
-  if (rawValue === 'true') {
+function normalizeBoolean(rawValue: string | number): boolean | null {
+  if (String(rawValue) === 'true') {
     return true;
   }
-  if (rawValue === 'false') {
+  if (String(rawValue) === 'false') {
     return false;
   }
   return null;
 }
 
-function normalizeInteger(rawValue: string): number | null {
-  if (!/^-?\d+$/.test(rawValue.trim())) {
+function normalizeInteger(rawValue: string | number): number | null {
+  const normalized = String(rawValue).trim();
+  if (!/^-?\d+$/.test(normalized)) {
     return null;
   }
 
-  return Number.parseInt(rawValue.trim(), 10);
-}
-
-function normalizeDuration(rawValue: string): number | null {
-  const trimmed = rawValue.trim();
-  const [amountPart, unitPart] = trimmed.split('|');
-
-  if (!amountPart || !unitPart) {
-    return normalizeInteger(trimmed);
-  }
-
-  const amount = normalizeInteger(amountPart);
-  if (amount === null) {
-    return null;
-  }
-
-  switch (unitPart.trim()) {
-    case 'seconds':
-      return amount;
-    case 'minutes':
-      return amount * 60;
-    case 'hours':
-      return amount * 3600;
-    default:
-      return null;
-  }
+  return Number.parseInt(normalized, 10);
 }
 
 function normalizeValue(params: EvaluateConfigurationFormParams): {
@@ -75,30 +51,21 @@ function normalizeValue(params: EvaluateConfigurationFormParams): {
   readonly validationError: string | null;
 } {
   const { fieldDefinition, rawValue } = params;
+  const rawText = String(rawValue ?? '');
 
   switch (fieldDefinition.control) {
-    case 'color': {
-      const trimmed = rawValue.trim();
-      if (/^#[0-9a-fA-F]{6}$/.test(trimmed)) {
-        return { normalizedValue: trimmed.toLowerCase(), validationError: null };
-      }
-      return {
-        normalizedValue: null,
-        validationError: 'Saisissez une couleur hexadecimale valide, par exemple #1d4ed8.',
-      };
-    }
     case 'integer-stepper': {
-      if (fieldDefinition.key === 'runtime.cache.ttlSeconds') {
-        const normalizedValue = normalizeDuration(rawValue);
-        return normalizedValue === null
-          ? { normalizedValue: null, validationError: 'Saisissez une duree entiere.' }
-          : { normalizedValue, validationError: null };
-      }
-
       const normalizedValue = normalizeInteger(rawValue);
-      return normalizedValue === null
-        ? { normalizedValue: null, validationError: 'Saisissez une valeur entiere.' }
-        : { normalizedValue, validationError: null };
+      if (normalizedValue === null) {
+        return { normalizedValue: null, validationError: 'Saisissez un nombre entier.' };
+      }
+      if (fieldDefinition.minimum !== undefined && normalizedValue < fieldDefinition.minimum) {
+        return { normalizedValue, validationError: `La valeur minimale est ${fieldDefinition.minimum}.` };
+      }
+      if (fieldDefinition.maximum !== undefined && normalizedValue > fieldDefinition.maximum) {
+        return { normalizedValue, validationError: `La valeur maximale est ${fieldDefinition.maximum}.` };
+      }
+      return { normalizedValue, validationError: null };
     }
     case 'boolean-toggle': {
       const normalizedValue = normalizeBoolean(rawValue);
@@ -106,9 +73,24 @@ function normalizeValue(params: EvaluateConfigurationFormParams): {
         ? { normalizedValue: null, validationError: 'Choisissez clairement Oui ou Non.' }
         : { normalizedValue, validationError: null };
     }
+    case 'multi-checkbox': {
+      try {
+        const parsed = JSON.parse(rawText) as unknown;
+        if (!Array.isArray(parsed) || !parsed.every((entry) => typeof entry === 'string')) {
+          throw new Error('invalid-list');
+        }
+        const allowed = fieldDefinition.options;
+        if (allowed && parsed.some((entry) => !allowed.includes(entry))) {
+          return { normalizedValue: null, validationError: 'Une sélection proposée n’est pas reconnue.' };
+        }
+        return { normalizedValue: parsed, validationError: null };
+      } catch {
+        return { normalizedValue: null, validationError: 'Sélectionnez au moins les choix souhaités.' };
+      }
+    }
     default:
       return {
-        normalizedValue: rawValue.trim(),
+        normalizedValue: rawText.trim(),
         validationError: null,
       };
   }
@@ -119,16 +101,16 @@ function computeDisableReason(params: EvaluateConfigurationFormParams): string |
     return 'Enregistrement en cours.';
   }
   if (!params.canMutate) {
-    return "Vous disposez d'un acces en lecture seule.";
+    return "Vous disposez d'un accès en lecture seule.";
   }
   if (params.locked) {
-    return 'Ce reglage est verrouille.';
+    return 'Ce réglage est verrouillé.';
   }
   if (params.conflictDetected) {
-    return "Une autre modification plus recente doit etre relue avant d'enregistrer.";
+    return "Une modification plus récente doit être relue avant d'enregistrer.";
   }
   if (params.action === 'edit' && !params.isLoaded) {
-    return "Ouvrez d'abord un reglage existant avant de le modifier.";
+    return "Ouvrez d'abord un réglage existant avant de le modifier.";
   }
   return null;
 }
@@ -149,16 +131,6 @@ export function formatConfigurationValueForForm(
   value: unknown,
   fieldDefinition: ConfigurationFieldDefinition,
 ): string {
-  if (fieldDefinition.key === 'runtime.cache.ttlSeconds' && typeof value === 'number') {
-    if (value % 3600 === 0) {
-      return `${value / 3600}|hours`;
-    }
-    if (value % 60 === 0) {
-      return `${value / 60}|minutes`;
-    }
-    return `${value}|seconds`;
-  }
-
   if (typeof value === 'boolean') {
     return value ? 'true' : 'false';
   }
@@ -169,6 +141,10 @@ export function formatConfigurationValueForForm(
 
   if (typeof value === 'number') {
     return String(value);
+  }
+
+  if (fieldDefinition.control === 'multi-checkbox' && Array.isArray(value)) {
+    return JSON.stringify(value);
   }
 
   return '';

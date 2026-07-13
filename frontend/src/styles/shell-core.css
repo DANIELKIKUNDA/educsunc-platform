@@ -610,6 +610,13 @@
   border: 1px solid #e2e8f0;
 }
 
+.erp-user-menu__theme {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
 .page-header {
   display: flex;
   justify-content: space-between;

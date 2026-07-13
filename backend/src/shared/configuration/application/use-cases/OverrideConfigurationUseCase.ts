@@ -10,7 +10,12 @@ import { OverrideConfigurationCommand } from '../commands';
 import { ConfigurationDto } from '../dto';
 import { ExceptionConfigurationIntrouvable } from '../exceptions';
 import { ConfigurationApplicationMapper } from '../mappers';
-import { PortAuditConfiguration, PortMonitoringConfiguration } from '../ports';
+import {
+  PortAuditConfiguration,
+  PortMonitoringConfiguration,
+  type PortUniteTravailConfiguration,
+  UniteTravailConfigurationImmediate,
+} from '../ports';
 import { ValidateurOverrideConfiguration } from '../validators';
 
 // Ce fichier declare le use case d override.
@@ -23,6 +28,7 @@ export class OverrideConfigurationUseCase {
     private readonly monitoring: PortMonitoringConfiguration,
     private readonly validateur = new ValidateurOverrideConfiguration(),
     private readonly mapper = new ConfigurationApplicationMapper(),
+    private readonly uniteTravail: PortUniteTravailConfiguration = new UniteTravailConfigurationImmediate(),
   ) {}
 
   /** Cette methode execute l override applicatif d une configuration. */
@@ -44,11 +50,14 @@ export class OverrideConfigurationUseCase {
       }),
     );
 
-    await this.repository.sauvegarder(configuration);
-    await this.audit.enregistrerEvenementsConfiguration(
-      configuration.details().identifiant,
-      configuration.relacherEvenements(),
-    );
+    const evenements = configuration.relacherEvenements();
+    await this.uniteTravail.dansTransaction(async () => {
+      await this.repository.sauvegarder(configuration);
+      await this.audit.enregistrerEvenementsConfiguration(
+        configuration.details().identifiant,
+        evenements,
+      );
+    });
     await this.monitoring.publierSignalConfiguration('OVERRIDDEN', configuration.details().identifiant);
 
     return this.mapper.versDto(configuration);

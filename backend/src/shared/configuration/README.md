@@ -273,9 +273,40 @@ Moments d amorcage actuellement branches :
 - `SYSTEM` : bootstrap global du module Configuration
 - `ORGANIZATION` : creation d organisation et rattrapage idempotent au demarrage du BC
 - `SCHOOL` : creation d ecole et rattrapage idempotent au demarrage du BC
-- `USER` : aucun defaut persiste officiel n est encore prouve, donc aucun reglage n est cree arbitrairement
+- `USER` : premier usage officiel avec preferences personnelles prouvees sans ecrasement
 
 Inventaire officiel actuellement prouve :
+- `runtime.retry.maxAttempts`
+  - scope : `SYSTEM`
+  - valeur initiale : `3`
+  - justification : la configuration runtime de reference manipule deja 3 tentatives par defaut
+- `runtime.replay.enabled`
+  - scope : `SYSTEM`
+  - valeur initiale : `true`
+  - justification : le replay runtime de reference est deja actif par defaut
+- `runtime.cache.ttlSeconds`
+  - scope : `SYSTEM`
+  - valeur initiale : `120`
+  - justification : la configuration runtime de reference manipule deja un TTL de 120 secondes
+- `notifications.providers.*.enabled`
+  - scope : `SYSTEM`
+  - valeur initiale : canaux de base actifs pour `IN_APP`, `SMS`, `EMAIL`; canaux avances inactifs par defaut
+  - justification : ConfigurationProvidersNotification porte deja ces valeurs techniques
+- `notifications.retry.enabled`
+  - scope : `SYSTEM`
+  - valeur initiale : `true`
+- `notifications.retry.maxAttempts`
+  - scope : `SYSTEM`
+  - valeur initiale : `5`
+- `notifications.retry.defaultBackoffMs`
+  - scope : `SYSTEM`
+  - valeur initiale : `60000`
+- `notifications.replay.enabled`
+  - scope : `SYSTEM`
+  - valeur initiale : `true`
+- `notifications.replay.batchSize`
+  - scope : `SYSTEM`
+  - valeur initiale : `100`
 - `modules.allowed`
   - scope : `ORGANIZATION`
   - valeur initiale : catalogue complet des modules connus
@@ -284,14 +315,19 @@ Inventaire officiel actuellement prouve :
   - scope : `SCHOOL`
   - valeur initiale : `[]`
   - justification : aucun module ne doit devenir actif automatiquement pour une ecole
-
-Inventaire officiellement reconnu mais sans defaut persiste obligatoire a ce jour :
-- `runtime.retry.maxAttempts`
-- `runtime.replay.enabled`
-- `runtime.cache.ttlSeconds`
-- `branding.logo.primary`
-- `notifications.templates.default`
 - `preferences.theme`
+  - scope : `USER`
+  - valeur initiale : `system`
+  - justification : le premier usage doit charger une preference personnelle stable
+- `notifications.preferences.muted`
+  - scope : `USER`
+  - valeur initiale : `false`
+- `notifications.preferences.preferredChannel`
+  - scope : `USER`
+  - valeur initiale : `IN_APP`
+- `notifications.preferences.enabledChannels`
+  - scope : `USER`
+  - valeur initiale : `['IN_APP', 'EMAIL']`
 
 Principe fondamental :
 - une cle connue n implique pas automatiquement une valeur initiale obligatoire
@@ -312,6 +348,43 @@ Fichiers locaux utilises :
 Le premier fichier porte la persistence locale exploitable.
 Le second journalise les passages d amorcage officiel pour diagnostic et rattrapage.
 
+Le journal local est protege par un verrou inter-processus et remplace atomiquement son fichier.
+Un ancien contenu invalide est conserve dans un fichier de quarantaine avant la reprise du journal.
+
+## Persistance PostgreSQL
+
+Le module supporte maintenant un stockage PostgreSQL industrialise en plus des
+modes memoire et JSON local.
+
+Capacites branchees :
+- persistence des configurations
+- persistence des versions
+- persistence des snapshots
+- audit durable de chaque mutation
+- journalisation PostgreSQL de l amorcage officiel
+- migration idempotente des tables du module
+- unicite d une cle dans une meme portee metier
+- controle de concurrence optimiste par revision
+- transaction atomique entre etat, version et audit
+- verrou PostgreSQL empechant deux instances de migrer simultanement
+- registre durable des migrations deja appliquees
+
+Garanties d integrite :
+- une ecriture construite sur une ancienne revision est refusee
+- une erreur d audit ou d historisation annule toute la mutation
+- une version ou un snapshot existant ne peut pas etre remplace silencieusement
+- les migrations ne sont pas rejouees apres redemarrage
+- les configurations restent lisibles apres fermeture et recreation de la connexion PostgreSQL
+
+Modes supportes via `EDUCSYN_CONFIGURATION_STORAGE` :
+- `memory`
+- `local-json`
+- `postgres`
+
+Regle actuelle :
+- `test` force `memory`
+- absence d override force `postgres`
+
 ## Semantique Des Modules
 
 La gouvernance des modules suit strictement cette doctrine :
@@ -323,7 +396,7 @@ La gouvernance des modules suit strictement cette doctrine :
   - `modules.enabled`
   - definit les modules explicitement actives localement
 - Resolution effective :
-  - `modulesEffectifs = modules.allowed ∩ modules.enabled`
+  - `modulesEffectifs = intersection(modules.allowed, modules.enabled)`
 
 Regle critique :
 - l absence de `modules.allowed` peut etre traitee comme catalogue autorisable complet

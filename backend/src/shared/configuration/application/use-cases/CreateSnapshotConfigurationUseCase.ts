@@ -12,7 +12,12 @@ import { CreateSnapshotConfigurationCommand } from '../commands';
 import { ConfigurationSnapshotDto } from '../dto';
 import { ExceptionConfigurationIntrouvable } from '../exceptions';
 import { ConfigurationSnapshotMapper } from '../mappers';
-import { PortAuditConfiguration, PortMonitoringConfiguration } from '../ports';
+import {
+  PortAuditConfiguration,
+  PortMonitoringConfiguration,
+  type PortUniteTravailConfiguration,
+  UniteTravailConfigurationImmediate,
+} from '../ports';
 
 // Ce fichier declare le use case de creation de snapshot.
 
@@ -24,6 +29,7 @@ export class CreateSnapshotConfigurationUseCase {
     private readonly audit: PortAuditConfiguration,
     private readonly monitoring: PortMonitoringConfiguration,
     private readonly mapper = new ConfigurationSnapshotMapper(),
+    private readonly uniteTravail: PortUniteTravailConfiguration = new UniteTravailConfigurationImmediate(),
   ) {}
 
   /** Cette methode execute la creation applicative d un snapshot. */
@@ -48,11 +54,14 @@ export class CreateSnapshotConfigurationUseCase {
       }),
     ]);
 
-    await this.snapshotRepository.sauvegarder(snapshot);
-    await this.audit.enregistrerEvenementsConfiguration(
-      details.identifiant,
-      configuration.relacherEvenements(),
-    );
+    const evenements = configuration.relacherEvenements();
+    await this.uniteTravail.dansTransaction(async () => {
+      await this.snapshotRepository.sauvegarder(snapshot);
+      await this.audit.enregistrerEvenementsConfiguration(
+        details.identifiant,
+        evenements,
+      );
+    });
     await this.monitoring.publierSignalConfiguration('SNAPSHOT', details.identifiant);
 
     return this.mapper.versDto(snapshot);

@@ -9,7 +9,12 @@ import { UpdateConfigurationCommand } from '../commands';
 import { ConfigurationDto } from '../dto';
 import { ExceptionConfigurationIntrouvable } from '../exceptions';
 import { ConfigurationApplicationMapper } from '../mappers';
-import { PortAuditConfiguration, PortMonitoringConfiguration } from '../ports';
+import {
+  PortAuditConfiguration,
+  PortMonitoringConfiguration,
+  type PortUniteTravailConfiguration,
+  UniteTravailConfigurationImmediate,
+} from '../ports';
 import { ValidateurUpdateConfiguration } from '../validators';
 
 // Ce fichier declare le use case de mise a jour.
@@ -23,6 +28,7 @@ export class UpdateConfigurationUseCase {
     private readonly monitoring: PortMonitoringConfiguration,
     private readonly validateur = new ValidateurUpdateConfiguration(),
     private readonly mapper = new ConfigurationApplicationMapper(),
+    private readonly uniteTravail: PortUniteTravailConfiguration = new UniteTravailConfigurationImmediate(),
   ) {}
 
   /** Cette methode execute la mise a jour applicative d une configuration. */
@@ -45,15 +51,18 @@ export class UpdateConfigurationUseCase {
       }),
     );
 
-    await this.repository.sauvegarder(configuration);
     const derniereVersion = configuration.versionsHistorisees().at(-1);
-    if (derniereVersion) {
-      await this.versionRepository.sauvegarder(derniereVersion);
-    }
-    await this.audit.enregistrerEvenementsConfiguration(
-      configuration.details().identifiant,
-      configuration.relacherEvenements(),
-    );
+    const evenements = configuration.relacherEvenements();
+    await this.uniteTravail.dansTransaction(async () => {
+      await this.repository.sauvegarder(configuration);
+      if (derniereVersion) {
+        await this.versionRepository.sauvegarder(derniereVersion);
+      }
+      await this.audit.enregistrerEvenementsConfiguration(
+        configuration.details().identifiant,
+        evenements,
+      );
+    });
     await this.monitoring.publierSignalConfiguration('UPDATED', configuration.details().identifiant);
 
     return this.mapper.versDto(configuration);

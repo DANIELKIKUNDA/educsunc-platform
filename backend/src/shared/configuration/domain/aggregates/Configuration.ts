@@ -68,6 +68,7 @@ export class Configuration {
       auditRequis: true,
       restartRequis: false,
     },
+    private revisionPersistence: number | null = null,
   ) {
     this.evenements.push(
       new ConfigurationCreated({
@@ -103,6 +104,7 @@ export class Configuration {
       readonly verrouilleLe: Date;
     } | null;
     readonly totalVersions: number;
+    readonly revisionPersistence?: number;
   }): Configuration {
     const configuration = new Configuration(
       ConfigurationId.creer(params.identifiant),
@@ -112,6 +114,7 @@ export class Configuration {
       params.statut,
       params.creeLe,
       params.gouvernance,
+      params.revisionPersistence ?? 0,
     );
 
     configuration.evenements.splice(0, configuration.evenements.length);
@@ -239,7 +242,11 @@ export class Configuration {
     identifiantSnapshot: string,
     valeurs: readonly import('../value-objects').EffectiveValue[],
   ): ConfigurationSnapshot {
-    const snapshot = new ConfigurationSnapshot(identifiantSnapshot, valeurs);
+    const snapshot = new ConfigurationSnapshot(
+      identifiantSnapshot,
+      this.identifiant.valeur(),
+      valeurs,
+    );
     this.evenements.push(
       new ConfigurationSnapshotCreated({
         configurationId: this.identifiant,
@@ -262,6 +269,7 @@ export class Configuration {
     readonly totalVersions: number;
     readonly creeLe: Date;
     readonly gouvernance: GouvernanceConfigurationProps;
+    readonly revisionPersistence: number | null;
   } {
     return {
       identifiant: this.identifiant.valeur(),
@@ -277,7 +285,16 @@ export class Configuration {
         ...this.gouvernance,
         visiblePour: [...this.gouvernance.visiblePour],
       },
+      revisionPersistence: this.revisionPersistence,
     };
+  }
+
+  /** Confirme la revision retournee par la persistence apres une ecriture reussie. */
+  public confirmerPersistance(revision: number): void {
+    if (!Number.isInteger(revision) || revision < 0) {
+      throw new ExceptionConfigurationIncoherente('La revision de persistence est invalide.');
+    }
+    this.revisionPersistence = revision;
   }
 
   /** Cette methode indique si le parametre reste visible pour un niveau donne. */

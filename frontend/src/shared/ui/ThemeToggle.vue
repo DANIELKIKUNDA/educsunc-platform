@@ -2,15 +2,18 @@
 import { Moon, Sun } from 'lucide-vue-next';
 import { useTheme } from '../../composables/useTheme';
 
-const { isDark, toggleTheme } = useTheme();
+const { isDark, synchronizing, synchronizationError, toggleTheme } = useTheme();
 </script>
 
 <template>
   <button
     type="button"
     class="theme-toggle"
+    :disabled="synchronizing"
     @click="toggleTheme"
     :aria-label="isDark ? 'Passer au mode clair' : 'Passer au mode sombre'"
+    :aria-busy="synchronizing"
+    :title="synchronizationError ?? undefined"
   >
     <Sun v-if="isDark" class="theme-icon theme-icon--sun" />
     <Moon v-else class="theme-icon theme-icon--moon" />
@@ -42,6 +45,12 @@ const { isDark, toggleTheme } = useTheme();
 
 .theme-toggle:active {
   transform: translateY(0);
+}
+
+.theme-toggle:disabled {
+  cursor: progress;
+  opacity: 0.65;
+  transform: none;
 }
 
 .theme-icon {

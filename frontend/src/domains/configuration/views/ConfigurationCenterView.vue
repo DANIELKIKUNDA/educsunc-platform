@@ -11,8 +11,8 @@
             <span class="configuration-center__context-dot" />
             {{ vm.context.governanceLevel }}
           </span>
-          <button class="configuration-center__ghost-button" type="button" @click="vm.recharger">
-            Actualiser
+          <button class="configuration-center__ghost-button" type="button" :disabled="vm.bootStatus === 'loading' || vm.isSubmitting" @click="vm.recharger">
+            {{ vm.bootStatus === 'loading' ? 'Actualisation…' : 'Actualiser' }}
           </button>
         </div>
       </template>
@@ -38,9 +38,14 @@
         type="button"
         @click="handleTabChange(family.code)"
       >
-        <small>{{ family.levelLabel }}</small>
-        <strong>{{ family.label }}</strong>
-        <p>{{ family.description }}</p>
+        <span class="configuration-center__family-icon" aria-hidden="true">
+          <component :is="family.icon" :size="20" />
+        </span>
+        <span class="configuration-center__family-content">
+          <small>{{ family.levelLabel }}</small>
+          <strong>{{ family.label }}</strong>
+          <p>{{ family.description }}</p>
+        </span>
       </button>
     </section>
 
@@ -70,16 +75,16 @@
         <template #filters>
           <label class="configuration-center__toolbar-field configuration-center__toolbar-field--search">
             <span>Recherche</span>
-            <input v-model="vm.search" type="search" placeholder="Reglage, famille ou valeur..." />
+            <input v-model="vm.search" type="search" placeholder="Réglage, famille ou valeur…" />
           </label>
           <label class="configuration-center__toolbar-field">
             <span>Statut</span>
             <select v-model="vm.statusFilter">
               <option value="all">Tous</option>
               <option value="modifiable">Modifiables</option>
-              <option value="locked">Verrouilles</option>
-              <option value="inherited">Herites</option>
-              <option value="local">Personnalises ici</option>
+              <option value="locked">Verrouillés</option>
+              <option value="inherited">Hérités</option>
+              <option value="local">Personnalisés ici</option>
             </select>
           </label>
         </template>
@@ -90,7 +95,7 @@
             v-if="vm.canCreateFromSelection"
             class="configuration-center__toolbar-button configuration-center__toolbar-button--primary"
             type="button"
-            @click="vm.openModal(vm.selectedRow?.hasRecordedValue ? 'edit' : 'create')"
+            @click="vm.openModal(vm.selectedRow?.isDefinedLocally ? 'edit' : 'create')"
           >
             {{ vm.primaryActionLabel }}
           </button>
@@ -124,8 +129,8 @@
 
       <EmptyState
         v-else-if="vm.filteredRows.length === 0"
-        :title="vm.hasActiveFilters ? 'Aucun resultat avec ces filtres' : 'Aucun reglage disponible pour cette lecture'"
-        :message="vm.hasActiveFilters ? 'Modifiez votre recherche ou effacez les filtres pour poursuivre.' : 'Aucun reglage n\'est encore disponible pour le niveau et la famille actuellement selectionnes.'"
+        :title="vm.hasActiveFilters ? 'Aucun résultat avec ces filtres' : 'Aucun réglage disponible'"
+        :message="vm.hasActiveFilters ? 'Modifiez votre recherche ou effacez les filtres pour poursuivre.' : 'Aucun réglage officiel n’est disponible dans cette famille pour le moment.'"
       />
 
       <div v-else class="configuration-center__workspace">
@@ -135,14 +140,14 @@
               <small>Lecture courante</small>
               <h2>{{ vm.currentTab.label }}</h2>
             </div>
-            <span class="configuration-center__panel-count">{{ vm.filteredRows.length }} element(s)</span>
+            <span class="configuration-center__panel-count">{{ vm.filteredRows.length }} élément(s)</span>
           </header>
 
           <div class="configuration-center__table-wrap">
             <table class="configuration-center__table">
               <thead>
                 <tr>
-                  <th>{{ vm.activeTab === 'school-modules' ? 'Module' : 'Reglage' }}</th>
+                  <th>{{ vm.activeTab === 'school-modules' ? 'Module' : 'Réglage' }}</th>
                   <th>{{ vm.activeTab === 'school-modules' ? 'Cadre' : 'Origine' }}</th>
                   <th>Statut</th>
                   <th>Valeur</th>
@@ -153,7 +158,10 @@
                   v-for="row in vm.filteredRows"
                   :key="row.key"
                   :class="{ 'configuration-center__table-row--selected': vm.selectedRow?.key === row.key }"
-                  @click="vm.selectedRowKey = row.key"
+                  @click="vm.selectRow(row.key)"
+                  @keydown.enter.prevent="vm.selectRow(row.key)"
+                  @keydown.space.prevent="vm.selectRow(row.key)"
+                  tabindex="0"
                 >
                   <td>
                     <strong>{{ row.label }}</strong>
@@ -175,8 +183,8 @@
         <aside class="configuration-center__detail-panel">
           <header class="configuration-center__panel-header">
             <div>
-              <small>Detail</small>
-              <h2>{{ vm.selectedRow?.label ?? 'Aucun reglage selectionne' }}</h2>
+              <small>Détail</small>
+              <h2>{{ vm.selectedRow?.label ?? 'Aucun réglage sélectionné' }}</h2>
             </div>
           </header>
 
@@ -190,10 +198,6 @@
 
             <div v-if="vm.activeTab === 'user'" class="configuration-center__info-banner">
               Cette preference concerne uniquement le compte actuellement connecte. Elle n'est pas presentee comme un reglage d'organisation ou d'ecole.
-            </div>
-
-            <div v-else-if="vm.selectedRow?.hasRecordedValue && !vm.hasLoadedConfiguration && vm.activeTab !== 'school-modules'" class="configuration-center__info-banner">
-              La valeur appliquee est bien relue, mais la fiche complete d'edition n'est pas encore rattachee automatiquement a cette lecture. Le socle de presentation est restaure sans exposer de reference technique.
             </div>
 
             <div v-if="vm.activeTab === 'school-modules'" class="configuration-center__module-grid">
@@ -220,14 +224,12 @@
                 Enregistrer les modules actifs
               </button>
               <template v-else>
-                <button v-if="vm.canCreateFromSelection" class="configuration-center__toolbar-button configuration-center__toolbar-button--primary" type="button" @click="vm.openModal(vm.selectedRow?.hasRecordedValue ? 'edit' : 'create')">{{ vm.primaryActionLabel }}</button>
-                <button v-if="vm.selectedRow" class="configuration-center__toolbar-button" type="button" @click="vm.openModal('validate')">Verifier</button>
+                <button v-if="vm.canCreateFromSelection" class="configuration-center__toolbar-button configuration-center__toolbar-button--primary" type="button" @click="vm.openModal(vm.selectedRow?.isDefinedLocally ? 'edit' : 'create')">{{ vm.primaryActionLabel }}</button>
+                <button v-if="vm.selectedRow" class="configuration-center__toolbar-button" type="button" @click="vm.openModal('validate')">Vérifier</button>
                 <button v-if="vm.hasLoadedConfiguration && vm.canMutateCurrentTab && vm.activeTab === 'platform'" class="configuration-center__toolbar-button" type="button" @click="vm.openModal('snapshot')">Enregistrer une version</button>
-                <button v-if="vm.hasLoadedConfiguration && vm.canMutateCurrentTab && vm.activeTab === 'platform'" class="configuration-center__toolbar-button" type="button" @click="vm.openModal('compare')">Comparer des versions</button>
                 <button v-if="vm.hasLoadedConfiguration && vm.canMutateCurrentTab && vm.activeTab === 'platform'" class="configuration-center__toolbar-button configuration-center__toolbar-button--warning" type="button" @click="vm.openModal('lock')">Verrouiller</button>
                 <button v-if="vm.hasLoadedConfiguration && vm.canMutateCurrentTab && vm.activeTab === 'platform'" class="configuration-center__toolbar-button" type="button" @click="vm.openModal('unlock')">Autoriser les modifications</button>
-                <button v-if="vm.hasLoadedConfiguration && vm.canMutateCurrentTab && vm.activeTab !== 'user' && vm.activeTab !== 'school-modules'" class="configuration-center__toolbar-button configuration-center__toolbar-button--warning" type="button" @click="vm.openModal('propagate')">Appliquer aux niveaux concernes</button>
-                <button v-if="vm.hasLoadedConfiguration && vm.canMutateCurrentTab && vm.activeTab === 'platform'" class="configuration-center__toolbar-button" type="button" @click="vm.openModal('reload')">Actualiser</button>
+                <button v-if="vm.hasLoadedConfiguration && vm.canMutateCurrentTab && vm.activeTab === 'platform'" class="configuration-center__toolbar-button" type="button" @click="vm.openModal('reload')">Appliquer maintenant</button>
                 <button v-if="vm.hasLoadedConfiguration && vm.canMutateCurrentTab && vm.activeTab === 'platform'" class="configuration-center__toolbar-button configuration-center__toolbar-button--danger" type="button" @click="vm.openModal('delete')">Supprimer</button>
               </template>
             </div>
@@ -252,6 +254,8 @@
     <ConfigurationCenterModal
       id="configuration-center-action"
       :open="vm.modalState.open"
+      :active="!vm.discardModalOpen"
+      :busy="vm.isSubmitting"
       eyebrow="Centre Configuration"
       :title="vm.modalState.title"
       :description="vm.modalState.description"
@@ -259,12 +263,12 @@
     >
       <div class="configuration-center__modal-summary" v-if="vm.selectedRow">
         <article class="configuration-center__fact-card">
-          <small>Reglage</small>
+          <small>Réglage</small>
           <strong>{{ vm.selectedRow.label }}</strong>
         </article>
         <article class="configuration-center__fact-card">
           <small>Valeur actuelle</small>
-          <strong>{{ vm.selectedRow.hasRecordedValue ? vm.selectedRow.effectiveValueText : 'Aucune valeur enregistree' }}</strong>
+          <strong>{{ vm.selectedRow.hasRecordedValue ? vm.selectedRow.effectiveValueText : vm.selectedRow.explanation }}</strong>
         </article>
         <article class="configuration-center__fact-card">
           <small>Origine</small>
@@ -285,30 +289,32 @@
             v-if="vm.selectedFieldDefinition.control === 'text'"
             v-model="vm.form.valueRaw"
             type="text"
+            data-autofocus
             :placeholder="`Saisissez ${vm.selectedFieldDefinition.label.toLowerCase()}`"
           />
 
           <textarea
             v-else-if="vm.selectedFieldDefinition.control === 'textarea'"
             v-model="vm.form.valueRaw"
+            data-autofocus
             rows="6"
             :placeholder="`Saisissez ${vm.selectedFieldDefinition.label.toLowerCase()}`"
           />
 
           <input
-            v-else-if="vm.selectedFieldDefinition.control === 'color'"
-            v-model="vm.form.valueRaw"
-            type="color"
-            aria-label="Choisir une couleur"
-          />
-
-          <input
             v-else-if="vm.selectedFieldDefinition.control === 'integer-stepper'"
             v-model="vm.form.valueRaw"
-            type="text"
+            type="number"
+            data-autofocus
             inputmode="numeric"
-            placeholder="Saisissez une valeur entiere"
+            :min="vm.selectedFieldDefinition.minimum"
+            :max="vm.selectedFieldDefinition.maximum"
+            :step="vm.selectedFieldDefinition.step ?? 1"
+            placeholder="Saisissez un nombre entier"
           />
+          <small v-if="vm.selectedFieldDefinition.unit" class="configuration-center__field-help">
+            Unité : {{ vm.selectedFieldDefinition.unit }}
+          </small>
 
           <div v-else-if="vm.selectedFieldDefinition.control === 'boolean-toggle'" class="configuration-center__choice-row">
             <label class="configuration-center__choice-card">
@@ -324,7 +330,25 @@
           <div v-else-if="vm.selectedFieldDefinition.control === 'radio-group'" class="configuration-center__choice-row">
             <label v-for="option in vm.selectedFieldDefinition.options ?? []" :key="option" class="configuration-center__choice-card">
               <input v-model="vm.form.valueRaw" type="radio" :value="option" />
-              <span>{{ option === 'light' ? 'Clair' : option === 'dark' ? 'Sombre' : 'Selon l appareil' }}</span>
+              <span>{{ option === 'light' ? 'Clair' : option === 'dark' ? 'Sombre' : "Selon l’appareil" }}</span>
+            </label>
+          </div>
+
+          <select v-else-if="vm.selectedFieldDefinition.control === 'select'" v-model="vm.form.valueRaw" data-autofocus>
+            <option value="" disabled>Choisissez une option</option>
+            <option v-for="option in vm.selectedFieldDefinition.options ?? []" :key="option" :value="option">
+              {{ vm.formatOptionLabel(option) }}
+            </option>
+          </select>
+
+          <div v-else-if="vm.selectedFieldDefinition.control === 'multi-checkbox'" class="configuration-center__choice-row configuration-center__choice-row--wrap">
+            <label v-for="option in vm.selectedFieldDefinition.options ?? []" :key="option" class="configuration-center__choice-card">
+              <input
+                type="checkbox"
+                :checked="vm.selectedOptionValues.includes(option)"
+                @change="vm.toggleOption(option)"
+              />
+              <span>{{ vm.formatOptionLabel(option) }}</span>
             </label>
           </div>
 
@@ -336,22 +360,12 @@
           </p>
         </div>
 
-        <label v-if="vm.modalState.action === 'compare'" class="configuration-center__detail-field">
-          <span>Version de reference</span>
-          <input v-model="vm.form.snapshotSourceId" type="text" placeholder="Version source" />
-        </label>
-
-        <label v-if="vm.modalState.action === 'compare'" class="configuration-center__detail-field">
-          <span>Version comparee</span>
-          <input v-model="vm.form.snapshotTargetId" type="text" placeholder="Version a comparer" />
-        </label>
-
         <label v-if="vm.modalState.action === 'lock'" class="configuration-center__detail-field">
-          <span>Niveau minimal autorise</span>
+          <span>Niveau minimal autorisé</span>
           <select v-model="vm.form.lockLevel">
             <option value="SYSTEM">Plateforme</option>
             <option value="ORGANIZATION">Organisation</option>
-            <option value="SCHOOL">Ecole</option>
+            <option value="SCHOOL">École</option>
             <option value="USER">Utilisateur</option>
           </select>
         </label>
@@ -361,7 +375,7 @@
           class="configuration-center__detail-field configuration-center__detail-field--full"
         >
           <span>Commentaire</span>
-          <textarea v-model="vm.form.reason" rows="4" placeholder="Expliquez brievement cette action si necessaire" />
+          <textarea v-model="vm.form.reason" rows="4" placeholder="Expliquez brièvement cette action si nécessaire" />
         </label>
       </div>
 
@@ -370,15 +384,15 @@
         <button
           class="configuration-center__toolbar-button"
           :class="{
-            'configuration-center__toolbar-button--primary': vm.modalState.action !== 'delete' && vm.modalState.action !== 'lock' && vm.modalState.action !== 'propagate',
+            'configuration-center__toolbar-button--primary': vm.modalState.action !== 'delete' && vm.modalState.action !== 'lock',
             'configuration-center__toolbar-button--danger': vm.modalState.action === 'delete',
-            'configuration-center__toolbar-button--warning': vm.modalState.action === 'lock' || vm.modalState.action === 'propagate',
+            'configuration-center__toolbar-button--warning': vm.modalState.action === 'lock',
           }"
           type="button"
-          :disabled="(vm.activeTab !== 'school-modules' && vm.modalState.action !== 'compare' && vm.modalState.action !== 'lock' && vm.modalState.action !== 'delete' && vm.modalState.action !== 'propagate' && vm.modalState.action !== 'reload' && vm.modalState.action !== 'snapshot' && vm.modalState.action !== 'validate') ? !vm.formEvaluation?.canSubmit : false"
+          :disabled="!vm.canSubmitModal"
           @click="vm.submitModal"
         >
-          {{ vm.modalActionLabel }}
+          {{ vm.isSubmitting ? 'Traitement en cours…' : vm.modalActionLabel }}
         </button>
       </template>
     </ConfigurationCenterModal>
@@ -386,6 +400,7 @@
     <ConfigurationCenterModal
       id="configuration-center-discard"
       :open="vm.discardModalOpen"
+      :active="true"
       eyebrow="Centre Configuration"
       title="Quitter sans enregistrer ?"
       description="Des modifications ne sont pas enregistrees. Voulez-vous vraiment fermer cette fenetre ?"
@@ -425,25 +440,5 @@ onMounted(async () => {
   await vm.loadCurrentTab();
 });
 </script>
-
-<style scoped>
-.configuration-center__family-hero{display:flex;justify-content:space-between;gap:1rem;align-items:flex-start;padding:1.35rem 1.45rem;border-radius:28px;border:1px solid rgba(17,40,63,.08);background:radial-gradient(circle at top left,#f4f8ff 0,#ffffff 54%,#f7fbff 100%);box-shadow:0 24px 60px rgba(15,23,42,.08)}
-.configuration-center__family-copy{display:grid;gap:.45rem}
-.configuration-center__family-copy small{font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;color:#6b7f91;font-weight:800}
-.configuration-center__family-copy strong{font-size:1.35rem;color:#11283f}
-.configuration-center__family-copy p{margin:0;max-width:70ch;color:#587083;line-height:1.7}
-.configuration-center__family-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;margin-top:1.15rem}
-.configuration-center__family-card{display:grid;gap:.55rem;text-align:left;padding:1.15rem 1.05rem;border-radius:24px;border:1px solid rgba(17,40,63,.1);background:#fff;box-shadow:0 18px 40px rgba(15,23,42,.07);transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
-.configuration-center__family-card:hover{transform:translateY(-2px);box-shadow:0 24px 48px rgba(15,23,42,.11)}
-.configuration-center__family-card--active{border-color:rgba(37,99,235,.4);box-shadow:0 24px 50px rgba(37,99,235,.14);background:linear-gradient(180deg,#ffffff 0,#f6f9ff 100%)}
-.configuration-center__family-card small{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:#6b7f91;font-weight:800}
-.configuration-center__family-card strong{color:#11283f;font-size:1rem}
-.configuration-center__family-card p{margin:0;color:#587083;line-height:1.6}
-
-@media (max-width: 760px){
-  .configuration-center__family-hero{padding:1.15rem 1.05rem}
-  .configuration-center__family-grid{grid-template-columns:1fr}
-}
-</style>
 
 <style src="../components/configuration-center.css"></style>

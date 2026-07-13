@@ -1,16 +1,14 @@
-import { computed, reactive, ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue';
+import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router';
 import {
-  Bell,
-  Building2,
   Cog,
-  Palette,
   ShieldCheck,
   SlidersHorizontal,
   UserRound,
   type LucideIcon,
 } from 'lucide-vue-next';
 import { notificationsService } from '../../../services/notifications.service';
+import { ApiError } from '../../../services/api';
 import { sessionStore } from '../../../shared/auth/session.store';
 import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
 import { activeContextStore } from '../../../shared/session/active-context.store';
@@ -26,14 +24,13 @@ import type {
   OfficialUserConfigurationDefinition,
 } from '../models/configuration.model';
 import {
-  configurationModuleCatalog,
   findOfficialSystemConfiguration,
   findOfficialUserConfiguration,
   officialSystemConfigurationCatalog,
   officialUserConfigurationCatalog,
   type ConfigurationModuleCode,
 } from '../models/configuration.model';
-import { buildScopeFromLevel, formatConfigurationValue, parseConfigurationValue } from '../mappers/configuration.mapper';
+import { buildScopeFromLevel, formatConfigurationValue } from '../mappers/configuration.mapper';
 import {
   evaluateConfigurationForm,
   formatConfigurationValueForForm,
@@ -42,13 +39,11 @@ import {
 } from './configuration-form.logic';
 import { useConfigurationCenterStore } from '../stores/configuration-center.store';
 import { useConfigurationModulesStore } from '../stores/configuration-modules.store';
+import { useTheme } from '../../../composables/useTheme';
 
 export type ConfigurationCenterTabCode =
   | 'platform'
-  | 'organization'
   | 'school-modules'
-  | 'branding'
-  | 'notifications'
   | 'user';
 
 type ModalActionCode =
@@ -59,10 +54,7 @@ type ModalActionCode =
   | 'lock'
   | 'unlock'
   | 'snapshot'
-  | 'compare'
-  | 'propagate'
-  | 'reload'
-  | 'consult';
+  | 'reload';
 
 interface ConfigurationCenterTabDefinition {
   code: ConfigurationCenterTabCode;
@@ -89,74 +81,51 @@ interface ConfigurationDisplayRow {
   inherited: boolean;
   locked: boolean;
   explanation: string;
+  sourceConfigurationId: string | null;
+  sourceTotalVersions: number;
+  sourceCreatedAt: string | Date | null;
 }
 
 const TAB_DEFINITIONS: readonly ConfigurationCenterTabDefinition[] = [
   {
     code: 'platform',
-    label: 'Parametres de la plateforme',
+    label: 'Paramètres de la plateforme',
     routeName: 'configuration-platform-runtime',
     pageCode: 'CFG-PLAT-001',
     icon: SlidersHorizontal,
     level: 'SYSTEM',
-    keyPrefix: 'runtime.',
-    description: 'Pilotez les reglages globaux de la plateforme.',
-  },
-  {
-    code: 'organization',
-    label: 'Politiques organisationnelles',
-    routeName: 'configuration-organization',
-    pageCode: 'CFG-ORG-001',
-    icon: Building2,
-    level: 'ORGANIZATION',
-    keyPrefix: 'policies.',
-    description: "Regles communes et modules autorises pour les ecoles de l'organisation.",
+    description: 'Pilotez les réglages globaux de la plateforme et la diffusion des notifications.',
   },
   {
     code: 'school-modules',
-    label: "Modules de l'ecole",
+    label: "Modules de l'école",
     routeName: 'configuration-school-modules',
     pageCode: 'CFG-ECO-001',
     icon: Cog,
     level: 'SCHOOL',
-    description: 'Activation locale des modules dans le cadre autorise.',
-  },
-  {
-    code: 'branding',
-    label: 'Identite visuelle',
-    routeName: 'configuration-school-branding',
-    pageCode: 'CFG-ECO-002',
-    icon: Palette,
-    level: 'SCHOOL',
-    keyPrefix: 'branding.',
-    description: "Reglages visuels propres a l'ecole.",
-  },
-  {
-    code: 'notifications',
-    label: 'Notifications',
-    routeName: 'configuration-school-notifications',
-    pageCode: 'CFG-ECO-003',
-    icon: Bell,
-    level: 'SCHOOL',
-    keyPrefix: 'notifications.',
-    description: 'Reglages locaux de diffusion et de communication.',
+    description: "Activez uniquement les modules autorisés par l'organisation.",
   },
   {
     code: 'user',
-    label: 'Preferences personnelles',
+    label: 'Préférences personnelles',
     routeName: 'configuration-user-preferences',
     pageCode: 'CFG-USER-001',
     icon: UserRound,
     level: 'USER',
-    keyPrefix: 'preferences.',
-    description: 'Preferences du compte actuel.',
+    description: 'Personnalisez votre apparence et vos canaux de notification.',
   },
 ] as const;
 
 function detectTabFromRouteName(routeName: string | symbol | null | undefined): ConfigurationCenterTabCode {
   const name = String(routeName ?? '');
   const found = TAB_DEFINITIONS.find((tab) => tab.routeName === name || (tab.code === 'user' && name === 'me-preferences'));
-  return found?.code ?? 'platform';
+  if (found) {
+    return found.code;
+  }
+  if (name === 'configuration-organization' || name === 'configuration-school-branding' || name === 'configuration-school-notifications') {
+    return 'platform';
+  }
+  return 'platform';
 }
 
 function humanizeKey(key: string): string {
@@ -186,7 +155,7 @@ function formatSourceLevel(level: ConfigurationScopeLevel): string {
     case 'ORGANIZATION':
       return 'Organisation';
     case 'SCHOOL':
-      return 'Ecole';
+      return 'École';
     default:
       return 'Utilisateur';
   }
@@ -199,13 +168,22 @@ function formatLevelLabel(level: ConfigurationScopeLevel): string {
     case 'ORGANIZATION':
       return 'Organisation';
     case 'SCHOOL':
-      return 'Ecole';
+      return 'École';
     default:
       return 'Utilisateur';
   }
 }
 
 function mapErrorToUserMessage(error: unknown): string {
+  if (error instanceof ApiError) {
+    if (error.status === 0) return 'La connexion au service est momentanément indisponible. Vérifiez votre réseau puis réessayez.';
+    if (error.status === 401) return 'Votre session a expiré. Reconnectez-vous avant de poursuivre.';
+    if (error.status === 403) return "Vous n'êtes pas autorisé à effectuer cette action dans le périmètre sélectionné.";
+    if (error.status === 409) return 'Ce réglage a été modifié ailleurs. Rechargez sa dernière version avant de reprendre votre modification.';
+    if (error.status === 422 || error.status === 400) return 'Certaines informations doivent être corrigées avant de poursuivre.';
+    if (error.status >= 500) return 'Le service est momentanément indisponible. Votre saisie est conservée; réessayez dans un instant.';
+  }
+
   const raw = error instanceof Error ? error.message : String(error ?? '');
   const message = raw.toLowerCase();
 
@@ -214,7 +192,7 @@ function mapErrorToUserMessage(error: unknown): string {
     || message.includes('networkerror')
     || message.includes('fetch')
   ) {
-    return "Le centre n'a pas pu joindre le service pour le moment. Reessayez dans un instant.";
+    return "Le centre n'a pas pu joindre le service pour le moment. Réessayez dans un instant.";
   }
 
   if (
@@ -223,7 +201,7 @@ function mapErrorToUserMessage(error: unknown): string {
     || message.includes('permission')
     || message.includes('forbidden')
   ) {
-    return "Cette action n'est pas autorisee pour le perimetre actuellement selectionne.";
+    return "Cette action n'est pas autorisée pour le périmètre actuellement sélectionné.";
   }
 
   if (
@@ -231,17 +209,17 @@ function mapErrorToUserMessage(error: unknown): string {
     || message.includes('context')
     || message.includes('contexte')
   ) {
-    return "Le contexte courant ne permet pas encore cette action. Verifiez le niveau actif puis reessayez.";
+    return "Le contexte courant ne permet pas cette action. Vérifiez le niveau actif puis réessayez.";
   }
 
   if (
     message.includes('reference du reglage')
     || message.includes('identifiant')
   ) {
-    return "Ouvrez d'abord un reglage existant par sa reference pour utiliser cette action avancee.";
+    return "Ouvrez d'abord un réglage existant avant d'utiliser cette action.";
   }
 
-  return "Une action demandee n'a pas pu etre finalisee.";
+  return "L'action n'a pas pu être finalisée. Votre saisie a été conservée.";
 }
 
 function buildDisplayRows(effective: EffectiveConfigurationItem | null): ConfigurationDisplayRow[] {
@@ -273,6 +251,9 @@ function buildDisplayRows(effective: EffectiveConfigurationItem | null): Configu
     inherited: entry.herite,
     locked: entry.verrouille,
     explanation: entry.explanation,
+    sourceConfigurationId: entry.sourceConfigurationId ?? null,
+    sourceTotalVersions: entry.sourceTotalVersions ?? 0,
+    sourceCreatedAt: entry.sourceCreeLe ?? null,
   }));
 }
 
@@ -285,15 +266,18 @@ function buildOfficialConfigurationRows(
     label: entry.label,
     description: entry.description,
     dataTypeLabel: entry.dataTypeLabel,
-    effectiveValueText: 'Aucune valeur enregistree',
+    effectiveValueText: 'Valeur initiale appliquée',
     rawValue: null,
     hasRecordedValue: false,
     isDefinedLocally: false,
     sourceLabel: level === 'USER' ? 'Compte actuel' : formatSourceLevel(level),
-    statusLabel: 'Non renseigne',
+    statusLabel: 'Valeur initiale',
     inherited: false,
     locked: false,
     explanation: entry.defaultValueLabel,
+    sourceConfigurationId: null,
+    sourceTotalVersions: 0,
+    sourceCreatedAt: null,
   }));
 }
 
@@ -303,23 +287,7 @@ function filterOfficialDefinitionsByTab(
   if (tab.code === 'user') {
     return officialUserConfigurationCatalog;
   }
-
-  return officialSystemConfigurationCatalog.filter((entry) => {
-    if (tab.code === 'platform') {
-      return entry.key.startsWith('runtime.');
-    }
-    if (tab.code === 'organization') {
-      return entry.key.startsWith('policies.');
-    }
-    if (tab.code === 'branding') {
-      return entry.key.startsWith('branding.');
-    }
-    if (tab.code === 'notifications') {
-      return entry.key.startsWith('notifications.');
-    }
-
-    return false;
-  });
+  return tab.code === 'platform' ? officialSystemConfigurationCatalog : [];
 }
 
 function mergeRowsWithOfficialCatalog(
@@ -346,12 +314,6 @@ function mergeRowsWithOfficialCatalog(
       : officialRow);
   }
 
-  for (const row of liveRows) {
-    if (!officialRows.some((officialRow) => officialRow.key === row.key)) {
-      merged.push(row);
-    }
-  }
-
   return merged;
 }
 
@@ -372,6 +334,7 @@ export function useConfigurationCenterViewModel() {
   const session = sessionStore.state;
   const context = activeContextStore.state;
   const tenantContext = tenantContextStore.state;
+  const themeManager = useTheme();
 
   const activeTab = ref<ConfigurationCenterTabCode>(detectTabFromRouteName(route.name));
   const bootStatus = ref<'idle' | 'loading' | 'ready' | 'error'>('idle');
@@ -382,6 +345,10 @@ export function useConfigurationCenterViewModel() {
   const selectedModules = ref<ConfigurationModuleCode[]>([]);
   const discardModalOpen = ref(false);
   const modalDraftBaseline = ref('');
+  const isSubmitting = ref(false);
+  const conflictDetected = ref(false);
+  const appliedConfigurationIds = ref(new Set<string>());
+  let selectionRequest = 0;
 
   const modalState = reactive<{
     open: boolean;
@@ -399,8 +366,6 @@ export function useConfigurationCenterViewModel() {
     configurationId: '',
     key: '',
     valueRaw: '',
-    snapshotSourceId: '',
-    snapshotTargetId: '',
     lockLevel: 'SCHOOL' as ConfigurationScopeLevel,
     reason: '',
   });
@@ -426,16 +391,15 @@ export function useConfigurationCenterViewModel() {
   const currentLevelLabel = computed(() => formatLevelLabel(currentTab.value.level));
   const currentFamilyLabel = computed(() => currentTab.value.label);
   const hasActiveFilters = computed(() => search.value.trim().length > 0 || statusFilter.value !== 'all');
-  const hasLoadedConfiguration = computed(() => Boolean(centerStore.state.configuration?.identifiant || form.configurationId.trim()));
+  const hasLoadedConfiguration = computed(() => Boolean(
+    form.configurationId.trim()
+    && centerStore.state.configuration?.identifiant === form.configurationId.trim(),
+  ));
   const canCreateFromSelection = computed(() =>
     activeTab.value !== 'school-modules'
     && canMutateCurrentTab.value
     && Boolean(selectedRow.value?.key)
     && !selectedRow.value?.locked
-    && (
-      !selectedRow.value?.hasRecordedValue
-      || hasLoadedConfiguration.value
-    )
   );
   const selectedFieldDefinition = computed(() => {
     const row = selectedRow.value;
@@ -461,8 +425,8 @@ export function useConfigurationCenterViewModel() {
       isLoaded: hasLoadedConfiguration.value,
       canMutate: canMutateCurrentTab.value,
       locked: row.locked,
-      isSubmitting: centerStore.state.status === 'loading',
-      conflictDetected: false,
+      isSubmitting: isSubmitting.value,
+      conflictDetected: conflictDetected.value,
     });
   });
 
@@ -481,20 +445,20 @@ export function useConfigurationCenterViewModel() {
       badges.push('Compte personnel');
     }
 
-    badges.push(canMutateCurrentTab.value ? 'Modifications autorisees' : 'Lecture seule');
+    badges.push(canMutateCurrentTab.value ? 'Modifications autorisées' : 'Lecture seule');
     return badges;
   });
 
   const centerIntro = computed(() => {
     switch (context.governanceLevel) {
       case 'PLATEFORME':
-        return 'Retrouvez ici les reglages globaux de la plateforme et les lectures utiles avant diffusion.';
+        return 'Pilotez les réglages globaux de la plateforme et les canaux de diffusion depuis un espace unique.';
       case 'ORGANISATION':
-        return "Pilotez ici les politiques communes de l'organisation sans melanger les usages propres a chaque ecole.";
+        return "Pilotez les réglages communs de l'organisation sans mélanger les usages propres à chaque école.";
       case 'ECOLE':
-        return "Pilotez ici les reglages propres a l'ecole, ses modules actifs et ses usages locaux autorises.";
+        return "Pilotez les réglages propres à l'école et les modules autorisés dans son périmètre.";
       default:
-        return 'Retrouvez ici les preferences propres au compte actuellement ouvert.';
+        return 'Personnalisez les préférences du compte actuellement ouvert.';
     }
   });
 
@@ -502,6 +466,7 @@ export function useConfigurationCenterViewModel() {
     visibleTabs.value.map((tab) => ({
       code: tab.code,
       label: tab.label,
+      icon: tab.icon,
       description: tab.description,
       levelLabel: tab.levelLabel,
       active: activeTab.value === tab.code,
@@ -515,7 +480,7 @@ export function useConfigurationCenterViewModel() {
         return [];
       }
 
-      return configurationModuleCatalog.map((module) => ({
+      return modulesStore.state.catalog.map((module) => ({
         key: module.code,
         label: module.label,
         description: module.description,
@@ -529,6 +494,9 @@ export function useConfigurationCenterViewModel() {
         inherited: !resolution.modulesActivesEcole.includes(module.code),
         locked: !resolution.modulesAutorisesOrganisation.includes(module.code),
         explanation: module.description,
+        sourceConfigurationId: null,
+        sourceTotalVersions: 0,
+        sourceCreatedAt: null,
       }));
     }
 
@@ -550,7 +518,7 @@ export function useConfigurationCenterViewModel() {
       const matchesStatus = statusFilter.value === 'all'
         || (statusFilter.value === 'locked' && row.locked)
         || (statusFilter.value === 'inherited' && row.inherited)
-        || (statusFilter.value === 'local' && !row.inherited)
+        || (statusFilter.value === 'local' && row.isDefinedLocally)
         || (statusFilter.value === 'modifiable' && !row.locked);
 
       return matchesSearch && matchesStatus;
@@ -577,9 +545,9 @@ export function useConfigurationCenterViewModel() {
         {
           code: 'allowed',
           icon: ShieldCheck,
-          label: 'Modules autorises',
+        label: 'Modules autorisés',
           value: resolution?.modulesAutorisesOrganisation.length ?? 0,
-          hint: "Cadre fixe par l'organisation",
+          hint: "Cadre défini par l'organisation",
           tone: 'primary' as const,
         },
         {
@@ -587,7 +555,7 @@ export function useConfigurationCenterViewModel() {
           icon: Cog,
           label: 'Modules actifs',
           value: resolution?.modulesActivesEcole.length ?? 0,
-          hint: "Actives localement dans l'ecole",
+          hint: "Activés localement dans l'école",
           tone: 'success' as const,
         },
         {
@@ -613,27 +581,27 @@ export function useConfigurationCenterViewModel() {
       {
         code: 'visible',
         icon: currentTab.value.icon,
-        label: 'Reglages visibles',
+        label: 'Réglages visibles',
         value: total,
-        hint: 'Elements lus pour ce niveau',
+        hint: 'Éléments disponibles pour ce niveau',
         tone: 'primary' as const,
       },
       {
         code: 'local',
         icon: currentTab.value.icon,
-        label: activeTab.value === 'user' ? 'Preferences personnalisees' : 'Reglages personnalises',
+        label: activeTab.value === 'user' ? 'Préférences personnalisées' : 'Réglages personnalisés',
         value: rows.filter((row) => row.isDefinedLocally).length,
-        hint: 'Valeurs definies au niveau courant',
+        hint: 'Valeurs définies au niveau courant',
         tone: 'success' as const,
       },
         {
           code: 'saved',
           icon: SlidersHorizontal,
           label: 'Versions du reglage ouvert',
-          value: centerStore.state.configuration?.totalVersions ?? 0,
+          value: selectedRow.value?.sourceTotalVersions ?? centerStore.state.configuration?.totalVersions ?? 0,
           hint: hasLoadedConfiguration.value
-            ? 'Historique connu pour le reglage ouvert'
-            : 'Ouvrez un reglage pour voir son historique',
+            ? 'Historique connu pour le réglage ouvert'
+            : 'Sélectionnez un réglage pour voir son historique',
           tone: 'warning' as const,
         },
       {
@@ -641,7 +609,7 @@ export function useConfigurationCenterViewModel() {
         icon: ShieldCheck,
         label: 'Alertes a verifier',
         value: locked + inherited + rows.filter((row) => !row.hasRecordedValue).length,
-        hint: 'Valeurs heritees ou verrouillees',
+        hint: 'Valeurs héritées, verrouillées ou initiales',
         tone: 'neutral' as const,
       },
     ];
@@ -653,16 +621,31 @@ export function useConfigurationCenterViewModel() {
       return [];
     }
 
-    return [
-      { label: 'Reglage', value: row.label },
+    const facts = [
+      { label: 'Réglage', value: row.label },
       { label: 'Description', value: row.description },
       { label: 'Type de saisie', value: row.dataTypeLabel },
-      { label: 'Valeur enregistree', value: row.hasRecordedValue ? row.effectiveValueText : 'Aucune valeur enregistree' },
-      { label: 'Valeur appliquee', value: row.effectiveValueText },
+      { label: 'Valeur enregistrée', value: row.hasRecordedValue ? row.effectiveValueText : 'Valeur initiale' },
       { label: 'Origine', value: row.sourceLabel },
       { label: 'Statut', value: row.statusLabel },
       { label: 'Repere utile', value: row.explanation },
     ];
+
+    if (activeTab.value === 'platform') {
+      facts.splice(4, 0, {
+        label: "État d'application",
+        value: row.sourceConfigurationId && appliedConfigurationIds.value.has(row.sourceConfigurationId)
+          ? 'Valeur appliquée au fonctionnement actuel'
+          : 'Valeur enregistrée; application à confirmer',
+      });
+    }
+    if (row.sourceCreatedAt) {
+      facts.push({
+        label: "Date d'origine",
+        value: new Intl.DateTimeFormat('fr-CD', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(row.sourceCreatedAt)),
+      });
+    }
+    return facts;
   });
   const primaryActionLabel = computed(() => {
     if (activeTab.value === 'school-modules') {
@@ -673,7 +656,7 @@ export function useConfigurationCenterViewModel() {
       return 'Enregistrer';
     }
 
-    return selectedRow.value.hasRecordedValue ? 'Mettre a jour la valeur' : 'Enregistrer une valeur';
+    return selectedRow.value.isDefinedLocally ? 'Mettre à jour la valeur' : 'Personnaliser cette valeur';
   });
   const modalActionLabel = computed(() => {
     switch (modalState.action) {
@@ -681,18 +664,14 @@ export function useConfigurationCenterViewModel() {
         return 'Supprimer';
       case 'lock':
         return 'Verrouiller';
-      case 'propagate':
-        return 'Appliquer';
       case 'validate':
-        return 'Verifier';
-      case 'compare':
-        return 'Comparer';
+        return 'Vérifier';
       case 'snapshot':
         return 'Enregistrer la version';
       case 'reload':
         return 'Actualiser';
       default:
-        return selectedRow.value?.hasRecordedValue ? 'Mettre a jour' : 'Enregistrer';
+        return selectedRow.value?.isDefinedLocally ? 'Mettre à jour' : 'Enregistrer';
     }
   });
   const modalDraftDirty = computed(() => {
@@ -704,8 +683,6 @@ export function useConfigurationCenterViewModel() {
       configurationId: form.configurationId,
       key: form.key,
       valueRaw: form.valueRaw,
-      snapshotSourceId: form.snapshotSourceId,
-      snapshotTargetId: form.snapshotTargetId,
       lockLevel: form.lockLevel,
       reason: form.reason,
       modules: [...selectedModules.value],
@@ -713,6 +690,22 @@ export function useConfigurationCenterViewModel() {
     });
 
     return snapshot !== modalDraftBaseline.value;
+  });
+
+  const canSubmitModal = computed(() => {
+    if (!modalState.open || isSubmitting.value) {
+      return false;
+    }
+    if (activeTab.value === 'school-modules') {
+      return canMutateCurrentTab.value && modulesStore.state.effective !== null;
+    }
+    if (modalState.action === 'create' || modalState.action === 'edit' || modalState.action === 'validate') {
+      return formEvaluation.value?.canSubmit === true;
+    }
+    if (modalState.action === 'lock' || modalState.action === 'unlock' || modalState.action === 'delete' || modalState.action === 'snapshot' || modalState.action === 'reload') {
+      return canMutateCurrentTab.value && hasLoadedConfiguration.value;
+    }
+    return false;
   });
 
   function syncFormWithSelection(): void {
@@ -725,13 +718,40 @@ export function useConfigurationCenterViewModel() {
     form.reason = '';
   }
 
+  const selectedOptionValues = computed<readonly string[]>(() => {
+    if (selectedFieldDefinition.value?.control !== 'multi-checkbox') return [];
+    try {
+      const value = JSON.parse(form.valueRaw) as unknown;
+      return Array.isArray(value) && value.every((entry) => typeof entry === 'string') ? value : [];
+    } catch {
+      return [];
+    }
+  });
+
+  function toggleOption(option: string): void {
+    const next = new Set(selectedOptionValues.value);
+    if (next.has(option)) next.delete(option);
+    else next.add(option);
+    form.valueRaw = JSON.stringify([...next]);
+  }
+
+  function formatOptionLabel(option: string): string {
+    const labels: Record<string, string> = {
+      IN_APP: "Dans l'application",
+      SMS: 'SMS',
+      EMAIL: 'E-mail',
+      WHATSAPP: 'WhatsApp',
+      PUSH: 'Notification push',
+      WEBHOOK: 'Service connecté',
+    };
+    return labels[option] ?? option;
+  }
+
   function captureModalBaseline(): void {
     modalDraftBaseline.value = JSON.stringify({
       configurationId: form.configurationId,
       key: form.key,
       valueRaw: form.valueRaw,
-      snapshotSourceId: form.snapshotSourceId,
-      snapshotTargetId: form.snapshotTargetId,
       lockLevel: form.lockLevel,
       reason: form.reason,
       modules: [...selectedModules.value],
@@ -739,13 +759,36 @@ export function useConfigurationCenterViewModel() {
     });
   }
 
-  watch(selectedRow, () => {
-    syncFormWithSelection();
-  }, { immediate: true });
-
   watch(() => route.name, () => {
     activeTab.value = detectTabFromRouteName(route.name);
   });
+
+  async function selectRow(key: string): Promise<void> {
+    const request = ++selectionRequest;
+    selectedRowKey.value = key;
+    centerStore.oublierConfiguration();
+    form.configurationId = '';
+    conflictDetected.value = false;
+    syncFormWithSelection();
+
+    const row = currentRows.value.find((entry) => entry.key === key);
+    if (!row || activeTab.value === 'school-modules' || !row.isDefinedLocally || !row.sourceConfigurationId) {
+      return;
+    }
+
+    try {
+      await centerStore.consulter(row.sourceConfigurationId, currentTab.value.level);
+      if (request !== selectionRequest) {
+        return;
+      }
+      form.configurationId = centerStore.state.configuration?.identifiant ?? '';
+      syncFormWithSelection();
+    } catch (error) {
+      if (request === selectionRequest) {
+        notificationsService.danger('Réglage indisponible', mapErrorToUserMessage(error));
+      }
+    }
+  }
 
   async function loadCurrentTab(): Promise<void> {
     if (!canReadCenter.value) {
@@ -767,14 +810,21 @@ export function useConfigurationCenterViewModel() {
         const tab = currentTab.value;
         await centerStore.consulterEffective({
           niveau: tab.level,
-          organisationId: tab.level === 'SYSTEM' ? undefined : tenantContext.organizationId,
-          ecoleId: tab.level === 'SCHOOL' || tab.level === 'USER' ? tenantContext.schoolId : undefined,
+          organisationId: tab.level === 'ORGANIZATION' || tab.level === 'SCHOOL' ? tenantContext.organizationId : undefined,
+          ecoleId: tab.level === 'SCHOOL' ? tenantContext.schoolId : undefined,
           utilisateurId: tab.level === 'USER' ? tenantContext.userId : undefined,
           keyPrefix: tab.keyPrefix,
         });
       }
 
-      selectedRowKey.value = filteredRows.value[0]?.key ?? null;
+      const firstKey = filteredRows.value[0]?.key;
+      if (firstKey) {
+        await selectRow(firstKey);
+      } else {
+        selectedRowKey.value = null;
+        centerStore.oublierConfiguration();
+        form.configurationId = '';
+      }
       bootStatus.value = 'ready';
     } catch (error) {
       bootStatus.value = 'error';
@@ -795,26 +845,24 @@ export function useConfigurationCenterViewModel() {
 
   function openModal(action: ModalActionCode): void {
     syncFormWithSelection();
+    conflictDetected.value = false;
     const row = selectedRow.value;
     const actionTitles: Record<ModalActionCode, [string, string]> = {
-      create: ['Personnaliser le reglage', 'Enregistrez une valeur propre a ce niveau sans quitter ce centre.'],
-      edit: ['Modifier ce reglage', 'Mettez a jour la valeur definie pour le niveau courant.'],
-      delete: ['Supprimer ce reglage', 'Cette action retirera la valeur definie pour ce niveau.'],
-      validate: ['Verifier ce reglage', 'Controlez la coherence de la valeur avant application.'],
-      lock: ['Verrouiller les modifications', 'Les niveaux inferieurs ne pourront plus personnaliser ce reglage selon les regles en vigueur.'],
-      unlock: ['Autoriser les modifications', 'Les modifications locales redeviendront possibles selon les regles en vigueur.'],
-      snapshot: ['Enregistrer une version', 'Conservez une version lisible du reglage actuellement applique.'],
-      compare: ['Comparer des versions', 'Visualisez clairement les ecarts entre deux versions enregistrees.'],
-      propagate: ['Appliquer aux niveaux concernes', 'Diffusez cette modification selon les capacites reelles du backend.'],
-      reload: ['Actualiser', "Relancez l'application de ce reglage dans le systeme."],
-      consult: ['Ouvrir un reglage', "Consultez un reglage a partir de sa reference connue."],
+      create: ['Personnaliser le réglage', 'Enregistrez une valeur propre à ce niveau.'],
+      edit: ['Modifier ce réglage', 'Mettez à jour la valeur définie pour le niveau courant.'],
+      delete: ['Supprimer ce réglage', 'Cette action retirera la valeur définie pour ce niveau.'],
+      validate: ['Vérifier ce réglage', 'Contrôlez la cohérence de la valeur avant son enregistrement.'],
+      lock: ['Verrouiller les modifications', 'Les niveaux inférieurs ne pourront plus personnaliser ce réglage.'],
+      unlock: ['Autoriser les modifications', 'Les modifications autorisées pourront de nouveau être appliquées.'],
+      snapshot: ['Enregistrer une version', 'Conservez une version du réglage actuellement appliqué.'],
+      reload: ['Appliquer maintenant', "Appliquez immédiatement la valeur enregistrée au fonctionnement de la plateforme."],
     };
 
     modalState.open = true;
     modalState.action = action;
     modalState.title = actionTitles[action][0];
     modalState.description = row
-      ? `${actionTitles[action][1]} Reglage cible : ${row.label}.`
+      ? `${actionTitles[action][1]} Réglage concerné : ${row.label}.`
       : actionTitles[action][1];
     discardModalOpen.value = false;
     captureModalBaseline();
@@ -856,11 +904,43 @@ export function useConfigurationCenterViewModel() {
   }
 
   async function submitModal(): Promise<void> {
+    if (!canSubmitModal.value || isSubmitting.value) {
+      return;
+    }
+
     const tab = currentTab.value;
     const scope = buildScope(tab);
     const actorId = tenantContext.userId;
+    isSubmitting.value = true;
+    conflictDetected.value = false;
 
     try {
+      if (
+        form.key.trim() === 'preferences.theme'
+        && (modalState.action === 'create' || modalState.action === 'edit')
+      ) {
+        const theme = formEvaluation.value?.normalizedValue;
+        if (theme !== 'light' && theme !== 'dark' && theme !== 'system') {
+          throw new Error('Le theme choisi doit etre clair, sombre ou adapte a l appareil.');
+        }
+
+        const enregistre = await themeManager.setTheme(theme);
+        if (!enregistre) {
+          throw new Error(
+            themeManager.synchronizationError.value
+              ?? "Le theme n'a pas pu etre enregistre.",
+          );
+        }
+
+        notificationsService.succes(
+          'Theme mis a jour',
+          "Votre preference d'affichage a ete enregistree.",
+        );
+        forceCloseModal();
+        await loadCurrentTab();
+        return;
+      }
+
       if (activeTab.value === 'school-modules') {
         await modulesStore.configurerEcole(
           tenantContext.organizationId,
@@ -872,7 +952,7 @@ export function useConfigurationCenterViewModel() {
           'Modules mis a jour',
           "Les modules actifs de l'ecole ont ete enregistres.",
         );
-        closeModal();
+        forceCloseModal();
         await loadCurrentTab();
         return;
       }
@@ -881,12 +961,12 @@ export function useConfigurationCenterViewModel() {
         case 'create':
           await centerStore.creer({
             key: form.key.trim(),
-            value: parseConfigurationValue(form.valueRaw),
+            value: formEvaluation.value?.normalizedValue as ConfigurationValue,
             scope,
             actorId,
           });
           form.configurationId = centerStore.state.configuration?.identifiant ?? '';
-          notificationsService.succes('Reglage enregistre', 'Le reglage a ete cree avec succes.');
+          notificationsService.succes('Réglage enregistré', 'La valeur a été enregistrée avec succès.');
           break;
         case 'edit': {
           if (!hasLoadedConfiguration.value) {
@@ -897,10 +977,10 @@ export function useConfigurationCenterViewModel() {
             throw new Error('reference du reglage manquante');
           }
           await centerStore.mettreAJour(id, {
-            value: parseConfigurationValue(form.valueRaw),
+            value: formEvaluation.value?.normalizedValue as ConfigurationValue,
             actorId,
-          });
-          notificationsService.succes('Reglage mis a jour', 'Les modifications ont ete enregistrees.');
+          }, tab.level);
+          notificationsService.succes('Réglage mis à jour', 'Les modifications ont été enregistrées.');
           break;
         }
         case 'delete': {
@@ -911,18 +991,18 @@ export function useConfigurationCenterViewModel() {
           if (!id) {
             throw new Error('reference du reglage manquante');
           }
-          await centerStore.supprimer(id, { actorId, raison: form.reason.trim() || undefined });
-          notificationsService.succes('Reglage supprime', 'Le reglage a ete retire pour ce niveau.');
+          await centerStore.supprimer(id, { actorId, raison: form.reason.trim() || undefined }, tab.level);
+          notificationsService.succes('Réglage supprimé', 'Le réglage a été retiré pour ce niveau.');
           form.configurationId = '';
           break;
         }
         case 'validate':
           await centerStore.valider({
             key: form.key.trim(),
-            value: parseConfigurationValue(form.valueRaw),
+            value: formEvaluation.value?.normalizedValue as ConfigurationValue,
             scope,
           });
-          notificationsService.succes('Verification terminee', 'La configuration a ete verifiee avec succes.');
+          notificationsService.succes('Vérification terminée', 'La valeur est cohérente et peut être enregistrée.');
           break;
         case 'lock': {
           if (!hasLoadedConfiguration.value) {
@@ -936,8 +1016,8 @@ export function useConfigurationCenterViewModel() {
             niveauMinimalAutorise: form.lockLevel,
             actorId,
             raison: form.reason.trim() || undefined,
-          });
-          notificationsService.succes('Modifications verrouillees', 'Le reglage est desormais protege contre certaines personnalisations locales.');
+          }, tab.level);
+          notificationsService.succes('Modifications verrouillées', 'Le réglage est désormais protégé contre les personnalisations locales.');
           break;
         }
         case 'unlock': {
@@ -948,8 +1028,8 @@ export function useConfigurationCenterViewModel() {
           if (!id) {
             throw new Error('reference du reglage manquante');
           }
-          await centerStore.deverrouiller(id, { actorId });
-          notificationsService.succes('Modifications reouvertes', 'Les modifications autorisees peuvent de nouveau etre appliquees.');
+          await centerStore.deverrouiller(id, { actorId }, tab.level);
+          notificationsService.succes('Modifications autorisées', 'Le réglage peut de nouveau être modifié.');
           break;
         }
         case 'snapshot': {
@@ -960,35 +1040,8 @@ export function useConfigurationCenterViewModel() {
           if (!id) {
             throw new Error('reference du reglage manquante');
           }
-          await centerStore.creerSnapshot(id, { actorId });
-          notificationsService.succes('Version enregistree', 'Une nouvelle version du reglage a ete enregistree.');
-          break;
-        }
-        case 'compare': {
-          if (!hasLoadedConfiguration.value) {
-            throw new Error('reference du reglage manquante');
-          }
-          const id = requireConfigurationId();
-          if (!id) {
-            throw new Error('reference du reglage manquante');
-          }
-          await centerStore.comparerSnapshots(id, {
-            sourceId: form.snapshotSourceId.trim(),
-            cibleId: form.snapshotTargetId.trim(),
-          });
-          notificationsService.succes('Comparaison terminee', 'Les differences entre les versions ont ete chargees.');
-          break;
-        }
-        case 'propagate': {
-          if (!hasLoadedConfiguration.value) {
-            throw new Error('reference du reglage manquante');
-          }
-          const id = requireConfigurationId();
-          if (!id) {
-            throw new Error('reference du reglage manquante');
-          }
-          await centerStore.propager(id, { actorId });
-          notificationsService.succes('Application demandee', 'La demande d application aux niveaux concernes a ete transmise.');
+          await centerStore.creerSnapshot(id, { actorId }, tab.level);
+          notificationsService.succes('Version enregistrée', 'Une nouvelle version du réglage a été enregistrée.');
           break;
         }
         case 'reload': {
@@ -999,19 +1052,9 @@ export function useConfigurationCenterViewModel() {
           if (!id) {
             throw new Error('reference du reglage manquante');
           }
-          await centerStore.recharger(id, { actorId, forcer: true });
-          notificationsService.succes('Actualisation demandee', "La demande d'actualisation a ete transmise.");
-          break;
-        }
-        case 'consult': {
-          const id = requireConfigurationId();
-          if (!id) {
-            throw new Error('reference du reglage manquante');
-          }
-          await centerStore.consulter(id);
-          form.key = centerStore.state.configuration?.key ?? form.key;
-          form.valueRaw = centerStore.state.configuration ? formatConfigurationValue(centerStore.state.configuration.valeur) : form.valueRaw;
-          notificationsService.info('Reglage charge', 'Le reglage cible est maintenant disponible dans le panneau detail.');
+          await centerStore.recharger(id, { actorId, forcer: true }, tab.level);
+          appliedConfigurationIds.value = new Set([...appliedConfigurationIds.value, id]);
+          notificationsService.succes('Réglage appliqué', 'La valeur enregistrée est maintenant appliquée au fonctionnement de la plateforme.');
           break;
         }
         default:
@@ -1021,8 +1064,13 @@ export function useConfigurationCenterViewModel() {
       forceCloseModal();
       await loadCurrentTab();
     } catch (error) {
+      if (error instanceof ApiError && error.status === 409) {
+        conflictDetected.value = true;
+      }
       const message = mapErrorToUserMessage(error);
       notificationsService.danger('Action impossible', message);
+    } finally {
+      isSubmitting.value = false;
     }
   }
 
@@ -1034,6 +1082,32 @@ export function useConfigurationCenterViewModel() {
     search.value = '';
     statusFilter.value = 'all';
   }
+
+  function handleBeforeUnload(event: BeforeUnloadEvent): void {
+    if (!modalDraftDirty.value && !isSubmitting.value) {
+      return;
+    }
+    event.preventDefault();
+    event.returnValue = '';
+  }
+
+  window.addEventListener('beforeunload', handleBeforeUnload);
+  onBeforeUnmount(() => window.removeEventListener('beforeunload', handleBeforeUnload));
+  onBeforeRouteLeave(() => {
+    if (isSubmitting.value) return false;
+    if (modalDraftDirty.value) {
+      discardModalOpen.value = true;
+      return false;
+    }
+    return true;
+  });
+
+  watch(
+    () => [tenantContext.organizationId, tenantContext.schoolId, tenantContext.userId],
+    () => {
+      if (bootStatus.value !== 'idle') void loadCurrentTab();
+    },
+  );
 
   const currentStatus = computed(() => {
     if (bootStatus.value === 'loading') {
@@ -1075,17 +1149,24 @@ export function useConfigurationCenterViewModel() {
     canCreateFromSelection,
     hasActiveFilters,
     selectedFieldDefinition,
+    selectedOptionValues,
     formEvaluation,
     primaryActionLabel,
     modalActionLabel,
     modalDraftDirty,
+    isSubmitting,
+    conflictDetected,
+    canSubmitModal,
     discardModalOpen,
     modalState,
     form,
-    configurationModuleCatalog,
+    configurationModuleCatalog: computed(() => modulesStore.state.catalog),
     currentStatus,
     loadCurrentTab,
     selectTab,
+    selectRow,
+    toggleOption,
+    formatOptionLabel,
     openModal,
     closeModal,
     keepEditing,
