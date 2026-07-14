@@ -40,12 +40,18 @@ const state = reactive<SchoolAdministrationState>({
 });
 
 function extractMessage(error: unknown, fallbackMessage: string): string {
-  if (error instanceof ApiError && typeof error.message === 'string' && error.message.trim().length > 0) {
-    return error.message.trim();
+  const message = error instanceof Error ? error.message.trim() : '';
+
+  if (/postgresql|depot_postgres|referentiel academique/i.test(message)) {
+    return fallbackMessage;
   }
 
-  if (error instanceof Error && error.message.trim().length > 0) {
-    return error.message.trim();
+  if (error instanceof ApiError && message.length > 0) {
+    return message;
+  }
+
+  if (message.length > 0) {
+    return message;
   }
 
   return fallbackMessage;

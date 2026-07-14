@@ -527,6 +527,11 @@ export const pageDoctrine: readonly FrontendPageDoctrine[] = [
         label: 'Muter une ecole (ADM-01)',
         actorCodes: ['MANAGER_SYSTEME', 'OPERATEUR_SYSTEME'],
       },
+      {
+        code: 'configuration.modules.school.write',
+        label: 'Configurer les modules actifs de l ecole',
+        actorCodes: ['MANAGER_SYSTEME', 'OPERATEUR_SYSTEME'],
+      },
     ],
   },
   {

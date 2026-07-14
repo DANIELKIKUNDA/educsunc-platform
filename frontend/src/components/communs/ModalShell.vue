@@ -1,7 +1,14 @@
 <template>
   <Teleport to="body">
     <div v-if="open" class="modal-shell-backdrop" @click.self="$emit('close')">
-      <div class="modal-shell">
+      <div
+        ref="dialogElement"
+        class="modal-shell"
+        role="dialog"
+        aria-modal="true"
+        :aria-label="ariaLabel"
+        tabindex="-1"
+      >
         <div class="modal-shell__header">
           <slot name="header" />
         </div>
@@ -17,13 +24,69 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{
-  open: boolean;
-}>();
+import { nextTick, onBeforeUnmount, ref, watch } from 'vue';
 
-defineEmits<{
+const props = withDefaults(defineProps<{
+  open: boolean;
+  ariaLabel?: string;
+}>(), {
+  ariaLabel: 'Fenêtre de dialogue',
+});
+
+const emit = defineEmits<{
   (event: 'close'): void;
 }>();
+
+const dialogElement = ref<HTMLElement | null>(null);
+let previousActiveElement: HTMLElement | null = null;
+
+watch(() => props.open, async (open) => {
+  if (open) {
+    previousActiveElement = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    document.addEventListener('keydown', handleKeydown);
+    await nextTick();
+    findFocusableElements()[0]?.focus() ?? dialogElement.value?.focus();
+    return;
+  }
+
+  document.removeEventListener('keydown', handleKeydown);
+  previousActiveElement?.focus();
+  previousActiveElement = null;
+});
+
+onBeforeUnmount(() => document.removeEventListener('keydown', handleKeydown));
+
+function findFocusableElements(): HTMLElement[] {
+  if (!dialogElement.value) return [];
+  return Array.from(dialogElement.value.querySelectorAll<HTMLElement>(
+    'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+  )).filter((element) => !element.hasAttribute('hidden'));
+}
+
+function handleKeydown(event: KeyboardEvent): void {
+  if (event.key === 'Escape') {
+    event.preventDefault();
+    emit('close');
+    return;
+  }
+  if (event.key !== 'Tab') return;
+
+  const focusable = findFocusableElements();
+  if (focusable.length === 0) {
+    event.preventDefault();
+    dialogElement.value?.focus();
+    return;
+  }
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
+}
 </script>
 
 <style scoped>

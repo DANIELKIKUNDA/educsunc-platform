@@ -18,6 +18,8 @@ export interface EcoleSortie {
   ville?: string;
   communeOuTerritoire?: string;
   creePar?: string;
+  creeParNom?: string;
   modifieLe?: string;
   modifiePar?: string;
+  modifieParNom?: string;
 }

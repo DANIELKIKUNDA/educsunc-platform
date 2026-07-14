@@ -115,3 +115,117 @@ test("les vues administration ecole n'exposent plus le vocabulaire technique int
     }
   }
 });
+
+test("la creation depuis une organisation conserve le parent et le chemin de retour", () => {
+  const source = fs.readFileSync(
+    path.resolve(__dirname, '..', 'src/domains/organisation/viewmodels/useOrganizationAttachedSchoolsViewModel.ts'),
+    'utf8',
+  );
+
+  assert.match(source, /name:\s*'school-administration-registry'/);
+  assert.match(source, /idOrganisation:\s*organisationId\.value/);
+  assert.match(source, /creation:\s*'1'/);
+  assert.match(source, /retour:\s*`\/app\/organisation\/organisations\/\$\{organisationId\.value\}\/ecoles`/);
+});
+
+test("la fiche organisation ne conserve plus de vue concurrente des ecoles rattachees", () => {
+  const view = fs.readFileSync(
+    path.resolve(__dirname, '..', 'src/domains/organisation/views/OrganizationDetailView.vue'),
+    'utf8',
+  );
+  const viewModel = fs.readFileSync(
+    path.resolve(__dirname, '..', 'src/domains/organisation/viewmodels/useOrganizationDetailViewModel.ts'),
+    'utf8',
+  );
+
+  assert.equal(view.includes("activeTab === 'ecoles'"), false);
+  assert.equal(view.includes('ecolesApercu'), false);
+  assert.match(viewModel, /router\.push\(`\/app\/organisation\/organisations\/\$\{organisationId\.value\}\/ecoles`\)/);
+});
+
+test("le formulaire contextualise verrouille l organisation parente", () => {
+  const registry = fs.readFileSync(
+    path.resolve(__dirname, '..', 'src/domains/administration-ecole/views/SchoolAdministrationRegistryView.vue'),
+    'utf8',
+  );
+  const modal = fs.readFileSync(
+    path.resolve(__dirname, '..', 'src/domains/administration-ecole/components/SchoolCreationModal.vue'),
+    'utf8',
+  );
+
+  assert.match(registry, /:organization-locked="creationOrganizationLocked"/);
+  assert.match(modal, /:disabled="organizationLocked"/);
+});
+
+test("les lectures et mutations d une ecole transmettent son perimetre explicite", () => {
+  const service = fs.readFileSync(
+    path.resolve(__dirname, '..', 'src/domains/administration-ecole/services/school-administration.api.ts'),
+    'utf8',
+  );
+
+  assert.match(service, /function buildTargetSchoolHeaders\(idEcole: string\)/);
+  assert.match(service, /construireEntetesPilotageActif\(context, \{ ecoleId: idEcole \}\)/);
+  assert.match(service, /entetes: buildTargetSchoolHeaders\(idEcole\)/);
+  assert.equal(
+    (service.match(/buildTargetSchoolMutationHeaders\(idEcole,/g) ?? []).length,
+    5,
+  );
+});
+
+test("le contexte remplace les organisations de demonstration par les donnees reelles", () => {
+  const contextStore = fs.readFileSync(
+    path.resolve(__dirname, '..', 'src/shared/session/active-context.store.ts'),
+    'utf8',
+  );
+
+  assert.match(contextStore, /organizationsState\.splice\(0, organizationsState\.length, \.\.\.organisationsReelles\)/);
+  assert.match(contextStore, /appliquerOrganisationAuContexte\(organisationActive, state\.schoolId\)/);
+});
+
+test("tous les acces Voir convergent vers la fiche canonique administration ecole", () => {
+  const viewModel = fs.readFileSync(
+    path.resolve(__dirname, '..', 'src/domains/organisation/viewmodels/useOrganizationAttachedSchoolsViewModel.ts'),
+    'utf8',
+  );
+  const routes = fs.readFileSync(
+    path.resolve(__dirname, '..', 'src/domains/organisation/routes.ts'),
+    'utf8',
+  );
+
+  assert.match(viewModel, /name: 'school-administration-detail'/);
+  assert.match(viewModel, /query: \{ retour: `\/app\/organisation\/organisations\/\$\{organisationId\.value\}\/ecoles` \}/);
+  assert.match(routes, /name: 'school-administration-detail'/);
+  assert.equal(routes.includes("import('./views/OrganizationSchoolDetailView.vue')"), false);
+});
+
+test('la fiche canonique utilise des actions guidees et une tracabilite humaine', () => {
+  const view = fs.readFileSync(
+    path.resolve(__dirname, '..', 'src/domains/administration-ecole/views/SchoolAdministrationDetailView.vue'),
+    'utf8',
+  );
+  const model = fs.readFileSync(
+    path.resolve(__dirname, '..', 'src/domains/administration-ecole/models/school-administration.model.ts'),
+    'utf8',
+  );
+
+  assert.match(view, /SchoolActionModal/);
+  assert.match(view, /school\.creeParNom/);
+  assert.match(view, /school\.modifieParNom/);
+  assert.equal(/\{\{\s*school\.creePar\s*\}\}/.test(view), false);
+  assert.equal(/\{\{\s*school\.modifiePar\s*\}\}/.test(view), false);
+  assert.match(model, /creeParNom\?: string/);
+  assert.match(model, /modifieParNom\?: string/);
+});
+
+test("la fiche distingue les modules autorises, actives et disponibles", () => {
+  const viewModel = fs.readFileSync(
+    path.resolve(__dirname, '..', 'src/domains/administration-ecole/viewmodels/useSchoolAdministrationDetailViewModel.ts'),
+    'utf8',
+  );
+
+  assert.match(viewModel, /modulesAutorisesOrganisation/);
+  assert.match(viewModel, /modulesActivesEcole/);
+  assert.match(viewModel, /modulesEffectifs/);
+  assert.match(viewModel, /configuration\.modules\.school\.write/);
+  assert.match(viewModel, /Votre sélection est conservée/);
+});

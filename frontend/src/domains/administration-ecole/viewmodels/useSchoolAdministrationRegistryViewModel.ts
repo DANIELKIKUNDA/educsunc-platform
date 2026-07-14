@@ -26,6 +26,7 @@ export function useSchoolAdministrationRegistryViewModel() {
   const creationModalOpen = ref(false);
   const rowsPerPage = ref(10);
   const currentPage = ref(1);
+  let initialisationTerminee = false;
 
   const form = reactive<CreateSchoolPayload>({
     idOrganisation: '',
@@ -43,6 +44,10 @@ export function useSchoolAdministrationRegistryViewModel() {
 
   const canReadRegistry = computed(() => canUseAction('referentiel.read', 'ADM-001'));
   const canMutateRegistry = computed(() => canUseAction('referentiel.write', 'ADM-001'));
+  const contextualOrganizationId = computed(() =>
+    typeof route.query.idOrganisation === 'string' ? route.query.idOrganisation : '',
+  );
+  const creationOrganizationLocked = computed(() => contextualOrganizationId.value.length > 0);
   const currentOrganization = computed(
     () => store.state.organisations.find((organization) => organization.id === selectedOrganisationId.value) ?? null,
   );
@@ -91,7 +96,7 @@ export function useSchoolAdministrationRegistryViewModel() {
     },
     {
       label: 'Ecoles enregistrees',
-      value: filteredSchools.value.length,
+      value: currentOrganization.value ? filteredSchools.value.length : 'En attente',
       hint: currentOrganization.value ? "Resultat visible dans l'organisation ouverte." : "Aucune organisation n'est encore selectionnee.",
       icon: School,
       tone: 'primary' as const,
@@ -103,7 +108,7 @@ export function useSchoolAdministrationRegistryViewModel() {
     },
     {
       label: 'Ecoles actives',
-      value: activeSchoolsCount.value,
+      value: currentOrganization.value ? activeSchoolsCount.value : 'En attente',
       hint: "Etablissements immediatement exploitables dans l'affichage courant.",
       icon: Wifi,
       tone: 'success' as const,
@@ -114,7 +119,7 @@ export function useSchoolAdministrationRegistryViewModel() {
     },
     {
       label: 'Ecoles inactives',
-      value: inactiveSchoolsCount.value,
+      value: currentOrganization.value ? inactiveSchoolsCount.value : 'En attente',
       hint: "Etablissements visibles mais suspendus dans l'affichage courant.",
       icon: CircleOff,
       tone: 'warning' as const,
@@ -125,7 +130,7 @@ export function useSchoolAdministrationRegistryViewModel() {
     },
     {
       label: 'Mode synchronise',
-      value: syncSchoolsCount.value,
+      value: currentOrganization.value ? syncSchoolsCount.value : 'En attente',
       hint: "Ecoles actuellement reglees en fonctionnement synchronise.",
       icon: WifiOff,
       tone: 'neutral' as const,
@@ -222,9 +227,13 @@ export function useSchoolAdministrationRegistryViewModel() {
     }
 
     selectedOrganisationId.value = form.idOrganisation;
+    const returnPath = typeof route.query.retour === 'string' ? route.query.retour : '';
     resetForm();
     creationModalOpen.value = false;
     currentPage.value = 1;
+    if (returnPath.startsWith('/app/organisation/organisations/') && returnPath.endsWith('/ecoles')) {
+      await router.replace(returnPath);
+    }
   }
 
   function openLifecycleModal(action: LifecycleAction, schoolId: string, schoolName: string): void {
@@ -293,10 +302,32 @@ export function useSchoolAdministrationRegistryViewModel() {
     }).format(date);
   }
 
-  watch(selectedOrganisationId, (next) => {
+  watch(selectedOrganisationId, (next, previous) => {
     form.idOrganisation = next;
     currentPage.value = 1;
+
+    if (
+      next
+      && next !== previous
+      && store.state.organisations.some((organisation) => organisation.id === next)
+    ) {
+      void loadSchools();
+    }
   });
+
+  watch(
+    () => activeContextStore.state.organizationId,
+    (organizationId) => {
+      if (
+        initialisationTerminee
+        && organizationId
+        && organizationId !== selectedOrganisationId.value
+        && store.state.organisations.some((organisation) => organisation.id === organizationId)
+      ) {
+        selectedOrganisationId.value = organizationId;
+      }
+    },
+  );
 
   watch([search, statusFilter, modeFilter, rowsPerPage], () => {
     currentPage.value = 1;
@@ -319,6 +350,16 @@ export function useSchoolAdministrationRegistryViewModel() {
       selectedOrganisationId.value = organizationFromQuery;
       form.idOrganisation = organizationFromQuery;
     }
+
+    if (!store.state.organisations.some((organisation) => organisation.id === selectedOrganisationId.value)) {
+      const organizationId = store.state.organisations.some(
+        (organisation) => organisation.id === activeContextStore.state.organizationId,
+      )
+        ? activeContextStore.state.organizationId
+        : store.state.organisations[0]?.id ?? '';
+      selectedOrganisationId.value = organizationId;
+      form.idOrganisation = organizationId;
+    }
     const statusFromQuery = typeof route.query.statut === 'string' ? route.query.statut : '';
     if (statusFromQuery === 'ACTIVE' || statusFromQuery === 'INACTIVE') {
       statusFilter.value = statusFromQuery;
@@ -332,6 +373,7 @@ export function useSchoolAdministrationRegistryViewModel() {
       creationModalOpen.value = true;
     }
 
+    initialisationTerminee = true;
     if (selectedOrganisationId.value) {
       await loadSchools();
     }
@@ -347,6 +389,7 @@ export function useSchoolAdministrationRegistryViewModel() {
     modeFilter,
     canReadRegistry,
     canMutateRegistry,
+    creationOrganizationLocked,
     currentOrganization,
     filteredSchools,
     summaryCards,

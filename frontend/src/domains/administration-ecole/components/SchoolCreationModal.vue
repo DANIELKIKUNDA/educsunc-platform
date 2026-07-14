@@ -5,7 +5,7 @@
         <div>
           <small>Administration ecole</small>
           <h2>Nouvelle ecole</h2>
-          <p>Enregistrez un nouvel etablissement dans l'organisation selectionnee avec les informations structurelles prevues par le backend.</p>
+          <p>Enregistrez un nouvel etablissement dans l'organisation selectionnee avec ses informations essentielles.</p>
         </div>
       </div>
     </template>
@@ -24,7 +24,7 @@
       <div class="school-admin-modal__grid">
         <label class="school-admin-modal__field">
           <span>Organisation *</span>
-          <select :value="form.idOrganisation" @change="updateField('idOrganisation', ($event.target as HTMLSelectElement).value)">
+          <select :value="form.idOrganisation" :disabled="organizationLocked" @change="updateField('idOrganisation', ($event.target as HTMLSelectElement).value)">
             <option value="">Selectionner une organisation</option>
             <option v-for="organization in organizations" :key="organization.id" :value="organization.id">
               {{ organization.code }} - {{ organization.nom }}
@@ -92,7 +92,7 @@
     <template #footer>
       <div class="school-admin-modal__footer">
         <div class="school-admin-modal__footer-note">
-          <small>{{ disableReason ?? "L'ecole sera ajoutee au registre apres confirmation du backend." }}</small>
+          <small>{{ disableReason ?? "L'ecole sera ajoutee au registre apres confirmation." }}</small>
         </div>
         <div class="school-admin-modal__footer-actions">
           <button class="school-admin-modal__ghost" type="button" :disabled="busy" @click="$emit('close')">
@@ -121,6 +121,7 @@ const props = defineProps<{
   open: boolean;
   form: CreateSchoolPayload;
   organizations: readonly SchoolAdministrationOrganizationItem[];
+  organizationLocked: boolean;
   canSubmit: boolean;
   busy: boolean;
   disableReason: string | null;
@@ -173,4 +174,3 @@ function updateField(field: keyof CreateSchoolPayload, value: string): void {
   .school-admin-modal__footer,.school-admin-modal__footer-actions{flex-direction:column;align-items:stretch}
 }
 </style>
-

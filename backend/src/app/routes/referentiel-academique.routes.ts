@@ -419,7 +419,7 @@ function composerRoutesReferentielAcademique(): CompositionRoutesReferentielAcad
             '  END AS "description"',
             'FROM "audit_logs"',
             'WHERE "id_organisation" = $1',
-            '   OR ("type_ressource" = $2 AND "id_ressource" = $1)',
+            '   OR ("type_ressource" = $2 AND "id_ressource" = $1::text)',
             'ORDER BY "cree_le" DESC',
           ].join(' '),
           [idOrganisation, 'ORGANISATION'],
@@ -475,6 +475,11 @@ function composerRoutesReferentielAcademique(): CompositionRoutesReferentielAcad
     new RenommerEcole(depots.depotEcole),
     new ActiverEcole(depots.depotEcole),
     new DesactiverEcole(depots.depotEcole),
+    undefined,
+    async (idUtilisateur) => {
+      const utilisateur = await depotUtilisateurAuth.trouverParId(idUtilisateur);
+      return utilisateur?.obtenirNomComplet();
+    },
   );
 
   const controleurAnneesScolaires = new ControleurAnneesScolaires(

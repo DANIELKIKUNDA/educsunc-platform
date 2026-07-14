@@ -17,6 +17,9 @@ import {
 import { ValidateurEcoleHttp } from '../validators/ecole.validator';
 import type { RequestContext } from '../../../../../shared/context';
 import { AutorisationSocleAcademiqueAdapter } from '../../../../../app/adapters/AutorisationSocleAcademiqueAdapter';
+import type { EcoleSortie } from '../../../application/dto/output/EcoleSortie';
+
+export type ResolveurNomActeurEcole = (idUtilisateur: string) => Promise<string | undefined>;
 
 // Ce controleur orchestre les entrees et sorties HTTP des ecoles.
 export class ControleurEcoles {
@@ -30,6 +33,7 @@ export class ControleurEcoles {
   private readonly casUsageActiverEcole: ActiverEcole;
   private readonly casUsageDesactiverEcole: DesactiverEcole;
   private readonly autorisationSocleAcademique: AutorisationSocleAcademiqueAdapter;
+  private readonly resoudreNomActeur: ResolveurNomActeurEcole;
 
   // Ce constructeur injecte les cas d'usage exposes par les routes ecoles.
   constructor(
@@ -43,6 +47,7 @@ export class ControleurEcoles {
     casUsageActiverEcole: ActiverEcole,
     casUsageDesactiverEcole: DesactiverEcole,
     autorisationSocleAcademique: AutorisationSocleAcademiqueAdapter = new AutorisationSocleAcademiqueAdapter(),
+    resoudreNomActeur: ResolveurNomActeurEcole = async () => undefined,
   ) {
     this.casUsageCreerEcole = casUsageCreerEcole;
     this.casUsageConsulterEcole = casUsageConsulterEcole;
@@ -55,6 +60,7 @@ export class ControleurEcoles {
     this.casUsageActiverEcole = casUsageActiverEcole;
     this.casUsageDesactiverEcole = casUsageDesactiverEcole;
     this.autorisationSocleAcademique = autorisationSocleAcademique;
+    this.resoudreNomActeur = resoudreNomActeur;
   }
 
   // Cette methode traite la creation HTTP d'une ecole.
@@ -66,7 +72,7 @@ export class ControleurEcoles {
     const entree = ValidateurEcoleHttp.validerCreation(corps, idUtilisateur);
     const sortie = await this.casUsageCreerEcole.executer(entree);
 
-    return EcolePresenter.presenterEcole(sortie.ecole);
+    return EcolePresenter.presenterEcole(await this.enrichirTracabilite(sortie.ecole));
   }
 
   // Cette methode traite la consultation HTTP d'une ecole.
@@ -78,7 +84,7 @@ export class ControleurEcoles {
     const entree = ValidateurEcoleHttp.validerConsultation(parametres);
     const sortie = await this.casUsageConsulterEcole.executer(entree);
 
-    return EcolePresenter.presenterEcole(sortie.ecole);
+    return EcolePresenter.presenterEcole(await this.enrichirTracabilite(sortie.ecole));
   }
 
   // Cette methode traite la liste HTTP des ecoles.
@@ -95,7 +101,10 @@ export class ControleurEcoles {
         taillePage: entree.taillePage,
       });
 
-      return EcolePresenter.presenterListeEcoles(sortie);
+      return EcolePresenter.presenterListeEcoles({
+        ...sortie,
+        ecoles: await Promise.all(sortie.ecoles.map((ecole) => this.enrichirTracabilite(ecole))),
+      });
     }
 
     const sortie = await this.casUsageListerEcolesParOrganisation.executer({
@@ -104,7 +113,10 @@ export class ControleurEcoles {
       taillePage: entree.taillePage,
     });
 
-    return EcolePresenter.presenterListeEcoles(sortie);
+    return EcolePresenter.presenterListeEcoles({
+      ...sortie,
+      ecoles: await Promise.all(sortie.ecoles.map((ecole) => this.enrichirTracabilite(ecole))),
+    });
   }
 
   // Cette methode traite la liste HTTP des ecoles rattachees a une organisation.
@@ -117,7 +129,10 @@ export class ControleurEcoles {
     const entree = ValidateurEcoleHttp.validerListeParOrganisation(parametres, query);
     const sortie = await this.casUsageListerEcolesParOrganisation.executer(entree);
 
-    return EcolePresenter.presenterListeEcoles(sortie);
+    return EcolePresenter.presenterListeEcoles({
+      ...sortie,
+      ecoles: await Promise.all(sortie.ecoles.map((ecole) => this.enrichirTracabilite(ecole))),
+    });
   }
 
   // Cette methode traite le changement HTTP du mode d'exploitation d'une ecole.
@@ -134,7 +149,7 @@ export class ControleurEcoles {
     );
     const sortie = await this.casUsageChangerModeExploitationEcole.executer(entree);
 
-    return EcolePresenter.presenterEcole(sortie.ecole);
+    return EcolePresenter.presenterEcole(await this.enrichirTracabilite(sortie.ecole));
   }
 
   // Cette methode traite le renommage HTTP d'une ecole.
@@ -151,7 +166,7 @@ export class ControleurEcoles {
     );
     const sortie = await this.casUsageRenommerEcole.executer(entree);
 
-    return EcolePresenter.presenterEcole(sortie.ecole);
+    return EcolePresenter.presenterEcole(await this.enrichirTracabilite(sortie.ecole));
   }
 
   // Cette methode traite la mise a jour HTTP des informations institutionnelles d'une ecole.
@@ -169,7 +184,7 @@ export class ControleurEcoles {
     const sortie =
       await this.casUsageMettreAJourInformationsInstitutionnellesEcole.executer(entree);
 
-    return EcolePresenter.presenterEcole(sortie.ecole);
+    return EcolePresenter.presenterEcole(await this.enrichirTracabilite(sortie.ecole));
   }
 
   // Cette methode traite l'activation HTTP d'une ecole.
@@ -186,7 +201,7 @@ export class ControleurEcoles {
     );
     const sortie = await this.casUsageActiverEcole.executer(entree);
 
-    return EcolePresenter.presenterEcole(sortie.ecole);
+    return EcolePresenter.presenterEcole(await this.enrichirTracabilite(sortie.ecole));
   }
 
   // Cette methode traite la desactivation HTTP d'une ecole.
@@ -203,7 +218,27 @@ export class ControleurEcoles {
     );
     const sortie = await this.casUsageDesactiverEcole.executer(entree);
 
-    return EcolePresenter.presenterEcole(sortie.ecole);
+    return EcolePresenter.presenterEcole(await this.enrichirTracabilite(sortie.ecole));
+  }
+
+  private async enrichirTracabilite(ecole: EcoleSortie): Promise<EcoleSortie> {
+    const ids = [...new Set([ecole.creePar, ecole.modifiePar].filter((id): id is string => Boolean(id)))];
+    const noms = new Map<string, string>();
+
+    await Promise.all(ids.map(async (id) => {
+      try {
+        const nom = await this.resoudreNomActeur(id);
+        if (nom) noms.set(id, nom);
+      } catch {
+        // La fiche reste consultable si une ancienne identite n'est plus resolvable.
+      }
+    }));
+
+    return {
+      ...ecole,
+      creeParNom: ecole.creePar ? noms.get(ecole.creePar) : undefined,
+      modifieParNom: ecole.modifiePar ? noms.get(ecole.modifiePar) : undefined,
+    };
   }
 
   private async verifierLectureAdministrationEcoles(

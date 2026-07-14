@@ -1,0 +1,3 @@
+<template><div class="school-detail-info" :class="{ 'school-detail-info--wide': wide }"><span>{{ label }}</span><strong :class="{ 'is-missing': !value }">{{ value || 'À compléter' }}</strong></div></template>
+<script setup lang="ts">defineProps<{ label: string; value?: string; wide?: boolean }>();</script>
+<style scoped>.school-detail-info{display:grid;gap:.3rem;padding:.9rem 0;border-bottom:1px solid rgba(17,40,63,.07)}.school-detail-info span{color:#708597;font-size:.82rem;font-weight:800;text-transform:uppercase;letter-spacing:.045em}.school-detail-info strong{color:#10243b;line-height:1.45}.school-detail-info strong.is-missing{color:#9a6c40;font-weight:700}.school-detail-info--wide{grid-column:1/-1}</style>

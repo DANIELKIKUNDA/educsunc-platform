@@ -179,7 +179,11 @@ export function useOrganizationAttachedSchoolsViewModel() {
   }
 
   async function voirEcole(idEcole: string): Promise<void> {
-    await router.push(`/app/organisation/ecoles/${idEcole}`);
+    await router.push({
+      name: 'school-administration-detail',
+      params: { idEcole },
+      query: { retour: `/app/organisation/organisations/${organisationId.value}/ecoles` },
+    });
   }
 
   async function configurerEcole(ecole: EcoleItem): Promise<void> {
@@ -193,14 +197,23 @@ export function useOrganizationAttachedSchoolsViewModel() {
     await changerOrganisationActiveFrontend(ecole.idOrganisation);
     await changerEcoleActiveFrontend(ecole.id);
     activeContextStore.setGovernanceLevel('ECOLE');
-    await router.push(`/app/administration-ecole/ecoles/${ecole.id}`);
+    await router.push({
+      name: 'school-administration-detail',
+      params: { idEcole: ecole.id },
+      query: { retour: `/app/organisation/organisations/${ecole.idOrganisation}/ecoles` },
+    });
   }
 
   async function creerEcole(): Promise<void> {
     if (!organisationId.value || !canCreateSchool.value) return;
-    await changerOrganisationActiveFrontend(organisationId.value);
-    activeContextStore.setGovernanceLevel('ORGANISATION');
-    await router.push(`/app/administration-ecole/ecoles?idOrganisation=${organisationId.value}`);
+    await router.push({
+      name: 'school-administration-registry',
+      query: {
+        idOrganisation: organisationId.value,
+        creation: '1',
+        retour: `/app/organisation/organisations/${organisationId.value}/ecoles`,
+      },
+    });
   }
 
   function ouvrirDialogueStatut(ecole: EcoleItem): void {

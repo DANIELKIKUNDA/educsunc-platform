@@ -45,6 +45,18 @@ function buildMutationHeaders(prefix: string) {
   };
 }
 
+function buildTargetSchoolHeaders(idEcole: string) {
+  const context = lireContexteApiGouvernancePlateforme();
+  return construireEntetesPilotageActif(context, { ecoleId: idEcole });
+}
+
+function buildTargetSchoolMutationHeaders(idEcole: string, prefix: string) {
+  return {
+    ...buildTargetSchoolHeaders(idEcole),
+    'idempotency-key': generateIdempotencyKey(prefix),
+  };
+}
+
 export const schoolAdministrationApi = {
   async listOrganizations(page = 1, taillePage = 100) {
     return clientApi.envoyer<ListResponse<SchoolAdministrationOrganizationItem>>({
@@ -66,11 +78,9 @@ export const schoolAdministrationApi = {
   },
 
   async getSchool(idEcole: string) {
-    const context = lireContexteApiGouvernancePlateforme();
-
     return clientApi.envoyer<DetailResponse<SchoolAdministrationItem>>({
       chemin: `/api/ecoles/${idEcole}`,
-      entetes: construireEntetesPilotageActif(context),
+      entetes: buildTargetSchoolHeaders(idEcole),
     });
   },
 
@@ -84,30 +94,20 @@ export const schoolAdministrationApi = {
   },
 
   async renameSchool(idEcole: string, nouveauNom: string) {
-    const context = lireContexteApiGouvernancePlateforme();
-
     return clientApi.envoyer<DetailResponse<SchoolAdministrationItem>>({
       chemin: `/api/ecoles/${idEcole}/renommer`,
       methode: 'PATCH',
       corps: { nouveauNom },
-      entetes: {
-        ...construireEntetesPilotageActif(context),
-        'idempotency-key': generateIdempotencyKey('adm-school-rename'),
-      },
+      entetes: buildTargetSchoolMutationHeaders(idEcole, 'adm-school-rename'),
     });
   },
 
   async changeSchoolMode(idEcole: string, nouveauModeExploitation: string) {
-    const context = lireContexteApiGouvernancePlateforme();
-
     return clientApi.envoyer<DetailResponse<SchoolAdministrationItem>>({
       chemin: `/api/ecoles/${idEcole}/changer-mode`,
       methode: 'POST',
       corps: { nouveauModeExploitation },
-      entetes: {
-        ...construireEntetesPilotageActif(context),
-        'idempotency-key': generateIdempotencyKey('adm-school-mode'),
-      },
+      entetes: buildTargetSchoolMutationHeaders(idEcole, 'adm-school-mode'),
     });
   },
 
@@ -115,44 +115,29 @@ export const schoolAdministrationApi = {
     idEcole: string,
     payload: SchoolInstitutionalInfoPayload,
   ) {
-    const context = lireContexteApiGouvernancePlateforme();
-
     return clientApi.envoyer<DetailResponse<SchoolAdministrationItem>>({
       chemin: `/api/ecoles/${idEcole}/informations-institutionnelles`,
       methode: 'PATCH',
       corps: payload,
-      entetes: {
-        ...construireEntetesPilotageActif(context),
-        'idempotency-key': generateIdempotencyKey('adm-school-identity'),
-      },
+      entetes: buildTargetSchoolMutationHeaders(idEcole, 'adm-school-identity'),
     });
   },
 
   async activateSchool(idEcole: string) {
-    const context = lireContexteApiGouvernancePlateforme();
-
     return clientApi.envoyer<DetailResponse<SchoolAdministrationItem>>({
       chemin: `/api/ecoles/${idEcole}/activer`,
       methode: 'POST',
       corps: {},
-      entetes: {
-        ...construireEntetesPilotageActif(context),
-        'idempotency-key': generateIdempotencyKey('adm-school-activate'),
-      },
+      entetes: buildTargetSchoolMutationHeaders(idEcole, 'adm-school-activate'),
     });
   },
 
   async deactivateSchool(idEcole: string) {
-    const context = lireContexteApiGouvernancePlateforme();
-
     return clientApi.envoyer<DetailResponse<SchoolAdministrationItem>>({
       chemin: `/api/ecoles/${idEcole}/desactiver`,
       methode: 'POST',
       corps: {},
-      entetes: {
-        ...construireEntetesPilotageActif(context),
-        'idempotency-key': generateIdempotencyKey('adm-school-deactivate'),
-      },
+      entetes: buildTargetSchoolMutationHeaders(idEcole, 'adm-school-deactivate'),
     });
   },
 };

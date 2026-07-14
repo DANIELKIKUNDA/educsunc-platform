@@ -3,7 +3,7 @@
     <PageHeader
       eyebrow="Administration ecole"
       title="Registre des ecoles"
-      description="Consultez les etablissements, filtrez l'affichage et lancez les actions administratives deja prevues par le backend."
+      description="Consultez les etablissements, filtrez l'affichage et lancez les actions administratives autorisees."
     >
       <template #actions>
         <div class="school-admin__hero-actions">
@@ -110,6 +110,7 @@
         :open="creationModalOpen"
         :form="form"
         :organizations="store.state.organisations"
+        :organization-locked="creationOrganizationLocked"
         :can-submit="createEvaluation.canSubmit"
         :busy="store.state.mutationStatus === 'loading'"
         :disable-reason="createEvaluation.disableReason"
@@ -153,6 +154,7 @@ const {
   statusFilter,
   modeFilter,
   canMutateRegistry,
+  creationOrganizationLocked,
   currentOrganization,
   filteredSchools,
   summaryCards,

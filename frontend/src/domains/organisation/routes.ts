@@ -34,7 +34,11 @@ export const routesOrganisation: RouteRecordRaw[] = [
   {
     path: 'organisation/ecoles/:idEcole',
     name: 'organization-school-detail',
-    component: () => import('./views/OrganizationSchoolDetailView.vue'),
+    redirect: (to) => ({
+      name: 'school-administration-detail',
+      params: { idEcole: to.params.idEcole },
+      query: to.query,
+    }),
     meta: { title: 'Detail ecole organisation' },
   },
   {

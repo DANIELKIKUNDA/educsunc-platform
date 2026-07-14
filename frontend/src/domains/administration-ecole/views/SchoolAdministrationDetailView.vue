@@ -1,314 +1,171 @@
 <template>
   <PageContainer>
-    <PageHeader
-      eyebrow="Administration ecole"
-      title="Fiche ecole"
-      description="Consultez l'identite de l'etablissement, ses coordonnees et ses actions administratives autorisees."
-    >
-      <template #actions>
-        <div class="school-admin__hero-actions">
-          <RouterLink class="school-admin__hero-link" to="/app/administration-ecole/ecoles">
-            Retour au registre
-          </RouterLink>
-        </div>
-      </template>
-    </PageHeader>
+    <nav class="school-detail__breadcrumb" aria-label="Fil d’Ariane">
+      <RouterLink :to="returnPath">{{ returnLabel }}</RouterLink><ChevronRight :size="15" />
+      <span>{{ school?.nom || 'Fiche école' }}</span>
+    </nav>
 
-    <div v-if="store.state.status === 'loading'" class="school-admin__skeleton-grid">
+    <div v-if="store.state.status === 'loading'" class="school-admin__skeleton-grid" aria-label="Chargement de la fiche">
       <div v-for="index in 4" :key="index" class="school-admin__skeleton-card" />
     </div>
-    <ErrorState
-      v-else-if="store.state.status === 'error'"
-      title="Fiche indisponible"
-      :message="store.state.errorMessage ?? 'La fiche de cette ecole ne peut pas etre ouverte.'"
-    />
-    <EmptyState
-      v-else-if="!school"
-      title="Aucune ecole disponible"
-      message="Retournez au registre pour ouvrir la fiche d'un etablissement."
-    />
+    <ErrorState v-else-if="store.state.status === 'error'" title="Fiche indisponible" :message="store.state.errorMessage ?? 'Cette fiche ne peut pas être ouverte pour le moment.'" />
+    <EmptyState v-else-if="!school" title="École introuvable" message="Revenez au registre pour choisir un établissement." />
 
     <template v-else>
-      <section class="school-admin__stat-grid">
-        <StatCard
-          v-for="card in summaryCards"
-          :key="card.label"
-          :icon="card.icon"
-          :label="card.label"
-          :value="card.value"
-          :hint="card.hint"
-          :tone="card.tone"
-        />
-      </section>
-
-      <SectionBlock
-        v-if="store.state.lastMutationMessage"
-        title="Derniere action"
-        description="Cette confirmation provient de la derniere operation reussie."
-      >
-        <div class="school-admin__banner">{{ store.state.lastMutationMessage }}</div>
-      </SectionBlock>
-
-      <SectionBlock
-        title="Identite et coordonnees"
-        description="La fiche est organisee par informations metier pour faciliter la lecture et les mises a jour."
-      >
-        <div class="school-admin__identity-grid">
-          <article class="school-admin__identity-card">
-            <header>
-              <h3>Identite</h3>
-              <p>Informations principales de l'etablissement.</p>
-            </header>
-            <div class="school-admin__trace-list">
-              <div class="school-admin__trace-item"><span>Nom</span><strong>{{ school.nom }}</strong></div>
-              <div class="school-admin__trace-item"><span>Code</span><strong>{{ school.code }}</strong></div>
-              <div class="school-admin__trace-item"><span>Sigle</span><strong>{{ school.sigle || '-' }}</strong></div>
-              <div class="school-admin__trace-item"><span>Organisation</span><strong>{{ organization?.nom || 'Information non disponible' }}</strong></div>
+      <header class="school-detail__hero">
+        <div class="school-detail__hero-main">
+          <div class="school-detail__monogram" aria-hidden="true">{{ (school.sigle || school.nom).slice(0, 2).toUpperCase() }}</div>
+          <div>
+            <div class="school-detail__eyebrow">Administration école · {{ school.code }}</div>
+            <h1>{{ school.nom }}</h1>
+            <div class="school-detail__meta">
+              <span><Building2 :size="16" />{{ organization?.nom || 'Organisation non renseignée' }}</span>
+              <span><MapPin :size="16" />{{ school.ville || school.provinceEducationnelle || 'Localisation à compléter' }}</span>
             </div>
-          </article>
-
-          <article class="school-admin__identity-card">
-            <header>
-              <h3>Coordonnees</h3>
-              <p>Coordonnees administratives et contact de l'etablissement.</p>
-            </header>
-            <div class="school-admin__trace-list">
-              <div class="school-admin__trace-item"><span>Telephone</span><strong>{{ school.telephone || '-' }}</strong></div>
-              <div class="school-admin__trace-item"><span>Email</span><strong>{{ school.email || '-' }}</strong></div>
-              <div class="school-admin__trace-item"><span>Adresse</span><strong>{{ school.adresse || '-' }}</strong></div>
-            </div>
-          </article>
-
-          <article class="school-admin__identity-card">
-            <header>
-              <h3>Localisation</h3>
-              <p>Elements geographiques utiles a l'identification de l'ecole.</p>
-            </header>
-            <div class="school-admin__trace-list">
-              <div class="school-admin__trace-item"><span>Province educationnelle</span><strong>{{ school.provinceEducationnelle || '-' }}</strong></div>
-              <div class="school-admin__trace-item"><span>Ville</span><strong>{{ school.ville || '-' }}</strong></div>
-              <div class="school-admin__trace-item"><span>Commune / territoire</span><strong>{{ school.communeOuTerritoire || '-' }}</strong></div>
-            </div>
-          </article>
-
-          <article class="school-admin__identity-card">
-            <header>
-              <h3>Mode et statut</h3>
-              <p>Situation actuelle de l'ecole dans le registre administratif.</p>
-            </header>
-            <div class="school-admin__trace-list">
-              <div class="school-admin__trace-item"><span>Mode d'exploitation</span><strong><SchoolModeBadge :mode="school.modeExploitation" /></strong></div>
-              <div class="school-admin__trace-item"><span>Statut</span><strong><SchoolStatusBadge :active="school.actif" /></strong></div>
-            </div>
-          </article>
-
-          <article class="school-admin__identity-card">
-            <header>
-              <h3>Tracabilite</h3>
-              <p>Repere de creation et de derniere mise a jour relus depuis le backend.</p>
-            </header>
-            <div class="school-admin__trace-list">
-              <div class="school-admin__trace-item"><span>Cree le</span><strong>{{ formatDate(school.creeLe) }}</strong></div>
-              <div class="school-admin__trace-item"><span>Cree par</span><strong>{{ school.creePar || 'Information non disponible' }}</strong></div>
-              <div class="school-admin__trace-item"><span>Derniere modification</span><strong>{{ formatDate(school.modifieLe) }}</strong></div>
-              <div class="school-admin__trace-item"><span>Modifie par</span><strong>{{ school.modifiePar || 'Information non disponible' }}</strong></div>
-              <div class="school-admin__trace-item"><span>Version</span><strong>{{ school.version }}</strong></div>
-            </div>
-          </article>
+          </div>
         </div>
-      </SectionBlock>
-
-      <SectionBlock
-        v-if="canMutateDetail"
-        title="Actions disponibles"
-        description="Seules les mutations reelles du backend sont exposees ici."
-      >
-        <div class="school-admin__detail-grid">
-          <article class="school-admin__mutations-card">
-            <header>
-              <h3>Renommer l'ecole</h3>
-              <p>Utilisez un nouveau nom officiel. La trace de la modification restera visible dans la fiche.</p>
-            </header>
-            <form @submit.prevent="renameSchool">
-              <div class="school-admin__field">
-                <span>Nouveau nom</span>
-                <input v-model="renameTarget" type="text" placeholder="Nouveau nom officiel" />
-              </div>
-              <div class="school-admin__helper">{{ renameEvaluation.disableReason ?? "Le nouveau nom sera applique apres validation du backend." }}</div>
-              <div class="school-admin__actions">
-                <button
-                  class="school-admin__pill-button school-admin__pill-button--primary"
-                  type="submit"
-                  :disabled="!renameEvaluation.canSubmit"
-                >
-                  Renommer
+        <div class="school-detail__hero-side">
+          <div class="school-detail__badges">
+            <SchoolStatusBadge :active="school.actif" />
+            <SchoolModeBadge :mode="school.modeExploitation" />
+            <span class="school-detail__completion" :class="{ 'school-detail__completion--complete': completeness.percentage === 100 }">
+              Fiche {{ completeness.percentage }} % complète
+            </span>
+          </div>
+          <div v-if="canMutateDetail" class="school-detail__actions">
+            <button class="school-detail__button school-detail__button--primary" type="button" @click="openModal('identity')"><Pencil :size="17" />Modifier</button>
+            <button v-if="canManageModules" class="school-detail__button" type="button" @click="openModal('modules')"><Blocks :size="17" />Gérer les modules</button>
+            <details class="school-detail__more">
+              <summary class="school-detail__button"><Ellipsis :size="18" />Autres actions</summary>
+              <div class="school-detail__more-menu">
+                <button type="button" @click="openModal('rename')"><CaseUpper :size="16" />Renommer l’école</button>
+                <button type="button" @click="openModal('mode')"><RefreshCw :size="16" />Changer le mode</button>
+                <button type="button" :class="{ 'is-danger': school.actif }" @click="openLifecycleModal(school.actif ? 'deactivate' : 'activate')">
+                  <Power :size="16" />{{ school.actif ? 'Désactiver l’école' : 'Activer l’école' }}
                 </button>
               </div>
-            </form>
-          </article>
+            </details>
+          </div>
+        </div>
+      </header>
 
-          <article class="school-admin__mutations-card">
-            <header>
-              <h3>Changer le mode d'exploitation</h3>
-              <p>Selectionnez un autre mode parmi les valeurs officiellement reconnues.</p>
-            </header>
-            <form @submit.prevent="updateMode">
-              <div class="school-admin__field">
-                <span>Mode cible</span>
-                <select v-model="identityForm.modeExploitation">
-                  <option v-for="option in schoolModeOptions" :key="option.value" :value="option.value">
-                    {{ option.label }}
-                  </option>
-                </select>
-              </div>
-              <div class="school-admin__helper">
-                {{ schoolModeOptions.find((option) => option.value === identityForm.modeExploitation)?.description }}
-              </div>
-              <div class="school-admin__helper">{{ modeEvaluation.disableReason ?? "Le nouveau mode sera applique apres validation." }}</div>
-              <div class="school-admin__actions">
-                <button
-                  class="school-admin__pill-button school-admin__pill-button--primary"
-                  type="submit"
-                  :disabled="!modeEvaluation.canSubmit"
-                >
-                  Enregistrer le mode
-                </button>
-              </div>
-            </form>
-          </article>
+      <div v-if="store.state.lastMutationMessage" class="school-admin__banner" role="status">{{ store.state.lastMutationMessage }}</div>
 
-          <article class="school-admin__mutations-card">
-            <header>
-              <h3>Modifier les informations institutionnelles</h3>
-              <p>Mettez a jour les coordonnees administratives de l'etablissement sans perdre votre brouillon en cas d'erreur.</p>
-            </header>
-            <form @submit.prevent="updateInstitutionalInfo">
-              <div class="school-admin__form-grid">
-                <div class="school-admin__field">
-                  <span>Sigle</span>
-                  <input v-model="identityForm.sigle" type="text" placeholder="CSR" />
-                </div>
-                <div class="school-admin__field">
-                  <span>Telephone</span>
-                  <input v-model="identityForm.telephone" type="text" placeholder="+243..." />
-                </div>
-                <div class="school-admin__field">
-                  <span>Email</span>
-                  <input v-model="identityForm.email" type="email" placeholder="contact@ecole.cd" />
-                </div>
-                <div class="school-admin__field">
-                  <span>Province educationnelle</span>
-                  <input v-model="identityForm.provinceEducationnelle" type="text" placeholder="Haut-Katanga 1" />
-                </div>
-                <div class="school-admin__field">
-                  <span>Ville</span>
-                  <input v-model="identityForm.ville" type="text" placeholder="Lubumbashi" />
-                </div>
-                <div class="school-admin__field">
-                  <span>Commune / territoire</span>
-                  <input v-model="identityForm.communeOuTerritoire" type="text" placeholder="Kampemba" />
-                </div>
-                <div class="school-admin__field school-admin__field--wide">
-                  <span>Adresse</span>
-                  <input v-model="identityForm.adresse" type="text" placeholder="Adresse institutionnelle" />
-                </div>
-              </div>
-              <div class="school-admin__helper">{{ identityEvaluation.disableReason ?? "Les champs modifies seront relus apres confirmation du backend." }}</div>
-              <div class="school-admin__actions">
-                <button
-                  class="school-admin__pill-button school-admin__pill-button--primary"
-                  type="submit"
-                  :disabled="!identityEvaluation.canSubmit"
-                >
-                  Enregistrer les informations
-                </button>
-              </div>
-            </form>
-          </article>
-
-          <article class="school-admin__mutations-card">
-            <header>
-              <h3>Cycle de vie</h3>
-              <p>L'ecole reste visible dans le registre, mais son statut peut etre modifie avec confirmation.</p>
-            </header>
-            <div class="school-admin__actions">
-              <button
-                class="school-admin__pill-button school-admin__pill-button--primary"
-                type="button"
-                :disabled="school.actif || store.state.mutationStatus === 'loading'"
-                @click="openLifecycleModal('activate')"
-              >
-                Activer l'ecole
-              </button>
-              <button
-                class="school-admin__pill-button"
-                type="button"
-                :disabled="!school.actif || store.state.mutationStatus === 'loading'"
-                @click="openLifecycleModal('deactivate')"
-              >
-                Desactiver l'ecole
-              </button>
+      <main class="school-detail__layout">
+        <div class="school-detail__primary-column">
+          <section class="school-detail__card">
+            <div class="school-detail__section-heading"><div><small>Établissement</small><h2>Identité et coordonnées</h2></div><button v-if="canMutateDetail" type="button" @click="openModal('identity')">Modifier</button></div>
+            <div class="school-detail__information-grid">
+              <InfoItem label="Nom officiel" :value="school.nom" />
+              <InfoItem label="Sigle" :value="school.sigle" />
+              <InfoItem label="Code" :value="school.code" />
+              <InfoItem label="Téléphone" :value="school.telephone" />
+              <InfoItem label="E-mail" :value="school.email" />
+              <InfoItem label="Adresse" :value="school.adresse" wide />
+              <InfoItem label="Province éducationnelle" :value="school.provinceEducationnelle" />
+              <InfoItem label="Ville" :value="school.ville" />
+              <InfoItem label="Commune ou territoire" :value="school.communeOuTerritoire" />
             </div>
-          </article>
-        </div>
-      </SectionBlock>
+          </section>
 
-      <SectionBlock
-        v-else
-        title="Lecture seule"
-        description="La fiche reste consultable, mais les modifications ne sont pas autorisees pour ce profil."
-      >
-        <div class="school-admin__banner school-admin__banner--muted">
-          Vous pouvez consulter cette ecole, sans modifier son nom, ses informations ni son statut.
+          <section class="school-detail__card">
+            <div class="school-detail__section-heading"><div><small>Services disponibles</small><h2>Modules de l’école</h2></div><button v-if="canManageModules" type="button" @click="openModal('modules')">Gérer les modules</button></div>
+            <div v-if="modulesLoading" class="school-detail__module-skeleton">Lecture des modules…</div>
+            <div v-else-if="modulesErrorMessage" class="school-detail__inline-error">{{ modulesErrorMessage }} <button type="button" @click="loadModules">Réessayer</button></div>
+            <div v-else class="school-detail__module-columns">
+              <ModuleGroup title="Autorisés par l’organisation" :items="moduleGroups.allowed" empty-message="Aucun module autorisé." />
+              <ModuleGroup title="Activés pour l’école" :items="moduleGroups.enabled" empty-message="Aucun module activé." tone="active" />
+              <ModuleGroup title="Disponibles à activer" :items="moduleGroups.available" empty-message="Tous les modules autorisés sont déjà activés." tone="available" />
+            </div>
+          </section>
         </div>
-      </SectionBlock>
 
-      <SchoolLifecycleModal
-        :open="lifecycleModalOpen"
-        :action="lifecycleAction"
-        :school-name="school.nom"
-        :pending="store.state.mutationStatus === 'loading'"
-        @close="closeLifecycleModal"
-        @confirm="confirmLifecycle"
-      />
+        <aside class="school-detail__side-column">
+          <section class="school-detail__card school-detail__operation-card">
+            <small>Fonctionnement</small><h2>Situation actuelle</h2>
+            <div class="school-detail__operation-row"><span>Statut</span><SchoolStatusBadge :active="school.actif" /></div>
+            <div class="school-detail__operation-row"><span>Mode d’exploitation</span><SchoolModeBadge :mode="school.modeExploitation" /></div>
+            <div class="school-detail__operation-row"><span>Organisation</span><strong>{{ organization?.nom || 'Non renseignée' }}</strong></div>
+          </section>
+
+          <section class="school-detail__card">
+            <small>Qualité de la fiche</small><h2>Complétude</h2>
+            <div class="school-detail__progress-label"><strong>{{ completeness.percentage }} %</strong><span>{{ completeness.missing.length ? `${completeness.missing.length} information(s) à compléter` : 'Toutes les informations sont renseignées' }}</span></div>
+            <div class="school-detail__progress"><span :style="{ width: `${completeness.percentage}%` }" /></div>
+            <div v-if="completeness.missing.length" class="school-detail__missing-list"><span v-for="item in completeness.missing" :key="item">{{ item }}</span></div>
+            <button v-if="canMutateDetail && completeness.missing.length" class="school-detail__text-action" type="button" @click="openModal('identity')">Compléter la fiche</button>
+          </section>
+
+          <section class="school-detail__card">
+            <small>Traçabilité</small><h2>Historique de la fiche</h2>
+            <div class="school-detail__timeline">
+              <div v-if="school.modifieLe"><span class="school-detail__timeline-dot" /><p><strong>Dernière modification</strong>{{ formatDate(school.modifieLe) }}<em>{{ school.modifieParNom || 'Identité archivée' }}</em></p></div>
+              <div v-else><span class="school-detail__timeline-dot" /><p><strong>Aucune modification</strong>La fiche est identique à sa création.</p></div>
+              <div><span class="school-detail__timeline-dot school-detail__timeline-dot--muted" /><p><strong>Création</strong>{{ formatDate(school.creeLe) }}<em>{{ school.creeParNom || 'Auteur non disponible' }}</em></p></div>
+            </div>
+          </section>
+        </aside>
+      </main>
+
+      <SchoolActionModal :open="activeModal === 'identity'" title="Modifier l’identité de l’école" description="Mettez à jour les coordonnées institutionnelles utiles aux documents et aux échanges." submit-label="Enregistrer les informations" :can-submit="identityEvaluation.canSubmit" :pending="store.state.mutationStatus === 'loading'" :dirty="identityEvaluation.canSubmit" @close="closeModal" @discard="closeModal" @submit="updateInstitutionalInfo">
+        <div class="school-admin__form-grid">
+          <label class="school-admin__field"><span>Sigle</span><input v-model="identityForm.sigle" type="text" autocomplete="organization" /></label>
+          <label class="school-admin__field"><span>Téléphone</span><input v-model="identityForm.telephone" type="tel" autocomplete="tel" /></label>
+          <label class="school-admin__field"><span>E-mail</span><input v-model="identityForm.email" type="email" autocomplete="email" /></label>
+          <label class="school-admin__field"><span>Province éducationnelle</span><input v-model="identityForm.provinceEducationnelle" type="text" /></label>
+          <label class="school-admin__field"><span>Ville</span><input v-model="identityForm.ville" type="text" /></label>
+          <label class="school-admin__field"><span>Commune ou territoire</span><input v-model="identityForm.communeOuTerritoire" type="text" /></label>
+          <label class="school-admin__field school-admin__field--wide"><span>Adresse</span><input v-model="identityForm.adresse" type="text" autocomplete="street-address" /></label>
+        </div>
+        <p v-if="identityEvaluation.disableReason" class="school-admin__helper">{{ identityEvaluation.disableReason }}</p>
+      </SchoolActionModal>
+
+      <SchoolActionModal :open="activeModal === 'rename'" title="Renommer l’école" description="Le nouveau nom officiel sera immédiatement visible dans le registre." submit-label="Enregistrer le nouveau nom" :can-submit="renameEvaluation.canSubmit" :pending="store.state.mutationStatus === 'loading'" :dirty="renameEvaluation.canSubmit" @close="closeModal" @discard="closeModal" @submit="renameSchool">
+        <label class="school-admin__field"><span>Nouveau nom officiel</span><input v-model="renameTarget" type="text" autocomplete="organization" /></label>
+        <p v-if="renameEvaluation.disableReason" class="school-admin__helper">{{ renameEvaluation.disableReason }}</p>
+      </SchoolActionModal>
+
+      <SchoolActionModal :open="activeModal === 'mode'" title="Changer le mode d’exploitation" description="Choisissez le fonctionnement adapté à la situation actuelle de l’établissement." submit-label="Enregistrer le mode" :can-submit="modeEvaluation.canSubmit" :pending="store.state.mutationStatus === 'loading'" :dirty="modeEvaluation.canSubmit" @close="closeModal" @discard="closeModal" @submit="updateMode">
+        <div class="school-detail__mode-options">
+          <label v-for="option in schoolModeOptions" :key="option.value" :class="{ 'is-selected': identityForm.modeExploitation === option.value }"><input v-model="identityForm.modeExploitation" type="radio" :value="option.value" /><span><strong>{{ option.label }}</strong>{{ option.description }}</span></label>
+        </div>
+      </SchoolActionModal>
+
+      <SchoolActionModal :open="activeModal === 'modules'" title="Gérer les modules de l’école" description="Activez uniquement les modules préalablement autorisés par l’organisation." submit-label="Enregistrer les changements" :can-submit="canSaveModules" :pending="modulesSaving" :dirty="modulesDirty" @close="closeModal" @discard="closeModal" @submit="saveModules">
+        <div v-if="modulesErrorMessage" class="school-detail__inline-error">{{ modulesErrorMessage }}</div>
+        <div v-if="modulesAllowed.length" class="school-detail__module-picker">
+          <label v-for="module in moduleGroups.allowed" :key="module.code" :class="{ 'is-selected': modulesDraft.includes(module.code) }"><input type="checkbox" :checked="modulesDraft.includes(module.code)" @change="toggleModule(module.code)" /><span><strong>{{ module.label }}</strong>{{ module.description }}</span></label>
+        </div>
+        <EmptyState v-else title="Aucun module disponible" message="L’organisation doit d’abord autoriser des modules pour cette école." />
+      </SchoolActionModal>
+
+      <SchoolLifecycleModal :open="lifecycleModalOpen" :action="lifecycleAction" :school-name="school.nom" :pending="store.state.mutationStatus === 'loading'" @close="lifecycleModalOpen = false" @confirm="confirmLifecycle" />
     </template>
   </PageContainer>
 </template>
 
 <script setup lang="ts">
+import { Blocks, Building2, CaseUpper, ChevronRight, Ellipsis, MapPin, Pencil, Power, RefreshCw } from 'lucide-vue-next';
 import { RouterLink } from 'vue-router';
 import EmptyState from '../../../shared/ui/EmptyState.vue';
 import ErrorState from '../../../shared/ui/ErrorState.vue';
-import StatCard from '../../../shared/ui/StatCard.vue';
 import PageContainer from '../../../shared/layout/PageContainer.vue';
-import PageHeader from '../../../shared/layout/PageHeader.vue';
-import SectionBlock from '../../../shared/layout/SectionBlock.vue';
+import InfoItem from '../components/SchoolDetailInfoItem.vue';
+import ModuleGroup from '../components/SchoolModuleGroup.vue';
+import SchoolActionModal from '../components/SchoolActionModal.vue';
 import SchoolLifecycleModal from '../components/SchoolLifecycleModal.vue';
 import SchoolModeBadge from '../components/SchoolModeBadge.vue';
 import SchoolStatusBadge from '../components/SchoolStatusBadge.vue';
 import { useSchoolAdministrationDetailViewModel } from '../viewmodels/useSchoolAdministrationDetailViewModel';
 
 const {
-  store,
-  school,
-  organization,
-  canMutateDetail,
-  renameTarget,
-  identityForm,
-  schoolModeOptions,
-  summaryCards,
-  renameEvaluation,
-  modeEvaluation,
-  identityEvaluation,
-  lifecycleModalOpen,
-  lifecycleAction,
-  formatDate,
-  renameSchool,
-  updateMode,
-  updateInstitutionalInfo,
-  openLifecycleModal,
-  closeLifecycleModal,
-  confirmLifecycle,
+  store, school, organization, canMutateDetail, canManageModules, returnPath, returnLabel,
+  activeModal, renameTarget, identityForm, schoolModeOptions, renameEvaluation, modeEvaluation,
+  identityEvaluation, completeness, modulesLoading, modulesSaving, modulesErrorMessage,
+  modulesAllowed, modulesDraft, moduleGroups, modulesDirty, canSaveModules,
+  lifecycleModalOpen, lifecycleAction, formatDate, loadModules, openModal, closeModal,
+  renameSchool, updateMode, updateInstitutionalInfo, toggleModule, saveModules,
+  openLifecycleModal, confirmLifecycle,
 } = useSchoolAdministrationDetailViewModel();
 </script>
 

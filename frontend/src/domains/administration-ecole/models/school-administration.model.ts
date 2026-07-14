@@ -40,8 +40,10 @@ export interface SchoolAdministrationItem {
   ville?: string;
   communeOuTerritoire?: string;
   creePar?: string;
+  creeParNom?: string;
   modifieLe?: string;
   modifiePar?: string;
+  modifieParNom?: string;
 }
 
 export interface CreateSchoolPayload {
@@ -95,4 +97,3 @@ export const schoolModeOptions: readonly SchoolModeOption[] = [
 export function labelForSchoolMode(mode: SchoolModeValue | string): string {
   return schoolModeOptions.find((option) => option.value === mode)?.label ?? mode;
 }
-

@@ -4,13 +4,13 @@
       <div class="school-lifecycle-modal__header">
         <div>
           <small>Confirmation</small>
-          <h2>{{ action === 'activate' ? "Activer l'ecole" : "Desactiver l'ecole" }}</h2>
+          <h2>{{ action === 'activate' ? "Activer l’école" : "Désactiver l’école" }}</h2>
           <p>
             <template v-if="action === 'activate'">
-              Vous etes sur le point de rendre <strong>{{ schoolName }}</strong> de nouveau active dans le registre.
+              Vous êtes sur le point de rendre <strong>{{ schoolName }}</strong> de nouveau active dans le registre.
             </template>
             <template v-else>
-              Vous etes sur le point de desactiver <strong>{{ schoolName }}</strong>. L'ecole restera visible dans le registre avec son nouveau statut.
+              Vous êtes sur le point de désactiver <strong>{{ schoolName }}</strong>. L’école restera visible dans le registre avec son nouveau statut.
             </template>
           </p>
         </div>
@@ -20,9 +20,9 @@
     <section class="school-lifecycle-modal__panel">
       <strong>Controle avant confirmation</strong>
       <ul>
-        <li>La trace de cette action restera disponible dans la fiche de l'ecole.</li>
-        <li>Cette confirmation ne modifie pas les autres informations de l'etablissement.</li>
-        <li>Le registre sera relu automatiquement apres validation.</li>
+        <li>La trace de cette action restera disponible dans la fiche de l’école.</li>
+        <li>Cette confirmation ne modifie pas les autres informations de l’établissement.</li>
+        <li>Le registre sera relu automatiquement après validation.</li>
       </ul>
     </section>
 
@@ -38,7 +38,7 @@
           :disabled="pending"
           @click="$emit('confirm')"
         >
-          {{ pending ? 'Validation en cours...' : action === 'activate' ? "Activer l'ecole" : "Desactiver l'ecole" }}
+          {{ pending ? 'Validation en cours…' : action === 'activate' ? "Activer l’école" : "Désactiver l’école" }}
         </button>
       </div>
     </template>
