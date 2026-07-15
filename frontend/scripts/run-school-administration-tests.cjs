@@ -94,6 +94,9 @@ test("les vues administration ecole n'exposent plus le vocabulaire technique int
     path.resolve(__dirname, '..', 'src/domains/administration-ecole/views/ModuleHomeView.vue'),
     path.resolve(__dirname, '..', 'src/domains/administration-ecole/views/SchoolAdministrationRegistryView.vue'),
     path.resolve(__dirname, '..', 'src/domains/administration-ecole/views/SchoolAdministrationDetailView.vue'),
+    path.resolve(__dirname, '..', 'src/domains/administration-ecole/components/SchoolCreationModal.vue'),
+    path.resolve(__dirname, '..', 'src/domains/administration-ecole/components/SchoolActionModal.vue'),
+    path.resolve(__dirname, '..', 'src/domains/administration-ecole/components/SchoolLifecycleModal.vue'),
   ];
   const forbidden = [
     'referentiel.read',
@@ -114,6 +117,66 @@ test("les vues administration ecole n'exposent plus le vocabulaire technique int
       assert.equal(source.includes(token), false, `${path.basename(file)} contains forbidden token "${token}"`);
     }
   }
+});
+
+test("les écrans actifs Organisation n'exposent ni jargon technique ni action fantôme", () => {
+  const files = [
+    path.resolve(__dirname, '..', 'src/domains/organisation/views/ModuleHomeView.vue'),
+    path.resolve(__dirname, '..', 'src/domains/organisation/views/OrganizationRegistryView.vue'),
+    path.resolve(__dirname, '..', 'src/domains/organisation/views/OrganizationDetailView.vue'),
+    path.resolve(__dirname, '..', 'src/domains/organisation/views/OrganizationEditView.vue'),
+    path.resolve(__dirname, '..', 'src/domains/organisation/views/OrganizationAttachedSchoolsView.vue'),
+    path.resolve(__dirname, '..', 'src/domains/organisation/components/OrganizationCreationModal.vue'),
+  ];
+  const forbidden = ['depuis le backend', 'Le backend', 'Action sensible non disponible', 'Failed to fetch'];
+
+  for (const file of files) {
+    const source = fs.readFileSync(file, 'utf8');
+    for (const token of forbidden) {
+      assert.equal(source.includes(token), false, `${path.basename(file)} contains forbidden token "${token}"`);
+    }
+  }
+});
+
+test('les formulaires de création protègent les saisies non enregistrées', () => {
+  for (const relativePath of [
+    'src/domains/organisation/components/OrganizationCreationModal.vue',
+    'src/domains/administration-ecole/components/SchoolCreationModal.vue',
+  ]) {
+    const source = fs.readFileSync(path.resolve(__dirname, '..', relativePath), 'utf8');
+    assert.match(source, /showDiscardWarning/);
+    assert.match(source, /requestClose/);
+    assert.match(source, /Abandonner la saisie/);
+  }
+});
+
+test('les confirmations critiques restent verrouillées pendant leur traitement', () => {
+  const organizationDialog = fs.readFileSync(
+    path.resolve(__dirname, '..', 'src/domains/organisation/components/OrganizationConfirmDialog.vue'),
+    'utf8',
+  );
+  const schoolDialog = fs.readFileSync(
+    path.resolve(__dirname, '..', 'src/domains/administration-ecole/components/SchoolLifecycleModal.vue'),
+    'utf8',
+  );
+
+  assert.match(organizationDialog, /if \(!props\.busy\) emit\('close'\)/);
+  assert.match(schoolDialog, /if \(!props\.pending\) emit\('close'\)/);
+});
+
+test("le formulaire Organisation attend son hydratation avant d'être affiché", () => {
+  const view = fs.readFileSync(
+    path.resolve(__dirname, '..', 'src/domains/organisation/views/OrganizationEditView.vue'),
+    'utf8',
+  );
+  const viewModel = fs.readFileSync(
+    path.resolve(__dirname, '..', 'src/domains/organisation/viewmodels/useOrganizationEditViewModel.ts'),
+    'utf8',
+  );
+
+  assert.match(view, /OrganizationEditSkeleton v-if="isLoading"/);
+  assert.match(viewModel, /const formReady = ref\(false\)/);
+  assert.match(viewModel, /!formReady\.value && store\.state\.status !== 'error'/);
 });
 
 test("la creation depuis une organisation conserve le parent et le chemin de retour", () => {
@@ -196,6 +259,14 @@ test("tous les acces Voir convergent vers la fiche canonique administration ecol
   assert.match(viewModel, /query: \{ retour: `\/app\/organisation\/organisations\/\$\{organisationId\.value\}\/ecoles` \}/);
   assert.match(routes, /name: 'school-administration-detail'/);
   assert.equal(routes.includes("import('./views/OrganizationSchoolDetailView.vue')"), false);
+  assert.equal(
+    fs.existsSync(path.resolve(__dirname, '..', 'src/domains/organisation/views/OrganizationSchoolDetailView.vue')),
+    false,
+  );
+  assert.equal(
+    fs.existsSync(path.resolve(__dirname, '..', 'src/domains/organisation/components/OrganizationProjectionPanel.vue')),
+    false,
+  );
 });
 
 test('la fiche canonique utilise des actions guidees et une tracabilite humaine', () => {

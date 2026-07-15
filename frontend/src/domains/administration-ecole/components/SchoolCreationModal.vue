@@ -1,5 +1,5 @@
 <template>
-  <ModalShell :open="open" @close="$emit('close')">
+  <ModalShell :open="open" @close="requestClose">
     <template #header>
       <div class="school-admin-modal__header">
         <div>
@@ -89,13 +89,24 @@
       </div>
     </section>
 
+    <div v-if="showDiscardWarning" class="school-admin-modal__discard" role="alert">
+      <div>
+        <strong>Abandonner la saisie ?</strong>
+        <p>Les informations renseignées dans ce formulaire ne seront pas enregistrées.</p>
+      </div>
+      <div class="school-admin-modal__discard-actions">
+        <button class="school-admin-modal__ghost" type="button" @click="showDiscardWarning = false">Continuer la saisie</button>
+        <button class="school-admin-modal__danger" type="button" @click="discard">Abandonner</button>
+      </div>
+    </div>
+
     <template #footer>
       <div class="school-admin-modal__footer">
         <div class="school-admin-modal__footer-note">
           <small>{{ disableReason ?? "L'ecole sera ajoutee au registre apres confirmation." }}</small>
         </div>
         <div class="school-admin-modal__footer-actions">
-          <button class="school-admin-modal__ghost" type="button" :disabled="busy" @click="$emit('close')">
+          <button class="school-admin-modal__ghost" type="button" :disabled="busy" @click="requestClose">
             Annuler
           </button>
           <button class="school-admin-modal__primary" type="button" :disabled="!canSubmit || busy" @click="$emit('submit')">
@@ -108,7 +119,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 import ModalShell from '../../../components/communs/ModalShell.vue';
 import type {
   CreateSchoolPayload,
@@ -139,6 +150,30 @@ const selectedModeDescription = computed(
     ?? "Choisissez le mode d'exploitation qui correspond a cette ecole.",
 );
 
+const showDiscardWarning = ref(false);
+const isDirty = computed(() => Object.entries(props.form).some(([key, value]) => {
+  if (key === 'idOrganisation' || key === 'modeExploitation') return false;
+  return typeof value === 'string' && value.trim().length > 0;
+}));
+
+watch(() => props.open, (open) => {
+  if (!open) showDiscardWarning.value = false;
+});
+
+function requestClose(): void {
+  if (props.busy) return;
+  if (isDirty.value) {
+    showDiscardWarning.value = true;
+    return;
+  }
+  emit('close');
+}
+
+function discard(): void {
+  showDiscardWarning.value = false;
+  emit('close');
+}
+
 function updateField(field: keyof CreateSchoolPayload, value: string): void {
   emit('update:form', {
     ...props.form,
@@ -164,13 +199,15 @@ function updateField(field: keyof CreateSchoolPayload, value: string): void {
 .school-admin-modal__field small{color:#61788a;line-height:1.5}
 .school-admin-modal__field--wide{grid-column:1 / -1}
 .school-admin-modal__footer{display:flex;justify-content:space-between;gap:1rem;align-items:center}
+.school-admin-modal__discard{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1rem 1.05rem;border:1px solid rgba(180,83,9,.16);border-radius:20px;background:#fff9f2;color:#60381f}.school-admin-modal__discard p{margin:.25rem 0 0;color:#7b5a44}.school-admin-modal__discard-actions{display:flex;gap:.7rem;flex:none}
 .school-admin-modal__footer-note small{color:#61788a;line-height:1.5}
 .school-admin-modal__footer-actions{display:flex;gap:.8rem;align-items:center}
 .school-admin-modal__ghost,.school-admin-modal__primary{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;padding:.82rem 1.15rem;font-weight:700;border:1px solid rgba(17,40,63,.12)}
 .school-admin-modal__ghost{background:#fff;color:#11283f}
 .school-admin-modal__primary{background:linear-gradient(135deg,#113f67,#1a6aa0);border-color:transparent;color:#fff;box-shadow:0 18px 32px rgba(17,63,103,.2)}
+.school-admin-modal__danger{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;padding:.82rem 1.15rem;font-weight:700;border:1px solid #a94343;background:#a94343;color:#fff}
 .school-admin-modal__primary:disabled,.school-admin-modal__ghost:disabled{opacity:.6;cursor:not-allowed;box-shadow:none}
 @media (max-width: 720px){
-  .school-admin-modal__footer,.school-admin-modal__footer-actions{flex-direction:column;align-items:stretch}
+  .school-admin-modal__footer,.school-admin-modal__footer-actions,.school-admin-modal__discard,.school-admin-modal__discard-actions{flex-direction:column;align-items:stretch}
 }
 </style>

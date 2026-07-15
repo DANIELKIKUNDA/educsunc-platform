@@ -234,7 +234,7 @@ export const officialUserConfigurationCatalog: readonly OfficialUserConfiguratio
     description: "Choisissez l'apparence utilisée dans votre espace personnel.",
     categoryLabel: 'Préférences personnelles',
     dataTypeLabel: 'Choix',
-    defaultValueLabel: "Selon l'appareil",
+    defaultValueLabel: 'Selon le système',
     required: true,
     proofLabel: 'Préférence personnelle officielle.',
     allowedValues: ['light', 'dark', 'system'],

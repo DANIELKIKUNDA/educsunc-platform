@@ -160,21 +160,13 @@
               </div>
             </div>
             <div class="org-detail__sensitive-actions">
-              <button class="org-detail__button org-detail__button--ghost" type="button" @click="ouvrirActionResponsable('La modification des informations du responsable')">
-                Modifier les informations
-              </button>
-              <button class="org-detail__button org-detail__button--ghost" type="button" @click="ouvrirActionResponsable('Le remplacement du responsable principal')">
-                Remplacer le responsable
-              </button>
-              <button class="org-detail__button org-detail__button--ghost" type="button" @click="ouvrirActionResponsable('La reinitialisation du mot de passe du responsable')">
-                Reinitialiser le mot de passe
-              </button>
-              <button class="org-detail__button org-detail__button--ghost" type="button" @click="ouvrirActionResponsable('La desactivation du compte responsable')">
-                Desactiver le compte
+              <button class="org-detail__button org-detail__button--primary" type="button" @click="ouvrirEdition">
+                <PencilLine :size="16" />
+                Modifier les informations du responsable
               </button>
             </div>
             <p class="org-detail__hint">
-              Les actions sensibles du responsable principal restent separees des informations generales de l organisation.
+              Les informations du responsable sont modifiées dans la fiche sécurisée de l’organisation. Les actions de compte non prises en charge ne sont pas proposées ici.
             </p>
           </SectionBlock>
 
@@ -201,58 +193,6 @@
               @update:model-value="definirModulesOrganisation"
               @save="demanderEnregistrementModules"
             />
-          </SectionBlock>
-
-          <SectionBlock
-            v-else-if="activeTab === 'ecoles'"
-            title="Ecoles rattachees"
-            description="Apercu des ecoles actuellement rattachees a cette organisation."
-          >
-            <div v-if="ecolesApercu.length === 0" class="org-detail__empty">
-              <School :size="18" />
-              <div>
-                <strong>Aucune ecole n est encore rattachee a cette organisation.</strong>
-                <p>Vous pouvez creer une ecole pour commencer a structurer cette organisation.</p>
-              </div>
-              <RouterLink class="org-detail__button org-detail__button--primary org-detail__empty-action" to="/app/administration-ecole/ecoles">
-                Creer une ecole
-              </RouterLink>
-            </div>
-            <div v-else class="org-detail__schools-preview">
-              <div class="org-detail__schools-table-wrapper">
-                <table class="org-detail__schools-table">
-                  <thead>
-                    <tr>
-                      <th>Code ecole</th>
-                      <th>Nom de l ecole</th>
-                      <th>Province educationnelle</th>
-                      <th>Sections organisees</th>
-                      <th>Modules activés</th>
-                      <th>Statut</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="ecole in ecolesApercu" :key="ecole.id">
-                      <td>{{ ecole.code }}</td>
-                      <td>{{ ecole.nom }}</td>
-                      <td>{{ ecole.provinceEducationnelle || 'Non renseignee' }}</td>
-                      <td>{{ lireSectionsOrganisees() }}</td>
-                      <td>{{ lireModulesActives(ecole.id) }}</td>
-                      <td>
-                        <span :class="['org-detail__status', ecole.actif ? 'is-active' : 'is-inactive']">
-                          {{ ecole.actif ? 'Active' : 'Inactive' }}
-                        </span>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              <div class="org-detail__preview-footer">
-                <RouterLink class="org-detail__button org-detail__button--ghost org-detail__button-link" :to="`/app/organisation/organisations/${organisation.id}/ecoles`">
-                  Voir toutes les ecoles
-                </RouterLink>
-              </div>
-            </div>
           </SectionBlock>
 
           <SectionBlock
@@ -315,6 +255,7 @@
       :details="organisation ? `Organisation cible : ${organisation.nom} (${organisation.code}).` : 'Aucune organisation selectionnee.'"
       :confirm-label="organisation?.actif ? 'Desactiver' : 'Activer'"
       :processing-label="organisation?.actif ? 'Desactivation en cours...' : 'Activation en cours...'"
+      :tone="organisation?.actif ? 'danger' : 'primary'"
       @close="fermerDialogueStatut"
       @confirm="confirmerChangementStatut"
     />
@@ -364,7 +305,6 @@ import { useOrganizationDetailViewModel } from '../viewmodels/useOrganizationDet
 
 const {
   organisation,
-  ecolesApercu,
   isLoading,
   errorMessage,
   isBusy,
@@ -382,7 +322,6 @@ const {
   modulesConfirmDialogOpen,
   statusDialogOpen,
   activerOrganisationDansContexte,
-  ouvrirActionResponsable,
   ouvrirEdition,
   ouvrirConfigurationModules,
   retournerRegistre,
@@ -399,8 +338,6 @@ const {
   lireVersion,
   lireDerniereModification,
   lireEtatCompteResponsable,
-  lireSectionsOrganisees,
-  lireModulesActives,
   formaterDate,
 } = useOrganizationDetailViewModel();
 

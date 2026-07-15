@@ -14,19 +14,24 @@ export const tenancyPlugin: PluginGlobal = Object.assign(
       const idEcoleHeader = lireHeader(requete.headers, REQUEST_CONTEXT_HEADER_TENANT);
       const idOrganisationContexte = requete.context?.organisationActiveId;
       const idEcoleContexte = requete.context?.ecoleActiveId;
+      const portePlateforme = requete.context?.scopes.some(
+        (scope) => scope.obtenirTypeScope().obtenirValeur() === 'PLATEFORME',
+      ) === true;
 
       try {
-        securityTenantIsolationService.verifierOrganisation(
-          idOrganisationHeader,
-          idOrganisationContexte,
-        );
-        securityTenantIsolationService.verifierEcole(idEcoleHeader, idEcoleContexte);
+        if (!portePlateforme) {
+          securityTenantIsolationService.verifierOrganisation(
+            idOrganisationHeader,
+            idOrganisationContexte,
+          );
+          securityTenantIsolationService.verifierEcole(idEcoleHeader, idEcoleContexte);
 
-        if (idOrganisationContexte) {
-          requete.headers[REQUEST_CONTEXT_HEADER_ORGANISATION] = idOrganisationContexte;
-        }
-        if (idEcoleContexte) {
-          requete.headers[REQUEST_CONTEXT_HEADER_TENANT] = idEcoleContexte;
+          if (idOrganisationContexte) {
+            requete.headers[REQUEST_CONTEXT_HEADER_ORGANISATION] = idOrganisationContexte;
+          }
+          if (idEcoleContexte) {
+            requete.headers[REQUEST_CONTEXT_HEADER_TENANT] = idEcoleContexte;
+          }
         }
       } catch (erreur) {
         return reponse.code(403).send({

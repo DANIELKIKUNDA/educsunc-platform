@@ -1,5 +1,5 @@
 <template>
-  <ModalShell :open="open" @close="$emit('close')">
+  <ModalShell :open="open" @close="requestClose">
     <template #header>
       <div class="org-confirm__header">
         <div class="org-confirm__icon">
@@ -22,10 +22,10 @@
 
     <template #footer>
       <div class="org-confirm__footer">
-        <button class="org-button org-button--ghost" type="button" :disabled="busy" @click="$emit('close')">
+        <button class="org-button org-button--ghost" type="button" :disabled="busy" @click="requestClose">
           Annuler
         </button>
-        <button class="org-button org-button--danger" type="button" :disabled="busy" @click="$emit('confirm')">
+        <button :class="['org-button', tone === 'danger' ? 'org-button--danger' : 'org-button--primary']" type="button" :disabled="busy" @click="$emit('confirm')">
           <LoaderCircle v-if="busy" class="org-button__spinner" :size="16" />
           <span>{{ busy ? processingLabel : confirmLabel }}</span>
         </button>
@@ -38,7 +38,7 @@
 import { LoaderCircle, TriangleAlert } from 'lucide-vue-next';
 import ModalShell from '../../../components/communs/ModalShell.vue';
 
-withDefaults(defineProps<{
+const props = withDefaults(defineProps<{
   open: boolean;
   busy?: boolean;
   title: string;
@@ -47,17 +47,23 @@ withDefaults(defineProps<{
   details: string;
   confirmLabel?: string;
   processingLabel?: string;
+  tone?: 'primary' | 'danger';
 }>(), {
   busy: false,
   detailsTitle: 'Impact',
   confirmLabel: 'Confirmer',
   processingLabel: 'Traitement en cours...',
+  tone: 'danger',
 });
 
-defineEmits<{
+const emit = defineEmits<{
   (event: 'close'): void;
   (event: 'confirm'): void;
 }>();
+
+function requestClose(): void {
+  if (!props.busy) emit('close');
+}
 </script>
 
 <style scoped>
@@ -73,6 +79,7 @@ defineEmits<{
 .org-confirm__footer{display:flex;justify-content:flex-end;gap:.8rem}
 .org-button{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;border-radius:999px;padding:.82rem 1.15rem;font-weight:700;border:1px solid rgba(17,40,63,.12);background:#fff;color:#11283f}
 .org-button--ghost{background:#f8fbff}
+.org-button--primary{background:linear-gradient(135deg,#0b5d7a,#1180a3);border-color:transparent;color:#fff;box-shadow:0 18px 36px rgba(17,128,163,.22)}
 .org-button--danger{background:linear-gradient(135deg,#d63a2f,#ef4444);border-color:transparent;color:#fff;box-shadow:0 18px 36px rgba(239,68,68,.24)}
 .org-button:disabled{opacity:.65;cursor:not-allowed;box-shadow:none}
 .org-button__spinner{animation:org-spin .9s linear infinite}

@@ -167,6 +167,20 @@ async function createSchool(page, organization) {
   return school;
 }
 
+async function verifyProtectedCreationDraft(page) {
+  const dialog = page.getByRole('dialog');
+  await page.getByRole('button', { name: 'Nouvelle ecole' }).first().click();
+  await dialog.getByRole('heading', { name: 'Nouvelle ecole' }).waitFor();
+  await dialog.getByLabel('Code *').fill(`BROUILLON-${Date.now()}`);
+  await dialog.getByRole('button', { name: 'Annuler' }).click();
+  await dialog.getByText('Abandonner la saisie ?').waitFor();
+  await dialog.getByRole('button', { name: 'Continuer la saisie' }).click();
+  await dialog.getByLabel('Code *').waitFor();
+  await dialog.getByRole('button', { name: 'Annuler' }).click();
+  await dialog.getByRole('button', { name: 'Abandonner' }).click();
+  await dialog.waitFor({ state: 'hidden' });
+}
+
 async function verifyCanonicalDetail(page, school) {
   await page.goto(`${baseUrl}/app/organisation/ecoles/${school.id}`, { waitUntil: 'domcontentloaded', timeout: 120000 });
   await page.waitForURL(`**/administration-ecole/ecoles/${school.id}`, { timeout: 30000 });
@@ -183,6 +197,7 @@ async function verifyCanonicalDetail(page, school) {
   await page.getByRole('heading', { name: school.name, exact: true }).waitFor({ timeout: 60000 });
   await page.getByText(school.name, { exact: true }).first().waitFor({ timeout: 60000 });
   await page.getByRole('heading', { name: "Modules de l’école" }).waitFor({ timeout: 60000 });
+  await page.getByRole('link', { name: /Retour/ }).first().waitFor({ timeout: 30000 });
   const body = await page.locator('body').innerText();
   if (/PostgreSQL|depuis le backend|validation du backend|referentiel academique a echoue/i.test(body)) {
     throw new Error('La fiche canonique expose encore du vocabulaire technique.');
@@ -308,7 +323,7 @@ async function verifyReversibleMutations(page, school) {
 async function verifyMobile(page, school) {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(`${baseUrl}/app/administration-ecole/ecoles/${school.id}`, { waitUntil: 'domcontentloaded', timeout: 120000 });
-  await page.getByText(school.name, { exact: true }).first().waitFor({ timeout: 60000 });
+  await page.locator('.school-detail__hero h1').filter({ hasText: school.name }).waitFor({ timeout: 60000 });
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1);
   if (overflow) throw new Error('La fiche ecole deborde horizontalement sur mobile.');
   await page.screenshot({ path: path.join(artifactDir, 'detail-mobile.png'), fullPage: true });
@@ -317,6 +332,7 @@ async function verifyMobile(page, school) {
 async function prepare(page) {
   await verifyDashboard(page);
   const organization = await selectAndVerifyOrganizations(page);
+  await verifyProtectedCreationDraft(page);
   const school = await createSchool(page, organization);
   const search = page.getByPlaceholder('Nom, code, sigle, ville ou commune...');
   await search.fill(school.code);

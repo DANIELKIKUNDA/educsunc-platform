@@ -1,5 +1,5 @@
 <template>
-  <ModalShell :open="open" @close="$emit('close')">
+  <ModalShell :open="open" @close="requestClose">
     <template #header>
       <div class="org-modal__header">
         <div>
@@ -11,7 +11,7 @@
               : 'Renseignez les informations essentielles pour enregistrer une nouvelle organisation.' }}
           </p>
         </div>
-        <button class="org-icon-button" type="button" :disabled="busy" @click="$emit('close')">
+        <button class="org-icon-button" type="button" :disabled="busy" aria-label="Fermer le formulaire" @click="requestClose">
           <X :size="16" />
         </button>
       </div>
@@ -96,9 +96,20 @@
       </div>
     </section>
 
+    <div v-if="showDiscardWarning" class="org-modal__discard" role="alert">
+      <div>
+        <strong>Abandonner la saisie ?</strong>
+        <p>Les informations renseignées dans ce formulaire ne seront pas enregistrées.</p>
+      </div>
+      <div class="org-modal__discard-actions">
+        <button class="org-ghost-button" type="button" @click="showDiscardWarning = false">Continuer la saisie</button>
+        <button class="org-danger-button" type="button" @click="discard">Abandonner</button>
+      </div>
+    </div>
+
     <template #footer>
       <div class="org-modal__footer">
-        <button class="org-ghost-button" type="button" :disabled="busy" @click="$emit('close')">Annuler</button>
+        <button class="org-ghost-button" type="button" :disabled="busy" @click="requestClose">Annuler</button>
         <button class="org-primary-button" type="button" :disabled="!canSubmit || busy" @click="$emit('submit')">
           <Save :size="16" />
           <span>{{ busy ? (mode === 'rename' ? 'Modification en cours...' : 'Creation en cours...') : (mode === 'rename' ? 'Enregistrer' : 'Creer l organisation') }}</span>
@@ -109,7 +120,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { Save, X } from 'lucide-vue-next';
 import ModalShell from '../../../components/communs/ModalShell.vue';
 
@@ -158,6 +169,28 @@ const promoteurErrors = computed(() => ({
   email: props.promoteurForm.email.trim().length > 0 && !props.promoteurForm.email.includes('@') ? 'Le format de l email est invalide.' : '',
 }));
 
+const showDiscardWarning = ref(false);
+const isDirty = computed(() => Object.values(props.organisationForm).some((value) => value.trim().length > 0)
+  || Object.values(props.promoteurForm).some((value) => value.trim().length > 0));
+
+watch(() => props.open, (open) => {
+  if (!open) showDiscardWarning.value = false;
+});
+
+function requestClose(): void {
+  if (props.busy) return;
+  if (isDirty.value) {
+    showDiscardWarning.value = true;
+    return;
+  }
+  emit('close');
+}
+
+function discard(): void {
+  showDiscardWarning.value = false;
+  emit('close');
+}
+
 function mettreAJourOrganisation(cle: keyof OrganisationForm, valeur: string): void {
   emit('update:organisationForm', {
     ...props.organisationForm,
@@ -191,11 +224,13 @@ function mettreAJourPromoteur(cle: keyof PromoteurForm, valeur: string): void {
 .org-form-field--wide{grid-column:1/-1}
 .org-field-error{color:#b91c1c;font-size:.82rem;font-weight:600}
 .org-modal__footer{display:flex;justify-content:flex-end;gap:.8rem}
-.org-primary-button,.org-ghost-button{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;font-weight:600;border-radius:999px;padding:.82rem 1.15rem;border:1px solid rgba(17,40,63,.12);background:#fff;color:#11283f}
+.org-modal__discard{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1rem 1.05rem;border:1px solid rgba(180,83,9,.16);border-radius:20px;background:#fff9f2;color:#60381f}.org-modal__discard p{margin:.25rem 0 0;color:#7b5a44}.org-modal__discard-actions{display:flex;gap:.7rem;flex:none}
+.org-primary-button,.org-ghost-button,.org-danger-button{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;font-weight:600;border-radius:999px;padding:.82rem 1.15rem;border:1px solid rgba(17,40,63,.12);background:#fff;color:#11283f}
 .org-primary-button{background:linear-gradient(135deg,#1147d8,#2563eb);border-color:transparent;color:#fff;box-shadow:0 16px 32px rgba(37,99,235,.24)}
+.org-danger-button{background:#a94343;border-color:#a94343;color:#fff}
 .org-primary-button:disabled,.org-ghost-button:disabled,.org-icon-button:disabled{opacity:.6;cursor:not-allowed;box-shadow:none}
 .org-ghost-button{background:#f8fbff}
 @media (max-width: 720px){
-  .org-modal__footer{flex-direction:column}
+  .org-modal__footer,.org-modal__discard,.org-modal__discard-actions{flex-direction:column;align-items:stretch}
 }
 </style>

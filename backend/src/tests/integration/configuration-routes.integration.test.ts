@@ -71,6 +71,45 @@ test('les routes configuration exposent la gouvernance modulaire organisation et
   await serveur.close();
 });
 
+test('le Manager systeme relit les modules autorises apres leur enregistrement', async () => {
+  const bootstrap = new GlobalTestBootstrap();
+  const organisationId = 'organisation-manager-lecture-modules';
+  const manager = await bootstrap.creerActeur({
+    ...ROLE_FIXTURES.MANAGER_SYSTEME,
+    organisationId: TENANT_FIXTURES.organisationA,
+    ecoleId: TENANT_FIXTURES.ecoleA1,
+  });
+
+  const serveur = Fastify();
+  await serveur.register(async (instance) => {
+    await requestContextPlugin(instance, {});
+    await authenticationPlugin(instance, {});
+    await securityPlugin(instance, {});
+    await tenancyPlugin(instance, {});
+    await instance.register(routeConfiguration);
+  });
+
+  const modules = ['REFERENTIEL_ACADEMIQUE', 'PAIEMENTS_FACTURATION'];
+  const ecriture = await injecterCommeActeur(serveur, manager, {
+    method: 'PUT',
+    url: `/api/v1/configuration/modules/organisations/${organisationId}`,
+    payload: { modules },
+  });
+  assert.equal(ecriture.statusCode, 200, ecriture.body);
+
+  const lecture = await injecterCommeActeur(serveur, manager, {
+    method: 'GET',
+    url: `/api/v1/configuration/effective?niveau=ORGANIZATION&organisationId=${organisationId}&keyPrefix=modules`,
+  });
+  assert.equal(lecture.statusCode, 200, lecture.body);
+  const modulesRelus = lecture.json().donnees.valeurs.find(
+    (valeur: { key: string }) => valeur.key === 'modules.allowed',
+  )?.value;
+  assert.deepEqual(modulesRelus, modules);
+
+  await serveur.close();
+});
+
 test('le backend expose un catalogue officiel des modules lisible par les acteurs autorises', async () => {
   const bootstrap = new GlobalTestBootstrap();
   const adminSystemeEcole = await bootstrap.creerActeur({

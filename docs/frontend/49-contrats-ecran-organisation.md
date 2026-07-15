@@ -361,7 +361,7 @@ Permettre la lecture systeme des organisations, l'exercice des mutations `ORG-01
 
 - `OrganizationRegistryToolbar`
 - `OrganizationRegistryTable`
-- `OrganizationProjectionPanel`
+- `OrganizationRegistryTable`
 - `OrganizationCreationModal`
 - `ModalShell`
 - `PageHeader`
@@ -474,9 +474,9 @@ Permettre la lecture premium, routee et complete d'une organisation, avec ses in
 
 ### Actions interdites
 
-- aucune edition libre de `typeOrganisation`
-- aucune edition libre de `description`
-- aucune edition du `promoteurPrincipal`
+- aucune modification sans `referentiel.write`
+- aucune réinitialisation de mot de passe ni désactivation du compte responsable depuis cette fiche
+- aucune action de compte simulée sans workflow backend réel
 
 ### Routes frontend concernees
 
@@ -518,7 +518,7 @@ Permettre la lecture premium, routee et complete d'une organisation, avec ses in
 
 ### Objectif metier
 
-Materieliser une page de modification premium sans inventer de mutation nouvelle, en bornant l'edition au renommage deja prouve par `PATCH /api/organisations/:id/renommer`.
+Matérialiser une page de modification premium sans inventer de mutation nouvelle, en utilisant la mise à jour complète déjà prouvée par `PATCH /api/organisations/:id`.
 
 ### Acteur principal
 
@@ -537,20 +537,22 @@ Materieliser une page de modification premium sans inventer de mutation nouvelle
 ### Donnees attendues
 
 - `GET /api/organisations/:id`
-- `PATCH /api/organisations/:id/renommer`
+- `PATCH /api/organisations/:id`
 
 ### Actions visibles
 
 - modifier le nom
+- modifier le type et la description
+- modifier les informations affichables du responsable principal
 - annuler
 - enregistrer les modifications
 - retourner vers `Voir organisation`
 
 ### Actions interdites
 
-- modifier le promoteur principal
-- modifier le type d'organisation
-- modifier la description
+- remplacer implicitement le compte responsable par une action non prévue
+- réinitialiser son mot de passe
+- désactiver son compte depuis ce formulaire
 
 ### Routes frontend concernees
 
@@ -753,9 +755,11 @@ Permettre la lecture detaillee d'une ecole rattachee a une organisation, puis la
 ### Implementation frontend reelle
 
 - vue :
-  - [OrganizationSchoolDetailView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/organisation/views/OrganizationSchoolDetailView.vue)
+  - [SchoolAdministrationDetailView.vue](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/administration-ecole/views/SchoolAdministrationDetailView.vue)
 - route :
   - [routes.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/domains/organisation/routes.ts)
+
+La route historique du module Organisation redirige désormais vers cette fiche canonique. Aucune seconde implémentation concurrente du détail école n'est conservée.
 
 ### Notes d'UX
 

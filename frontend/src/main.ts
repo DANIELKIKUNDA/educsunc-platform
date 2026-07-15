@@ -13,6 +13,7 @@ import './styles/composants.css';
 import './styles/referentiel.css';
 import './styles/animations.css';
 import './styles/shell.css';
+import './styles/theme-dark.css';
 
 // Point d'entree technique du frontend.
 void configurationApplicationFrontend;

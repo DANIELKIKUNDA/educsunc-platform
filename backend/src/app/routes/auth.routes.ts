@@ -1,4 +1,4 @@
-import { createHmac, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
+import { createHash, createHmac, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
 import type { FastifyPluginAsync } from 'fastify';
 import {
   AuditAuthApplicationService,
@@ -132,6 +132,13 @@ const profilsSessionDeveloppeur: Record<CodeActeurDeveloppement, ProfilSessionDe
   PARENT: { nomComplet: 'Aline Mwepu', niveauAcces: 'ECOLE' },
   COMPTABLE: { nomComplet: 'Comptable Demo', niveauAcces: 'ECOLE' },
 };
+
+export function construireIdUtilisateurDeveloppeur(actorCode: CodeActeurDeveloppement): string {
+  const empreinte = createHash('sha256')
+    .update(`educsync:dev-user:${actorCode}`)
+    .digest('hex');
+  return `${empreinte.slice(0, 8)}-${empreinte.slice(8, 12)}-5${empreinte.slice(13, 16)}-a${empreinte.slice(17, 20)}-${empreinte.slice(20, 32)}`;
+}
 
 class TenantContextAuthAdapter {
   private readonly securityTenantIsolationService = new SecurityTenantIsolationService();
@@ -452,6 +459,7 @@ async function assurerUtilisateurDeveloppeur(
 
   const profil = profilsSessionDeveloppeur[actorCode];
   const utilisateur = UtilisateurAuth.creer({
+    idUtilisateur: construireIdUtilisateurDeveloppeur(actorCode),
     nomComplet: profil.nomComplet,
     email,
     motDePasseHash: hacherMotDePasseSynchrone(MOT_DE_PASSE_SESSION_DEV),

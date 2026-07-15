@@ -72,6 +72,7 @@ export class UtilisateurAuth extends RacineAgregat<string> {
 
   // Cette methode cree un utilisateur auth avec les valeurs par defaut du domaine.
   public static creer(params: {
+    idUtilisateur?: string;
     nomComplet: string;
     email: string;
     telephone?: string;
@@ -81,7 +82,7 @@ export class UtilisateurAuth extends RacineAgregat<string> {
     creeLe?: Date;
   }): UtilisateurAuth {
     return new UtilisateurAuth({
-      idUtilisateur: randomUUID(),
+      idUtilisateur: params.idUtilisateur ?? randomUUID(),
       nomComplet: params.nomComplet,
       email: new AdresseEmail(params.email),
       telephone: params.telephone,

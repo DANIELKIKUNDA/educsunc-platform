@@ -28,7 +28,6 @@ export function useOrganizationDetailViewModel() {
   const totalUtilisateursActifs = ref<number | null>(null);
   const responsablePrincipalEtatCompte = ref<string | null>(null);
   const modulesOrganisation = ref<readonly ConfigurationModuleCode[]>([]);
-  const modulesParEcole = ref<Record<string, readonly ConfigurationModuleCode[]>>({});
   const historiqueOrganisation = ref<readonly OrganisationHistoryItem[]>([]);
   const moduleCatalog = ref<readonly ConfigurationModuleCatalogItem[]>(configurationModuleCatalog);
   const modulesDraft = ref<ConfigurationModuleCode[]>([]);
@@ -46,7 +45,6 @@ export function useOrganizationDetailViewModel() {
   const isLoading = computed(() => store.state.status === 'loading');
   const errorMessage = computed(() => traduireMessageErreur(store.state.errorMessage));
   const isBusy = computed(() => store.state.mutationStatus === 'loading' || togglingStatus.value);
-  const ecolesApercu = computed(() => ecoles.value.slice(0, 5));
   const modulesCards = computed<readonly OrganizationModulesSectionCard[]>(() =>
     moduleCatalog.value.map((module) => ({
       code: module.code,
@@ -108,7 +106,6 @@ export function useOrganizationDetailViewModel() {
     await chargerIndicateursOrganisation();
     await chargerCatalogueModules();
     await chargerModulesOrganisation();
-    await chargerModulesParEcole();
     await chargerHistoriqueOrganisation();
   }
 
@@ -122,13 +119,6 @@ export function useOrganizationDetailViewModel() {
   async function ouvrirEdition(): Promise<void> {
     if (!organisation.value) return;
     await router.push(`/app/organisation/organisations/${organisation.value.id}/modifier`);
-  }
-
-  function ouvrirActionResponsable(action: string): void {
-    notificationsService.info(
-      'Action sensible non disponible.',
-      `${action} sera disponible depuis cette fiche des qu elle sera ouverte.`,
-    );
   }
 
   async function retournerRegistre(): Promise<void> {
@@ -229,26 +219,12 @@ export function useOrganizationDetailViewModel() {
     return diffAnnees === 1 ? 'Il y a 1 an' : `Il y a ${diffAnnees} ans`;
   }
 
-  function lireSectionsOrganisees(): string {
-    return 'Non renseigne';
-  }
-
-  function lireModulesActives(idEcole?: string): string {
-    if (!idEcole) {
-      return modulesOrganisation.value.length > 0
-        ? modulesOrganisation.value.map((module) => lireLibelleModule(module)).join(', ')
-        : 'Non renseigne';
-    }
-
-    const modules = modulesParEcole.value[idEcole] ?? [];
-    if (modules.length === 0) {
-      return 'Non renseigne';
-    }
-
-    return modules.map((module) => lireLibelleModule(module)).join(', ');
-  }
-
   function selectionnerOnglet(tab: OrganisationDetailTab): void {
+    if (tab === 'ecoles' && organisationId.value) {
+      void router.push(`/app/organisation/organisations/${organisationId.value}/ecoles`);
+      return;
+    }
+
     activeTab.value = tab;
     void router.replace({
       query: {
@@ -296,7 +272,6 @@ export function useOrganizationDetailViewModel() {
         'Modules autorises mis a jour',
         `${organisation.value.nom} a bien enregistre sa nouvelle attribution de modules.`,
       );
-      await chargerModulesParEcole();
     } catch {
       modulesErrorMessage.value = "Les modules autorises n'ont pas pu etre enregistres. Votre selection a ete conservee.";
       notificationsService.danger(
@@ -386,29 +361,6 @@ export function useOrganizationDetailViewModel() {
     }
   }
 
-  async function chargerModulesParEcole(): Promise<void> {
-    if (!organisationId.value || ecoles.value.length === 0) {
-      modulesParEcole.value = {};
-      return;
-    }
-
-    const entries = await Promise.all(
-      ecoles.value.map(async (ecole) => {
-        try {
-          const response = await configurationApi.resoudreModulesEffectifs(
-            { organisationId: organisationId.value, ecoleId: ecole.id },
-            lireContexteApiConfiguration(),
-          );
-          return [ecole.id, response.donnees.modulesEffectifs] as const;
-        } catch {
-          return [ecole.id, []] as const;
-        }
-      }),
-    );
-
-    modulesParEcole.value = Object.fromEntries(entries);
-  }
-
   function extraireModulesAutorises(configuration: EffectiveConfigurationItem | null): readonly ConfigurationModuleCode[] {
     if (!configuration) {
       return moduleCatalog.value.map((module) => module.code);
@@ -431,10 +383,6 @@ export function useOrganizationDetailViewModel() {
       (module): module is ConfigurationModuleCode =>
         moduleCatalog.value.some((item) => item.code === module),
     );
-  }
-
-  function lireLibelleModule(code: ConfigurationModuleCode): string {
-    return moduleCatalog.value.find((module) => module.code === code)?.label ?? code;
   }
 
   function creerHistoriqueFallback(): readonly OrganisationHistoryItem[] {
@@ -524,6 +472,10 @@ export function useOrganizationDetailViewModel() {
       || tabFromQuery === 'ecoles'
       || tabFromQuery === 'historique'
     ) {
+      if (tabFromQuery === 'ecoles') {
+        await router.replace(`/app/organisation/organisations/${organisationId.value}/ecoles`);
+        return;
+      }
       activeTab.value = tabFromQuery;
     }
 
@@ -533,7 +485,6 @@ export function useOrganizationDetailViewModel() {
   return {
     organisation,
     ecoles,
-    ecolesApercu,
     isLoading,
     errorMessage,
     isBusy,
@@ -552,7 +503,6 @@ export function useOrganizationDetailViewModel() {
     statusDialogOpen,
     chargerOrganisation,
     activerOrganisationDansContexte,
-    ouvrirActionResponsable,
     ouvrirEdition,
     retournerRegistre,
     ouvrirDialogueStatut,
@@ -570,8 +520,6 @@ export function useOrganizationDetailViewModel() {
     lireDerniereModification,
     lireEtatCompteResponsable,
     lireCreeDepuis,
-    lireSectionsOrganisees,
-    lireModulesActives,
     formaterDate,
   };
 }

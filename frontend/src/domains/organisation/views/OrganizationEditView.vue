@@ -31,7 +31,7 @@
       </template>
     </PageHeader>
 
-    <OrganizationEditSkeleton v-if="isLoading && !organisation" />
+    <OrganizationEditSkeleton v-if="isLoading" />
     <ErrorState
       v-else-if="errorMessage && !organisation"
       title="Impossible de charger les informations"
@@ -129,15 +129,15 @@
 
         <SectionBlock
           title="Traçabilite"
-          description="Le backend conserve la creation, la version courante et la derniere modification reelle."
+          description="EduSync conserve la création, la version courante et la dernière modification réelle."
         >
           <div class="org-edit__meta-grid">
             <article class="org-edit__meta-card">
-              <small>Date de creation</small>
+              <small>Date de création</small>
               <strong>{{ formaterDate(organisation.creeLe, true) }}</strong>
             </article>
             <article class="org-edit__meta-card">
-              <small>Derniere modification</small>
+              <small>Dernière modification</small>
               <strong>{{ lireDerniereModification() }}</strong>
             </article>
             <article class="org-edit__meta-card">
@@ -162,8 +162,8 @@
     <OrganizationConfirmDialog
       :open="confirmLeaveOpen"
       title="Quitter sans enregistrer"
-      message="Des modifications n ont pas ete enregistrees. Voulez-vous vraiment quitter cette page ?"
-      details="Les changements saisis dans le champ nom seront perdus si vous quittez maintenant."
+      message="Des modifications n’ont pas été enregistrées. Voulez-vous vraiment quitter cette page ?"
+      details="Les changements apportés à l’organisation et à son responsable seront perdus si vous quittez maintenant."
       confirm-label="Quitter la page"
       processing-label="Redirection..."
       @close="fermerConfirmationSortie"

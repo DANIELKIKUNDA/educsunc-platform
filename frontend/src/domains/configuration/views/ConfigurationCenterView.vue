@@ -148,7 +148,7 @@
               <thead>
                 <tr>
                   <th>{{ vm.activeTab === 'school-modules' ? 'Module' : 'Réglage' }}</th>
-                  <th>{{ vm.activeTab === 'school-modules' ? 'Cadre' : 'Origine' }}</th>
+                  <th v-if="vm.activeTab !== 'user'">{{ vm.activeTab === 'school-modules' ? 'Cadre' : 'Origine' }}</th>
                   <th>Statut</th>
                   <th>Valeur</th>
                 </tr>
@@ -157,6 +157,7 @@
                 <tr
                   v-for="row in vm.filteredRows"
                   :key="row.key"
+                  :data-configuration-key="row.key"
                   :class="{ 'configuration-center__table-row--selected': vm.selectedRow?.key === row.key }"
                   @click="vm.selectRow(row.key)"
                   @keydown.enter.prevent="vm.selectRow(row.key)"
@@ -167,13 +168,18 @@
                     <strong>{{ row.label }}</strong>
                     <small>{{ row.description }}</small>
                   </td>
-                  <td>{{ row.sourceLabel }}</td>
-                  <td>
+                  <td v-if="vm.activeTab !== 'user'" :data-label="vm.activeTab === 'school-modules' ? 'Cadre' : 'Origine'">{{ row.sourceLabel }}</td>
+                  <td data-label="Statut">
                     <span class="configuration-center__status-badge" :class="`configuration-center__status-badge--${row.locked ? 'locked' : row.inherited ? 'inherited' : 'local'}`">
                       {{ row.statusLabel }}
                     </span>
                   </td>
-                  <td class="configuration-center__table-value">{{ row.effectiveValueText }}</td>
+                  <td class="configuration-center__table-value" data-label="Valeur">
+                    <div v-if="row.valueBadges.length > 0" class="configuration-center__value-badges">
+                      <span v-for="badge in row.valueBadges" :key="badge" class="configuration-center__value-badge">{{ badge }}</span>
+                    </div>
+                    <span v-else>{{ row.effectiveValueText }}</span>
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -197,7 +203,7 @@
               </div>
 
             <div v-if="vm.activeTab === 'user'" class="configuration-center__info-banner">
-              Cette preference concerne uniquement le compte actuellement connecte. Elle n'est pas presentee comme un reglage d'organisation ou d'ecole.
+              Cette préférence concerne uniquement le compte actuellement connecté. Elle n’est pas utilisée comme un réglage d’organisation ou d’école.
             </div>
 
             <div v-if="vm.activeTab === 'school-modules'" class="configuration-center__module-grid">
@@ -225,7 +231,6 @@
               </button>
               <template v-else>
                 <button v-if="vm.canCreateFromSelection" class="configuration-center__toolbar-button configuration-center__toolbar-button--primary" type="button" @click="vm.openModal(vm.selectedRow?.isDefinedLocally ? 'edit' : 'create')">{{ vm.primaryActionLabel }}</button>
-                <button v-if="vm.selectedRow" class="configuration-center__toolbar-button" type="button" @click="vm.openModal('validate')">Vérifier</button>
                 <button v-if="vm.hasLoadedConfiguration && vm.canMutateCurrentTab && vm.activeTab === 'platform'" class="configuration-center__toolbar-button" type="button" @click="vm.openModal('snapshot')">Enregistrer une version</button>
                 <button v-if="vm.hasLoadedConfiguration && vm.canMutateCurrentTab && vm.activeTab === 'platform'" class="configuration-center__toolbar-button configuration-center__toolbar-button--warning" type="button" @click="vm.openModal('lock')">Verrouiller</button>
                 <button v-if="vm.hasLoadedConfiguration && vm.canMutateCurrentTab && vm.activeTab === 'platform'" class="configuration-center__toolbar-button" type="button" @click="vm.openModal('unlock')">Autoriser les modifications</button>
@@ -275,7 +280,7 @@
           <strong>{{ vm.selectedRow.sourceLabel }}</strong>
         </article>
         <article class="configuration-center__fact-card">
-          <small>Etat</small>
+          <small>État</small>
           <strong>{{ vm.selectedRow.statusLabel }}</strong>
         </article>
       </div>
@@ -316,21 +321,16 @@
             Unité : {{ vm.selectedFieldDefinition.unit }}
           </small>
 
-          <div v-else-if="vm.selectedFieldDefinition.control === 'boolean-toggle'" class="configuration-center__choice-row">
-            <label class="configuration-center__choice-card">
-              <input v-model="vm.form.valueRaw" type="radio" value="true" />
-              <span>Oui</span>
-            </label>
-            <label class="configuration-center__choice-card">
-              <input v-model="vm.form.valueRaw" type="radio" value="false" />
-              <span>Non</span>
-            </label>
-          </div>
+          <label v-else-if="vm.selectedFieldDefinition.control === 'boolean-toggle'" class="configuration-center__switch">
+            <input v-model="vm.form.valueRaw" type="checkbox" true-value="true" false-value="false" />
+            <span class="configuration-center__switch-track" aria-hidden="true"><span /></span>
+            <strong>{{ vm.form.valueRaw === 'true' ? 'Oui' : 'Non' }}</strong>
+          </label>
 
           <div v-else-if="vm.selectedFieldDefinition.control === 'radio-group'" class="configuration-center__choice-row">
             <label v-for="option in vm.selectedFieldDefinition.options ?? []" :key="option" class="configuration-center__choice-card">
               <input v-model="vm.form.valueRaw" type="radio" :value="option" />
-              <span>{{ option === 'light' ? 'Clair' : option === 'dark' ? 'Sombre' : "Selon l’appareil" }}</span>
+              <span>{{ vm.formatOptionLabel(option) }}</span>
             </label>
           </div>
 
@@ -345,6 +345,7 @@
             <label v-for="option in vm.selectedFieldDefinition.options ?? []" :key="option" class="configuration-center__choice-card">
               <input
                 type="checkbox"
+                :value="option"
                 :checked="vm.selectedOptionValues.includes(option)"
                 @change="vm.toggleOption(option)"
               />
@@ -366,7 +367,7 @@
             <option value="SYSTEM">Plateforme</option>
             <option value="ORGANIZATION">Organisation</option>
             <option value="SCHOOL">École</option>
-            <option value="USER">Utilisateur</option>
+            <option value="USER">Compte personnel</option>
           </select>
         </label>
 

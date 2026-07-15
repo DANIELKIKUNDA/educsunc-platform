@@ -20,13 +20,15 @@ export function useOrganizationEditViewModel() {
   const store = useOrganizationGovernanceStore();
   const initialSnapshot = ref<OrganisationEditSnapshot | null>(null);
   const confirmLeaveOpen = ref(false);
+  const formReady = ref(false);
 
   const organisationId = computed(() =>
     typeof route.params.idOrganisation === 'string' ? route.params.idOrganisation : '',
   );
 
   const organisation = computed(() => store.state.selectedOrganisation);
-  const isLoading = computed(() => store.state.status === 'loading');
+  const isLoading = computed(() => store.state.status === 'loading'
+    || (!formReady.value && store.state.status !== 'error'));
   const isSaving = computed(() => store.state.mutationStatus === 'loading');
   const errorMessage = computed(() =>
     store.state.status === 'error'
@@ -81,6 +83,7 @@ export function useOrganizationEditViewModel() {
       return;
     }
 
+    formReady.value = false;
     await store.chargerOrganisation(organisationId.value);
     hydraterFormulaire();
   }
@@ -99,6 +102,7 @@ export function useOrganizationEditViewModel() {
     form.responsableEmail = source.promoteurPrincipal?.email ?? '';
     form.responsableIdentifiant = source.promoteurPrincipal?.identifiant ?? '';
     initialSnapshot.value = construireSnapshot();
+    formReady.value = true;
   }
 
   async function enregistrer(): Promise<void> {

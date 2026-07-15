@@ -1,4 +1,4 @@
-import Fastify from 'fastify';
+import Fastify, { type FastifyInstance } from 'fastify';
 
 import { auditContextPlugin } from './plugins/audit-context.plugin';
 import { auditEventsPlugin } from './plugins/audit-events.plugin';
@@ -38,6 +38,46 @@ const originesFrontendAutorisees = new Set([
   'http://127.0.0.1:4174',
 ]);
 
+export const methodesCorsFrontend = 'GET,POST,PUT,PATCH,DELETE,OPTIONS';
+export const entetesCorsFrontend = [
+  'Accept',
+  'Content-Type',
+  'Authorization',
+  'x-session-id',
+  'x-device-id',
+  'x-tenant-id',
+  'x-organisation-id',
+  'x-ecole-id',
+  'x-user-id',
+  'x-role-actif',
+  'x-lecture-organisation',
+  'Idempotency-Key',
+  'x-request-id',
+  'x-correlation-id',
+  'x-offline-mode',
+].join(',');
+
+export const configurerCorsFrontend = <TServeur extends FastifyInstance<any, any, any, any, any>>(
+  serveur: TServeur,
+): void => {
+  serveur.addHook('onRequest', async (requete, reponse) => {
+    const origine = requete.headers.origin;
+    const origineAutorisee = typeof origine === 'string'
+      && originesFrontendAutorisees.has(origine)
+      ? origine
+      : 'http://localhost:5173';
+
+    reponse.header('Access-Control-Allow-Origin', origineAutorisee);
+    reponse.header('Access-Control-Allow-Credentials', 'true');
+    reponse.header('Access-Control-Allow-Methods', methodesCorsFrontend);
+    reponse.header('Access-Control-Allow-Headers', entetesCorsFrontend);
+
+    if (requete.method === 'OPTIONS') {
+      await reponse.code(204).send();
+    }
+  });
+};
+
 // Prepare les plugins globaux sans logique technique lourde.
 const preparerPluginsGlobaux = (logger: PinoLogger): void => {
   for (const plugin of pluginsGlobaux) {
@@ -58,41 +98,7 @@ export const createServer = () => {
 
   preparerPluginsGlobaux(logger);
   // Configure les entetes CORS necessaires au frontend local sans ajouter de dependance.
-  serveur.addHook('onRequest', async (requete, reponse) => {
-    const origine = requete.headers.origin;
-    const origineAutorisee = typeof origine === 'string'
-      && originesFrontendAutorisees.has(origine)
-      ? origine
-      : 'http://localhost:5173';
-
-    reponse.header('Access-Control-Allow-Origin', origineAutorisee);
-    reponse.header('Access-Control-Allow-Credentials', 'true');
-    reponse.header('Access-Control-Allow-Methods', 'GET,POST,PATCH,DELETE,OPTIONS');
-    reponse.header(
-      'Access-Control-Allow-Headers',
-      [
-        'Accept',
-        'Content-Type',
-        'Authorization',
-        'x-session-id',
-        'x-device-id',
-        'x-tenant-id',
-        'x-organisation-id',
-        'x-ecole-id',
-        'x-user-id',
-        'x-role-actif',
-        'x-lecture-organisation',
-        'Idempotency-Key',
-        'x-request-id',
-        'x-correlation-id',
-        'x-offline-mode',
-      ].join(','),
-    );
-
-    if (requete.method === 'OPTIONS') {
-      await reponse.code(204).send();
-    }
-  });
+  configurerCorsFrontend(serveur);
   serveur.register(async (instance) => {
     for (const plugin of pluginsGlobaux) {
       await plugin(instance, {});

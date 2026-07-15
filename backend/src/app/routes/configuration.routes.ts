@@ -1008,16 +1008,27 @@ function autoriserLectureConfigurationPourPorteeCible(
   portee: PorteeConfigurationProps,
   utilisateurId?: string,
 ): boolean {
+  const rolesPlateformeLecture = ['MANAGER_SYSTEME', 'OPERATEUR_SYSTEME', 'SUPPORT_SYSTEME'];
+
   if (portee.niveau === 'SYSTEM') {
-    return ['MANAGER_SYSTEME', 'OPERATEUR_SYSTEME', 'SUPPORT_SYSTEME'].includes(roleActif ?? '');
+    return rolesPlateformeLecture.includes(roleActif ?? '');
   }
 
   if (portee.niveau === 'ORGANIZATION') {
-    return ['PROMOTEUR_ORGANISATION', 'ADMIN_SYSTEME_ORGANISATION', 'GESTIONNAIRE_ORGANISATION'].includes(roleActif ?? '');
+    return [
+      ...rolesPlateformeLecture,
+      'PROMOTEUR_ORGANISATION',
+      'ADMIN_SYSTEME_ORGANISATION',
+      'GESTIONNAIRE_ORGANISATION',
+    ].includes(roleActif ?? '');
   }
 
   if (portee.niveau === 'SCHOOL') {
-    return ['ADMIN_SYSTEME_ECOLE', 'ADMINISTRATEUR_ECOLE'].includes(roleActif ?? '');
+    return [
+      ...rolesPlateformeLecture,
+      'ADMIN_SYSTEME_ECOLE',
+      'ADMINISTRATEUR_ECOLE',
+    ].includes(roleActif ?? '');
   }
 
   return Boolean(utilisateurId) && utilisateurId === portee.utilisateurId;

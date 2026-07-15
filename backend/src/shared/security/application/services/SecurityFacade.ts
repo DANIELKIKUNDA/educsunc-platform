@@ -128,9 +128,19 @@ export class SecurityFacade {
             .map((scope) => scope.obtenirValeurScope()),
         ])
         .filter((valeur): valeur is string => Boolean(valeur));
-      this.moteurScope.verifierOrganisation(organisationsAutorisees, input.idOrganisation);
-      this.moteurScope.verifierEcole(ecolesAutorisees, input.idEcole);
-      this.moteurScope.verifierSection(sectionsAutorisees, input.idSection);
+      const scopePlateforme = affectations.some((affectation) =>
+        affectation.obtenirScopes().some(
+          (scope) => scope.obtenirTypeScope().obtenirValeur() === 'PLATEFORME',
+        ),
+      );
+
+      // Une portee Plateforme couvre les organisations et ecoles, sans accorder
+      // les permissions metier qui restent verifiees independamment.
+      if (!scopePlateforme) {
+        this.moteurScope.verifierOrganisation(organisationsAutorisees, input.idOrganisation);
+        this.moteurScope.verifierEcole(ecolesAutorisees, input.idEcole);
+        this.moteurScope.verifierSection(sectionsAutorisees, input.idSection);
+      }
 
       await this.auditSecurityPort?.journaliser({
         action: 'SECURITY_SCOPE_GRANTED',
@@ -140,6 +150,7 @@ export class SecurityFacade {
           idOrganisation: input.idOrganisation,
           idEcole: input.idEcole,
           idSection: input.idSection,
+          scopePlateforme,
           scope: [input.idOrganisation, input.idEcole, input.idSection].filter(Boolean).join(':'),
         },
       });

@@ -1,7 +1,11 @@
 <template>
   <PageContainer>
     <nav class="school-detail__breadcrumb" aria-label="Fil d’Ariane">
-      <RouterLink :to="returnPath">{{ returnLabel }}</RouterLink><ChevronRight :size="15" />
+      <RouterLink class="school-detail__back-button" :to="returnPath" :aria-label="returnLabel">
+        <ArrowLeft :size="17" />
+        {{ returnLabel }}
+      </RouterLink>
+      <ChevronRight :size="15" />
       <span>{{ school?.nom || 'Fiche école' }}</span>
     </nav>
 
@@ -145,7 +149,7 @@
 </template>
 
 <script setup lang="ts">
-import { Blocks, Building2, CaseUpper, ChevronRight, Ellipsis, MapPin, Pencil, Power, RefreshCw } from 'lucide-vue-next';
+import { ArrowLeft, Blocks, Building2, CaseUpper, ChevronRight, Ellipsis, MapPin, Pencil, Power, RefreshCw } from 'lucide-vue-next';
 import { RouterLink } from 'vue-router';
 import EmptyState from '../../../shared/ui/EmptyState.vue';
 import ErrorState from '../../../shared/ui/ErrorState.vue';

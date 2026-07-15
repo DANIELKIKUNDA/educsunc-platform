@@ -30,7 +30,7 @@ import {
   officialUserConfigurationCatalog,
   type ConfigurationModuleCode,
 } from '../models/configuration.model';
-import { buildScopeFromLevel, formatConfigurationValue } from '../mappers/configuration.mapper';
+import { buildScopeFromLevel } from '../mappers/configuration.mapper';
 import {
   evaluateConfigurationForm,
   formatConfigurationValueForForm,
@@ -73,6 +73,7 @@ interface ConfigurationDisplayRow {
   description: string;
   dataTypeLabel: string;
   effectiveValueText: string;
+  valueBadges: readonly string[];
   rawValue: ConfigurationValue | null;
   hasRecordedValue: boolean;
   isDefinedLocally: boolean;
@@ -174,6 +175,76 @@ function formatLevelLabel(level: ConfigurationScopeLevel): string {
   }
 }
 
+const PRESENTATION_VALUE_LABELS: Readonly<Record<string, string>> = {
+  system: 'Selon le système',
+  light: 'Clair',
+  dark: 'Sombre',
+  true: 'Oui',
+  false: 'Non',
+  IN_APP: "Dans l'application",
+  SMS: 'SMS',
+  EMAIL: 'E-mail',
+  WHATSAPP: 'WhatsApp',
+  PUSH: 'Notification push',
+  WEBHOOK: 'Service connecté',
+  SYSTEM: 'Plateforme',
+  ORGANIZATION: 'Organisation',
+  SCHOOL: 'École',
+  USER: 'Compte personnel',
+};
+
+function formatPresentationScalar(value: string | number | boolean | null): string {
+  if (value === null) return 'Non renseigné';
+  const raw = String(value);
+  return PRESENTATION_VALUE_LABELS[raw] ?? raw;
+}
+
+function normalizePresentationValues(value: ConfigurationValue): readonly string[] {
+  if (Array.isArray(value)) {
+    return value.flatMap((entry) => normalizePresentationValues(entry));
+  }
+
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+      try {
+        const parsed = JSON.parse(trimmed) as unknown;
+        if (Array.isArray(parsed)) {
+          return parsed.flatMap((entry) => (
+            typeof entry === 'string' || typeof entry === 'number' || typeof entry === 'boolean'
+              ? [formatPresentationScalar(entry)]
+              : []
+          ));
+        }
+      } catch {
+        // La valeur reste lisible comme un texte normal si elle ne contient pas une liste valide.
+      }
+    }
+    return [formatPresentationScalar(trimmed)];
+  }
+
+  if (typeof value === 'number' || typeof value === 'boolean' || value === null) {
+    return [formatPresentationScalar(value)];
+  }
+
+  return ['Valeur structurée'];
+}
+
+function formatPresentationValue(value: ConfigurationValue): string {
+  return normalizePresentationValues(value).join(', ');
+}
+
+function getSettingActionLabel(key: string, fallbackLabel: string): string {
+  const labels: Readonly<Record<string, string>> = {
+    'preferences.theme': 'Choisir mon thème',
+    'notifications.preferences.muted': 'Gérer les interruptions',
+    'notifications.preferences.preferredChannel': 'Choisir mon canal préféré',
+    'notifications.preferences.enabledChannels': 'Choisir mes canaux acceptés',
+  };
+
+  return labels[key] ?? `Modifier ${fallbackLabel.charAt(0).toLowerCase()}${fallbackLabel.slice(1)}`;
+}
+
 function mapErrorToUserMessage(error: unknown): string {
   if (error instanceof ApiError) {
     if (error.status === 0) return 'La connexion au service est momentanément indisponible. Vérifiez votre réseau puis réessayez.';
@@ -238,16 +309,21 @@ function buildDisplayRows(effective: EffectiveConfigurationItem | null): Configu
     dataTypeLabel: findOfficialSystemConfiguration(entry.key)?.dataTypeLabel
       ?? findOfficialUserConfiguration(entry.key)?.dataTypeLabel
       ?? 'Texte court',
-    effectiveValueText: formatConfigurationValue(entry.value),
+    effectiveValueText: formatPresentationValue(entry.value),
+    valueBadges: normalizePresentationValues(entry.value).length > 1
+      ? normalizePresentationValues(entry.value)
+      : [],
     rawValue: entry.value,
     hasRecordedValue: true,
     isDefinedLocally: !entry.herite && entry.sourceNiveau === effective.scope.niveau,
-    sourceLabel: formatSourceLevel(entry.sourceNiveau),
+    sourceLabel: entry.sourceNiveau === 'USER' ? 'Compte personnel' : formatSourceLevel(entry.sourceNiveau),
     statusLabel: entry.verrouille
       ? 'Verrouille'
       : entry.herite
         ? 'Herite'
-        : 'Personnalise',
+        : entry.sourceNiveau === 'USER'
+          ? 'Personnalisée'
+          : 'Personnalisé',
     inherited: entry.herite,
     locked: entry.verrouille,
     explanation: entry.explanation,
@@ -267,11 +343,12 @@ function buildOfficialConfigurationRows(
     description: entry.description,
     dataTypeLabel: entry.dataTypeLabel,
     effectiveValueText: 'Valeur initiale appliquée',
+    valueBadges: [],
     rawValue: null,
     hasRecordedValue: false,
     isDefinedLocally: false,
-    sourceLabel: level === 'USER' ? 'Compte actuel' : formatSourceLevel(level),
-    statusLabel: 'Valeur initiale',
+    sourceLabel: level === 'USER' ? 'Compte personnel' : formatSourceLevel(level),
+    statusLabel: level === 'USER' ? 'Par défaut' : 'Valeur initiale',
     inherited: false,
     locked: false,
     explanation: entry.defaultValueLabel,
@@ -486,6 +563,7 @@ export function useConfigurationCenterViewModel() {
         description: module.description,
         dataTypeLabel: 'Catalogue de modules',
         effectiveValueText: resolution.modulesEffectifs.includes(module.code) ? 'Disponible pour l usage' : 'Non disponible',
+        valueBadges: [],
         rawValue: resolution.modulesEffectifs.includes(module.code),
         hasRecordedValue: true,
         isDefinedLocally: resolution.modulesActivesEcole.includes(module.code),
@@ -621,15 +699,29 @@ export function useConfigurationCenterViewModel() {
       return [];
     }
 
+    const originExplanation = activeTab.value === 'user'
+      ? row.isDefinedLocally
+        ? 'Cette valeur a été personnalisée pour votre compte.'
+        : 'La valeur proposée par défaut est actuellement utilisée pour votre compte.'
+      : row.inherited
+        ? `Cette valeur provient du niveau ${row.sourceLabel.toLowerCase()}.`
+        : `Cette valeur est définie au niveau ${row.sourceLabel.toLowerCase()}.`;
+
     const facts = [
       { label: 'Réglage', value: row.label },
       { label: 'Description', value: row.description },
-      { label: 'Type de saisie', value: row.dataTypeLabel },
       { label: 'Valeur enregistrée', value: row.hasRecordedValue ? row.effectiveValueText : 'Valeur initiale' },
-      { label: 'Origine', value: row.sourceLabel },
       { label: 'Statut', value: row.statusLabel },
-      { label: 'Repere utile', value: row.explanation },
+      { label: 'Origine de cette valeur', value: originExplanation },
     ];
+
+    const options = selectedFieldDefinition.value?.options ?? [];
+    if (options.length > 0) {
+      facts.push({
+        label: 'Options disponibles',
+        value: options.map((option) => formatOptionLabel(option)).join(', '),
+      });
+    }
 
     if (activeTab.value === 'platform') {
       facts.splice(4, 0, {
@@ -641,7 +733,7 @@ export function useConfigurationCenterViewModel() {
     }
     if (row.sourceCreatedAt) {
       facts.push({
-        label: "Date d'origine",
+        label: 'Valeur enregistrée le',
         value: new Intl.DateTimeFormat('fr-CD', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(row.sourceCreatedAt)),
       });
     }
@@ -656,7 +748,7 @@ export function useConfigurationCenterViewModel() {
       return 'Enregistrer';
     }
 
-    return selectedRow.value.isDefinedLocally ? 'Mettre à jour la valeur' : 'Personnaliser cette valeur';
+    return getSettingActionLabel(selectedRow.value.key, selectedRow.value.label);
   });
   const modalActionLabel = computed(() => {
     switch (modalState.action) {
@@ -665,13 +757,13 @@ export function useConfigurationCenterViewModel() {
       case 'lock':
         return 'Verrouiller';
       case 'validate':
-        return 'Vérifier';
+        return 'Contrôler la saisie';
       case 'snapshot':
         return 'Enregistrer la version';
       case 'reload':
         return 'Actualiser';
       default:
-        return selectedRow.value?.isDefinedLocally ? 'Mettre à jour' : 'Enregistrer';
+        return primaryActionLabel.value;
     }
   });
   const modalDraftDirty = computed(() => {
@@ -736,15 +828,7 @@ export function useConfigurationCenterViewModel() {
   }
 
   function formatOptionLabel(option: string): string {
-    const labels: Record<string, string> = {
-      IN_APP: "Dans l'application",
-      SMS: 'SMS',
-      EMAIL: 'E-mail',
-      WHATSAPP: 'WhatsApp',
-      PUSH: 'Notification push',
-      WEBHOOK: 'Service connecté',
-    };
-    return labels[option] ?? option;
+    return PRESENTATION_VALUE_LABELS[option] ?? option;
   }
 
   function captureModalBaseline(): void {

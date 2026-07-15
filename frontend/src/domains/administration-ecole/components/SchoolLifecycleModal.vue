@@ -1,5 +1,5 @@
 <template>
-  <ModalShell :open="open" @close="$emit('close')">
+  <ModalShell :open="open" @close="requestClose">
     <template #header>
       <div class="school-lifecycle-modal__header">
         <div>
@@ -28,7 +28,7 @@
 
     <template #footer>
       <div class="school-lifecycle-modal__footer">
-        <button class="school-lifecycle-modal__ghost" type="button" @click="$emit('close')">
+        <button class="school-lifecycle-modal__ghost" type="button" :disabled="pending" @click="requestClose">
           Annuler
         </button>
         <button
@@ -48,17 +48,21 @@
 <script setup lang="ts">
 import ModalShell from '../../../components/communs/ModalShell.vue';
 
-defineProps<{
+const props = defineProps<{
   open: boolean;
   action: 'activate' | 'deactivate';
   schoolName: string;
   pending: boolean;
 }>();
 
-defineEmits<{
+const emit = defineEmits<{
   (event: 'close'): void;
   (event: 'confirm'): void;
 }>();
+
+function requestClose(): void {
+  if (!props.pending) emit('close');
+}
 </script>
 
 <style scoped>
@@ -129,6 +133,12 @@ defineEmits<{
 
 .school-lifecycle-modal__primary--danger{
   background:linear-gradient(135deg,#b94b4b,#db5e5e);
+}
+
+.school-lifecycle-modal__ghost:disabled,
+.school-lifecycle-modal__primary:disabled{
+  opacity:.6;
+  cursor:not-allowed;
 }
 
 @media (max-width: 720px){

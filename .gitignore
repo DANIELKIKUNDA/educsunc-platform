@@ -22,6 +22,13 @@ coverage/
 tmp/
 backend/.tmp/
 
+# Donnees et preuves locales generees pendant les certifications
+.codex-backups/
+backend/stockage-local/
+frontend/artifacts/
+tmp_docx_pagesorganisation/
+tmp_docx_pagesorganisation.zip
+
 # Fichiers systeme
 .DS_Store
 Thumbs.db

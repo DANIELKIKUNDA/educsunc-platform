@@ -64,8 +64,6 @@ export class PolitiqueClassificationConfiguration {
       key.startsWith('notifications.providers.')
       || key.startsWith('notifications.retry.')
       || key.startsWith('notifications.replay.')
-      || key.startsWith('notifications.templates.')
-      || key.startsWith('notifications.quotas.')
       || key.startsWith('notifications.runtime.')
       || key.startsWith('notifications.monitoring.')
     ) {

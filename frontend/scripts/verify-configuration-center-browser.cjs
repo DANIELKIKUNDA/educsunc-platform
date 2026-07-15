@@ -33,12 +33,12 @@ async function run() {
   if (await page.getByText('Accès refusé', { exact: true }).count()) throw new Error('Le Manager Système est refusé à tort.');
 
   await page.getByText('Tentatives de reprise', { exact: true }).first().click();
-  await page.getByRole('button', { name: /Mettre à jour la valeur/ }).first().click();
+  await page.getByRole('button', { name: 'Modifier tentatives de reprise' }).first().click();
   const actionDialog = page.getByRole('dialog', { name: /Modifier ce réglage/ });
   await actionDialog.waitFor();
   const numericInput = actionDialog.locator('input[type="number"]');
   await numericInput.fill('4');
-  const saveButton = actionDialog.getByRole('button', { name: 'Mettre à jour' });
+  const saveButton = actionDialog.getByRole('button', { name: 'Modifier tentatives de reprise' });
   if (await saveButton.isDisabled()) throw new Error('Le bouton reste désactivé avec une valeur entière valide.');
 
   await actionDialog.getByRole('button', { name: 'Annuler' }).click();
@@ -50,6 +50,27 @@ async function run() {
   await discardDialog.getByRole('button', { name: 'Quitter sans enregistrer' }).click();
   await actionDialog.waitFor({ state: 'detached' });
   process.stdout.write('browser: modal workflow verified\n');
+
+  await page.getByRole('button', { name: /Préférences personnelles/ }).first().click();
+  await page.getByText("Thème de l'espace personnel", { exact: true }).first().waitFor();
+  const userPreferencesText = await page.locator('body').innerText();
+  if (/(^|\n)(system|true|false|IN_APP|EMAIL|USER)(\n|$)/m.test(userPreferencesText)) {
+    throw new Error('Une valeur technique brute reste visible dans les préférences personnelles.');
+  }
+  if (/\[\s*"(?:IN_APP|EMAIL|SMS|PUSH|WEBHOOK)/.test(userPreferencesText)) {
+    throw new Error('Une liste JSON brute reste visible dans les préférences personnelles.');
+  }
+  process.stdout.write('browser: user-friendly values verified\n');
+
+  const desktopLayout = await page.evaluate(() => ({
+    clientWidth: document.documentElement.clientWidth,
+    scrollWidth: document.documentElement.scrollWidth,
+    scrollX: window.scrollX,
+  }));
+  if (desktopLayout.scrollWidth > desktopLayout.clientWidth + 1) {
+    throw new Error(`Le Centre Configuration déborde sur desktop (${desktopLayout.scrollWidth}px pour ${desktopLayout.clientWidth}px).`);
+  }
+  if (desktopLayout.scrollX !== 0) window.scrollTo(0, 0);
 
   await page.screenshot({ path: path.join(artifactDir, 'desktop.png'), fullPage: true });
   await page.setViewportSize({ width: 390, height: 844 });
