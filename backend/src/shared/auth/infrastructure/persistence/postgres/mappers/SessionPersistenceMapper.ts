@@ -8,7 +8,6 @@ export interface SessionUtilisateurRecord {
   user_agent?: string;
   device_id?: string;
   est_offline: boolean;
-  expire_le?: string;
   revoquee_le?: string;
   raison_revocation?: string;
   dernier_refresh_le?: string;
@@ -29,7 +28,6 @@ export class SessionPersistenceMapper {
       user_agent: session.obtenirUserAgent(),
       device_id: session.obtenirDeviceId(),
       est_offline: session.obtenirEstOffline(),
-      expire_le: session.obtenirExpireLe()?.toISOString(),
       revoquee_le: session.obtenirRevoqueeLe()?.toISOString(),
       raison_revocation: session.obtenirRaisonRevocation(),
       dernier_refresh_le: session.obtenirDernierRefreshLe()?.toISOString(),
@@ -49,7 +47,6 @@ export class SessionPersistenceMapper {
       userAgent: record.user_agent,
       deviceId: record.device_id,
       estOffline: record.est_offline,
-      expireLe: record.expire_le ? new Date(record.expire_le) : undefined,
       revoqueeLe: record.revoquee_le ? new Date(record.revoquee_le) : undefined,
       raisonRevocation: record.raison_revocation,
       dernierRefreshLe: record.dernier_refresh_le ? new Date(record.dernier_refresh_le) : undefined,

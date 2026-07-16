@@ -1,15 +1,11 @@
 import type { TransactionManagerPort } from '../../../../application';
-import type { SqlQueryClient } from 'shared/infrastructure/persistence/SqlQueryClient';
+import { ClientPoolPostgresAuth, obtenirClientPostgresAuth } from '../ClientPoolPostgresAuth';
 
-export interface ClientTransactionnelAuth extends SqlQueryClient {}
-
-// Ce gestionnaire ouvre une transaction logique courte pour les orchestrations AUTH.
+// Ce gestionnaire partage la transaction PostgreSQL avec tous les repositories AUTH.
 export class AuthTransactionManager implements TransactionManagerPort {
-  constructor(private readonly clientSql?: ClientTransactionnelAuth) {
-    void this.clientSql;
-  }
+  constructor(private readonly clientSql: ClientPoolPostgresAuth = obtenirClientPostgresAuth()) {}
 
   public async executerDansTransaction<TResult>(operation: () => Promise<TResult>): Promise<TResult> {
-    return operation();
+    return this.clientSql.dansTransaction(operation);
   }
 }

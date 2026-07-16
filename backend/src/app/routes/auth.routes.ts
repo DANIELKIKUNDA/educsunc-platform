@@ -1,5 +1,5 @@
-import { createHash, createHmac, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
-import type { FastifyPluginAsync } from 'fastify';
+import { createHash, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
+import type { FastifyPluginAsync, FastifyReply } from 'fastify';
 import {
   AuditAuthApplicationService,
   AuthApplicationService,
@@ -19,7 +19,7 @@ import {
   RevoquerToutesSessionsUtilisateurUseCase,
   SessionApplicationService,
 } from '../../shared/auth/application';
-import { MoteurAuthentification, MoteurContexteActif, MoteurOfflineAuth, MoteurRefreshToken } from '../../shared/auth/domain';
+import { MoteurAuthentification, MoteurContexteActif, MoteurOfflineAuth, MoteurRefreshToken, PolicyMotDePasseInitial } from '../../shared/auth/domain';
 import {
   SecurityAuditAdapter,
   SecurityAuthorizationAdapter,
@@ -32,6 +32,7 @@ import {
   PostgresTentativeConnexionRepository,
   PostgresUtilisateurAuthRepository,
   AuthTransactionManager,
+  obtenirClientPostgresAuth,
 } from '../../shared/auth/infrastructure';
 import {
   AuthOfflineController,
@@ -48,6 +49,8 @@ import {
   SessionUtilisateurController,
   TenantMiddleware,
   creerRoutesAuth,
+  AccessTokenCookie,
+  RefreshTokenCookie,
 } from '../../shared/auth/interfaces/http';
 import { AuthenticationMiddleware } from '../../shared/auth/infrastructure/middlewares/AuthenticationMiddleware';
 import { AuthOfflineMiddleware } from '../../shared/auth/infrastructure/middlewares/AuthOfflineMiddleware';
@@ -69,14 +72,18 @@ import {
 import { SecurityFacade } from '../../shared/security/application/services/SecurityFacade';
 import { SecurityTenantIsolationService } from '../../shared/security/infrastructure/tenancy/SecurityTenantIsolationService';
 import { configurationApplication } from '../../config/app.config';
+import { chargerConfigurationAuth } from '../../config/auth.config';
 import { UtilisateurAuth } from '../../shared/auth/domain/aggregates/UtilisateurAuth';
 import { AffectationUtilisateur, Role } from '../../shared/security/domain';
 import { PERMISSIONS_SECURITE } from '../../shared/security/domain/value-objects/PermissionSecurite';
 
-const JWT_SECRET_PAR_DEFAUT = 'dev-secret-change-me';
 const MOT_DE_PASSE_SESSION_DEV = 'EducSyn.dev.session.2026';
 const ORGANISATION_DEV_PAR_DEFAUT = 'org-edusync-dev';
 const ECOLE_DEV_PAR_DEFAUT = 'ecole-edusync-dev';
+
+export function sessionDeveloppeurDisponible(environnement: string): boolean {
+  return environnement === 'development';
+}
 
 type CodeActeurDeveloppement =
   | 'MANAGER_SYSTEME'
@@ -109,6 +116,24 @@ interface RequeteSessionDeveloppeur {
 interface ProfilSessionDeveloppeur {
   nomComplet: string;
   niveauAcces: 'PLATEFORME' | 'ORGANISATION' | 'ECOLE';
+}
+
+interface RequeteInitialisationPlateforme {
+  nom: string;
+  postnom: string;
+  prenom: string;
+  email: string;
+  motDePasse: string;
+  confirmationMotDePasse: string;
+  seSouvenirDeMoi?: boolean;
+  deviceId?: string;
+}
+
+class InitialisationPlateformeFermeeError extends Error {
+  constructor() {
+    super('La premiere initialisation EduSync est deja terminee.');
+    this.name = 'InitialisationPlateformeFermeeError';
+  }
 }
 
 const profilsSessionDeveloppeur: Record<CodeActeurDeveloppement, ProfilSessionDeveloppeur> = {
@@ -188,17 +213,8 @@ function verifierMotDePasseSynchrone(motDePasseClair: string, motDePasseHash: st
   return attendu.length === calcule.length && timingSafeEqual(attendu, calcule);
 }
 
-function genererJwtSynchrone(payload: Record<string, unknown>): string {
-  const corps = Buffer.from(JSON.stringify(payload)).toString('base64url');
-  const nonce = randomBytes(16).toString('base64url');
-  const signature = createHmac('sha256', JWT_SECRET_PAR_DEFAUT)
-    .update(`${corps}.${nonce}`)
-    .digest('base64url');
-  return `${corps}.${nonce}.${signature}`;
-}
-
 function genererRefreshTokenSynchrone(): string {
-  return randomBytes(32).toString('hex');
+  return randomBytes(48).toString('base64url');
 }
 
 function hacherMotDePasseSynchrone(motDePasseClair: string): string {
@@ -207,13 +223,110 @@ function hacherMotDePasseSynchrone(motDePasseClair: string): string {
   return `scrypt:${sel}:${hash}`;
 }
 
-function hacherRefreshTokenSynchrone(refreshToken: string): string {
-  return createHmac('sha256', JWT_SECRET_PAR_DEFAUT)
-    .update(String(refreshToken || ''))
-    .digest('hex');
+function lireRequeteInitialisationPlateforme(corps: unknown): RequeteInitialisationPlateforme {
+  if (typeof corps !== 'object' || corps === null || Array.isArray(corps)) {
+    throw new Error('Les informations du premier responsable sont obligatoires.');
+  }
+
+  const donnees = corps as Record<string, unknown>;
+  const lireChamp = (nom: string): string => {
+    const valeur = lireChaineOptionnelleDepuisObjet(donnees, nom);
+    if (!valeur) {
+      throw new Error(`Le champ ${nom} est obligatoire.`);
+    }
+    return valeur;
+  };
+  const motDePasse = lireChamp('motDePasse');
+  const confirmationMotDePasse = lireChamp('confirmationMotDePasse');
+  if (motDePasse !== confirmationMotDePasse) {
+    throw new Error('La confirmation du mot de passe ne correspond pas.');
+  }
+  PolicyMotDePasseInitial.verifier(motDePasse);
+
+  return {
+    nom: lireChamp('nom'),
+    postnom: lireChamp('postnom'),
+    prenom: lireChamp('prenom'),
+    email: lireChamp('email').toLowerCase(),
+    motDePasse,
+    confirmationMotDePasse,
+    seSouvenirDeMoi: donnees.seSouvenirDeMoi === true,
+    deviceId: lireChaineOptionnelleDepuisObjet(donnees, 'deviceId'),
+  };
+}
+
+async function initialisationPlateformeRequise(): Promise<boolean> {
+  const clientSql = obtenirClientPostgresAuth();
+  const resultat = await clientSql.executer<{ initialisee: boolean; comptes_officiels: string }>(`
+    SELECT
+      EXISTS(SELECT 1 FROM auth_initialisation_plateforme WHERE singleton = TRUE) AS initialisee,
+      (SELECT COUNT(*)::TEXT FROM auth_utilisateurs
+       WHERE supprime_logiquement = FALSE
+         AND email NOT LIKE 'dev.%@educsync.local') AS comptes_officiels
+  `);
+  const ligne = resultat.lignes[0];
+  return !ligne?.initialisee && Number(ligne?.comptes_officiels ?? '0') === 0;
+}
+
+async function assurerAffectationManagerPlateforme(
+  utilisateurId: string,
+  roleRepository: PostgresRoleRepository,
+  affectationUtilisateurRepository: PostgresAffectationUtilisateurRepository,
+): Promise<void> {
+  const role = await assurerRoleDeveloppeur(roleRepository, 'MANAGER_SYSTEME');
+  const affectations = await affectationUtilisateurRepository.listerActivesParUtilisateur(utilisateurId);
+  if (affectations.some((affectation) => affectation.obtenirIdRole() === role.obtenirId())) {
+    return;
+  }
+
+  const affectation = AffectationUtilisateur.creer({
+    idUtilisateur: utilisateurId,
+    idRole: role.obtenirId(),
+    niveauAcces: 'PLATEFORME',
+    creePar: 'initialisation-plateforme',
+  });
+  affectation.ajouterScope('PLATEFORME', 'system');
+  await affectationUtilisateurRepository.sauvegarder(affectation);
+}
+
+async function restaurerAffectationManagerInitial(
+  roleRepository: PostgresRoleRepository,
+  affectationUtilisateurRepository: PostgresAffectationUtilisateurRepository,
+): Promise<void> {
+  const resultat = await obtenirClientPostgresAuth().executer<{ premier_utilisateur_id: string }>(
+    'SELECT premier_utilisateur_id FROM auth_initialisation_plateforme WHERE singleton = TRUE',
+  );
+  const utilisateurId = resultat.lignes[0]?.premier_utilisateur_id;
+  if (utilisateurId) {
+    await assurerAffectationManagerPlateforme(
+      utilisateurId,
+      roleRepository,
+      affectationUtilisateurRepository,
+    );
+  }
+}
+
+function appliquerCookiesInitialisation(
+  reponse: FastifyReply,
+  login: Record<string, unknown>,
+  persistant: boolean,
+): void {
+  const secure = configurationApplication.environnement === 'production' ? '; Secure' : '';
+  const maxAgeRefresh = persistant ? `; Max-Age=${10 * 365 * 24 * 60 * 60}` : '';
+  reponse.header('set-cookie', [
+    `${AccessTokenCookie.NOM}=${encodeURIComponent(String(login.accessToken ?? ''))}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${chargerConfigurationAuth().dureeAccessTokenSecondes}${secure}`,
+    `${RefreshTokenCookie.NOM}=${encodeURIComponent(String(login.refreshToken ?? ''))}; Path=/; HttpOnly; SameSite=Strict${maxAgeRefresh}${secure}`,
+  ]);
+}
+
+function masquerRefreshToken<T extends Record<string, unknown>>(donnee: T): Omit<T, 'refreshToken'> {
+  const { refreshToken: _refreshToken, ...donneePublique } = donnee;
+  return donneePublique;
 }
 
 function composerRoutesAuth(): CompositionRoutesAuth {
+  const configurationAuth = chargerConfigurationAuth();
+  const jwtTokenAdapter = new JwtTokenAdapter(configurationAuth);
   const depotUtilisateurAuth = new PostgresUtilisateurAuthRepository();
   const depotSessionUtilisateur = new PostgresSessionUtilisateurRepository();
   const depotRefreshToken = new PostgresRefreshTokenRepository();
@@ -261,6 +374,27 @@ function composerRoutesAuth(): CompositionRoutesAuth {
         return false;
       }
     },
+    resoudreRoleActif: async (utilisateurId) => {
+      const affectations = await affectationUtilisateurRepository.listerActivesParUtilisateur(utilisateurId);
+      for (const affectation of affectations) {
+        const role = await roleRepository.trouverParId(affectation.obtenirIdRole());
+        if (role?.obtenirEstActif()) {
+          return role.obtenirCodeRole().obtenirValeur();
+        }
+      }
+      return undefined;
+    },
+    resoudrePermissionsEffectives: async (utilisateurId) => {
+      const affectations = await affectationUtilisateurRepository.listerActivesParUtilisateur(utilisateurId);
+      const permissions = new Set<string>();
+      for (const affectation of affectations) {
+        const role = await roleRepository.trouverParId(affectation.obtenirIdRole());
+        role?.obtenirPermissions().forEach((permission) => {
+          permissions.add(permission.obtenirPermission().obtenirValeur());
+        });
+      }
+      return [...permissions];
+    },
   });
 
   const transactionManager = new AuthTransactionManager();
@@ -294,9 +428,9 @@ function composerRoutesAuth(): CompositionRoutesAuth {
       auditAuthApplicationService,
       new MoteurAuthentification({
         verifierMotDePasse: verifierMotDePasseSynchrone,
-        genererJwt: genererJwtSynchrone,
+        genererJwt: (payload) => jwtTokenAdapter.signerJwtSynchrone(payload),
         genererRefreshTokenValue: genererRefreshTokenSynchrone,
-        hacherRefreshToken: hacherRefreshTokenSynchrone,
+        hacherRefreshToken: (valeur) => jwtTokenAdapter.hacherRefreshTokenSynchrone(valeur),
       }),
     ),
     new LogoutSaga(
@@ -309,13 +443,16 @@ function composerRoutesAuth(): CompositionRoutesAuth {
     new RefreshTokenSaga(
       transactionManager,
       depotRefreshToken,
+      depotSessionUtilisateur,
       depotUtilisateurAuth,
-      new JwtTokenAdapter(JWT_SECRET_PAR_DEFAUT),
+      jwtTokenAdapter,
       new MoteurRefreshToken({
         genererRefreshTokenValue: genererRefreshTokenSynchrone,
-        hacherRefreshToken: hacherRefreshTokenSynchrone,
+        hacherRefreshToken: (valeur) => jwtTokenAdapter.hacherRefreshTokenSynchrone(valeur),
       }),
+      sessionCache,
       auditAuthApplicationService,
+      securityAuthorizationPort,
     ),
     offlineAuthenticationSaga,
   );
@@ -350,6 +487,7 @@ function composerRoutesAuth(): CompositionRoutesAuth {
     transactionManager,
     depotUtilisateurAuth,
     depotSessionUtilisateur,
+    depotRefreshToken,
     auditAuthApplicationService,
   );
   const authentificationOfflineUseCase = new AuthentificationOfflineUseCase(authApplicationService);
@@ -375,7 +513,7 @@ function composerRoutesAuth(): CompositionRoutesAuth {
       ),
       authOfflineController: new AuthOfflineController(authentificationOfflineUseCase),
       jwtAuthenticationMiddleware: new JwtAuthenticationMiddleware(
-        new AuthenticationMiddleware(new JwtTokenAdapter(JWT_SECRET_PAR_DEFAUT)),
+        new AuthenticationMiddleware(jwtTokenAdapter),
       ),
       sessionMiddleware: new SessionMiddleware(
         new SessionValidationMiddleware(sessionApplicationService),
@@ -452,8 +590,23 @@ async function assurerUtilisateurDeveloppeur(
   const email = `dev.${actorCode.toLowerCase()}@educsync.local`;
   const utilisateurExistant = await depotUtilisateurAuth.trouverParEmail(email);
   if (utilisateurExistant !== null) {
-    utilisateurExistant.activerCompte();
-    await depotUtilisateurAuth.sauvegarder(utilisateurExistant);
+    let doitSauvegarder = false;
+    if (utilisateurExistant.obtenirEtatCompte() !== 'ACTIVE') {
+      utilisateurExistant.activerCompte();
+      doitSauvegarder = true;
+    }
+    if (!verifierMotDePasseSynchrone(
+      MOT_DE_PASSE_SESSION_DEV,
+      utilisateurExistant.obtenirMotDePasseHash().obtenirValeur(),
+    )) {
+      utilisateurExistant.changerMotDePasse(
+        hacherMotDePasseSynchrone(MOT_DE_PASSE_SESSION_DEV),
+      );
+      doitSauvegarder = true;
+    }
+    if (doitSauvegarder) {
+      await depotUtilisateurAuth.sauvegarder(utilisateurExistant);
+    }
     return utilisateurExistant;
   }
 
@@ -465,8 +618,17 @@ async function assurerUtilisateurDeveloppeur(
     motDePasseHash: hacherMotDePasseSynchrone(MOT_DE_PASSE_SESSION_DEV),
     authOfflineAutorisee: true,
   });
-  await depotUtilisateurAuth.sauvegarder(utilisateur);
-  return utilisateur;
+  try {
+    await depotUtilisateurAuth.sauvegarder(utilisateur);
+    return utilisateur;
+  } catch (erreur) {
+    // Un bootstrap concurrent peut avoir cree le meme compte deterministe.
+    const creeParConcurrent = await depotUtilisateurAuth.trouverParEmail(email);
+    if (creeParConcurrent) {
+      return creeParConcurrent;
+    }
+    throw erreur;
+  }
 }
 
 async function assurerAffectationDeveloppeur(
@@ -477,26 +639,28 @@ async function assurerAffectationDeveloppeur(
 ): Promise<void> {
   const organisationId = params.organisationActiveId ?? ORGANISATION_DEV_PAR_DEFAUT;
   const ecoleId = params.ecoleActiveId ?? ECOLE_DEV_PAR_DEFAUT;
+  const niveauAcces = role.obtenirNiveauAcces().obtenirValeur();
+  const organisationAffectee = niveauAcces === 'PLATEFORME' ? undefined : organisationId;
+  const ecoleAffectee = niveauAcces === 'ECOLE' ? ecoleId : undefined;
   const affectations = await affectationUtilisateurRepository.listerActivesParUtilisateur(
     utilisateur.obtenirId(),
   );
   const affectationExistante = affectations.find((affectation) =>
     affectation.obtenirIdRole() === role.obtenirId()
-    && affectation.obtenirIdOrganisation() === organisationId
-    && affectation.obtenirIdEcole() === ecoleId,
+    && affectation.obtenirIdOrganisation() === organisationAffectee
+    && affectation.obtenirIdEcole() === ecoleAffectee,
   );
 
   if (affectationExistante) {
     return;
   }
 
-  const niveauAcces = role.obtenirNiveauAcces().obtenirValeur();
   const affectation = AffectationUtilisateur.creer({
     idUtilisateur: utilisateur.obtenirId(),
     idRole: role.obtenirId(),
     niveauAcces,
-    idOrganisation: organisationId,
-    idEcole: ecoleId,
+    idOrganisation: organisationAffectee,
+    idEcole: ecoleAffectee,
     creePar: 'dev-session',
   });
 
@@ -504,8 +668,12 @@ async function assurerAffectationDeveloppeur(
     affectation.ajouterScope('PLATEFORME', 'system');
   }
 
-  affectation.ajouterScope('ORGANISATION', organisationId);
-  affectation.ajouterScope('ECOLE', ecoleId);
+  if (organisationAffectee) {
+    affectation.ajouterScope('ORGANISATION', organisationAffectee);
+  }
+  if (ecoleAffectee) {
+    affectation.ajouterScope('ECOLE', ecoleAffectee);
+  }
   await affectationUtilisateurRepository.sauvegarder(affectation);
 }
 
@@ -521,56 +689,181 @@ export const routeAuth: PluginRoutesAuth = Object.assign(
     const affectationUtilisateurRepository = new PostgresAffectationUtilisateurRepository();
     const roleRepository = new PostgresRoleRepository();
 
+    await restaurerAffectationManagerInitial(
+      roleRepository,
+      affectationUtilisateurRepository,
+    );
+
     await serveur.register(creerRoutesAuth(composition.dependancesRoutes), {
       prefix: routeAuth.prefixe,
     });
 
-    serveur.post('/api/auth/dev/session', async (requete, reponse) => {
-      if (configurationApplication.environnement !== 'development') {
-        return reponse.code(404).send({
-          success: false,
-          message: 'Route indisponible hors developpement.',
-        });
-      }
-
+    serveur.get('/api/auth/initialisation', async (_requete, reponse) => {
       try {
-        const payload = lireRequeteSessionDeveloppeur(requete.body);
-        const utilisateur = await assurerUtilisateurDeveloppeur(
-          depotUtilisateurAuth,
-          payload.actorCode,
-        );
-        const role = await assurerRoleDeveloppeur(roleRepository, payload.actorCode);
-        await assurerAffectationDeveloppeur(
-          affectationUtilisateurRepository,
-          utilisateur,
-          role,
-          payload,
-        );
-
-        const login = await composition.loginUseCase.executer({
-          email: utilisateur.obtenirEmail().obtenirValeur(),
-          motDePasse: MOT_DE_PASSE_SESSION_DEV,
-          organisationActiveId: payload.organisationActiveId ?? ORGANISATION_DEV_PAR_DEFAUT,
-          ecoleActiveId: payload.ecoleActiveId ?? ECOLE_DEV_PAR_DEFAUT,
-          deviceId: payload.deviceId,
+        return reponse.code(200).send({
+          initialisationRequise: await initialisationPlateformeRequise(),
         });
-
-        return reponse.code(200).send(login);
-      } catch (erreur) {
-        serveur.log.warn(
-          {
-            erreur: erreur instanceof Error ? erreur.message : 'dev_session_failed',
-          },
-          'Echec ouverture session developpeur.',
-        );
-        return reponse.code(400).send({
-          success: false,
-          message: erreur instanceof Error
-            ? erreur.message
-            : 'Impossible d ouvrir la session developpeur.',
+      } catch {
+        return reponse.code(503).send({
+          code: 'INITIALISATION_STATUS_UNAVAILABLE',
+          message: "L'etat de demarrage d'EduSync ne peut pas etre verifie pour le moment.",
         });
       }
     });
+
+    serveur.post('/api/auth/initialisation', async (requete, reponse) => {
+      try {
+        const payload = lireRequeteInitialisationPlateforme(requete.body);
+        const clientSql = obtenirClientPostgresAuth();
+        const utilisateurCreeId = await clientSql.dansTransaction(async () => {
+          await clientSql.executer(
+            "SELECT pg_advisory_xact_lock(hashtext('educsync_auth_platform_bootstrap'))",
+          );
+          if (!(await initialisationPlateformeRequise())) {
+            throw new InitialisationPlateformeFermeeError();
+          }
+
+          const utilisateur = UtilisateurAuth.creer({
+            nomComplet: [payload.nom, payload.postnom, payload.prenom].join(' '),
+            email: payload.email,
+            motDePasseHash: hacherMotDePasseSynchrone(payload.motDePasse),
+            authOfflineAutorisee: false,
+          });
+          await depotUtilisateurAuth.sauvegarder(utilisateur);
+          await clientSql.executer(
+            `INSERT INTO auth_initialisation_plateforme
+              (singleton, premier_utilisateur_id, initialise_le, version)
+             VALUES (TRUE, $1, NOW(), 1)`,
+            [utilisateur.obtenirId()],
+          );
+          return utilisateur.obtenirId();
+        });
+        await assurerAffectationManagerPlateforme(
+          utilisateurCreeId,
+          roleRepository,
+          affectationUtilisateurRepository,
+        );
+        const login = await composition.loginUseCase.executer({
+          email: payload.email,
+          motDePasse: payload.motDePasse,
+          deviceId: payload.deviceId,
+          userAgent: typeof requete.headers['user-agent'] === 'string'
+            ? requete.headers['user-agent']
+            : undefined,
+          adresseIp: requete.ip,
+        });
+        appliquerCookiesInitialisation(
+          reponse,
+          login as unknown as Record<string, unknown>,
+          payload.seSouvenirDeMoi === true,
+        );
+        return reponse.code(201).send(
+          masquerRefreshToken(login as unknown as Record<string, unknown>),
+        );
+      } catch (erreur) {
+        if (erreur instanceof InitialisationPlateformeFermeeError) {
+          return reponse.code(409).send({
+            code: 'INITIALISATION_ALREADY_COMPLETED',
+            message: 'La premiere initialisation EduSync est deja terminee.',
+          });
+        }
+        const message = erreur instanceof Error ? erreur.message : 'Les informations fournies sont invalides.';
+        const estValidation = /obligatoire|mot de passe|confirmation|adresse email|email/i.test(message);
+        return reponse.code(estValidation ? 400 : 500).send({
+          code: estValidation ? 'INITIALISATION_INVALID' : 'INITIALISATION_FAILED',
+          message: estValidation
+            ? message
+            : "La premiere initialisation n'a pas pu etre finalisee.",
+        });
+      }
+    });
+
+    serveur.get('/api/auth/profil', async (requete, reponse) => {
+      const utilisateurId = typeof requete.headers['x-user-id'] === 'string'
+        ? requete.headers['x-user-id']
+        : undefined;
+      if (!utilisateurId) {
+        return reponse.code(401).send({
+          code: 'AUTHENTICATION_REQUIRED',
+          message: 'Une authentification est requise.',
+        });
+      }
+
+      const affectations = await affectationUtilisateurRepository.listerActivesParUtilisateur(utilisateurId);
+      for (const affectation of affectations) {
+        const role = await roleRepository.trouverParId(affectation.obtenirIdRole());
+        if (!role?.obtenirEstActif()) {
+          continue;
+        }
+        return reponse.code(200).send({
+          acteurCode: role.obtenirCodeRole().obtenirValeur(),
+          permissions: role.obtenirPermissions().map((permission) =>
+            permission.obtenirPermission().obtenirValeur()),
+        });
+      }
+
+      return reponse.code(403).send({
+        code: 'ACTIVE_PROFILE_UNAVAILABLE',
+        message: "Aucun profil de travail actif n'est disponible pour ce compte.",
+      });
+    });
+
+    if (sessionDeveloppeurDisponible(configurationApplication.environnement)) {
+      serveur.post('/api/auth/dev/session', async (requete, reponse) => {
+        try {
+          const payload = lireRequeteSessionDeveloppeur(requete.body);
+          const utilisateur = await assurerUtilisateurDeveloppeur(
+            depotUtilisateurAuth,
+            payload.actorCode,
+          );
+          const role = await assurerRoleDeveloppeur(roleRepository, payload.actorCode);
+          await assurerAffectationDeveloppeur(
+            affectationUtilisateurRepository,
+            utilisateur,
+            role,
+            payload,
+          );
+
+          const login = await composition.loginUseCase.executer({
+            email: utilisateur.obtenirEmail().obtenirValeur(),
+            motDePasse: MOT_DE_PASSE_SESSION_DEV,
+            organisationActiveId: profilsSessionDeveloppeur[payload.actorCode].niveauAcces === 'PLATEFORME'
+              ? undefined
+              : payload.organisationActiveId ?? ORGANISATION_DEV_PAR_DEFAUT,
+            ecoleActiveId: profilsSessionDeveloppeur[payload.actorCode].niveauAcces === 'ECOLE'
+              ? payload.ecoleActiveId ?? ECOLE_DEV_PAR_DEFAUT
+              : undefined,
+            deviceId: payload.deviceId,
+          });
+
+          appliquerCookiesInitialisation(
+            reponse,
+            login as unknown as Record<string, unknown>,
+            false,
+          );
+
+          return reponse.code(200).send(
+            masquerRefreshToken(login as unknown as Record<string, unknown>),
+          );
+        } catch (erreur) {
+          serveur.log.warn(
+            {
+              erreur: erreur instanceof Error ? erreur.message : 'dev_session_failed',
+              cause: erreur instanceof Error && erreur.cause instanceof Error
+                ? erreur.cause.message
+                : undefined,
+            },
+            'Echec ouverture session developpeur.',
+          );
+          return reponse.code(400).send({
+            success: false,
+            message: erreur instanceof Error
+              ? erreur.message
+              : 'Impossible d ouvrir la session developpeur.',
+          });
+        }
+      });
+    }
 
     serveur.log.info(
       {

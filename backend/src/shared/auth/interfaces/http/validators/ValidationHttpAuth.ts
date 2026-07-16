@@ -101,4 +101,32 @@ export class ValidationHttpAuth {
     const resultat = valeur.trim();
     return resultat === '' ? undefined : resultat;
   }
+
+  // Cette methode permet la lecture des cookies sans imposer un plugin Fastify supplementaire.
+  public static lireCookieDepuisHeaders(headers: unknown, nomCookie: string): string | undefined {
+    const entete = this.lireHeaderChaine(headers, 'cookie');
+    if (!entete) {
+      return undefined;
+    }
+
+    for (const fragment of entete.split(';')) {
+      const separateur = fragment.indexOf('=');
+      if (separateur < 0 || fragment.slice(0, separateur).trim() !== nomCookie) {
+        continue;
+      }
+
+      const valeur = fragment.slice(separateur + 1).trim();
+      if (!valeur) {
+        return undefined;
+      }
+
+      try {
+        return decodeURIComponent(valeur);
+      } catch {
+        return valeur;
+      }
+    }
+
+    return undefined;
+  }
 }

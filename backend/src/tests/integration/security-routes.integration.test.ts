@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import Fastify from 'fastify';
-import { authenticationPlugin } from '../../app/plugins/authentication.plugin';
 import { requestContextPlugin } from '../../app/plugins/request-context.plugin';
 import { securityPlugin } from '../../app/plugins/security.plugin';
 import { tenancyPlugin } from '../../app/plugins/tenancy.plugin';
@@ -40,7 +39,7 @@ test('les routes security sont exposees et reservees a la gouvernance plateforme
   const serveur = Fastify();
   await serveur.register(async (instance) => {
     await requestContextPlugin(instance, {});
-    await authenticationPlugin(instance, {});
+    await bootstrap.creerAuthenticationPlugin()(instance, {});
     await securityPlugin(instance, {});
     await tenancyPlugin(instance, {});
     await instance.register(routeSecurity);

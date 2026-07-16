@@ -3,8 +3,10 @@ import { RefreshToken } from '../../../../domain';
 export interface RefreshTokenRecord {
   id_refresh_token: string;
   id_utilisateur: string;
+  id_session_utilisateur?: string;
+  remplace_par_id?: string;
   token_hash: string;
-  expire_le: string;
+  token_version_emise: number;
   revoque: boolean;
   revoque_le?: string;
   cree_le: string;
@@ -17,8 +19,10 @@ export class RefreshTokenPersistenceMapper {
     return {
       id_refresh_token: refreshToken.obtenirId(),
       id_utilisateur: refreshToken.obtenirIdUtilisateur(),
+      id_session_utilisateur: refreshToken.obtenirIdSessionUtilisateur(),
+      remplace_par_id: refreshToken.obtenirRemplaceParId(),
       token_hash: refreshToken.obtenirTokenHash(),
-      expire_le: refreshToken.obtenirExpireLe().toISOString(),
+      token_version_emise: refreshToken.obtenirTokenVersionEmise(),
       revoque: refreshToken.obtenirRevoque(),
       revoque_le: refreshToken.obtenirRevoqueLe()?.toISOString(),
       cree_le: refreshToken.obtenirCreeLe().toISOString(),
@@ -30,8 +34,10 @@ export class RefreshTokenPersistenceMapper {
     return new RefreshToken({
       idRefreshToken: record.id_refresh_token,
       idUtilisateur: record.id_utilisateur,
+      idSessionUtilisateur: record.id_session_utilisateur,
+      remplaceParId: record.remplace_par_id,
       tokenHash: record.token_hash,
-      expireLe: new Date(record.expire_le),
+      tokenVersionEmise: record.token_version_emise,
       revoque: record.revoque,
       revoqueLe: record.revoque_le ? new Date(record.revoque_le) : undefined,
       creeLe: new Date(record.cree_le),

@@ -1,6 +1,7 @@
 export * from './PolicyCompteActif';
 export * from './PolicyVerrouillageConnexion';
 export * from './PolicyMotDePasseSecurise';
+export * from './PolicyMotDePasseInitial';
 export * from './PolicySessionPersistante';
 export * from './PolicyRefreshTokenUnique';
 export * from './PolicyTokenVersion';

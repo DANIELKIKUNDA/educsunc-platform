@@ -5,8 +5,8 @@ export class AccessTokenCookie {
   public static readonly NOM = 'access_token';
 
   // Cette methode attache le cookie d'access token a la reponse HTTP.
-  public static appliquer(reponse: FastifyReply, token: string): void {
-    reponse.header('set-cookie', this.serialiser(token, 15 * 60));
+  public static appliquer(reponse: FastifyReply, token: string, maxAgeSecondes = 15 * 60): void {
+    reponse.header('set-cookie', this.serialiser(token, maxAgeSecondes));
   }
 
   // Cette methode demande la suppression du cookie d'access token.

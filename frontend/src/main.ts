@@ -14,19 +14,22 @@ import './styles/referentiel.css';
 import './styles/animations.css';
 import './styles/shell.css';
 import './styles/theme-dark.css';
+import './styles/auth.css';
 
 // Point d'entree technique du frontend.
 void configurationApplicationFrontend;
 void configurationOffline;
 
 async function demarrerFrontend(): Promise<void> {
-  await initializeFrontendSession();
-  await useTheme().initTheme();
+  const initialisationSession = initializeFrontendSession();
 
   const application = createApp(App);
 
   application.use(routeur);
   application.mount('#app');
+
+  await initialisationSession;
+  await useTheme().initTheme();
 
   registerServiceWorker();
 }

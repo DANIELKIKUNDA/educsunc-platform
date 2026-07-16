@@ -13,9 +13,8 @@ export interface BackendContexteActifApiData {
   ecoleActiveId?: string;
 }
 
-export interface BackendDeveloperSessionApiData {
+export interface BackendLoginApiData {
   accessToken: string;
-  refreshToken: string;
   sessionId: string;
   utilisateur: {
     idUtilisateur: string;
@@ -23,9 +22,19 @@ export interface BackendDeveloperSessionApiData {
     email: string;
     etatCompte: string;
   };
+  acteurCode?: string;
+  permissions?: readonly string[];
   organisationActiveId?: string;
   ecoleActiveId?: string;
-  expireLe?: string;
+}
+
+export interface BackendRefreshApiData {
+  accessToken: string;
+  sessionId: string;
+}
+
+export interface BackendDeveloperSessionApiData extends BackendLoginApiData {
+  refreshToken?: string;
 }
 
 function construireEntetesAuth(params: {
@@ -45,26 +54,98 @@ function construireEntetesAuth(params: {
 }
 
 export const authApi = {
+  async obtenirEtatInitialisation(): Promise<{ initialisationRequise: boolean }> {
+    return clientApi.envoyer({
+      chemin: '/api/auth/initialisation',
+      authRecovery: false,
+    });
+  },
+
+  async initialiserPlateforme(params: {
+    nom: string;
+    postnom: string;
+    prenom: string;
+    email: string;
+    motDePasse: string;
+    confirmationMotDePasse: string;
+    seSouvenirDeMoi: boolean;
+    deviceId: string;
+  }): Promise<BackendLoginApiData> {
+    return clientApi.envoyer({
+      chemin: '/api/auth/initialisation',
+      methode: 'POST',
+      corps: params,
+      authRecovery: false,
+    });
+  },
+
+  async connecter(params: {
+    email: string;
+    motDePasse: string;
+    seSouvenirDeMoi: boolean;
+    deviceId: string;
+  }): Promise<BackendLoginApiData> {
+    return clientApi.envoyer({
+      chemin: '/api/auth/login',
+      methode: 'POST',
+      corps: params,
+      authRecovery: false,
+    });
+  },
+
+  async rafraichir(params: {
+    sessionId: string;
+    seSouvenirDeMoi: boolean;
+  }): Promise<BackendRefreshApiData> {
+    return clientApi.envoyer({
+      chemin: '/api/auth/refresh',
+      methode: 'POST',
+      corps: params,
+      entetes: { 'x-session-id': params.sessionId },
+      authRecovery: false,
+    });
+  },
+
+  async deconnecter(params: { accessToken: string; sessionId: string }): Promise<{ succes: boolean }> {
+    return clientApi.envoyer({
+      chemin: '/api/auth/logout',
+      methode: 'POST',
+      corps: { sessionId: params.sessionId },
+      entetes: construireEntetesAuth(params),
+      authRecovery: false,
+    });
+  },
+
   async ouvrirSessionDeveloppeur(params: {
     actorCode: string;
     organisationActiveId?: string;
     ecoleActiveId?: string;
     deviceId?: string;
   }): Promise<BackendDeveloperSessionApiData> {
-    return clientApi.envoyer<BackendDeveloperSessionApiData>({
+    return clientApi.envoyer({
       chemin: '/api/auth/dev/session',
       methode: 'POST',
       corps: params,
+      authRecovery: false,
     });
   },
 
-  async obtenirSession(params: {
-    accessToken: string;
-    sessionId: string;
-  }): Promise<BackendSessionApiData> {
-    return clientApi.envoyer<BackendSessionApiData>({
+  async obtenirSession(params: { accessToken: string; sessionId: string }): Promise<BackendSessionApiData> {
+    return clientApi.envoyer({
       chemin: '/api/auth/session',
       entetes: construireEntetesAuth(params),
+      authRecovery: false,
+    });
+  },
+
+  async obtenirProfil(params: { accessToken: string; sessionId: string }): Promise<{
+    acteurCode: string;
+    permissions: readonly string[];
+  }> {
+    return clientApi.envoyer({
+      chemin: '/api/auth/profil',
+      entetes: construireEntetesAuth(params),
+      authRecovery: false,
     });
   },
 
@@ -75,9 +156,10 @@ export const authApi = {
     organisationActiveId?: string;
     ecoleActiveId?: string;
   }): Promise<BackendContexteActifApiData> {
-    return clientApi.envoyer<BackendContexteActifApiData>({
+    return clientApi.envoyer({
       chemin: '/api/auth/contexte',
       entetes: construireEntetesAuth(params),
+      authRecovery: false,
     });
   },
 
@@ -86,12 +168,10 @@ export const authApi = {
     sessionId: string;
     organisationActiveId: string;
   }): Promise<BackendContexteActifApiData> {
-    return clientApi.envoyer<BackendContexteActifApiData>({
+    return clientApi.envoyer({
       chemin: '/api/auth/contexte/organisation-active',
       methode: 'PUT',
-      corps: {
-        organisationActiveId: params.organisationActiveId,
-      },
+      corps: { organisationActiveId: params.organisationActiveId },
       entetes: construireEntetesAuth(params),
     });
   },
@@ -101,12 +181,10 @@ export const authApi = {
     sessionId: string;
     ecoleActiveId: string;
   }): Promise<BackendContexteActifApiData> {
-    return clientApi.envoyer<BackendContexteActifApiData>({
+    return clientApi.envoyer({
       chemin: '/api/auth/contexte/ecole-active',
       methode: 'PUT',
-      corps: {
-        ecoleActiveId: params.ecoleActiveId,
-      },
+      corps: { ecoleActiveId: params.ecoleActiveId },
       entetes: construireEntetesAuth(params),
     });
   },

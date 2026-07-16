@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
-import { createHmac, randomBytes } from 'node:crypto';
+import { createHmac } from 'node:crypto';
 import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from 'fastify';
 import { requestContextPlugin } from '../../../app/plugins/request-context.plugin';
-import { authenticationPlugin } from '../../../app/plugins/authentication.plugin';
+import { creerAuthenticationPlugin } from '../../../app/plugins/authentication.plugin';
 import { securityPlugin } from '../../../app/plugins/security.plugin';
 import { tenancyPlugin } from '../../../app/plugins/tenancy.plugin';
 import {
@@ -130,14 +130,10 @@ export class GlobalTestBootstrap {
       auditService,
       new MoteurAuthentification({
         verifierMotDePasse: (clair, hash) => clair === 'secret' && hash === 'hash-correct',
-        genererJwt: (payload) => this.genererJwtSynchrone({
-          ...payload,
-          exp: Math.floor(Date.now() / 1000) + 3600,
-        }),
+        genererJwt: (payload) => this.jwt.signerJwtSynchrone(payload),
         genererRefreshTokenValue: () => 'refresh-brut',
         hacherRefreshToken: (valeur) =>
           createHmac('sha256', GlobalTestBootstrap.jwtSecret).update(valeur).digest('hex'),
-        calculerExpirationSession: () => new Date(Date.now() + 60 * 60 * 1000),
       }),
     );
     const logoutSaga = new LogoutSaga(
@@ -150,6 +146,7 @@ export class GlobalTestBootstrap {
     const refreshSaga = new RefreshTokenSaga(
       this.transactionManager,
       this.authRepositories.depotRefreshToken,
+      this.authRepositories.depotSessionUtilisateur,
       this.authRepositories.depotUtilisateurAuth,
       this.jwt,
       new MoteurRefreshToken({
@@ -157,6 +154,7 @@ export class GlobalTestBootstrap {
         hacherRefreshToken: (valeur) =>
           createHmac('sha256', GlobalTestBootstrap.jwtSecret).update(valeur).digest('hex'),
       }),
+      this.sessionCache,
     );
     const authService = new AuthApplicationService(
       loginSaga,
@@ -171,6 +169,7 @@ export class GlobalTestBootstrap {
       this.transactionManager,
       this.authRepositories.depotUtilisateurAuth,
       this.authRepositories.depotSessionUtilisateur,
+      this.authRepositories.depotRefreshToken,
     );
 
     const contexteService = new ContexteActifApplicationService(
@@ -285,7 +284,7 @@ export class GlobalTestBootstrap {
     const serveur = Fastify();
     await serveur.register(async (instance) => {
       await requestContextPlugin(instance, {});
-      await authenticationPlugin(instance, {});
+      await this.creerAuthenticationPlugin()(instance, {});
       await securityPlugin(instance, {});
       await tenancyPlugin(instance, {});
 
@@ -449,6 +448,20 @@ export class GlobalTestBootstrap {
     return this.loginUseCase;
   }
 
+  public creerAuthenticationPlugin() {
+    return creerAuthenticationPlugin({
+      jwtTokenAdapter: this.jwt,
+      utilisateurAuthRepository: this.authRepositories.depotUtilisateurAuth,
+      contexteActifAuthRepository: this.authRepositories.depotContexteActifAuth,
+      sessionApplicationService: new SessionApplicationService(
+        this.authRepositories.depotSessionUtilisateur,
+        this.authRepositories.depotRefreshToken,
+        this.sessionCache,
+      ),
+      environment: 'test',
+    });
+  }
+
   public obtenirLogoutUseCase(): LogoutUseCase {
     return this.logoutUseCase;
   }
@@ -507,12 +520,4 @@ export class GlobalTestBootstrap {
     }
   }
 
-  private genererJwtSynchrone(payload: Record<string, unknown>): string {
-    const corps = Buffer.from(JSON.stringify(payload)).toString('base64url');
-    const nonce = randomBytes(16).toString('base64url');
-    const signature = createHmac('sha256', GlobalTestBootstrap.jwtSecret)
-      .update(`${corps}.${nonce}`)
-      .digest('base64url');
-    return `${corps}.${nonce}.${signature}`;
-  }
 }

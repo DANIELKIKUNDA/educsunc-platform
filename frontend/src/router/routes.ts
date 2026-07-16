@@ -1,6 +1,7 @@
 import type { RouteRecordRaw } from 'vue-router';
-import AuthPlaceholderView from '../app/AuthPlaceholderView.vue';
 import AppShellSwitcher from '../shell/AppShellSwitcher.vue';
+import LoginView from '../features/auth/views/LoginView.vue';
+import InitializationView from '../features/auth/views/InitializationView.vue';
 import { routesAdministrationEcole } from '../domains/administration-ecole/routes';
 import { routesAcademique } from '../domains/academique/routes';
 import { routesAudit } from '../domains/audit/routes';
@@ -23,10 +24,19 @@ export const routesFrontend: RouteRecordRaw[] = [
   {
     path: '/connexion',
     name: 'connexion',
-    component: AuthPlaceholderView,
+    component: LoginView,
     meta: {
       public: true,
       title: 'Connexion',
+    },
+  },
+  {
+    path: '/initialisation',
+    name: 'initialisation',
+    component: InitializationView,
+    meta: {
+      public: true,
+      title: 'Première initialisation',
     },
   },
   {

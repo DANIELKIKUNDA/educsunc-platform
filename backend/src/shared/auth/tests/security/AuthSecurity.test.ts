@@ -9,6 +9,6 @@ test('brute-force, JWT falsifie, replay token et token expire sont couverts', as
   assert.throws(() => rateLimit.verifier('login:ip', 1, 1000));
 
   const jwt = new JwtTokenAdapter('secret');
-  const token = await jwt.genererJwt({ sub: 'u1' });
+  const token = await jwt.genererJwt({ sub: 'u1', sid: 'session-1', tokenVersion: 1 });
   assert.equal(await jwt.verifierJwt(`${token}x`), false);
 });

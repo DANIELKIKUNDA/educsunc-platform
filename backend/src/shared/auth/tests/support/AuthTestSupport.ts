@@ -8,25 +8,12 @@ import type {
   TransactionManagerPort,
 } from 'shared/auth/application';
 import type { SessionOutput } from 'shared/auth/application/dto/output';
-import { PostgresContexteActifAuthRepository } from 'shared/auth/infrastructure/persistence/postgres/repositories/PostgresContexteActifAuthRepository';
-import { PostgresRefreshTokenRepository } from 'shared/auth/infrastructure/persistence/postgres/repositories/PostgresRefreshTokenRepository';
-import { PostgresSessionUtilisateurRepository } from 'shared/auth/infrastructure/persistence/postgres/repositories/PostgresSessionUtilisateurRepository';
-import { PostgresTentativeConnexionRepository } from 'shared/auth/infrastructure/persistence/postgres/repositories/PostgresTentativeConnexionRepository';
-import { PostgresUtilisateurAuthRepository } from 'shared/auth/infrastructure/persistence/postgres/repositories/PostgresUtilisateurAuthRepository';
 import { SessionCacheService } from 'shared/auth/infrastructure/services/SessionCacheService';
-import { obtenirMemoireAuthStore } from 'shared/auth/infrastructure/persistence/postgres/repositories/_memoireAuthStore';
+import { creerRepositoriesAuthMemoire } from './AuthMemoryRepositories';
 
 // Ce fichier regroupe les fabriques et doublures simples des tests AUTH.
 
 export function reinitialiserMemoireAuth(): void {
-  const store = obtenirMemoireAuthStore();
-  store.utilisateurs.clear();
-  store.utilisateursParEmail.clear();
-  store.sessions.clear();
-  store.refreshTokens.clear();
-  store.refreshTokensParHash.clear();
-  store.contextes.clear();
-  store.tentatives.length = 0;
   new SessionCacheService().vider();
 }
 
@@ -44,11 +31,11 @@ export function creerUtilisateurAuth(params?: Partial<{
   });
 }
 
-export function creerRefreshToken(idUtilisateur: string, tokenHash = 'hash-refresh', expireLe?: Date): RefreshToken {
+export function creerRefreshToken(idUtilisateur: string, tokenHash = 'hash-refresh', tokenVersionEmise = 1): RefreshToken {
   return RefreshToken.creer({
     idUtilisateur,
     tokenHash,
-    expireLe: expireLe ?? new Date(Date.now() + 60 * 60 * 1000),
+    tokenVersionEmise,
   });
 }
 
@@ -61,7 +48,6 @@ export function creerSessionUtilisateur(params: Partial<{
   userAgent: string;
   adresseIp: string;
   estOffline: boolean;
-  expireLe: Date;
 }> = {}): SessionUtilisateur {
   return SessionUtilisateur.ouvrir({
     idUtilisateur: params.idUtilisateur ?? 'utilisateur-1',
@@ -72,7 +58,6 @@ export function creerSessionUtilisateur(params: Partial<{
     userAgent: params.userAgent ?? 'agent-test',
     adresseIp: params.adresseIp ?? '127.0.0.1',
     estOffline: params.estOffline ?? false,
-    expireLe: params.expireLe ?? new Date(Date.now() + 60 * 60 * 1000),
   });
 }
 
@@ -218,11 +203,5 @@ export class OfflineAuthPortMemoire implements OfflineAuthPort {
 
 export function creerRepositoriesMemoire() {
   reinitialiserMemoireAuth();
-  return {
-    depotUtilisateurAuth: new PostgresUtilisateurAuthRepository(),
-    depotSessionUtilisateur: new PostgresSessionUtilisateurRepository(),
-    depotRefreshToken: new PostgresRefreshTokenRepository(),
-    depotContexteActifAuth: new PostgresContexteActifAuthRepository(),
-    depotTentativeConnexion: new PostgresTentativeConnexionRepository(),
-  };
+  return creerRepositoriesAuthMemoire();
 }

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ErreurSessionExpiree, MoteurSession } from 'shared/auth/domain';
+import { MoteurSession } from 'shared/auth/domain';
 import { creerSessionUtilisateur } from '../support/AuthTestSupport';
 
 test('creation session', () => {
@@ -16,10 +16,10 @@ test('revocation session', () => {
   assert.ok(session.obtenirRevoqueeLe() instanceof Date);
 });
 
-test('expiration session', () => {
+test('session persistante sans expiration temporelle', () => {
   const moteur = new MoteurSession();
-  const session = creerSessionUtilisateur({ expireLe: new Date(Date.now() - 1000) });
-  assert.throws(() => moteur.verifierSession(session), ErreurSessionExpiree);
+  const session = creerSessionUtilisateur();
+  assert.doesNotThrow(() => moteur.verifierSession(session));
 });
 
 test('restauration session offline', () => {

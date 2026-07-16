@@ -17,10 +17,8 @@ import {
   ErreurCompteSuspendu,
   ErreurCompteVerrouille,
   ErreurMotDePasseInvalide,
-  ErreurRefreshTokenExpire,
   ErreurRefreshTokenInvalide,
   ErreurRefreshTokenRevoque,
-  ErreurSessionExpiree,
   ErreurSessionRevoquee,
   ErreurTentativesConnexionExcessives,
 } from 'shared/auth/domain/exceptions';
@@ -62,20 +60,12 @@ export class AuthErrorPresenter {
       return this.reponse(401, 'SESSION_REVOKED', erreur.message);
     }
 
-    if (erreur instanceof ErreurSessionExpiree) {
-      return this.reponse(401, 'SESSION_EXPIRED', erreur.message);
-    }
-
     if (erreur instanceof SessionIntrouvableApplicationException) {
       return this.reponse(404, 'SESSION_NOT_FOUND', erreur.message);
     }
 
     if (erreur instanceof ErreurRefreshTokenInvalide || erreur instanceof RefreshImpossibleApplicationException) {
       return this.reponse(401, 'REFRESH_TOKEN_INVALID', erreur.message);
-    }
-
-    if (erreur instanceof ErreurRefreshTokenExpire) {
-      return this.reponse(401, 'REFRESH_TOKEN_EXPIRED', erreur.message);
     }
 
     if (erreur instanceof ErreurRefreshTokenRevoque) {
@@ -104,7 +94,7 @@ export class AuthErrorPresenter {
     return this.reponse(
       500,
       'INTERNAL_SERVER_ERROR',
-      erreur instanceof Error ? erreur.message : 'Erreur technique inconnue.',
+      'Une erreur interne est survenue.',
     );
   }
 

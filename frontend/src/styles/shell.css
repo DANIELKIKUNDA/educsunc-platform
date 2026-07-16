@@ -2,3 +2,20 @@
 @import './shell-core.css';
 @import './shell-finance.css';
 @import './shell-responsive.css';
+
+.erp-user-menu__logout {
+  width: 100%;
+  min-height: 44px;
+  margin-top: 10px;
+  border: 1px solid #d9e2ef;
+  border-radius: 12px;
+  color: #9d3340;
+  background: #fff8f8;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.erp-user-menu__logout:hover {
+  border-color: #efc4c9;
+  background: #fff0f1;
+}

@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import Fastify from 'fastify';
-import { authenticationPlugin } from '../../app/plugins/authentication.plugin';
 import { reinitialiserNotificationsRuntime } from '../../app/plugins/notifications-runtime';
 import { requestContextPlugin } from '../../app/plugins/request-context.plugin';
 import { securityPlugin } from '../../app/plugins/security.plugin';
@@ -27,7 +26,7 @@ test('un evenement paiements publie sur le bus partage cree une notification rel
   const serveur = Fastify();
   await serveur.register(async (instance) => {
     await requestContextPlugin(instance, {});
-    await authenticationPlugin(instance, {});
+    await bootstrap.creerAuthenticationPlugin()(instance, {});
     await securityPlugin(instance, {});
     await tenancyPlugin(instance, {});
     await instance.register(routeNotifications);
@@ -65,7 +64,7 @@ test('un evenement scolarite publie sur le bus partage cree une notification rel
   const serveur = Fastify();
   await serveur.register(async (instance) => {
     await requestContextPlugin(instance, {});
-    await authenticationPlugin(instance, {});
+    await bootstrap.creerAuthenticationPlugin()(instance, {});
     await securityPlugin(instance, {});
     await tenancyPlugin(instance, {});
     await instance.register(routeNotifications);
@@ -103,7 +102,7 @@ test('un evenement bulletins publie sur le bus partage cree une notification rel
   const serveur = Fastify();
   await serveur.register(async (instance) => {
     await requestContextPlugin(instance, {});
-    await authenticationPlugin(instance, {});
+    await bootstrap.creerAuthenticationPlugin()(instance, {});
     await securityPlugin(instance, {});
     await tenancyPlugin(instance, {});
     await instance.register(routeNotifications);

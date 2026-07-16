@@ -1,3 +1,5 @@
+import '../../config/variables-environnement.config';
+
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import Fastify from 'fastify';
@@ -5,7 +7,7 @@ import { requestContextPlugin } from '../plugins/request-context.plugin';
 import { authenticationPlugin } from '../plugins/authentication.plugin';
 import { securityPlugin } from '../plugins/security.plugin';
 import { tenancyPlugin } from '../plugins/tenancy.plugin';
-import { construireIdUtilisateurDeveloppeur, routeAuth } from '../routes/auth.routes';
+import { construireIdUtilisateurDeveloppeur, routeAuth, sessionDeveloppeurDisponible } from '../routes/auth.routes';
 
 test('l identite developpeur reste stable apres un redemarrage du backend', () => {
   const premierId = construireIdUtilisateurDeveloppeur('MANAGER_SYSTEME');
@@ -13,6 +15,12 @@ test('l identite developpeur reste stable apres un redemarrage du backend', () =
   assert.equal(premierId, construireIdUtilisateurDeveloppeur('MANAGER_SYSTEME'));
   assert.match(premierId, /^[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-a[0-9a-f]{3}-[0-9a-f]{12}$/);
   assert.notEqual(premierId, construireIdUtilisateurDeveloppeur('OPERATEUR_SYSTEME'));
+});
+
+test('la session developpeur reste interdite hors developpement', () => {
+  assert.equal(sessionDeveloppeurDisponible('development'), true);
+  assert.equal(sessionDeveloppeurDisponible('test'), false);
+  assert.equal(sessionDeveloppeurDisponible('production'), false);
 });
 
 test('POST /api/auth/dev/session ouvre une vraie session backend reutilisable', async () => {
@@ -36,7 +44,7 @@ test('POST /api/auth/dev/session ouvre une vraie session backend reutilisable', 
       },
     });
 
-    assert.equal(ouverture.statusCode, 200);
+    assert.equal(ouverture.statusCode, 200, ouverture.body);
     const corpsOuverture = ouverture.json() as {
       accessToken: string;
       sessionId: string;
@@ -93,7 +101,7 @@ test('MANAGER_SYSTEME peut changer d organisation avec sa portee plateforme', as
         deviceId: 'test-platform-scope',
       },
     });
-    assert.equal(ouverture.statusCode, 200);
+    assert.equal(ouverture.statusCode, 200, ouverture.body);
     const session = ouverture.json() as { accessToken: string; sessionId: string };
 
     const changement = await serveur.inject({

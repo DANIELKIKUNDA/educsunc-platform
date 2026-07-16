@@ -5,7 +5,7 @@ import { RefreshTokenUseCase } from 'shared/auth/application/use-cases/RefreshTo
 import { RefreshTokenSaga } from 'shared/auth/application/sagas/RefreshTokenSaga';
 import { MoteurRefreshToken } from 'shared/auth/domain/services/MoteurRefreshToken';
 import { JwtTokenAdapter } from 'shared/auth/infrastructure/adapters/jwt/JwtTokenAdapter';
-import { creerRefreshToken, creerRepositoriesMemoire, creerUtilisateurAuth, reinitialiserMemoireAuth, TransactionManagerMemoire } from '../support/AuthTestSupport';
+import { creerRefreshToken, creerRepositoriesMemoire, creerSessionUtilisateur, creerUtilisateurAuth, reinitialiserMemoireAuth, SessionCachePortMemoire, TransactionManagerMemoire } from '../support/AuthTestSupport';
 
 test('refresh valide fait une rotation et retourne de nouveaux tokens', async () => {
   reinitialiserMemoireAuth();
@@ -15,45 +15,57 @@ test('refresh valide fait une rotation et retourne de nouveaux tokens', async ()
   await repositories.depotUtilisateurAuth.sauvegarder(utilisateur);
   const brut = 'refresh-source';
   const hash = await jwt.hacherRefreshToken(brut);
-  await repositories.depotRefreshToken.sauvegarder(creerRefreshToken(utilisateur.obtenirId(), hash));
+  const token = creerRefreshToken(utilisateur.obtenirId(), hash);
+  const session = creerSessionUtilisateur({ idUtilisateur: utilisateur.obtenirId(), refreshTokenId: token.obtenirId() });
+  token.associerSession(session.obtenirId());
+  await repositories.depotRefreshToken.sauvegarder(token);
+  await repositories.depotSessionUtilisateur.sauvegarder(session);
 
   const saga = new RefreshTokenSaga(
     new TransactionManagerMemoire(),
     repositories.depotRefreshToken,
+    repositories.depotSessionUtilisateur,
     repositories.depotUtilisateurAuth,
     jwt,
     new MoteurRefreshToken({
       genererRefreshTokenValue: () => 'refresh-nouveau',
       hacherRefreshToken: (valeur) => `hash:${valeur}`,
     }),
+    new SessionCachePortMemoire(),
   );
   const useCase = new RefreshTokenUseCase(new AuthApplicationService({ executer: async () => ({}) } as never, { executer: async () => undefined } as never, saga, { executer: async () => undefined } as never));
 
-  const resultat = await useCase.executer({ refreshToken: brut });
+  const resultat = await useCase.executer({ refreshToken: brut, sessionId: session.obtenirId() });
   assert.ok(resultat.accessToken.length > 0);
   assert.equal(resultat.refreshToken, 'refresh-nouveau');
 });
 
-test('refresh expire ou revoque est rejete', async () => {
+test('refresh revoque est rejete', async () => {
   const repositories = creerRepositoriesMemoire();
   const jwt = new JwtTokenAdapter('test-secret');
   const utilisateur = creerUtilisateurAuth({ email: 'refresh@test.cd' });
   await repositories.depotUtilisateurAuth.sauvegarder(utilisateur);
-  const brut = 'refresh-expire';
+  const brut = 'refresh-revoque';
   const hash = await jwt.hacherRefreshToken(brut);
-  const expire = creerRefreshToken(utilisateur.obtenirId(), hash, new Date(Date.now() - 1000));
-  await repositories.depotRefreshToken.sauvegarder(expire);
+  const revoque = creerRefreshToken(utilisateur.obtenirId(), hash);
+  const session = creerSessionUtilisateur({ idUtilisateur: utilisateur.obtenirId(), refreshTokenId: revoque.obtenirId() });
+  revoque.associerSession(session.obtenirId());
+  revoque.revoquer();
+  await repositories.depotRefreshToken.sauvegarder(revoque);
+  await repositories.depotSessionUtilisateur.sauvegarder(session);
 
   const saga = new RefreshTokenSaga(
     new TransactionManagerMemoire(),
     repositories.depotRefreshToken,
+    repositories.depotSessionUtilisateur,
     repositories.depotUtilisateurAuth,
     jwt,
     new MoteurRefreshToken({
       genererRefreshTokenValue: () => 'refresh-nouveau',
       hacherRefreshToken: (valeur) => `hash:${valeur}`,
     }),
+    new SessionCachePortMemoire(),
   );
 
-  await assert.rejects(() => saga.executer({ refreshToken: brut }));
+  await assert.rejects(() => saga.executer({ refreshToken: brut, sessionId: session.obtenirId() }));
 });

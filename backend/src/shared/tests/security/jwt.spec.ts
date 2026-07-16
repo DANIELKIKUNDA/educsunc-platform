@@ -13,11 +13,14 @@ test('JWT invalide, forge, expire ou revoque est rejete', async () => {
   const invalide = await serveur.inject({ method: 'GET', url: '/probe/context', headers: { authorization: 'Bearer invalide', 'x-session-id': acteur.sessionId } });
   assert.equal(invalide.statusCode, 401);
 
-  const tokenForge = await new JwtTokenAdapter('mauvais-secret').genererJwt({ sub: acteur.utilisateurId, tokenVersion: 1, exp: Math.floor(Date.now() / 1000) + 3600 });
+  const tokenForge = await new JwtTokenAdapter('mauvais-secret').genererJwt({ sub: acteur.utilisateurId, sid: acteur.sessionId, tokenVersion: 1 });
   const forge = await serveur.inject({ method: 'GET', url: '/probe/context', headers: { authorization: `Bearer ${tokenForge}`, 'x-session-id': acteur.sessionId } });
   assert.equal(forge.statusCode, 401);
 
-  const tokenExpire = await bootstrap.jwt.genererJwt({ sub: acteur.utilisateurId, tokenVersion: 1, exp: Math.floor(Date.now() / 1000) - 5 });
+  const tokenExpire = await new JwtTokenAdapter({
+    secretJwt: 'dev-secret-change-me',
+    dureeAccessTokenSecondes: -1,
+  }).genererJwt({ sub: acteur.utilisateurId, sid: acteur.sessionId, tokenVersion: 1 });
   const expire = await serveur.inject({ method: 'GET', url: '/probe/context', headers: { authorization: `Bearer ${tokenExpire}`, 'x-session-id': acteur.sessionId } });
   assert.equal(expire.statusCode, 401);
 

@@ -32,7 +32,6 @@ function creerLoginUseCase(autorisation = new SecurityAuthorizationPortMemoire()
       genererJwt: (payload) => `jwt:${String(payload.sub)}`,
       genererRefreshTokenValue: () => 'refresh-brut',
       hacherRefreshToken: (valeur) => `hash:${valeur}`,
-      calculerExpirationSession: () => new Date(Date.now() + 60_000),
     }),
   );
 
@@ -72,6 +71,14 @@ test('mauvais mot de passe, compte suspendu et compte desactive sont rejetes', a
   const utilisateur = creerUtilisateurAuth();
   await setup.repositories.depotUtilisateurAuth.sauvegarder(utilisateur);
   await assert.rejects(() => setup.useCase.executer({ email: utilisateur.obtenirEmail().obtenirValeur(), motDePasse: 'mauvais' }));
+  assert.equal(
+    (await setup.repositories.depotUtilisateurAuth.trouverParId(utilisateur.obtenirId()))?.obtenirNombreTentativesConnexion(),
+    1,
+  );
+  assert.equal(
+    (await setup.repositories.depotTentativeConnexion.listerTentativesUtilisateur(utilisateur.obtenirEmail().obtenirValeur())).length,
+    1,
+  );
 
   const suspendu = creerUtilisateurAuth({ email: 'suspendu@test.cd' });
   suspendu.suspendreCompte();

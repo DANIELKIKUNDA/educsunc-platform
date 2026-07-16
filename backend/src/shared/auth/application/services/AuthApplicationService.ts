@@ -10,6 +10,7 @@ import { LoginSaga } from '../sagas/LoginSaga';
 import { LogoutSaga } from '../sagas/LogoutSaga';
 import { OfflineAuthenticationSaga } from '../sagas/OfflineAuthenticationSaga';
 import { RefreshTokenSaga } from '../sagas/RefreshTokenSaga';
+import { ErreurCompteDesactive, ErreurCompteSuspendu, ErreurCompteVerrouille } from '../../domain';
 
 // Ce service applicatif coordonne les grands parcours AUTH.
 export class AuthApplicationService {
@@ -25,7 +26,13 @@ export class AuthApplicationService {
     try {
       return await this.loginSaga.executer(input);
     } catch (error) {
-      throw new AuthentificationImpossibleApplicationException(AuthApplicationService.extraireMessage(error, 'Authentification impossible'));
+      if (error instanceof ErreurCompteSuspendu || error instanceof ErreurCompteDesactive || error instanceof ErreurCompteVerrouille) {
+        throw error;
+      }
+      throw new AuthentificationImpossibleApplicationException(
+        'Identifiants incorrects.',
+        { cause: error },
+      );
     }
   }
 
@@ -43,7 +50,7 @@ export class AuthApplicationService {
     try {
       return await this.refreshTokenSaga.executer(input);
     } catch (error) {
-      throw new RefreshImpossibleApplicationException(AuthApplicationService.extraireMessage(error, 'Renouvellement impossible'));
+      throw new RefreshImpossibleApplicationException('La session ne peut pas etre renouvelee. Veuillez vous reconnecter.');
     }
   }
 

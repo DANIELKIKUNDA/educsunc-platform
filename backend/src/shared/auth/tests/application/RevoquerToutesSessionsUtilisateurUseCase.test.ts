@@ -17,6 +17,7 @@ test('revoque toutes les sessions et invalide les JWT futurs', async () => {
     new TransactionManagerMemoire(),
     repositories.depotUtilisateurAuth,
     repositories.depotSessionUtilisateur,
+    repositories.depotRefreshToken,
   );
 
   await useCase.executer({ utilisateurId: utilisateur.obtenirId() });

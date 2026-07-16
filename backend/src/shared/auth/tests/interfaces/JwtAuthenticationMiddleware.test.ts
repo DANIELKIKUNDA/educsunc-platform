@@ -6,7 +6,7 @@ import { JwtTokenAdapter } from 'shared/auth/infrastructure/adapters/jwt/JwtToke
 
 test('JWT valide accepte', async () => {
   const jwt = new JwtTokenAdapter('secret');
-  const token = await jwt.genererJwt({ sub: 'u1' });
+  const token = await jwt.genererJwt({ sub: 'u1', sid: 'session-1', tokenVersion: 1 });
   const middleware = new JwtAuthenticationMiddleware(new AuthenticationMiddleware(jwt));
   const payload = await middleware.authentifier({ authorization: `Bearer ${token}` });
   assert.equal(payload?.sub, 'u1');

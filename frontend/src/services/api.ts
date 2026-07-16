@@ -1,4 +1,5 @@
 import { lireEntetesAuthentificationActive } from '../shared/session/api-context';
+import { recoverAuthentication } from '../shared/auth/auth-recovery';
 
 type MethodeHttp = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
@@ -19,6 +20,8 @@ export interface RequeteApi {
   chemin: string;
   corps?: unknown;
   entetes?: Record<string, string>;
+  authRecovery?: boolean;
+  signal?: AbortSignal;
 }
 
 const baseUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
@@ -72,6 +75,7 @@ function messageHttpParDefaut(status: number): string {
   if (status === 404) return 'La ressource demandee est introuvable.';
   if (status === 409) return 'Cette operation entre en conflit avec des donnees existantes.';
   if (status === 422) return 'Certaines donnees saisies doivent etre corrigees.';
+  if (status === 429) return 'Trop de tentatives ont ete effectuees. Patientez avant de reessayer.';
   if (status >= 500) return 'Le serveur est momentanement indisponible.';
   return 'Une action demandee n a pas pu etre terminee.';
 }
@@ -81,6 +85,11 @@ export const clientApi = {
   baseUrl,
 
   async envoyer<TSortie>(requete: RequeteApi): Promise<TSortie> {
+    return envoyerAvecReprise<TSortie>(requete, false);
+  },
+};
+
+async function envoyerAvecReprise<TSortie>(requete: RequeteApi, dejaRejouee: boolean): Promise<TSortie> {
     let reponse: Response;
 
     try {
@@ -89,17 +98,27 @@ export const clientApi = {
         credentials: 'include',
         headers: {
           Accept: 'application/json',
-          'Content-Type': 'application/json',
+          ...(requete.corps === undefined ? {} : { 'Content-Type': 'application/json' }),
           ...lireEntetesAuthentificationActive(),
           ...requete.entetes,
         },
         body: requete.corps === undefined ? undefined : JSON.stringify(requete.corps),
+        signal: requete.signal,
       });
     } catch {
       throw new ApiError('Connexion au serveur perdue.', 0, 'NETWORK_ERROR');
     }
 
     if (!reponse.ok) {
+      if (
+        reponse.status === 401
+        && requete.authRecovery !== false
+        && !dejaRejouee
+        && await recoverAuthentication()
+      ) {
+        return envoyerAvecReprise<TSortie>(requete, true);
+      }
+
       let payload: unknown = null;
 
       try {
@@ -117,6 +136,8 @@ export const clientApi = {
       throw new ApiError(message, reponse.status, code, payload);
     }
 
+    if (reponse.status === 204) {
+      return undefined as TSortie;
+    }
     return (await reponse.json()) as TSortie;
-  },
-};
+}

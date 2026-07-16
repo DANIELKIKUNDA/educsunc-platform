@@ -2,4 +2,5 @@
 export interface RefreshTokenOutput {
   accessToken: string;
   refreshToken: string;
+  sessionId: string;
 }

@@ -12,7 +12,8 @@ export class LoginPresenter {
         utilisateur: sortie.utilisateur,
         organisationActiveId: sortie.organisationActiveId,
         ecoleActiveId: sortie.ecoleActiveId,
-        expireLe: sortie.expireLe,
+        acteurCode: sortie.acteurCode,
+        permissions: sortie.permissions,
       },
     };
   }

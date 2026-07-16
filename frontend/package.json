@@ -5,6 +5,8 @@
   "description": "Socle frontend hybride offline-first pour EducSyn.",
   "scripts": {
     "dev": "vite",
+    "dev:actors": "vite --mode development",
+    "dev:login": "vite --mode login",
     "build": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
     "test": "vue-tsc --noEmit && node -e \"require('./scripts/run-configuration-form-tests.cjs'); require('./scripts/run-school-administration-tests.cjs')\""

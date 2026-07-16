@@ -19,8 +19,8 @@
     <div class="erp-user-menu__panel">
       <div class="erp-user-menu__panel-head">
         <div>
-          <span>Mode developpeur</span>
-          <strong>Pilotage rapide acteur et contexte</strong>
+          <span>{{ isDeveloperMode ? 'Mode développeur' : 'Mon espace' }}</span>
+          <strong>{{ isDeveloperMode ? 'Pilotage rapide acteur et contexte' : 'Session sécurisée EduSync' }}</strong>
         </div>
         <span class="erp-shell-badge" :class="session.initialized ? 'erp-shell-badge--ready' : 'erp-shell-badge--pending'">
           {{ session.initialized ? 'Pret' : 'Initialisation' }}
@@ -40,7 +40,7 @@
         </article>
       </div>
 
-      <label class="erp-user-menu__switch">
+      <label v-if="isDeveloperMode" class="erp-user-menu__switch">
         <span>Acteur courant</span>
         <select :value="session.actorCode" @change="onActorChange">
           <option v-for="profile in sessionStore.actorProfiles" :key="profile.code" :value="profile.code">
@@ -61,6 +61,10 @@
         </div>
         <ThemeToggle />
       </div>
+
+      <button class="erp-user-menu__logout" type="button" @click="onLogout">
+        Se déconnecter
+      </button>
     </div>
   </details>
 </template>
@@ -68,7 +72,8 @@
 <script setup lang="ts">
 import { computed, ref, watchEffect } from 'vue';
 import { useRouter } from 'vue-router';
-import { ouvrirSessionDeveloppeurActeurSelectionne } from '../../shared/auth/session.bootstrap';
+import { deconnecterUtilisateur, ouvrirSessionDeveloppeurActeurSelectionne } from '../../shared/auth/session.bootstrap';
+import { authEntryMode } from '../../shared/auth/auth-entry-mode';
 import { sessionStore } from '../../shared/auth/session.store';
 import { getFirstAccessibleRoute } from '../../shared/doctrine/doctrine.resolver';
 import { activeContextStore } from '../../shared/session/active-context.store';
@@ -78,6 +83,7 @@ const session = sessionStore.state;
 const context = activeContextStore.state;
 const router = useRouter();
 const menuOpen = ref(false);
+const isDeveloperMode = authEntryMode === 'developer';
 
 const initials = computed(() =>
   session.displayName
@@ -136,5 +142,11 @@ async function onActorChange(event: Event): Promise<void> {
   const routeCible = getFirstAccessibleRoute(sessionStore.state.actorCode, governanceLevel);
   void router.push(routeCible);
   menuOpen.value = false;
+}
+
+async function onLogout(): Promise<void> {
+  await deconnecterUtilisateur();
+  menuOpen.value = false;
+  await router.replace('/connexion');
 }
 </script>

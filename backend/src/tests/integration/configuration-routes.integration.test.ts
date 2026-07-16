@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import Fastify from 'fastify';
-import { authenticationPlugin } from '../../app/plugins/authentication.plugin';
 import { requestContextPlugin } from '../../app/plugins/request-context.plugin';
 import { securityPlugin } from '../../app/plugins/security.plugin';
 import { tenancyPlugin } from '../../app/plugins/tenancy.plugin';
@@ -31,7 +30,7 @@ test('les routes configuration exposent la gouvernance modulaire organisation et
   const serveur = Fastify();
   await serveur.register(async (instance) => {
     await requestContextPlugin(instance, {});
-    await authenticationPlugin(instance, {});
+    await bootstrap.creerAuthenticationPlugin()(instance, {});
     await securityPlugin(instance, {});
     await tenancyPlugin(instance, {});
     await instance.register(routeConfiguration);
@@ -83,7 +82,7 @@ test('le Manager systeme relit les modules autorises apres leur enregistrement',
   const serveur = Fastify();
   await serveur.register(async (instance) => {
     await requestContextPlugin(instance, {});
-    await authenticationPlugin(instance, {});
+    await bootstrap.creerAuthenticationPlugin()(instance, {});
     await securityPlugin(instance, {});
     await tenancyPlugin(instance, {});
     await instance.register(routeConfiguration);
@@ -121,7 +120,7 @@ test('le backend expose un catalogue officiel des modules lisible par les acteur
   const serveur = Fastify();
   await serveur.register(async (instance) => {
     await requestContextPlugin(instance, {});
-    await authenticationPlugin(instance, {});
+    await bootstrap.creerAuthenticationPlugin()(instance, {});
     await securityPlugin(instance, {});
     await tenancyPlugin(instance, {});
     await instance.register(routeConfiguration);
@@ -156,7 +155,7 @@ test("la lecture modulaire n'active jamais implicitement tous les modules d'une 
   const serveur = Fastify();
   await serveur.register(async (instance) => {
     await requestContextPlugin(instance, {});
-    await authenticationPlugin(instance, {});
+    await bootstrap.creerAuthenticationPlugin()(instance, {});
     await securityPlugin(instance, {});
     await tenancyPlugin(instance, {});
     await instance.register(routeConfiguration);
@@ -191,7 +190,7 @@ test('la garde modulaire bloque un workflow transverse desactive pour l ecole', 
   const serveur = Fastify();
   await serveur.register(async (instance) => {
     await requestContextPlugin(instance, {});
-    await authenticationPlugin(instance, {});
+    await bootstrap.creerAuthenticationPlugin()(instance, {});
     await securityPlugin(instance, {});
     await tenancyPlugin(instance, {});
     await instance.register(routeConfiguration);
@@ -282,7 +281,7 @@ test('les routes generiques configuration respectent la hierarchie organisation 
   const serveur = Fastify();
   await serveur.register(async (instance) => {
     await requestContextPlugin(instance, {});
-    await authenticationPlugin(instance, {});
+    await bootstrap.creerAuthenticationPlugin()(instance, {});
     await securityPlugin(instance, {});
     await tenancyPlugin(instance, {});
     await instance.register(routeConfiguration);
@@ -378,7 +377,7 @@ test('une ecole peut gerer sa configuration locale selon sa doctrine', async () 
   const serveur = Fastify();
   await serveur.register(async (instance) => {
     await requestContextPlugin(instance, {});
-    await authenticationPlugin(instance, {});
+    await bootstrap.creerAuthenticationPlugin()(instance, {});
     await securityPlugin(instance, {});
     await tenancyPlugin(instance, {});
     await instance.register(routeConfiguration);
@@ -567,7 +566,7 @@ test('la matrice familiale refuse un runtime plateforme a un acteur ecole', asyn
   const serveur = Fastify();
   await serveur.register(async (instance) => {
     await requestContextPlugin(instance, {});
-    await authenticationPlugin(instance, {});
+    await bootstrap.creerAuthenticationPlugin()(instance, {});
     await securityPlugin(instance, {});
     await tenancyPlugin(instance, {});
     await instance.register(routeConfiguration);
@@ -605,7 +604,7 @@ test('la matrice familiale reserve le branding technique d ecole au systeme ecol
   const serveur = Fastify();
   await serveur.register(async (instance) => {
     await requestContextPlugin(instance, {});
-    await authenticationPlugin(instance, {});
+    await bootstrap.creerAuthenticationPlugin()(instance, {});
     await securityPlugin(instance, {});
     await tenancyPlugin(instance, {});
     await instance.register(routeConfiguration);
@@ -648,7 +647,7 @@ test('la matrice familiale reserve les preferences utilisateur au proprietaire',
   const serveur = Fastify();
   await serveur.register(async (instance) => {
     await requestContextPlugin(instance, {});
-    await authenticationPlugin(instance, {});
+    await bootstrap.creerAuthenticationPlugin()(instance, {});
     await securityPlugin(instance, {});
     await tenancyPlugin(instance, {});
     await instance.register(routeConfiguration);

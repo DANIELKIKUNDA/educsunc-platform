@@ -11,14 +11,15 @@ export interface DependancesMoteurAuthentification {
   verifierMotDePasse: (motDePasseClair: string, motDePasseHash: string) => boolean;
   genererJwt: (payload: {
     sub: string;
+    sid: string;
     email: string;
     tokenVersion: number;
     organisationActiveId?: string;
     ecoleActiveId?: string;
+    roleActif?: string;
   }) => string;
   genererRefreshTokenValue: () => string;
   hacherRefreshToken: (refreshTokenValue: string) => string;
-  calculerExpirationSession?: () => Date | undefined;
 }
 
 // Ce moteur orchestre la validation metier d'une authentification reussie.
@@ -31,6 +32,7 @@ export class MoteurAuthentification {
     motDePasseClair: string;
     organisationActiveId?: string;
     ecoleActiveId?: string;
+    roleActif?: string;
     adresseIp?: string;
     userAgent?: string;
     deviceId?: string;
@@ -48,9 +50,6 @@ export class MoteurAuthentification {
       userAgent: params.userAgent,
     });
 
-    params.utilisateur.verifierConnexionAutorisee();
-    PolicyOfflineAuth.verifier(params.utilisateur.obtenirAuthOfflineAutorisee(), Boolean(params.modeOffline));
-
     const motDePasseValide = this.dependances.verifierMotDePasse(
       params.motDePasseClair,
       params.utilisateur.obtenirMotDePasseHash().obtenirValeur(),
@@ -60,24 +59,19 @@ export class MoteurAuthentification {
       throw new ErreurMotDePasseInvalide();
     }
 
+    // Le statut du compte n'est evalue qu'apres preuve du secret afin d'eviter l'enumeration.
+    params.utilisateur.verifierConnexionAutorisee();
+    PolicyOfflineAuth.verifier(params.utilisateur.obtenirAuthOfflineAutorisee(), Boolean(params.modeOffline));
+
     tentativeConnexion.marquerSucces();
     params.utilisateur.marquerAuthentificationReussie(params.organisationActiveId, params.ecoleActiveId);
-
-    const jwtToken = new JwtToken(this.dependances.genererJwt({
-      sub: params.utilisateur.obtenirId(),
-      email: params.utilisateur.obtenirEmail().obtenirValeur(),
-      tokenVersion: params.utilisateur.obtenirTokenVersion().obtenirValeur(),
-      organisationActiveId: params.organisationActiveId,
-      ecoleActiveId: params.ecoleActiveId,
-    }));
 
     const refreshTokenValue = new RefreshTokenValue(this.dependances.genererRefreshTokenValue());
     const refreshToken = RefreshToken.creer({
       idUtilisateur: params.utilisateur.obtenirId(),
       tokenHash: this.dependances.hacherRefreshToken(refreshTokenValue.obtenirValeur()),
-      expireLe: this.dependances.calculerExpirationSession?.() ?? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      tokenVersionEmise: params.utilisateur.obtenirTokenVersion().obtenirValeur(),
     });
-
     const sessionUtilisateur = SessionUtilisateur.ouvrir({
       idUtilisateur: params.utilisateur.obtenirId(),
       refreshTokenId: refreshToken.obtenirId(),
@@ -85,10 +79,20 @@ export class MoteurAuthentification {
       userAgent: params.userAgent,
       deviceId: params.deviceId,
       estOffline: Boolean(params.modeOffline),
-      expireLe: this.dependances.calculerExpirationSession?.(),
       organisationActiveId: params.organisationActiveId,
       ecoleActiveId: params.ecoleActiveId,
     });
+    refreshToken.associerSession(sessionUtilisateur.obtenirId());
+
+    const jwtToken = new JwtToken(this.dependances.genererJwt({
+      sub: params.utilisateur.obtenirId(),
+      sid: sessionUtilisateur.obtenirId(),
+      email: params.utilisateur.obtenirEmail().obtenirValeur(),
+      tokenVersion: params.utilisateur.obtenirTokenVersion().obtenirValeur(),
+      organisationActiveId: params.organisationActiveId,
+      ecoleActiveId: params.ecoleActiveId,
+      roleActif: params.roleActif,
+    }));
 
     return {
       jwtToken,

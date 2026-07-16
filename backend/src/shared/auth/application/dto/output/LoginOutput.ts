@@ -8,5 +8,6 @@ export interface LoginOutput {
   utilisateur: UtilisateurAuthDTO;
   organisationActiveId?: string;
   ecoleActiveId?: string;
-  expireLe?: string;
+  acteurCode?: string;
+  permissions?: readonly string[];
 }

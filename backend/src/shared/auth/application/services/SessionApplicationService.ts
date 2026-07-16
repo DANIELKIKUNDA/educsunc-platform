@@ -12,13 +12,8 @@ export class SessionApplicationService {
     private readonly sessionCachePort: SessionCachePort,
   ) {}
 
-  // Cette methode charge une session active depuis le depot ou le cache.
+  // Cette methode charge une session active; la persistance arbitre toute revocation.
   public async obtenirSessionActive(idSessionUtilisateur: string): Promise<SessionOutput> {
-    const sessionCachee = await this.sessionCachePort.obtenirSession(idSessionUtilisateur);
-    if (sessionCachee) {
-      return sessionCachee;
-    }
-
     const session = await this.depotSessionUtilisateur.trouverSessionActive(idSessionUtilisateur);
     if (!session) {
       throw new SessionIntrouvableApplicationException();
@@ -31,16 +26,18 @@ export class SessionApplicationService {
 
   // Cette methode revoque une session et le refresh token qui lui est rattache.
   public async revoquerSession(idSessionUtilisateur: string, raisonRevocation = 'logout'): Promise<void> {
-    const session = await this.depotSessionUtilisateur.trouverSessionActive(idSessionUtilisateur);
+    const session = await this.depotSessionUtilisateur.trouverParId(idSessionUtilisateur);
     if (!session) {
       throw new SessionIntrouvableApplicationException();
     }
 
-    session.revoquer(raisonRevocation);
-    await this.depotSessionUtilisateur.sauvegarder(session);
+    if (!session.obtenirRevoqueeLe()) {
+      session.revoquer(raisonRevocation);
+      await this.depotSessionUtilisateur.sauvegarder(session);
+    }
 
-    const refreshToken = await this.depotRefreshToken.trouverParHash(session.obtenirRefreshTokenId());
-    if (refreshToken) {
+    const refreshToken = await this.depotRefreshToken.trouverParId(session.obtenirRefreshTokenId());
+    if (refreshToken && !refreshToken.obtenirRevoque()) {
       refreshToken.revoquer();
       await this.depotRefreshToken.sauvegarder(refreshToken);
     }

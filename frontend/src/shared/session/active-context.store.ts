@@ -109,7 +109,7 @@ function findOrganization(organizationId: string): OrganizationContextOption {
   return organizationsState.find((organization) => organization.id === organizationId) ?? {
     id: organizationId,
     name: organizationId,
-    schools: organizationsState[0]?.schools ?? [],
+    schools: [],
   };
 }
 
@@ -117,8 +117,8 @@ function findSchool(organization: OrganizationContextOption, schoolId: string): 
   return organization.schools.find((school) => school.id === schoolId) ?? {
     id: schoolId,
     name: schoolId,
-    sectionName: organization.schools[0]?.sectionName ?? 'Non renseignee',
-    years: organization.schools[0]?.years ?? [{ id: `annee-${schoolId}`, label: '2025 - 2026' }],
+    sectionName: organization.schools[0]?.sectionName ?? '',
+    years: organization.schools[0]?.years ?? [],
   };
 }
 
@@ -181,14 +181,18 @@ function appliquerOrganisationAuContexte(
 }
 
 const contextePersisted = lireContextePersisted();
-const initialOrganization = findOrganization(contextePersisted?.organizationId ?? organizationsState[0].id);
+const contexteDemonstrationAutorise = import.meta.env.DEV && import.meta.env.VITE_AUTH_ENTRY_MODE !== 'login';
+const initialOrganization = findOrganization(
+  contextePersisted?.organizationId
+    ?? (contexteDemonstrationAutorise ? organizationsState[0]?.id ?? '' : ''),
+);
 const initialSchool = findSchool(initialOrganization, contextePersisted?.schoolId ?? initialOrganization.schools[0]?.id ?? '');
 const initialSchoolYear = contextePersisted?.schoolYearId
   ? resolveSchoolYear(initialSchool, contextePersisted.schoolYearId)
   : getFirstSchoolYear(initialSchool);
 
 const state = reactive<ActiveFrontendContext>({
-  governanceLevel: contextePersisted?.governanceLevel ?? 'ECOLE',
+  governanceLevel: contextePersisted?.governanceLevel ?? (contexteDemonstrationAutorise ? 'ECOLE' : 'PLATEFORME'),
   organizationId: initialOrganization.id,
   organizationName: initialOrganization.name,
   schoolId: initialSchool.id,
@@ -390,9 +394,21 @@ export const activeContextStore = {
     organizationId?: string | null;
     schoolId?: string | null;
   }): void {
+    if (params.organizationId === null) {
+      state.organizationId = '';
+      state.organizationName = '';
+      state.schoolId = '';
+      state.schoolName = '';
+      state.sectionName = '';
+      state.schoolYearId = '';
+      state.schoolYearLabel = '';
+      persisterContexteActif();
+      return;
+    }
+
     const organizationId = params.organizationId ?? state.organizationId;
     const organization = findOrganization(organizationId);
-    const schoolId = params.schoolId ?? state.schoolId;
+    const schoolId = params.schoolId === null ? '' : params.schoolId ?? state.schoolId;
     const school = findSchool(organization, schoolId);
     const schoolYear = getFirstSchoolYear(school);
 

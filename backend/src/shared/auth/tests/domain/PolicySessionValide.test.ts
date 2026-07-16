@@ -1,13 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ErreurSessionExpiree, ErreurSessionRevoquee, PolicySessionPersistante } from 'shared/auth/domain';
+import { ErreurSessionRevoquee, PolicySessionPersistante } from 'shared/auth/domain';
 
 test('session valide acceptee', () => {
-  assert.doesNotThrow(() => PolicySessionPersistante.verifier({ expireLe: new Date(Date.now() + 1000) }));
-});
-
-test('session expiree refusee', () => {
-  assert.throws(() => PolicySessionPersistante.verifier({ expireLe: new Date(Date.now() - 1000) }), ErreurSessionExpiree);
+  assert.doesNotThrow(() => PolicySessionPersistante.verifier({}));
 });
 
 test('session revoquee refusee', () => {

@@ -2,10 +2,12 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import Fastify from 'fastify';
 import { requestContextPlugin } from '../../app/plugins/request-context.plugin';
-import { authenticationPlugin } from '../../app/plugins/authentication.plugin';
+import { creerAuthenticationPlugin } from '../../app/plugins/authentication.plugin';
 import { securityPlugin } from '../../app/plugins/security.plugin';
 import { tenancyPlugin } from '../../app/plugins/tenancy.plugin';
 import { JwtTokenAdapter } from 'shared/auth/infrastructure';
+import { SessionCacheService } from 'shared/auth/infrastructure';
+import { SessionApplicationService } from 'shared/auth/application/services/SessionApplicationService';
 import {
   creerContexteActifAuth,
   creerRefreshToken,
@@ -69,6 +71,7 @@ test('pipeline RequestContext -> AUTH -> SECURITY -> TENANCY enrichit la requete
   const jwt = new JwtTokenAdapter();
   const accessToken = await jwt.genererJwt({
     sub: utilisateur.obtenirId(),
+    sid: session.obtenirId(),
     email: utilisateur.obtenirEmail().obtenirValeur(),
     tokenVersion: utilisateur.obtenirTokenVersion().obtenirValeur(),
     organisationActiveId: 'org-1',
@@ -78,7 +81,16 @@ test('pipeline RequestContext -> AUTH -> SECURITY -> TENANCY enrichit la requete
   const serveur = Fastify();
   await serveur.register(async (instance) => {
     await requestContextPlugin(instance, {});
-    await authenticationPlugin(instance, {});
+    await creerAuthenticationPlugin({
+      jwtTokenAdapter: jwt,
+      utilisateurAuthRepository: authRepositories.depotUtilisateurAuth,
+      contexteActifAuthRepository: authRepositories.depotContexteActifAuth,
+      sessionApplicationService: new SessionApplicationService(
+        authRepositories.depotSessionUtilisateur,
+        authRepositories.depotRefreshToken,
+        new SessionCacheService(),
+      ),
+    })(instance, {});
     await securityPlugin(instance, {});
     await tenancyPlugin(instance, {});
 
@@ -149,6 +161,18 @@ test('pipeline RequestContext -> AUTH -> SECURITY -> TENANCY enrichit la requete
   assert.equal(corps.tenantHeader, 'ecole-1');
   assert.equal(corps.organisationHeader, 'org-1');
 
+  const usurpationIdentite = await serveur.inject({
+    method: 'GET',
+    url: '/probe',
+    headers: {
+      authorization: `Bearer ${accessToken}`,
+      'x-session-id': session.obtenirId(),
+      'x-user-id': 'utilisateur-etranger',
+    },
+  });
+  assert.equal(usurpationIdentite.statusCode, 403, usurpationIdentite.body);
+  assert.equal(usurpationIdentite.json().code, 'IDENTITY_CONTEXT_MISMATCH');
+
   await serveur.close();
 });
 
@@ -191,6 +215,7 @@ test('tenancy refuse une ecole etrangere quand le contexte actif est deja etabli
   const jwt = new JwtTokenAdapter();
   const accessToken = await jwt.genererJwt({
     sub: utilisateur.obtenirId(),
+    sid: session.obtenirId(),
     email: utilisateur.obtenirEmail().obtenirValeur(),
     tokenVersion: utilisateur.obtenirTokenVersion().obtenirValeur(),
     organisationActiveId: 'org-1',
@@ -200,7 +225,16 @@ test('tenancy refuse une ecole etrangere quand le contexte actif est deja etabli
   const serveur = Fastify();
   await serveur.register(async (instance) => {
     await requestContextPlugin(instance, {});
-    await authenticationPlugin(instance, {});
+    await creerAuthenticationPlugin({
+      jwtTokenAdapter: jwt,
+      utilisateurAuthRepository: authRepositories.depotUtilisateurAuth,
+      contexteActifAuthRepository: authRepositories.depotContexteActifAuth,
+      sessionApplicationService: new SessionApplicationService(
+        authRepositories.depotSessionUtilisateur,
+        authRepositories.depotRefreshToken,
+        new SessionCacheService(),
+      ),
+    })(instance, {});
     await securityPlugin(instance, {});
     await tenancyPlugin(instance, {});
     instance.get('/probe', async () => ({ ok: true }));

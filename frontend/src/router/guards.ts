@@ -1,5 +1,6 @@
 import type { Router } from 'vue-router';
 import { sessionStore } from '../shared/auth/session.store';
+import { initializeFrontendSession } from '../shared/auth/session.bootstrap';
 import { activeContextStore } from '../shared/session/active-context.store';
 import {
   getFirstAccessibleRoute,
@@ -10,11 +11,24 @@ import {
 } from '../shared/doctrine/doctrine.resolver';
 
 export function installNavigationGuards(router: Router): void {
-  router.beforeEach((to) => {
+  router.beforeEach(async (to) => {
+    await initializeFrontendSession();
     const isPublicRoute = to.meta.public === true;
 
+    if (sessionStore.state.initializationRequired && to.name !== 'initialisation') {
+      return { name: 'initialisation' };
+    }
+
+    if (!sessionStore.state.initializationRequired && to.name === 'initialisation') {
+      return sessionStore.state.isAuthenticated ? { path: '/app' } : { name: 'connexion' };
+    }
+
     if (!isPublicRoute && to.meta.requiresAuth === true && !sessionStore.state.isAuthenticated) {
-      return { name: 'connexion' };
+      return { name: 'connexion', query: { retour: to.fullPath } };
+    }
+
+    if (isPublicRoute && sessionStore.state.isAuthenticated) {
+      return { path: '/app' };
     }
 
     if (to.path.startsWith('/app')) {

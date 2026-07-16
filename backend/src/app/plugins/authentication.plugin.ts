@@ -3,6 +3,9 @@ import { RequestContextFactory, REQUEST_CONTEXT_HEADER_ORGANISATION, REQUEST_CON
 import { PolicyTokenVersion } from 'shared/auth/domain';
 import { AuthenticationMiddleware, JwtTokenAdapter, PostgresContexteActifAuthRepository, PostgresRefreshTokenRepository, PostgresSessionUtilisateurRepository, PostgresUtilisateurAuthRepository, SessionCacheService } from 'shared/auth/infrastructure';
 import { SessionApplicationService } from 'shared/auth/application/services/SessionApplicationService';
+import type { DepotContexteActifAuth, DepotUtilisateurAuth } from 'shared/auth/domain';
+import { configurationApplication } from '../../config/app.config';
+import { HttpRouteAuthenticationPolicy } from '../security/HttpRouteAuthenticationPolicy';
 
 type PluginGlobal = FastifyPluginAsync & { nom: string };
 
@@ -17,12 +20,37 @@ const sessionApplicationService = new SessionApplicationService(
   refreshTokenRepository,
   sessionCacheService,
 );
-const authenticationMiddleware = new AuthenticationMiddleware(jwtTokenAdapter);
+
+export interface DependancesAuthenticationPlugin {
+  jwtTokenAdapter: JwtTokenAdapter;
+  utilisateurAuthRepository: DepotUtilisateurAuth;
+  contexteActifAuthRepository: DepotContexteActifAuth;
+  sessionApplicationService: SessionApplicationService;
+  environment?: string;
+}
+
+const dependancesParDefaut: DependancesAuthenticationPlugin = {
+  jwtTokenAdapter,
+  utilisateurAuthRepository,
+  contexteActifAuthRepository,
+  sessionApplicationService,
+};
 
 // Ce plugin enrichit le RequestContext avec l identite et la session AUTH.
-export const authenticationPlugin: PluginGlobal = Object.assign(
-  async (serveur: Parameters<FastifyPluginAsync>[0]) => {
-    serveur.addHook('onRequest', async (requete: FastifyRequest, reponse: FastifyReply) => {
+export function creerAuthenticationPlugin(
+  dependances: DependancesAuthenticationPlugin = dependancesParDefaut,
+): PluginGlobal {
+  const authenticationMiddleware = new AuthenticationMiddleware(dependances.jwtTokenAdapter);
+  const routePolicy = new HttpRouteAuthenticationPolicy(
+    dependances.environment ?? configurationApplication.environnement,
+  );
+  return Object.assign(
+    async (serveur: Parameters<FastifyPluginAsync>[0]) => {
+      serveur.addHook('onRequest', async (requete: FastifyRequest, reponse: FastifyReply) => {
+      if (routePolicy.isPublic({ method: requete.method, url: requete.url })) {
+        return;
+      }
+
       try {
         const payload = await authenticationMiddleware.authentifier(
           typeof requete.headers.authorization === 'string'
@@ -30,49 +58,100 @@ export const authenticationPlugin: PluginGlobal = Object.assign(
             : undefined,
         );
 
-        if (!payload || typeof payload.sub !== 'string' || !requete.context) {
-          return;
+        if (!payload || typeof payload.sub !== 'string') {
+          throw new HttpAuthenticationError(
+            'AUTHENTICATION_REQUIRED',
+            'Une authentification est requise pour acceder a cette ressource.',
+            401,
+          );
+        }
+        if (!requete.context) {
+          throw new Error("Le contexte de requete n'est pas initialise.");
         }
 
-        const utilisateur = await utilisateurAuthRepository.trouverParId(payload.sub);
+        const utilisateur = await dependances.utilisateurAuthRepository.trouverParId(payload.sub);
         if (!utilisateur) {
-          throw new Error("L'utilisateur authentifie est introuvable.");
+          throw new HttpAuthenticationError(
+            'AUTHENTICATION_INVALID',
+            "L'utilisateur authentifie est introuvable.",
+            401,
+          );
         }
 
         utilisateur.verifierConnexionAutorisee();
         const tokenVersion = lireValeurNombre(payload.tokenVersion);
-        if (typeof tokenVersion === 'number') {
-          PolicyTokenVersion.verifier(
-            utilisateur.obtenirTokenVersion().obtenirValeur(),
-            tokenVersion,
+        if (typeof tokenVersion !== 'number') {
+          throw new HttpAuthenticationError('AUTHENTICATION_INVALID', 'Version de jeton absente.', 401);
+        }
+        PolicyTokenVersion.verifier(
+          utilisateur.obtenirTokenVersion().obtenirValeur(),
+          tokenVersion,
+        );
+
+        const sessionIdJeton = lireValeurChaine(payload.sid);
+        if (!sessionIdJeton) {
+          throw new HttpAuthenticationError('AUTHENTICATION_INVALID', 'Session absente du jeton.', 401);
+        }
+        const sessionIdHeader = lireHeaderChaine(requete.headers, REQUEST_CONTEXT_HEADER_SESSION);
+        if (sessionIdHeader && sessionIdHeader !== sessionIdJeton) {
+          throw new HttpAuthenticationError(
+            'AUTHENTICATION_INVALID',
+            'La session transmise ne correspond pas au jeton.',
+            401,
           );
         }
-
-        const sessionId = lireHeaderChaine(requete.headers, REQUEST_CONTEXT_HEADER_SESSION);
-        const session = sessionId
-          ? await sessionApplicationService.obtenirSessionActive(sessionId)
-          : null;
-        const contexteActif = await contexteActifAuthRepository.trouverContexteUtilisateur(
+        const sessionId = sessionIdHeader ?? sessionIdJeton;
+        const session = await dependances.sessionApplicationService.obtenirSessionActive(sessionId);
+        if (session.utilisateurId !== utilisateur.obtenirId()) {
+          throw new HttpAuthenticationError(
+            'AUTHENTICATION_INVALID',
+            'La session ne correspond pas a l utilisateur authentifie.',
+            401,
+          );
+        }
+        const contexteActif = await dependances.contexteActifAuthRepository.trouverContexteUtilisateur(
           utilisateur.obtenirId(),
+        );
+
+        const organisationActiveId =
+          session.organisationActiveId
+          ?? contexteActif?.obtenirOrganisationActiveId()
+          ?? lireValeurChaine(payload.organisationActiveId);
+        const ecoleActiveId =
+          session.ecoleActiveId
+          ?? contexteActif?.obtenirEcoleActiveId()
+          ?? lireValeurChaine(payload.ecoleActiveId);
+        const roleActif =
+          lireValeurChaine(payload.roleActif)
+          ?? lireValeurChaine(payload.role)
+          ?? requete.context.roleActif;
+        const lectureOrganisationnellePlateforme =
+          lireHeaderChaine(requete.headers, 'x-lecture-organisation') === 'true'
+          && roleActif !== undefined
+          && ['MANAGER_SYSTEME', 'OPERATEUR_SYSTEME', 'SUPPORT_SYSTEME'].includes(roleActif);
+
+        verifierEnTeteIdentite(requete.headers, utilisateur.obtenirId());
+        if (!lectureOrganisationnellePlateforme) {
+          verifierEnTeteContexte(
+            requete.headers,
+            REQUEST_CONTEXT_HEADER_ORGANISATION,
+            organisationActiveId,
+          );
+        }
+        verifierEnTeteContexte(
+          requete.headers,
+          REQUEST_CONTEXT_HEADER_TENANT,
+          ecoleActiveId,
         );
 
         requete.context = RequestContextFactory.enrichirAuth(requete.context, {
           utilisateurId: utilisateur.obtenirId(),
-          sessionId: session?.sessionId ?? sessionId,
-          roleActif:
-            lireValeurChaine(payload.roleActif)
-            ?? lireValeurChaine(payload.role)
-            ?? requete.context.roleActif,
-          organisationActiveId:
-            session?.organisationActiveId
-            ?? contexteActif?.obtenirOrganisationActiveId()
-            ?? lireValeurChaine(payload.organisationActiveId),
-          ecoleActiveId:
-            session?.ecoleActiveId
-            ?? contexteActif?.obtenirEcoleActiveId()
-            ?? lireValeurChaine(payload.ecoleActiveId),
+          sessionId: session.sessionId,
+          roleActif,
+          organisationActiveId,
+          ecoleActiveId,
           modeOffline:
-            session?.estOffline
+            session.estOffline
             ?? lireValeurBooleenne(payload.modeOffline)
             ?? false,
           deviceId:
@@ -92,17 +171,33 @@ export const authenticationPlugin: PluginGlobal = Object.assign(
           },
           "Echec d'enrichissement AUTH du RequestContext.",
         );
-        return reponse.code(401).send({
+        const erreurHttp = erreur instanceof HttpAuthenticationError ? erreur : undefined;
+        return reponse.code(erreurHttp?.statusCode ?? 401).send({
           success: false,
-          message: 'Authentification invalide.',
+          code: erreurHttp?.code ?? 'AUTHENTICATION_INVALID',
+          message: erreurHttp?.publicMessage ?? 'Authentification invalide.',
         });
       }
-    });
-  },
-  {
-    nom: 'authentication',
-  },
-);
+      });
+    },
+    {
+      nom: 'authentication',
+    },
+  );
+}
+
+class HttpAuthenticationError extends Error {
+  public constructor(
+    public readonly code: string,
+    public readonly publicMessage: string,
+    public readonly statusCode: 401 | 403,
+  ) {
+    super(publicMessage);
+    this.name = 'HttpAuthenticationError';
+  }
+}
+
+export const authenticationPlugin: PluginGlobal = creerAuthenticationPlugin();
 
 function lireHeaderChaine(headers: Record<string, unknown>, nom: string): string | undefined {
   const valeur = headers[nom];
@@ -141,4 +236,35 @@ function propagerHeaderContexte(
   }
 
   headers[nom] = valeur;
+}
+
+function verifierEnTeteIdentite(
+  headers: FastifyRequest['headers'],
+  utilisateurId: string,
+): void {
+  const utilisateurIdHeader = lireHeaderChaine(headers, 'x-user-id');
+  if (utilisateurIdHeader && utilisateurIdHeader !== utilisateurId) {
+    throw new HttpAuthenticationError(
+      'IDENTITY_CONTEXT_MISMATCH',
+      "L'identite transmise ne correspond pas a la session active.",
+      403,
+    );
+  }
+
+  headers['x-user-id'] = utilisateurId;
+}
+
+function verifierEnTeteContexte(
+  headers: FastifyRequest['headers'],
+  nom: string,
+  valeurSession?: string,
+): void {
+  const valeurHeader = lireHeaderChaine(headers, nom);
+  if (valeurHeader && valeurHeader !== valeurSession) {
+    throw new HttpAuthenticationError(
+      'ACTIVE_CONTEXT_MISMATCH',
+      'Le contexte transmis ne correspond pas a la session active.',
+      403,
+    );
+  }
 }

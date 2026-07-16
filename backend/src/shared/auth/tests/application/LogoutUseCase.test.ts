@@ -18,7 +18,10 @@ test('logout valide revoque session, refresh token et invalide le cache', async 
   const cache = new SessionCachePortMemoire();
   const audit = new SecurityAuditPortMemoire();
   const refreshToken = creerRefreshToken('utilisateur-1', 'refresh-1');
-  const session = creerSessionUtilisateur({ idUtilisateur: 'utilisateur-1', refreshTokenId: 'refresh-1' });
+  const session = creerSessionUtilisateur({
+    idUtilisateur: 'utilisateur-1',
+    refreshTokenId: refreshToken.obtenirId(),
+  });
   await repositories.depotRefreshToken.sauvegarder(refreshToken);
   await repositories.depotSessionUtilisateur.sauvegarder(session);
   await cache.memoriserSession({ sessionId: session.obtenirId(), utilisateurId: 'utilisateur-1', estOffline: false });
@@ -36,4 +39,8 @@ test('logout valide revoque session, refresh token et invalide le cache', async 
 
   assert.equal(await cache.obtenirSession(session.obtenirId()), null);
   assert.ok(audit.audits.some((entry) => entry.action === 'AUTH_LOGOUT'));
+  assert.equal(
+    (await repositories.depotRefreshToken.trouverParId(refreshToken.obtenirId()))?.obtenirRevoque(),
+    true,
+  );
 });

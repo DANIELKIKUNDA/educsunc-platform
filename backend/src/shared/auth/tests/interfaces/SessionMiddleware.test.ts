@@ -17,6 +17,21 @@ test('session valide acceptee et session revoquee refusee', async () => {
   );
 
   assert.equal(await middleware.verifierSession({ 'x-session-id': session.obtenirId() }), session.obtenirId());
+  assert.equal(
+    await middleware.verifierCoherence(
+      { 'x-session-id': session.obtenirId() },
+      { sub: session.obtenirIdUtilisateur(), sid: session.obtenirId() },
+    ),
+    session.obtenirId(),
+  );
+  await assert.rejects(() => middleware.verifierCoherence(
+    { 'x-session-id': session.obtenirId() },
+    { sub: 'autre-utilisateur', sid: session.obtenirId() },
+  ));
+  await assert.rejects(() => middleware.verifierCoherence(
+    { 'x-session-id': session.obtenirId() },
+    { sub: session.obtenirIdUtilisateur(), sid: 'autre-session' },
+  ));
   session.revoquer('logout');
   await repositories.depotSessionUtilisateur.sauvegarder(session);
   await cache.invaliderSession(session.obtenirId());

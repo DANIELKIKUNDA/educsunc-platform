@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import Fastify from 'fastify';
-import { authenticationPlugin } from '../../app/plugins/authentication.plugin';
 import { auditPlugin } from '../../app/plugins/audit.plugin';
 import { requestContextPlugin } from '../../app/plugins/request-context.plugin';
 import { securityPlugin } from '../../app/plugins/security.plugin';
@@ -49,7 +48,7 @@ test("les surfaces avancees d'audit imposent bien les garde-fous admin et intern
   const serveur = Fastify();
   await serveur.register(async (instance) => {
     await requestContextPlugin(instance, {});
-    await authenticationPlugin(instance, {});
+    await bootstrap.creerAuthenticationPlugin()(instance, {});
     await securityPlugin(instance, {});
     await tenancyPlugin(instance, {});
     await auditPlugin(instance, {});

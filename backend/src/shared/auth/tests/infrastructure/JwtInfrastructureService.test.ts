@@ -4,7 +4,7 @@ import { JwtInfrastructureService } from 'shared/auth/infrastructure/services/Jw
 
 test('signature JWT, verification JWT et extraction claims', async () => {
   const service = new JwtInfrastructureService('secret-test');
-  const token = await service.genererJwt({ sub: 'user-1', tokenVersion: 2 });
+  const token = await service.genererJwt({ sub: 'user-1', sid: 'session-1', tokenVersion: 2 });
 
   assert.equal(await service.verifierJwt(token), true);
   const payload = await service.decoderJwt<{ sub: string; tokenVersion: number }>(token);
@@ -14,7 +14,7 @@ test('signature JWT, verification JWT et extraction claims', async () => {
 
 test('rejet JWT falsifie ou invalide', async () => {
   const service = new JwtInfrastructureService('secret-test');
-  const token = await service.genererJwt({ sub: 'user-1' });
+  const token = await service.genererJwt({ sub: 'user-1', sid: 'session-1', tokenVersion: 1 });
   const falsifie = `${token}x`;
 
   assert.equal(await service.verifierJwt(falsifie), false);

@@ -14,13 +14,13 @@ export class MoteurSession {
 
   // Cette methode marque un refresh sur une session encore valide.
   public rafraichirSession(sessionUtilisateur: SessionUtilisateur, dateRefresh = new Date()): void {
-    sessionUtilisateur.verifierValidite(dateRefresh);
+    sessionUtilisateur.verifierValidite();
     sessionUtilisateur.marquerRefresh(dateRefresh);
   }
 
   // Cette methode verifie explicitement la validite d'une session.
-  public verifierSession(sessionUtilisateur: SessionUtilisateur, maintenant = new Date()): void {
-    sessionUtilisateur.verifierValidite(maintenant);
+  public verifierSession(sessionUtilisateur: SessionUtilisateur): void {
+    sessionUtilisateur.verifierValidite();
   }
 
   // Cette methode restaure le mode offline sur une session autorisee.

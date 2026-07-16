@@ -18,16 +18,18 @@ export class LogoutSaga {
   // Cette methode execute l'orchestration complete d'un logout.
   public async executer(input: LogoutInput): Promise<void> {
     await this.transactionManagerPort.executerDansTransaction(async () => {
-      const session = await this.depotSessionUtilisateur.trouverSessionActive(input.sessionId);
+      const session = await this.depotSessionUtilisateur.trouverParId(input.sessionId);
       if (!session) {
         throw new SessionIntrouvableApplicationException();
       }
 
-      session.revoquer('logout');
-      await this.depotSessionUtilisateur.sauvegarder(session);
+      if (!session.obtenirRevoqueeLe()) {
+        session.revoquer('logout');
+        await this.depotSessionUtilisateur.sauvegarder(session);
+      }
 
-      const refreshToken = await this.depotRefreshToken.trouverParHash(session.obtenirRefreshTokenId());
-      if (refreshToken) {
+      const refreshToken = await this.depotRefreshToken.trouverParId(session.obtenirRefreshTokenId());
+      if (refreshToken && !refreshToken.obtenirRevoque()) {
         refreshToken.revoquer();
         await this.depotRefreshToken.sauvegarder(refreshToken);
       }

@@ -131,7 +131,6 @@ export class UtilisateurAuth extends RacineAgregat<string> {
       ? nouveauMotDePasseHash
       : new MotDePasseHash(nouveauMotDePasseHash);
     this.incrementerTokenVersion();
-    this.marquerModification();
     this.ajouterEvenement(new MotDePasseChange(this.obtenirId()));
   }
 
@@ -172,7 +171,6 @@ export class UtilisateurAuth extends RacineAgregat<string> {
   public suspendreCompte(): void {
     this.etatCompte = EtatCompteUtilisateur.SUSPENDED;
     this.incrementerTokenVersion();
-    this.marquerModification();
     this.ajouterEvenement(new CompteSuspendu(this.obtenirId()));
   }
 
@@ -180,13 +178,13 @@ export class UtilisateurAuth extends RacineAgregat<string> {
   public desactiverCompte(): void {
     this.etatCompte = EtatCompteUtilisateur.DISABLED;
     this.incrementerTokenVersion();
-    this.marquerModification();
     this.ajouterEvenement(new CompteDesactive(this.obtenirId()));
   }
 
   // Cette methode incremente la version logique des jetons.
   public incrementerTokenVersion(): void {
     this.tokenVersion = this.tokenVersion.incrementer();
+    this.marquerModification();
     this.ajouterEvenement(new TokenVersionIncremente(this.obtenirId(), this.tokenVersion.obtenirValeur()));
   }
 

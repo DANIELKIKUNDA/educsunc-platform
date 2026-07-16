@@ -5,8 +5,8 @@ export class RefreshTokenCookie {
   public static readonly NOM = 'refresh_token';
 
   // Cette methode attache le refresh token a la reponse HTTP.
-  public static appliquer(reponse: FastifyReply, token: string): void {
-    reponse.header('set-cookie', this.serialiser(token, 30 * 24 * 60 * 60));
+  public static appliquer(reponse: FastifyReply, token: string, maxAgeSecondes = 30 * 24 * 60 * 60): void {
+    reponse.header('set-cookie', this.serialiser(token, maxAgeSecondes));
   }
 
   // Cette methode force la suppression du refresh token client.

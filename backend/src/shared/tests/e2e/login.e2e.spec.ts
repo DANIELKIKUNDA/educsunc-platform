@@ -16,7 +16,7 @@ test('login complet couvre login, refresh, logout, expiration et invalidation to
   const session = await injecterCommeActeur(serveur, acteur, { method: 'GET', url: '/probe/context' });
   assert.equal(session.statusCode, 200);
 
-  const refresh = await bootstrap.obtenirRefreshUseCase().executer({ refreshToken: acteur.refreshToken });
+  const refresh = await bootstrap.obtenirRefreshUseCase().executer({ refreshToken: acteur.refreshToken, sessionId: acteur.sessionId });
   assert.ok(refresh.accessToken.length > 0);
   assert.ok(refresh.refreshToken.length > 0);
 

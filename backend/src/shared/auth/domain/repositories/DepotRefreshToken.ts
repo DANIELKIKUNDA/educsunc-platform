@@ -4,5 +4,7 @@ import { RefreshToken } from '../aggregates/RefreshToken';
 export interface DepotRefreshToken {
   sauvegarder(refreshToken: RefreshToken): Promise<void>;
   trouverParHash(tokenHash: string): Promise<RefreshToken | null>;
+  trouverParId(idRefreshToken: string): Promise<RefreshToken | null>;
   revoquer(idRefreshToken: string): Promise<void>;
+  revoquerParUtilisateur(idUtilisateur: string): Promise<void>;
 }

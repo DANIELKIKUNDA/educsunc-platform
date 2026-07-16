@@ -9,7 +9,6 @@ function creerMoteurAuthentification() {
     genererJwt: (payload) => `jwt:${String(payload.sub)}`,
     genererRefreshTokenValue: () => 'refresh-brut',
     hacherRefreshToken: (valeur) => `hash:${valeur}`,
-    calculerExpirationSession: () => new Date(Date.now() + 60_000),
   });
 }
 

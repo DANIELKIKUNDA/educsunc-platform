@@ -1,9 +1,45 @@
 {
-  "name": "EducSyn",
-  "short_name": "EducSyn",
-  "start_url": "/",
+  "id": "/app",
+  "name": "EduSync - Gestion scolaire",
+  "short_name": "EduSync",
+  "description": "Plateforme de pilotage scolaire pour les organisations, les ecoles et leurs utilisateurs.",
+  "lang": "fr",
+  "dir": "ltr",
+  "start_url": "/app",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#0f766e",
-  "icons": []
+  "orientation": "any",
+  "background_color": "#f4f8fb",
+  "theme_color": "#0b5d7a",
+  "categories": [
+    "education",
+    "business",
+    "productivity"
+  ],
+  "icons": [
+    {
+      "src": "/icons/edusync-icon-standard-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/edusync-icon-standard-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/edusync-icon-maskable-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/edusync-icon-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
 }

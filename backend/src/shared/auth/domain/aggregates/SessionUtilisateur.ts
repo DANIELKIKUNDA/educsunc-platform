@@ -16,7 +16,6 @@ export interface ProprietesSessionUtilisateur {
   userAgent?: string;
   deviceId?: string;
   estOffline: boolean;
-  expireLe?: Date;
   revoqueeLe?: Date;
   raisonRevocation?: string;
   dernierRefreshLe?: Date;
@@ -34,7 +33,6 @@ export class SessionUtilisateur extends RacineAgregat<string> {
   private userAgent?: string;
   private deviceId?: string;
   private estOffline: boolean;
-  private expireLe?: Date;
   private revoqueeLe?: Date;
   private raisonRevocation?: string;
   private dernierRefreshLe?: Date;
@@ -51,7 +49,6 @@ export class SessionUtilisateur extends RacineAgregat<string> {
     this.userAgent = SessionUtilisateur.nettoyerOptionnel(proprietes.userAgent);
     this.deviceId = SessionUtilisateur.nettoyerOptionnel(proprietes.deviceId);
     this.estOffline = Boolean(proprietes.estOffline);
-    this.expireLe = SessionUtilisateur.clonerDateOptionnelle(proprietes.expireLe);
     this.revoqueeLe = SessionUtilisateur.clonerDateOptionnelle(proprietes.revoqueeLe);
     this.raisonRevocation = SessionUtilisateur.nettoyerOptionnel(proprietes.raisonRevocation);
     this.dernierRefreshLe = SessionUtilisateur.clonerDateOptionnelle(proprietes.dernierRefreshLe);
@@ -73,7 +70,6 @@ export class SessionUtilisateur extends RacineAgregat<string> {
     userAgent?: string;
     deviceId?: string;
     estOffline?: boolean;
-    expireLe?: Date;
     organisationActiveId?: string;
     ecoleActiveId?: string;
   }): SessionUtilisateur {
@@ -85,7 +81,6 @@ export class SessionUtilisateur extends RacineAgregat<string> {
       userAgent: params.userAgent,
       deviceId: params.deviceId,
       estOffline: params.estOffline ?? false,
-      expireLe: params.expireLe,
       organisationActiveId: params.organisationActiveId,
       ecoleActiveId: params.ecoleActiveId,
       creeLe: new Date(),
@@ -101,7 +96,6 @@ export class SessionUtilisateur extends RacineAgregat<string> {
   public obtenirUserAgent(): string | undefined { return this.userAgent; }
   public obtenirDeviceId(): string | undefined { return this.deviceId; }
   public obtenirEstOffline(): boolean { return this.estOffline; }
-  public obtenirExpireLe(): Date | undefined { return SessionUtilisateur.clonerDateOptionnelle(this.expireLe); }
   public obtenirRevoqueeLe(): Date | undefined { return SessionUtilisateur.clonerDateOptionnelle(this.revoqueeLe); }
   public obtenirRaisonRevocation(): string | undefined { return this.raisonRevocation; }
   public obtenirDernierRefreshLe(): Date | undefined { return SessionUtilisateur.clonerDateOptionnelle(this.dernierRefreshLe); }
@@ -154,6 +148,11 @@ export class SessionUtilisateur extends RacineAgregat<string> {
     this.version += 1;
   }
 
+  public remplacerRefreshToken(idRefreshToken: string, dateRefresh = new Date()): void {
+    this.refreshTokenId = SessionUtilisateur.validerTexte(idRefreshToken, 'refreshTokenId');
+    this.marquerRefresh(dateRefresh);
+  }
+
   // Cette methode active le mode offline pour la session.
   public activerModeOffline(): void {
     if (!this.estOffline) {
@@ -172,11 +171,8 @@ export class SessionUtilisateur extends RacineAgregat<string> {
   }
 
   // Cette methode verifie que la session reste encore valide.
-  public verifierValidite(maintenant = new Date()): void {
-    PolicySessionPersistante.verifier({
-      revoqueeLe: this.revoqueeLe,
-      expireLe: this.expireLe,
-    }, maintenant);
+  public verifierValidite(): void {
+    PolicySessionPersistante.verifier({ revoqueeLe: this.revoqueeLe });
   }
 
   private static validerTexte(valeur: string, nomChamp: string): string {

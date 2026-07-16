@@ -16,7 +16,10 @@ test('revocation complete avec invalidation cache et audit logout', async () => 
   const cache = new SessionCachePortMemoire();
   const audit = new SecurityAuditPortMemoire();
   const refreshToken = creerRefreshToken('utilisateur-1', 'refresh-1');
-  const session = creerSessionUtilisateur({ idUtilisateur: 'utilisateur-1', refreshTokenId: 'refresh-1' });
+  const session = creerSessionUtilisateur({
+    idUtilisateur: 'utilisateur-1',
+    refreshTokenId: refreshToken.obtenirId(),
+  });
   await repositories.depotRefreshToken.sauvegarder(refreshToken);
   await repositories.depotSessionUtilisateur.sauvegarder(session);
 
@@ -28,5 +31,10 @@ test('revocation complete avec invalidation cache et audit logout', async () => 
     new AuditAuthApplicationService(audit),
   );
   await saga.executer({ sessionId: session.obtenirId() });
+  await saga.executer({ sessionId: session.obtenirId() });
   assert.ok(audit.audits.some((entry) => entry.action === 'AUTH_LOGOUT'));
+  assert.equal(
+    (await repositories.depotRefreshToken.trouverParId(refreshToken.obtenirId()))?.obtenirRevoque(),
+    true,
+  );
 });

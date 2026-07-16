@@ -14,9 +14,13 @@ export interface FrontendSessionState {
   userId: string;
   sessionId: string | null;
   accessToken: string | null;
-  authMode: 'dev' | 'backend';
+  email: string;
+  authMode: 'none' | 'dev' | 'backend';
   initialized: boolean;
   initializing: boolean;
+  initializationRequired: boolean;
+  lastTerminationReason: 'none' | 'logout' | 'revoked' | 'expired';
+  permissions: readonly string[];
 }
 
 function findProfile(actorCode: FrontendActorCode): FrontendActorProfile {
@@ -56,16 +60,20 @@ const initialProfile = findProfile(
 );
 
 const state = reactive<FrontendSessionState>({
-  isAuthenticated: true,
+  isAuthenticated: false,
   actorCode: initialProfile.code,
   actorLabel: initialProfile.label,
-  displayName: initialProfile.displayName,
-  userId: 'usr-demo-admin-ecole',
+  displayName: '',
+  email: '',
+  userId: '',
   sessionId: null,
   accessToken: null,
-  authMode: 'dev',
+  authMode: 'none',
   initialized: false,
   initializing: false,
+  initializationRequired: false,
+  lastTerminationReason: 'none',
+  permissions: [],
 });
 
 export const sessionStore = {
@@ -75,7 +83,7 @@ export const sessionStore = {
   beginInitialization(): void {
     state.initializing = true;
   },
-  completeInitialization(mode: 'dev' | 'backend'): void {
+  completeInitialization(mode: 'dev' | 'backend' | 'none'): void {
     state.initializing = false;
     state.initialized = true;
     state.authMode = mode;
@@ -84,8 +92,9 @@ export const sessionStore = {
     const profile = findProfile(actorCode as FrontendActorCode);
     state.actorCode = profile.code;
     state.actorLabel = profile.label;
-    state.displayName = profile.displayName;
-    state.userId = `usr-${profile.code.toLowerCase()}`;
+    if (!state.displayName) {
+      state.displayName = profile.displayName;
+    }
     persisterSessionDev(profile.code);
   },
   setTransportSession(params: { accessToken: string; sessionId: string }): void {
@@ -96,17 +105,39 @@ export const sessionStore = {
     accessToken: string;
     sessionId: string;
     userId: string;
+    actorCode?: string;
+    displayName?: string;
+    email?: string;
+    developer?: boolean;
+    permissions?: readonly string[];
   }): void {
+    if (params.actorCode) {
+      const profile = findProfile(params.actorCode as FrontendActorCode);
+      state.actorCode = profile.code;
+      state.actorLabel = profile.label;
+    }
     state.accessToken = params.accessToken;
     state.sessionId = params.sessionId;
     state.userId = params.userId;
+    state.displayName = params.displayName?.trim() || state.displayName || findProfile(state.actorCode).displayName;
+    state.email = params.email?.trim() || state.email;
+    state.permissions = params.permissions ? [...params.permissions] : state.permissions;
     state.isAuthenticated = true;
-    state.authMode = 'backend';
+    state.authMode = params.developer ? 'dev' : 'backend';
+    state.lastTerminationReason = 'none';
   },
-  clearBackendSession(): void {
+  setInitializationRequired(required: boolean): void {
+    state.initializationRequired = required;
+  },
+  clearBackendSession(reason: FrontendSessionState['lastTerminationReason'] = 'none'): void {
     state.accessToken = null;
     state.sessionId = null;
-    state.authMode = 'dev';
-    state.isAuthenticated = true;
+    state.userId = '';
+    state.displayName = '';
+    state.email = '';
+    state.authMode = 'none';
+    state.isAuthenticated = false;
+    state.lastTerminationReason = reason;
+    state.permissions = [];
   },
 };

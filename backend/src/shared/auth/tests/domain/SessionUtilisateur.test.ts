@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ErreurSessionExpiree, ErreurSessionRevoquee } from 'shared/auth/domain';
+import { ErreurSessionRevoquee } from 'shared/auth/domain';
 import { creerSessionUtilisateur } from '../support/AuthTestSupport';
 
 test('doit ouvrir une session valide avec utilisateur, contexte et metadonnees appareil', () => {
@@ -30,9 +30,9 @@ test('doit revoquer une session et produire un evenement SessionRevoquee', () =>
   assert.ok(session.recupererEvenements().some((event) => event.constructor.name === 'SessionRevoquee'));
 });
 
-test('doit detecter une session expiree', () => {
-  const session = creerSessionUtilisateur({ expireLe: new Date(Date.now() - 1000) });
-  assert.throws(() => session.verifierValidite(), ErreurSessionExpiree);
+test('doit garder une session active sans echeance temporelle', () => {
+  const session = creerSessionUtilisateur();
+  assert.doesNotThrow(() => session.verifierValidite());
 });
 
 test('doit supporter et marquer une session offline', () => {

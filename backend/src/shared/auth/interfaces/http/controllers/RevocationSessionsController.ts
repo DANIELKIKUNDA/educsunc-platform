@@ -1,5 +1,4 @@
 import type { RevoquerToutesSessionsUtilisateurUseCase } from 'shared/auth/application/use-cases/RevoquerToutesSessionsUtilisateurUseCase';
-import { ValidationHttpAuth } from '../validators/ValidationHttpAuth';
 
 // Ce controleur revoque toutes les sessions d'un utilisateur AUTH.
 export class RevocationSessionsController {
@@ -8,11 +7,8 @@ export class RevocationSessionsController {
   ) {}
 
   // Cette methode force la revocation globale des sessions utilisateur.
-  public async revoquer(headers: unknown, payloadJwt: Record<string, unknown> | null): Promise<{ donnee: { succes: boolean } }> {
-    const utilisateurId =
-      typeof payloadJwt?.sub === 'string'
-        ? payloadJwt.sub
-        : ValidationHttpAuth.lireHeaderChaine(headers, 'x-user-id');
+  public async revoquer(_headers: unknown, payloadJwt: Record<string, unknown> | null): Promise<{ donnee: { succes: boolean } }> {
+    const utilisateurId = typeof payloadJwt?.sub === 'string' ? payloadJwt.sub : undefined;
 
     if (!utilisateurId) {
       throw new Error("L'identifiant utilisateur est obligatoire.");

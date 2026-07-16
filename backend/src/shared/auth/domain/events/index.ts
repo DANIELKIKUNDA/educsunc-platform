@@ -12,7 +12,6 @@ export * from './EcoleActiveChangee';
 export * from './SessionOfflineActivee';
 export * from './RefreshTokenCree';
 export * from './RefreshTokenRevoque';
-export * from './RefreshTokenExpire';
 export * from './ContexteActifChange';
 export * from './OrganisationActiveSelectionnee';
 export * from './EcoleActiveSelectionnee';
