@@ -21,6 +21,7 @@ coverage/
 .tmp/
 tmp/
 backend/.tmp/
+.runtime/
 
 # Donnees et preuves locales generees pendant les certifications
 .codex-backups/
