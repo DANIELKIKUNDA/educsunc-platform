@@ -5,6 +5,7 @@ import { auditPlugin } from '../../app/plugins/audit.plugin';
 import { requestContextPlugin } from '../../app/plugins/request-context.plugin';
 import { tenancyPlugin } from '../../app/plugins/tenancy.plugin';
 import { routeAudit } from '../../app/routes/audit.routes';
+import { neutraliserTraitementsAuditPourTest } from '../../shared/audit/tests/support/AuditRoutesTestSupport';
 import { ROLE_FIXTURES, TENANT_FIXTURES } from '../../shared/tests/fixtures/GlobalFixtures';
 import { injecterCommeActeur } from '../../shared/tests/helpers/GlobalTestHelpers';
 import { GlobalTestBootstrap } from '../../shared/tests/setup/GlobalTestBootstrap';
@@ -58,6 +59,7 @@ test('les routes d audit technique ecole exposent uniquement les traces et metri
     await bootstrap.creerSecurityPlugin()(instance, {});
     await tenancyPlugin(instance, {});
     await auditPlugin(instance, {});
+    neutraliserTraitementsAuditPourTest(instance.audit.routesDependances);
     await instance.register(routeAudit);
   });
 

@@ -5,6 +5,7 @@ import { auditPlugin } from '../../app/plugins/audit.plugin';
 import { requestContextPlugin } from '../../app/plugins/request-context.plugin';
 import { tenancyPlugin } from '../../app/plugins/tenancy.plugin';
 import { routeAudit } from '../../app/routes/audit.routes';
+import { neutraliserTraitementsAuditPourTest } from '../../shared/audit/tests/support/AuditRoutesTestSupport';
 import { TENANT_FIXTURES } from '../../shared/tests/fixtures/GlobalFixtures';
 import { injecterCommeActeur } from '../../shared/tests/helpers/GlobalTestHelpers';
 import { GlobalTestBootstrap } from '../../shared/tests/setup/GlobalTestBootstrap';
@@ -52,16 +53,7 @@ test("les surfaces avancees d'audit imposent bien les garde-fous admin et intern
     await tenancyPlugin(instance, {});
     await auditPlugin(instance, {});
 
-    const reponseNeutre = async () => ({
-      donnee: { accepte: true },
-      meta: {
-        modeOffline: false,
-        durationMs: 0,
-      },
-    });
-    instance.audit.routesDependances.auditReplayController.rejouerProjectionsAudit = reponseNeutre;
-    instance.audit.routesDependances.auditSynchronizationController.recupererSynchronisation = reponseNeutre;
-    instance.audit.routesDependances.auditExportsController.exporterAudit = reponseNeutre;
+    neutraliserTraitementsAuditPourTest(instance.audit.routesDependances);
 
     await instance.register(routeAudit);
   });
