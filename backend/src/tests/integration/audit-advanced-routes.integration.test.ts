@@ -3,9 +3,10 @@ import test from 'node:test';
 import Fastify from 'fastify';
 import { auditPlugin } from '../../app/plugins/audit.plugin';
 import { requestContextPlugin } from '../../app/plugins/request-context.plugin';
-import { securityPlugin } from '../../app/plugins/security.plugin';
 import { tenancyPlugin } from '../../app/plugins/tenancy.plugin';
 import { routeAudit } from '../../app/routes/audit.routes';
+import { RequestContextFactory } from '../../shared/context';
+import { ScopeAcces, TypeScope } from '../../shared/security/domain';
 import { TENANT_FIXTURES } from '../../shared/tests/fixtures/GlobalFixtures';
 import { injecterCommeActeur } from '../../shared/tests/helpers/GlobalTestHelpers';
 import { GlobalTestBootstrap } from '../../shared/tests/setup/GlobalTestBootstrap';
@@ -49,9 +50,47 @@ test("les surfaces avancees d'audit imposent bien les garde-fous admin et intern
   await serveur.register(async (instance) => {
     await requestContextPlugin(instance, {});
     await bootstrap.creerAuthenticationPlugin()(instance, {});
-    await securityPlugin(instance, {});
+    const acteurs = new Map([
+      [managerSysteme.utilisateurId, managerSysteme],
+      [promoteurOrganisation.utilisateurId, promoteurOrganisation],
+      [administrateurEcole.utilisateurId, administrateurEcole],
+    ]);
+    instance.addHook('preHandler', async (requete) => {
+      const acteur = requete.context.utilisateurId
+        ? acteurs.get(requete.context.utilisateurId)
+        : undefined;
+      if (!acteur) {
+        return;
+      }
+
+      requete.context = RequestContextFactory.enrichirSecurity(requete.context, {
+        roleActif: acteur.roleCode,
+        permissions: acteur.permissions,
+        scopes: [
+          ScopeAcces.creer(new TypeScope('ORGANISATION'), acteur.organisationId),
+          ScopeAcces.creer(new TypeScope('ECOLE'), acteur.ecoleId),
+          ...(acteur.roleCode === 'MANAGER_SYSTEME'
+            ? [ScopeAcces.creer(new TypeScope('PLATEFORME'), 'system')]
+            : []),
+        ],
+        restrictions: [],
+        titulariats: [],
+      });
+    });
     await tenancyPlugin(instance, {});
     await auditPlugin(instance, {});
+
+    const reponseNeutre = async () => ({
+      donnee: { accepte: true },
+      meta: {
+        modeOffline: false,
+        durationMs: 0,
+      },
+    });
+    instance.audit.routesDependances.auditReplayController.rejouerProjectionsAudit = reponseNeutre;
+    instance.audit.routesDependances.auditSynchronizationController.recupererSynchronisation = reponseNeutre;
+    instance.audit.routesDependances.auditExportsController.exporterAudit = reponseNeutre;
+
     await instance.register(routeAudit);
   });
 
