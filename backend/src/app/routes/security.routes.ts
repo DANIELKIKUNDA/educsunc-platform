@@ -1,21 +1,12 @@
 import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
 import {
   ActiverAffectationUseCase,
-  ActiverRoleUseCase,
-  AjouterPermissionRoleUseCase,
-  AjouterRestrictionRoleUseCase,
   AjouterScopeAffectationUseCase,
   AttribuerTitulariatUseCase,
   CreerAffectationUtilisateurUseCase,
-  CreerRoleUseCase,
   DesactiverAffectationUseCase,
-  DesactiverRoleUseCase,
   ListerAffectationsUtilisateurUseCase,
-  ListerPermissionsRoleUseCase,
-  ListerRolesUseCase,
   ListerScopesUtilisateurUseCase,
-  RetirerPermissionRoleUseCase,
-  RetirerRestrictionRoleUseCase,
   RetirerScopeAffectationUseCase,
   RetirerTitulariatUseCase,
   SagaAffectationUtilisateur,
@@ -49,15 +40,12 @@ import {
   SecurityGovernancePostgresService,
   SecurityGovernanceError,
   ListerAffectationsUtilisateurSQL,
-  ListerPermissionsRoleSQL,
-  ListerRolesSQL,
   ListerScopesUtilisateurSQL,
   VerifierTitulariatClasseSQL,
 } from '../../shared/security/infrastructure';
 import {
   AffectationUtilisateurController,
   AutorisationController,
-  RoleController,
   SecuriteAuditController,
   TitulariatController,
 } from '../../shared/security/interfaces/http/controllers';
@@ -114,17 +102,6 @@ const sagaTitulariat = new SagaTitulariat(
 );
 const sagaAutorisation = new SagaAutorisation(securityFacade);
 
-const roleController = new RoleController(
-  new CreerRoleUseCase(securityRoleService),
-  new ActiverRoleUseCase(securityRoleService),
-  new DesactiverRoleUseCase(securityRoleService),
-  new AjouterPermissionRoleUseCase(securityRoleService),
-  new RetirerPermissionRoleUseCase(securityRoleService),
-  new AjouterRestrictionRoleUseCase(securityRoleService),
-  new RetirerRestrictionRoleUseCase(securityRoleService),
-  new ListerRolesUseCase(new ListerRolesSQL()),
-  new ListerPermissionsRoleUseCase(new ListerPermissionsRoleSQL()),
-);
 const affectationUtilisateurController = new AffectationUtilisateurController(
   new CreerAffectationUtilisateurUseCase(sagaAffectationUtilisateur),
   new ActiverAffectationUseCase(securityAffectationService),

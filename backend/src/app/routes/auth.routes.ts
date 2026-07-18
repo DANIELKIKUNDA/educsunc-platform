@@ -570,7 +570,6 @@ async function assurerRoleDeveloppeur(
     return roleExistant;
   }
 
-  const profil = profilsSessionDeveloppeur[actorCode];
   const definition = obtenirDefinitionRoleSysteme(codeRole);
   if (!definition) {
     throw new Error(`Le rôle système ${codeRole} n'est pas défini dans le catalogue officiel.`);

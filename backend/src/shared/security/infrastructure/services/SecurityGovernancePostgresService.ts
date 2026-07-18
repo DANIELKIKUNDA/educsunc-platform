@@ -1,4 +1,3 @@
-import { randomUUID } from 'node:crypto';
 import { PolicyMotDePasseInitial, UtilisateurAuth } from '../../../auth/domain';
 import {
   PasswordInfrastructureService,
