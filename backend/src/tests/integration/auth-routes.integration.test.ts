@@ -10,6 +10,7 @@ import { securityPlugin } from '../../app/plugins/security.plugin';
 import { tenancyPlugin } from '../../app/plugins/tenancy.plugin';
 import { routeAuth } from '../../app/routes/auth.routes';
 import { MigrateurPostgresAuth, PasswordHashAdapter, PostgresContexteActifAuthRepository, PostgresUtilisateurAuthRepository, obtenirPoolPostgresAuth } from '../../shared/auth/infrastructure';
+import { MigrateurPostgresAudit } from '../../shared/audit/infrastructure';
 import {
   creerContexteActifAuth,
   creerUtilisateurAuth,
@@ -29,6 +30,7 @@ test('les routes globales exposent le login AUTH et la lecture de session', asyn
   reinitialiserMemoireAuth();
   reinitialiserMemoireSecurity();
   await new MigrateurPostgresAuth(obtenirPoolPostgresAuth()).executerToutes();
+  await new MigrateurPostgresAudit(obtenirPoolPostgresAuth()).executerToutes();
   await new MigrateurPostgresSecurity(obtenirPoolPostgresAuth()).executerToutes();
 
   const passwordHashAdapter = new PasswordHashAdapter();
