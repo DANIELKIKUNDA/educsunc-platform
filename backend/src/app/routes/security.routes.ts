@@ -14,7 +14,6 @@ import {
   SagaTitulariat,
   SecurityAffectationService,
   SecurityFacade,
-  SecurityRoleService,
   VerifierAccesUseCase,
   VerifierPermissionUseCase,
   VerifierRestrictionUseCase,
@@ -32,7 +31,6 @@ import {
   PermissionCacheService,
   PostgresAffectationTitulariatRepository,
   PostgresAffectationUtilisateurRepository,
-  PostgresPermissionRepository,
   PostgresRoleRepository,
   SecurityAuditInfrastructureService,
   SecurityNotificationAdapter,
@@ -58,7 +56,6 @@ type PluginRoutesSecurity = FastifyPluginAsync & {
 };
 
 const roleRepository = new PostgresRoleRepository();
-const permissionRepository = new PostgresPermissionRepository();
 const affectationRepository = new PostgresAffectationUtilisateurRepository();
 const titulariatRepository = new PostgresAffectationTitulariatRepository();
 const permissionCache = new PermissionCacheService();
@@ -76,11 +73,6 @@ const securityFacade = new SecurityFacade(
   new MoteurCapacitesEffectives(),
   auditSecurity,
   responsabiliteClassePedagogiqueAdapter,
-);
-const securityRoleService = new SecurityRoleService(
-  roleRepository,
-  permissionRepository,
-  { maintenant: () => new Date() },
 );
 const securityAffectationService = new SecurityAffectationService(
   affectationRepository,
