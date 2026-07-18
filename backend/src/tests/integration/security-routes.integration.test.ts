@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import Fastify from 'fastify';
 import { requestContextPlugin } from '../../app/plugins/request-context.plugin';
-import { securityPlugin } from '../../app/plugins/security.plugin';
 import { tenancyPlugin } from '../../app/plugins/tenancy.plugin';
 import { routeSecurity } from '../../app/routes/security.routes';
 import { TENANT_FIXTURES } from '../../shared/tests/fixtures/GlobalFixtures';
@@ -40,7 +39,7 @@ test('les routes security sont exposees et reservees a la gouvernance plateforme
   await serveur.register(async (instance) => {
     await requestContextPlugin(instance, {});
     await bootstrap.creerAuthenticationPlugin()(instance, {});
-    await securityPlugin(instance, {});
+    await bootstrap.creerSecurityPlugin()(instance, {});
     await tenancyPlugin(instance, {});
     await instance.register(routeSecurity);
   });

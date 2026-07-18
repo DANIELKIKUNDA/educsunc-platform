@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import Fastify from 'fastify';
 import { requestContextPlugin } from '../../app/plugins/request-context.plugin';
-import { securityPlugin } from '../../app/plugins/security.plugin';
 import { tenancyPlugin } from '../../app/plugins/tenancy.plugin';
 import { reinitialiserNotificationsRuntime } from '../../app/plugins/notifications-runtime';
 import { routeNotifications } from '../../app/routes/notifications.routes';
@@ -33,7 +32,7 @@ test('les routes notifications ecole ouvrent la lecture et la creation aux acteu
   await serveur.register(async (instance) => {
     await requestContextPlugin(instance, {});
     await bootstrap.creerAuthenticationPlugin()(instance, {});
-    await securityPlugin(instance, {});
+    await bootstrap.creerSecurityPlugin()(instance, {});
     await tenancyPlugin(instance, {});
     await instance.register(routeNotifications);
   });
@@ -127,7 +126,7 @@ test('les routes notifications organisationnelles ouvrent la supervision aux act
   await serveur.register(async (instance) => {
     await requestContextPlugin(instance, {});
     await bootstrap.creerAuthenticationPlugin()(instance, {});
-    await securityPlugin(instance, {});
+    await bootstrap.creerSecurityPlugin()(instance, {});
     await tenancyPlugin(instance, {});
     await instance.register(routeNotifications);
   });

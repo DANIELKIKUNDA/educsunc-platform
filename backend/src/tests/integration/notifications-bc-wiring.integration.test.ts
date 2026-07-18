@@ -3,7 +3,6 @@ import test from 'node:test';
 import Fastify from 'fastify';
 import { reinitialiserNotificationsRuntime } from '../../app/plugins/notifications-runtime';
 import { requestContextPlugin } from '../../app/plugins/request-context.plugin';
-import { securityPlugin } from '../../app/plugins/security.plugin';
 import { tenancyPlugin } from '../../app/plugins/tenancy.plugin';
 import { routeNotifications } from '../../app/routes/notifications.routes';
 import { SharedDomainEventBusAdapter } from '../../app/adapters/SharedDomainEventBusAdapter';
@@ -27,7 +26,7 @@ test('un evenement paiements publie sur le bus partage cree une notification rel
   await serveur.register(async (instance) => {
     await requestContextPlugin(instance, {});
     await bootstrap.creerAuthenticationPlugin()(instance, {});
-    await securityPlugin(instance, {});
+    await bootstrap.creerSecurityPlugin()(instance, {});
     await tenancyPlugin(instance, {});
     await instance.register(routeNotifications);
   });
@@ -65,7 +64,7 @@ test('un evenement scolarite publie sur le bus partage cree une notification rel
   await serveur.register(async (instance) => {
     await requestContextPlugin(instance, {});
     await bootstrap.creerAuthenticationPlugin()(instance, {});
-    await securityPlugin(instance, {});
+    await bootstrap.creerSecurityPlugin()(instance, {});
     await tenancyPlugin(instance, {});
     await instance.register(routeNotifications);
   });
@@ -103,7 +102,7 @@ test('un evenement bulletins publie sur le bus partage cree une notification rel
   await serveur.register(async (instance) => {
     await requestContextPlugin(instance, {});
     await bootstrap.creerAuthenticationPlugin()(instance, {});
-    await securityPlugin(instance, {});
+    await bootstrap.creerSecurityPlugin()(instance, {});
     await tenancyPlugin(instance, {});
     await instance.register(routeNotifications);
   });

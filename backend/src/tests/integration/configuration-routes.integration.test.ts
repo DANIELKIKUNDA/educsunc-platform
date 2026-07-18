@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import Fastify from 'fastify';
 import { requestContextPlugin } from '../../app/plugins/request-context.plugin';
-import { securityPlugin } from '../../app/plugins/security.plugin';
 import { tenancyPlugin } from '../../app/plugins/tenancy.plugin';
 import {
   moduleActivationConfigurationService,
@@ -31,7 +30,7 @@ test('les routes configuration exposent la gouvernance modulaire organisation et
   await serveur.register(async (instance) => {
     await requestContextPlugin(instance, {});
     await bootstrap.creerAuthenticationPlugin()(instance, {});
-    await securityPlugin(instance, {});
+    await bootstrap.creerSecurityPlugin()(instance, {});
     await tenancyPlugin(instance, {});
     await instance.register(routeConfiguration);
   });
@@ -83,7 +82,7 @@ test('le Manager systeme relit les modules autorises apres leur enregistrement',
   await serveur.register(async (instance) => {
     await requestContextPlugin(instance, {});
     await bootstrap.creerAuthenticationPlugin()(instance, {});
-    await securityPlugin(instance, {});
+    await bootstrap.creerSecurityPlugin()(instance, {});
     await tenancyPlugin(instance, {});
     await instance.register(routeConfiguration);
   });
@@ -121,7 +120,7 @@ test('le backend expose un catalogue officiel des modules lisible par les acteur
   await serveur.register(async (instance) => {
     await requestContextPlugin(instance, {});
     await bootstrap.creerAuthenticationPlugin()(instance, {});
-    await securityPlugin(instance, {});
+    await bootstrap.creerSecurityPlugin()(instance, {});
     await tenancyPlugin(instance, {});
     await instance.register(routeConfiguration);
   });
@@ -156,7 +155,7 @@ test("la lecture modulaire n'active jamais implicitement tous les modules d'une 
   await serveur.register(async (instance) => {
     await requestContextPlugin(instance, {});
     await bootstrap.creerAuthenticationPlugin()(instance, {});
-    await securityPlugin(instance, {});
+    await bootstrap.creerSecurityPlugin()(instance, {});
     await tenancyPlugin(instance, {});
     await instance.register(routeConfiguration);
   });
@@ -191,7 +190,7 @@ test('la garde modulaire bloque un workflow transverse desactive pour l ecole', 
   await serveur.register(async (instance) => {
     await requestContextPlugin(instance, {});
     await bootstrap.creerAuthenticationPlugin()(instance, {});
-    await securityPlugin(instance, {});
+    await bootstrap.creerSecurityPlugin()(instance, {});
     await tenancyPlugin(instance, {});
     await instance.register(routeConfiguration);
     instance.addHook('preHandler', async (requete, reponse) => {
@@ -282,7 +281,7 @@ test('les routes generiques configuration respectent la hierarchie organisation 
   await serveur.register(async (instance) => {
     await requestContextPlugin(instance, {});
     await bootstrap.creerAuthenticationPlugin()(instance, {});
-    await securityPlugin(instance, {});
+    await bootstrap.creerSecurityPlugin()(instance, {});
     await tenancyPlugin(instance, {});
     await instance.register(routeConfiguration);
   });
@@ -378,7 +377,7 @@ test('une ecole peut gerer sa configuration locale selon sa doctrine', async () 
   await serveur.register(async (instance) => {
     await requestContextPlugin(instance, {});
     await bootstrap.creerAuthenticationPlugin()(instance, {});
-    await securityPlugin(instance, {});
+    await bootstrap.creerSecurityPlugin()(instance, {});
     await tenancyPlugin(instance, {});
     await instance.register(routeConfiguration);
   });
@@ -567,7 +566,7 @@ test('la matrice familiale refuse un runtime plateforme a un acteur ecole', asyn
   await serveur.register(async (instance) => {
     await requestContextPlugin(instance, {});
     await bootstrap.creerAuthenticationPlugin()(instance, {});
-    await securityPlugin(instance, {});
+    await bootstrap.creerSecurityPlugin()(instance, {});
     await tenancyPlugin(instance, {});
     await instance.register(routeConfiguration);
   });
@@ -605,7 +604,7 @@ test('la matrice familiale reserve le branding technique d ecole au systeme ecol
   await serveur.register(async (instance) => {
     await requestContextPlugin(instance, {});
     await bootstrap.creerAuthenticationPlugin()(instance, {});
-    await securityPlugin(instance, {});
+    await bootstrap.creerSecurityPlugin()(instance, {});
     await tenancyPlugin(instance, {});
     await instance.register(routeConfiguration);
   });
@@ -648,7 +647,7 @@ test('la matrice familiale reserve les preferences utilisateur au proprietaire',
   await serveur.register(async (instance) => {
     await requestContextPlugin(instance, {});
     await bootstrap.creerAuthenticationPlugin()(instance, {});
-    await securityPlugin(instance, {});
+    await bootstrap.creerSecurityPlugin()(instance, {});
     await tenancyPlugin(instance, {});
     await instance.register(routeConfiguration);
   });

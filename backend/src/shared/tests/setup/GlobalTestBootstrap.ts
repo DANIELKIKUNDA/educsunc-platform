@@ -3,7 +3,7 @@ import { createHmac } from 'node:crypto';
 import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from 'fastify';
 import { requestContextPlugin } from '../../../app/plugins/request-context.plugin';
 import { creerAuthenticationPlugin } from '../../../app/plugins/authentication.plugin';
-import { securityPlugin } from '../../../app/plugins/security.plugin';
+import { creerSecurityPlugin } from '../../../app/plugins/security.plugin';
 import { tenancyPlugin } from '../../../app/plugins/tenancy.plugin';
 import {
   AuthApplicationService,
@@ -285,7 +285,7 @@ export class GlobalTestBootstrap {
     await serveur.register(async (instance) => {
       await requestContextPlugin(instance, {});
       await this.creerAuthenticationPlugin()(instance, {});
-      await securityPlugin(instance, {});
+      await this.creerSecurityPlugin()(instance, {});
       await tenancyPlugin(instance, {});
 
       instance.get('/probe/context', async (requete) => ({
@@ -459,6 +459,16 @@ export class GlobalTestBootstrap {
         this.sessionCache,
       ),
       environment: 'test',
+    });
+  }
+
+  public creerSecurityPlugin() {
+    return creerSecurityPlugin({
+      roleRepository: this.securityRepositories.roleRepository,
+      affectationUtilisateurRepository: this.securityRepositories.affectationRepository,
+      affectationTitulariatRepository: this.securityRepositories.titulariatRepository,
+      auditSecurityPort: null,
+      responsabiliteClassePedagogiquePort: null,
     });
   }
 

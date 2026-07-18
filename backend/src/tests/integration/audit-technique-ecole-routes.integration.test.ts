@@ -3,7 +3,6 @@ import test from 'node:test';
 import Fastify from 'fastify';
 import { auditPlugin } from '../../app/plugins/audit.plugin';
 import { requestContextPlugin } from '../../app/plugins/request-context.plugin';
-import { securityPlugin } from '../../app/plugins/security.plugin';
 import { tenancyPlugin } from '../../app/plugins/tenancy.plugin';
 import { routeAudit } from '../../app/routes/audit.routes';
 import { ROLE_FIXTURES, TENANT_FIXTURES } from '../../shared/tests/fixtures/GlobalFixtures';
@@ -56,7 +55,7 @@ test('les routes d audit technique ecole exposent uniquement les traces et metri
   await serveur.register(async (instance) => {
     await requestContextPlugin(instance, {});
     await bootstrap.creerAuthenticationPlugin()(instance, {});
-    await securityPlugin(instance, {});
+    await bootstrap.creerSecurityPlugin()(instance, {});
     await tenancyPlugin(instance, {});
     await auditPlugin(instance, {});
     await instance.register(routeAudit);

@@ -6,7 +6,6 @@ import test from 'node:test';
 import Fastify from 'fastify';
 import { authenticationPlugin } from '../../app/plugins/authentication.plugin';
 import { requestContextPlugin } from '../../app/plugins/request-context.plugin';
-import { securityPlugin } from '../../app/plugins/security.plugin';
 import { tenancyPlugin } from '../../app/plugins/tenancy.plugin';
 import { routeAuth } from '../../app/routes/auth.routes';
 import { MigrateurPostgresAuth, PasswordHashAdapter, PostgresContexteActifAuthRepository, PostgresUtilisateurAuthRepository, obtenirPoolPostgresAuth } from '../../shared/auth/infrastructure';
@@ -73,7 +72,7 @@ test('les routes globales exposent le login AUTH et la lecture de session', asyn
   await serveur.register(async (instance) => {
     await requestContextPlugin(instance, {});
     await authenticationPlugin(instance, {});
-    await securityPlugin(instance, {});
+    await bootstrap.creerSecurityPlugin()(instance, {});
     await tenancyPlugin(instance, {});
     await instance.register(routeAuth);
   });
