@@ -10,6 +10,7 @@ export * from './services/ScopeCacheService';
 export * from './services/SecurityAuditInfrastructureService';
 export * from './services/SecurityProjectionRefreshService';
 export * from './services/SecurityRLSService';
+export * from './services/SecurityGovernancePostgresService';
 export * from './persistence/postgres/schemas';
 export * from './persistence/postgres/mappers';
 export * from './persistence/postgres/repositories';

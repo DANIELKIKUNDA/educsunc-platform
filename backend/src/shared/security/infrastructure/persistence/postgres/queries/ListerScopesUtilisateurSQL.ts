@@ -1,18 +1,14 @@
 import type { ListerScopesUtilisateurQuery, ScopeUtilisateurReadModel } from '../../../../application';
-import { obtenirMemoireSecurityStore } from '../repositories/_memoireSecurityStore';
+import type { SqlQueryClient } from '../../../../../infrastructure/persistence/SqlQueryClient';
+import { obtenirClientPostgresAuth } from '../../../../../auth/infrastructure/persistence/postgres/ClientPoolPostgresAuth';
 
-// Cette query liste les scopes reels accordes a un utilisateur.
 export class ListerScopesUtilisateurSQL implements ListerScopesUtilisateurQuery {
-  public async executer(idUtilisateur: string): Promise<readonly ScopeUtilisateurReadModel[]> {
-    const store = obtenirMemoireSecurityStore();
-    const scopes = Array.from(store.affectations.values())
-      .filter((record) => record.id_utilisateur === idUtilisateur)
-      .flatMap((record) => store.scopes.get(record.id_affectation_utilisateur) ?? []);
-
-    return scopes.map((scope) => ({
-      typeScope: scope.type_scope,
-      valeurScope: scope.valeur_scope,
-      estLectureSeule: scope.est_lecture_seule,
-    }));
+  constructor(private readonly clientSql: SqlQueryClient = obtenirClientPostgresAuth()) {}
+  public async executer(idUtilisateur:string):Promise<readonly ScopeUtilisateurReadModel[]>{
+    const resultat=await this.clientSql.executer<{type_scope:string;valeur_scope:string;est_lecture_seule:boolean}>(
+      `SELECT s.type_scope,s.valeur_scope,s.est_lecture_seule FROM security_scopes_acces s
+       JOIN security_affectations_utilisateurs a ON a.id_affectation_utilisateur=s.id_affectation_utilisateur
+       WHERE a.id_utilisateur=$1 AND a.etat_affectation='ACTIVE' ORDER BY s.type_scope,s.valeur_scope`,[idUtilisateur]);
+    return resultat.lignes.map(r=>({typeScope:r.type_scope,valeurScope:r.valeur_scope,estLectureSeule:r.est_lecture_seule}));
   }
 }

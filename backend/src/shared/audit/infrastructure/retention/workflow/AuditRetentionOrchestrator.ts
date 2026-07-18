@@ -17,7 +17,7 @@ export class AuditRetentionOrchestrator {
   ) {}
 
   public async executerCycle(reference = new Date()): Promise<void> {
-    const candidats = this.lifecycle.listerCandidats();
+    const candidats = await this.lifecycle.listerCandidats();
     for (const candidat of candidats) {
       const politique = this.rules.choisirPolitique('TECHNIQUE');
       const etat = this.rules.determinerEtat(candidat, politique, reference);
@@ -31,7 +31,7 @@ export class AuditRetentionOrchestrator {
           scope: candidat.scope,
         });
       } else if (etat === 'PURGE') {
-        this.purge.executer({ ...candidat, lifecycleState: etat });
+        await this.purge.executer({ ...candidat, lifecycleState: etat });
       }
     }
 

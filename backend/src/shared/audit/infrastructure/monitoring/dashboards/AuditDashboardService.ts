@@ -11,10 +11,10 @@ export class AuditDashboardService {
     private readonly alerts: AuditAlertService = new AuditAlertService(),
   ) {}
 
-  public construire(): AuditDashboardSnapshot {
+  public async construire(): Promise<AuditDashboardSnapshot> {
     return {
-      health: this.health.verifier(),
-      metrics: this.metrics.collecter(),
+      health: await this.health.verifier(),
+      metrics: await this.metrics.collecter(),
       alerts: this.alerts.detecter(),
     };
   }

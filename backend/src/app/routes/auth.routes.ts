@@ -74,8 +74,7 @@ import { SecurityTenantIsolationService } from '../../shared/security/infrastruc
 import { configurationApplication } from '../../config/app.config';
 import { chargerConfigurationAuth } from '../../config/auth.config';
 import { UtilisateurAuth } from '../../shared/auth/domain/aggregates/UtilisateurAuth';
-import { AffectationUtilisateur, Role } from '../../shared/security/domain';
-import { PERMISSIONS_SECURITE } from '../../shared/security/domain/value-objects/PermissionSecurite';
+import { AffectationUtilisateur, Role, obtenirDefinitionRoleSysteme } from '../../shared/security/domain';
 
 const MOT_DE_PASSE_SESSION_DEV = 'EducSyn.dev.session.2026';
 const ORGANISATION_DEV_PAR_DEFAUT = 'org-edusync-dev';
@@ -565,19 +564,24 @@ async function assurerRoleDeveloppeur(
   roleRepository: PostgresRoleRepository,
   actorCode: CodeActeurDeveloppement,
 ): Promise<Role> {
-  const roleExistant = await roleRepository.trouverParCode(actorCode);
+  const codeRole = actorCode === 'TITULAIRE' ? 'ENSEIGNANT' : actorCode;
+  const roleExistant = await roleRepository.trouverParCode(codeRole);
   if (roleExistant !== null) {
     return roleExistant;
   }
 
   const profil = profilsSessionDeveloppeur[actorCode];
+  const definition = obtenirDefinitionRoleSysteme(codeRole);
+  if (!definition) {
+    throw new Error(`Le rôle système ${codeRole} n'est pas défini dans le catalogue officiel.`);
+  }
   const role = Role.creer({
-    codeRole: actorCode,
-    nomRole: profil.nomComplet,
-    niveauAcces: profil.niveauAcces,
+    codeRole,
+    nomRole: definition.libelle,
+    niveauAcces: definition.niveau,
     estSysteme: true,
     creePar: 'dev-session',
-    permissions: [...PERMISSIONS_SECURITE],
+    permissions: [...definition.permissions],
   });
   await roleRepository.sauvegarder(role);
   return role;

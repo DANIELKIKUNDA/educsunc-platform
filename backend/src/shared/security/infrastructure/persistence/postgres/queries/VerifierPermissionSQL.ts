@@ -1,14 +1,10 @@
 import type { VerifierPermissionQuery } from '../../../../application';
-import { obtenirMemoireSecurityStore } from '../repositories/_memoireSecurityStore';
-
-// Cette query verifie rapidement si une permission est presente pour un utilisateur.
-export class VerifierPermissionSQL implements VerifierPermissionQuery {
-  public async executer(idUtilisateur: string, permissionDemandee: string): Promise<boolean> {
-    const store = obtenirMemoireSecurityStore();
-    const affectations = Array.from(store.affectations.values()).filter((record) => record.id_utilisateur === idUtilisateur && record.etat_affectation === 'ACTIVE');
-    return affectations.some((affectation) => {
-      const role = store.roles.get(affectation.id_role);
-      return role ? role.permissions.some((permission) => permission.permission === permissionDemandee) : false;
-    });
-  }
+import type { SqlQueryClient } from '../../../../../infrastructure/persistence/SqlQueryClient';
+import { obtenirClientPostgresAuth } from '../../../../../auth/infrastructure/persistence/postgres/ClientPoolPostgresAuth';
+export class VerifierPermissionSQL implements VerifierPermissionQuery{
+ constructor(private readonly clientSql:SqlQueryClient=obtenirClientPostgresAuth()){}
+ public async executer(idUtilisateur:string,permission:string):Promise<boolean>{const r=await this.clientSql.executer<{existe:boolean}>(
+  `SELECT EXISTS(SELECT 1 FROM security_affectations_utilisateurs a JOIN security_roles r ON r.id_role=a.id_role
+   JOIN security_permissions_roles p ON p.id_role=r.id_role WHERE a.id_utilisateur=$1 AND a.etat_affectation='ACTIVE'
+   AND (a.date_fin IS NULL OR a.date_fin>NOW()) AND r.est_actif=TRUE AND p.permission=$2) existe`,[idUtilisateur,permission]);return r.lignes[0]?.existe??false;}
 }

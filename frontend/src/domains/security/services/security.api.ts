@@ -1,7 +1,9 @@
 import { clientApi } from '../../../services/api';
 import {
   construireEntetesContexteActif,
+  construireEntetesPilotageActif,
   lireContexteApiActif,
+  lireContexteApiPlateformeGlobal,
 } from '../../../shared/session/api-context';
 import type {
   SecurityAffectationCreatePayload,
@@ -12,6 +14,8 @@ import type {
   SecurityRoleRestrictionPayload,
   SecurityScopeCreatePayload,
   SecurityTitulariatCreatePayload,
+  SecurityCreateAccountPayload,
+  SecurityAdministratorPayload,
 } from '../models/security.model';
 
 function genererIdempotencyKey(prefixe: string): string {
@@ -41,11 +45,180 @@ function construireEntetesMutation(contexte: SecurityApiContext, prefixe: string
   };
 }
 
+function construireEntetesPlateforme(contexte: SecurityApiContext): Record<string, string> {
+  return construireEntetesPilotageActif(contexte);
+}
+
+function construireEntetesMutationPlateforme(prefixe: string): Record<string, string> {
+  return {
+    ...construireEntetesPlateforme(lireContexteApiPlateformeGlobal()),
+    'idempotency-key': genererIdempotencyKey(prefixe),
+  };
+}
+
+function ajouterRecherche(chemin: string, parametres: Record<string, string | number | boolean | undefined>): string {
+  const recherche = new URLSearchParams();
+  Object.entries(parametres).forEach(([cle, valeur]) => {
+    if (valeur !== undefined && String(valeur).trim() !== '') recherche.set(cle, String(valeur));
+  });
+  const suffixe = recherche.toString();
+  return suffixe ? `${chemin}?${suffixe}` : chemin;
+}
+
 export function lireContexteApiSecurity(): SecurityApiContext {
   return lireContexteApiActif();
 }
 
 export const securityApi = {
+  async obtenirVueEnsemble() {
+    return clientApi.envoyer<unknown>({
+      chemin: '/api/v1/security/overview',
+      entetes: construireEntetesPlateforme(lireContexteApiPlateformeGlobal()),
+    });
+  },
+
+  async listerComptes(parametres: { recherche?: string; etat?: string; niveau?: string; curseur?: string; limite?: number } = {}) {
+    return clientApi.envoyer<unknown>({
+      chemin: ajouterRecherche('/api/v1/security/accounts', parametres),
+      entetes: construireEntetesPlateforme(lireContexteApiPlateformeGlobal()),
+    });
+  },
+
+  async creerComptePlateforme(payload: SecurityCreateAccountPayload) {
+    return clientApi.envoyer<unknown>({
+      chemin: '/api/v1/security/accounts/platform', methode: 'POST', corps: payload,
+      entetes: construireEntetesMutationPlateforme('security-account-create'),
+    });
+  },
+
+  async changerEtatCompte(idUtilisateur: string, action: 'suspend' | 'reactivate' | 'deactivate', motif?: string) {
+    return clientApi.envoyer<unknown>({
+      chemin: `/api/v1/security/accounts/${encodeURIComponent(idUtilisateur)}/${action}`,
+      methode: 'PATCH', corps: { motif },
+      entetes: construireEntetesMutationPlateforme(`security-account-${action}`),
+    });
+  },
+
+  async deverrouillerCompte(idUtilisateur: string, motif: string) {
+    return clientApi.envoyer<unknown>({
+      chemin: `/api/v1/security/accounts/${encodeURIComponent(idUtilisateur)}/unlock`,
+      methode: 'PATCH', corps: { motif }, entetes: construireEntetesMutationPlateforme('security-account-unlock'),
+    });
+  },
+
+  async reinitialiserMotDePasse(idUtilisateur: string, nouveauMotDePasse: string, motif: string) {
+    return clientApi.envoyer<unknown>({
+      chemin: `/api/v1/security/accounts/${encodeURIComponent(idUtilisateur)}/reset-password`,
+      methode: 'PATCH', corps: { nouveauMotDePasse, motif },
+      entetes: construireEntetesMutationPlateforme('security-account-reset-password'),
+    });
+  },
+
+  async listerAdministrateursOrganisations() {
+    return clientApi.envoyer<unknown>({ chemin: '/api/v1/security/administrators/organizations', entetes: construireEntetesPlateforme(lireContexteApiPlateformeGlobal()) });
+  },
+
+  async listerAdministrateursEcoles() {
+    return clientApi.envoyer<unknown>({ chemin: '/api/v1/security/administrators/schools', entetes: construireEntetesPlateforme(lireContexteApiPlateformeGlobal()) });
+  },
+
+  async listerPerimetresAdministratifs() {
+    return clientApi.envoyer<unknown>({ chemin: '/api/v1/security/administration-scopes', entetes: construireEntetesPlateforme(lireContexteApiPlateformeGlobal()) });
+  },
+
+  async creerAdministrateurOrganisation(organisationId: string, payload: SecurityAdministratorPayload) {
+    return clientApi.envoyer<unknown>({
+      chemin: `/api/v1/security/organizations/${encodeURIComponent(organisationId)}/administrators`, methode: 'POST', corps: payload,
+      entetes: construireEntetesMutationPlateforme('security-organization-admin-create'),
+    });
+  },
+
+  async creerAdministrateurEcoleExceptionnel(organisationId: string, ecoleId: string, payload: SecurityAdministratorPayload) {
+    return clientApi.envoyer<unknown>({
+      chemin: `/api/v1/security/emergency/organizations/${encodeURIComponent(organisationId)}/schools/${encodeURIComponent(ecoleId)}/administrators`,
+      methode: 'POST', corps: payload, entetes: construireEntetesMutationPlateforme('security-school-admin-emergency-create'),
+    });
+  },
+
+  async remplacerAdministrateurOrganisation(organisationId: string, idAffectation: string, payload: SecurityAdministratorPayload) {
+    return clientApi.envoyer<unknown>({
+      chemin: `/api/v1/security/organizations/${encodeURIComponent(organisationId)}/administrators/${encodeURIComponent(idAffectation)}/replace`,
+      methode: 'POST', corps: payload, entetes: construireEntetesMutationPlateforme('security-organization-admin-replace'),
+    });
+  },
+
+  async remplacerAdministrateurEcoleExceptionnel(organisationId: string, ecoleId: string, idAffectation: string, payload: SecurityAdministratorPayload) {
+    return clientApi.envoyer<unknown>({
+      chemin: `/api/v1/security/emergency/organizations/${encodeURIComponent(organisationId)}/schools/${encodeURIComponent(ecoleId)}/administrators/${encodeURIComponent(idAffectation)}/replace`,
+      methode: 'POST', corps: payload, entetes: construireEntetesMutationPlateforme('security-school-admin-emergency-replace'),
+    });
+  },
+
+  async listerAffectationsGouvernance() {
+    return clientApi.envoyer<unknown>({ chemin: '/api/v1/security/assignments', entetes: construireEntetesPlateforme(lireContexteApiPlateformeGlobal()) });
+  },
+
+  async creerAffectationGouvernance(payload: SecurityAffectationCreatePayload) {
+    return clientApi.envoyer<unknown>({
+      chemin: '/api/v1/security/affectations', methode: 'POST', corps: payload,
+      entetes: construireEntetesMutationPlateforme('security-assignment-create'),
+    });
+  },
+
+  async changerEtatAffectationGouvernance(idAffectation: string, active: boolean, motif: string) {
+    return clientApi.envoyer<void>({
+      chemin: `/api/v1/security/affectations/${encodeURIComponent(idAffectation)}/${active ? 'activate' : 'deactivate'}`,
+      methode: 'PATCH', corps: { motif }, entetes: construireEntetesMutationPlateforme('security-assignment-state'),
+    });
+  },
+
+  async listerSessionsGouvernance() {
+    return clientApi.envoyer<unknown>({ chemin: '/api/v1/security/sessions', entetes: construireEntetesPlateforme(lireContexteApiPlateformeGlobal()) });
+  },
+
+  async revoquerSession(idSession: string, motif: string) {
+    return clientApi.envoyer<void>({ chemin: `/api/v1/security/sessions/${encodeURIComponent(idSession)}`, methode: 'DELETE', corps: { motif }, entetes: construireEntetesMutationPlateforme('security-session-revoke') });
+  },
+
+  async revoquerToutesSessions(idUtilisateur: string, motif: string) {
+    return clientApi.envoyer<void>({ chemin: `/api/v1/security/accounts/${encodeURIComponent(idUtilisateur)}/sessions`, methode: 'DELETE', corps: { motif }, entetes: construireEntetesMutationPlateforme('security-sessions-revoke-all') });
+  },
+
+  async listerTentatives(parametres: { recherche?: string; resultat?: string; limite?: number } = {}) {
+    return clientApi.envoyer<unknown>({ chemin: ajouterRecherche('/api/v1/security/login-attempts', parametres), entetes: construireEntetesPlateforme(lireContexteApiPlateformeGlobal()) });
+  },
+
+  async listerAuditGouvernance() {
+    return clientApi.envoyer<unknown>({ chemin: '/api/v1/security/audit/logs', entetes: construireEntetesPlateforme(lireContexteApiPlateformeGlobal()) });
+  },
+
+  async listerRolesGouvernance() {
+    return clientApi.envoyer<unknown>({ chemin: '/api/v1/security/roles', entetes: construireEntetesPlateforme(lireContexteApiPlateformeGlobal()) });
+  },
+  async listerCataloguePermissions() {
+    return clientApi.envoyer<unknown>({ chemin:'/api/v1/security/permission-catalog', entetes:construireEntetesPlateforme(lireContexteApiPlateformeGlobal()) });
+  },
+  async obtenirRoleGouvernance(codeRole: string) {
+    return clientApi.envoyer<unknown>({ chemin:`/api/v1/security/roles/${encodeURIComponent(codeRole)}`, entetes:construireEntetesPlateforme(lireContexteApiPlateformeGlobal()) });
+  },
+  async creerRoleGouvernance(payload: SecurityRoleCreatePayload) {
+    return clientApi.envoyer<unknown>({ chemin:'/api/v1/security/roles',methode:'POST',corps:payload,entetes:construireEntetesMutationPlateforme('security-role-create') });
+  },
+  async changerEtatRoleGouvernance(codeRole: string, actif: boolean, motif: string) {
+    return clientApi.envoyer<unknown>({ chemin:`/api/v1/security/roles/${encodeURIComponent(codeRole)}/${actif ? 'activate' : 'deactivate'}`,methode:'PATCH',corps:{motif},entetes:construireEntetesMutationPlateforme('security-role-state') });
+  },
+  async modifierPermissionRoleGouvernance(codeRole: string, permission: string, ajouter: boolean, motif: string) {
+    return clientApi.envoyer<unknown>({
+      chemin:ajouter ? `/api/v1/security/roles/${encodeURIComponent(codeRole)}/permissions` : `/api/v1/security/roles/${encodeURIComponent(codeRole)}/permissions/${encodeURIComponent(permission)}`,
+      methode:ajouter ? 'POST' : 'DELETE',corps:{permission,motif},entetes:construireEntetesMutationPlateforme('security-role-permission'),
+    });
+  },
+  async modifierRestrictionRoleGouvernance(codeRole: string, codeRestriction: string, ajouter: boolean, motif: string) {
+    return clientApi.envoyer<unknown>({
+      chemin:ajouter ? `/api/v1/security/roles/${encodeURIComponent(codeRole)}/restrictions` : `/api/v1/security/roles/${encodeURIComponent(codeRole)}/restrictions/${encodeURIComponent(codeRestriction)}`,
+      methode:ajouter ? 'POST' : 'DELETE',corps:{codeRestriction,motif},entetes:construireEntetesMutationPlateforme('security-role-restriction'),
+    });
+  },
   async listerRoles(contexte: SecurityApiContext) {
     return clientApi.envoyer<unknown>({
       chemin: '/api/v1/security/roles',

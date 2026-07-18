@@ -8,16 +8,16 @@ export class AuditEventMonitoringBridge {
     private readonly traces = new AuditTraceService(),
   ) {}
 
-  public observer(_envelope: SharedBusEventEnvelope): { metrics: number; traces: number } {
+  public async observer(_envelope: SharedBusEventEnvelope): Promise<{ metrics: number; traces: number }> {
     return {
-      metrics: this.metrics.collecter().length,
+      metrics: (await this.metrics.collecter()).length,
       traces: this.traces.lister().length,
     };
   }
 
-  public obtenirSnapshot() {
+  public async obtenirSnapshot() {
     return {
-      metrics: this.metrics.collecter(),
+      metrics: await this.metrics.collecter(),
       traces: this.traces.lister(),
     };
   }

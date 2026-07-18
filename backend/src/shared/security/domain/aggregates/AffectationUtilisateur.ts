@@ -114,6 +114,7 @@ export class AffectationUtilisateur extends RacineAgregat<string> {
   public obtenirDateFin(): Date | undefined { return this.dateFin ? new Date(this.dateFin.getTime()) : undefined; }
   public obtenirCreeLe(): Date { return new Date(this.creeLe.getTime()); }
   public obtenirCreePar(): string | undefined { return this.creePar; }
+  public obtenirVersion(): number { return this.version; }
 
   public activer(): void {
     this.etatAffectation = new EtatAffectation('ACTIVE');

@@ -15,9 +15,9 @@ export class AuditMonitoringIntegrationOrchestrator {
     this.monitoring.enregistrerObservationHttp(observation);
   }
 
-  public capturerSnapshot(): AuditMonitoringIntegrationSnapshot {
+  public async capturerSnapshot(): Promise<AuditMonitoringIntegrationSnapshot> {
     return {
-      monitoring: this.monitoring.obtenirSnapshot(),
+      monitoring: await this.monitoring.obtenirSnapshot(),
       eventBus: this.eventBus.obtenirSnapshot(),
     };
   }

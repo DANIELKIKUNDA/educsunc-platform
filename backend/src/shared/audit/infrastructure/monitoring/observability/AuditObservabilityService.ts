@@ -13,10 +13,10 @@ export class AuditObservabilityService {
     private readonly alerts: AuditAlertService = new AuditAlertService(),
   ) {}
 
-  public capturer(): AuditObservabilitySnapshot {
+  public async capturer(): Promise<AuditObservabilitySnapshot> {
     return {
-      health: this.health.verifier(),
-      metrics: this.metrics.collecter(),
+      health: await this.health.verifier(),
+      metrics: await this.metrics.collecter(),
       traces: this.traces.lister(),
       alerts: this.alerts.detecter(),
     };

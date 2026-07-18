@@ -7,10 +7,10 @@ export class AuditSecurityRecoveryService {
     private readonly monitoring: AuditSecurityMonitoringService = new AuditSecurityMonitoringService(),
   ) {}
 
-  public snapshot() {
+  public async snapshot() {
     return {
-      integrity: this.integrity.verifier(),
-      monitoring: this.monitoring.obtenirSnapshot(),
+      integrity: await this.integrity.verifier(),
+      monitoring: await this.monitoring.obtenirSnapshot(),
     };
   }
 }

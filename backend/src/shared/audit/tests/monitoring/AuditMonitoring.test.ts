@@ -3,7 +3,7 @@ import test from 'node:test';
 import { AuditMonitoringIntegrationOrchestrator } from 'shared/audit/integration';
 import { reinitialiserEtatAuditTests } from '../support/AuditTestSupport';
 
-test('le monitoring Audit capture observations runtime et snapshot event-bus', () => {
+test('le monitoring Audit capture observations runtime et snapshot event-bus', async () => {
   reinitialiserEtatAuditTests();
   const monitoring = new AuditMonitoringIntegrationOrchestrator();
 
@@ -21,7 +21,7 @@ test('le monitoring Audit capture observations runtime et snapshot event-bus', (
     statusCode: 200,
   });
 
-  const snapshot = monitoring.capturerSnapshot();
+  const snapshot = await monitoring.capturerSnapshot();
   assert.equal(snapshot.monitoring.observations.length, 1);
   assert.equal(snapshot.monitoring.observations[0]?.durationMs, 42);
   assert.ok(Array.isArray(snapshot.monitoring.metrics));

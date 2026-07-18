@@ -71,6 +71,7 @@ export * from './policies/PolicyIsolationTenant';
 export * from './policies/PolicyContexteActif';
 export * from './policies/PolicyRestrictionCaisse';
 export * from './policies/PolicyRestrictionBulletin';
+export * from './policies/CatalogueRolesSysteme';
 export * from './services/MoteurAutorisation';
 export * from './services/MoteurScope';
 export * from './services/MoteurRestrictionsMetier';

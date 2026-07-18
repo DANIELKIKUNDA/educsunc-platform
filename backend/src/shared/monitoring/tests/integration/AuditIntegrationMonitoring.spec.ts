@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { MonitoringAuditIntegrationOrchestrator } from 'shared/monitoring';
 
-test('MonitoringAuditIntegrationOrchestrator consolide une observation runtime exploitable', () => {
+test('MonitoringAuditIntegrationOrchestrator consolide une observation runtime exploitable', async () => {
   const orchestrateur = new MonitoringAuditIntegrationOrchestrator();
 
   orchestrateur.enregistrerObservationHttp({
@@ -19,7 +19,7 @@ test('MonitoringAuditIntegrationOrchestrator consolide une observation runtime e
     statusCode: 200,
   });
 
-  const snapshot = orchestrateur.obtenirSnapshot();
+  const snapshot = await orchestrateur.obtenirSnapshot();
   const observation = snapshot.observations.at(-1);
 
   assert.ok(observation);

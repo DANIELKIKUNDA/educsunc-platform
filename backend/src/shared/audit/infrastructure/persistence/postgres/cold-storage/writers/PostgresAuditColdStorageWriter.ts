@@ -1,11 +1,12 @@
 import type { AuditArchiveRepository, AuditEntryRepository } from '../../../../../domain/repositories';
-import { obtenirMemoireAuditStore } from '../../repositories/_memoireAuditStore';
+import { PostgresAuditDocumentStore } from '../../repositories/PostgresAuditDocumentStore';
 import type { AuditColdStoragePreparationResult, AuditColdStorageSearchFilters } from '../AuditColdStorageTypes';
 import { AuditColdStoragePackageBuilder } from '../packages/AuditColdStoragePackageBuilder';
 
 // Cet ecrivain deplace logiquement des archives vers un stockage froid reconstructible.
 export class PostgresAuditColdStorageWriter {
   private readonly builder = new AuditColdStoragePackageBuilder();
+  private readonly documents = new PostgresAuditDocumentStore();
 
   constructor(
     private readonly archiveRepository: AuditArchiveRepository,
@@ -30,7 +31,7 @@ export class PostgresAuditColdStorageWriter {
       entrees,
       formatStockage,
     });
-    obtenirMemoireAuditStore().auditColdStoragePackages.set(paquet.packageId, {
+    await this.documents.enregistrer('COLD_STORAGE', paquet.packageId, {
       ...paquet,
       archives: [...paquet.archives],
       auditEntryIds: [...paquet.auditEntryIds],
@@ -53,4 +54,3 @@ export class PostgresAuditColdStorageWriter {
     };
   }
 }
-

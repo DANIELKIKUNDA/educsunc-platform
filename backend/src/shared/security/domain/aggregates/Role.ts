@@ -99,6 +99,7 @@ export class Role extends RacineAgregat<string> {
   public obtenirNomRole(): string { return this.nomRole; }
   public obtenirDescription(): string | undefined { return this.description; }
   public obtenirNiveauAcces(): NiveauAcces { return this.niveauAcces; }
+  public obtenirEstSysteme(): boolean { return this.estSysteme; }
   public obtenirEstActif(): boolean { return this.estActif; }
   public obtenirCreeLe(): Date { return new Date(this.creeLe.getTime()); }
   public obtenirCreePar(): string | undefined { return this.creePar; }
@@ -106,6 +107,7 @@ export class Role extends RacineAgregat<string> {
   public obtenirModifiePar(): string | undefined { return this.modifiePar; }
   public obtenirPermissions(): readonly PermissionRole[] { return [...this.permissions]; }
   public obtenirRestrictions(): readonly RestrictionRole[] { return [...this.restrictions]; }
+  public obtenirVersion(): number { return this.version; }
 
   public activer(): void {
     this.estActif = true;
@@ -114,12 +116,14 @@ export class Role extends RacineAgregat<string> {
   }
 
   public desactiver(): void {
+    this.interdireModificationRoleSysteme();
     this.estActif = false;
     this.marquerModification();
     this.ajouterEvenement(new RoleDesactive(this.obtenirId()));
   }
 
   public ajouterPermission(permission: string, creePar?: string): void {
+    this.interdireModificationRoleSysteme();
     const permissionVO = new PermissionSecurite(permission);
     if (this.permissions.some((item) => item.obtenirPermission().obtenirValeur() === permissionVO.obtenirValeur())) {
       throw new ErreurPermissionDupliquee();
@@ -144,6 +148,7 @@ export class Role extends RacineAgregat<string> {
   }
 
   public ajouterRestriction(codeRestriction: string, description?: string): void {
+    this.interdireModificationRoleSysteme();
     const restriction = RestrictionRole.creer(new CodeRestrictionMetier(codeRestriction), description);
     this.restrictions.push(restriction);
     this.marquerModification();

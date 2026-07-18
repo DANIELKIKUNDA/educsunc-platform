@@ -103,6 +103,7 @@ function Get-EduSyncListeningProcessId {
 }
 
 function Get-EduSyncWslDistributions {
+    $ErrorActionPreference = 'Continue'
     if (-not (Get-Command 'wsl.exe' -ErrorAction SilentlyContinue)) { return @() }
     $raw = & wsl.exe --list --quiet 2>$null
     if ($LASTEXITCODE -ne 0) { return @() }
@@ -118,6 +119,7 @@ function Get-EduSyncWslDistribution {
 }
 
 function Get-EduSyncRedisStatus {
+    $ErrorActionPreference = 'Continue'
     $distribution = Get-EduSyncWslDistribution
     if (-not $distribution) {
         return [pscustomobject]@{ Ready = $false; Distribution = $null; Host = $null; Port = 6379; Message = 'Aucune distribution WSL disponible.' }
@@ -133,6 +135,7 @@ function Get-EduSyncRedisStatus {
 }
 
 function Start-EduSyncRedis {
+    $ErrorActionPreference = 'Continue'
     $distribution = Get-EduSyncWslDistribution
     if (-not $distribution) {
         throw 'WSL est indisponible ou aucune distribution Ubuntu nʼest enregistrée.'

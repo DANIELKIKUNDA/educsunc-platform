@@ -1,11 +1,12 @@
-import { obtenirMemoireAuditStore } from '../../persistence/postgres/repositories/_memoireAuditStore';
+import { PostgresAuditOperationalReader } from '../../persistence/postgres/repositories/PostgresAuditOperationalReader';
 
 export class AuditProjectionMonitoringService {
-  public obtenirSnapshot() {
-    const store = obtenirMemoireAuditStore();
+  public constructor(private readonly reader = new PostgresAuditOperationalReader()) {}
+
+  public async obtenirSnapshot() {
     return {
-      totalProjections: store.auditProjections.size,
-      totalAnalyticsSnapshots: store.auditAnalyticsSnapshots.size,
+      totalProjections: await this.reader.compterDocuments('PROJECTION'),
+      totalAnalyticsSnapshots: await this.reader.compterDocuments('ANALYTICS'),
     };
   }
 }

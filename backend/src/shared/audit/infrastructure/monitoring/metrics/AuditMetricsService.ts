@@ -1,4 +1,4 @@
-import { obtenirMemoireAuditStore } from '../../persistence/postgres/repositories/_memoireAuditStore';
+import { PostgresAuditOperationalReader } from '../../persistence/postgres/repositories/PostgresAuditOperationalReader';
 import { AuditExportMonitoringService } from '../../exports';
 import { SynchronizationMonitoringService } from '../../synchronization';
 import { OfflineAuditMonitoringService } from '../../offline';
@@ -20,25 +20,25 @@ export class AuditMetricsService {
     private readonly workers: AuditWorkerMonitoringService = new AuditWorkerMonitoringService(),
     private readonly tenants: AuditTenantMonitoringService = new AuditTenantMonitoringService(),
     private readonly volumetry: AuditVolumetryMonitoringService = new AuditVolumetryMonitoringService(),
+    private readonly reader: PostgresAuditOperationalReader = new PostgresAuditOperationalReader(),
   ) {}
 
-  public collecter(): AuditMetricPoint[] {
-    const store = obtenirMemoireAuditStore();
+  public async collecter(): Promise<AuditMetricPoint[]> {
     const exports = this.exportsMonitoring.obtenirSnapshot();
     const sync = this.synchronizationMonitoring.obtenirSnapshot();
     const offline = this.offlineMonitoring.obtenirSnapshot();
     const idempotency = this.idempotencyMonitoring.obtenirSnapshot();
     const queues = this.queues.obtenirSnapshot();
     const workers = this.workers.obtenirSnapshot();
-    const tenants = this.tenants.obtenirSnapshot();
-    const volumetry = this.volumetry.obtenirSnapshot();
+    const tenants = await this.tenants.obtenirSnapshot();
+    const volumetry = await this.volumetry.obtenirSnapshot();
     const horodatage = new Date().toISOString();
     const syncLagMs =
       sync.dernierSyncAt === undefined ? 0 : Math.max(0, Date.now() - new Date(sync.dernierSyncAt).getTime());
 
     return [
-      { nom: 'audit_entries_total', valeur: store.auditEntries.size, horodatage },
-      { nom: 'audit_projections_total', valeur: store.auditProjections.size, horodatage },
+      { nom: 'audit_entries_total', valeur: await this.reader.compterEntrees(), horodatage },
+      { nom: 'audit_projections_total', valeur: await this.reader.compterDocuments('PROJECTION'), horodatage },
       { nom: 'audit_exports_total', valeur: exports.totalExports, horodatage },
       { nom: 'audit_exports_failures_total', valeur: exports.totalFailures, horodatage },
       { nom: 'audit_sync_total', valeur: sync.totalSynchronisations, horodatage },

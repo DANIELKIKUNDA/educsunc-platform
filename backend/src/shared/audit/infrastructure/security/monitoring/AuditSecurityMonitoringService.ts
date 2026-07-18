@@ -9,10 +9,10 @@ export class AuditSecurityMonitoringService {
     private readonly falsification: AuditAntiFalsificationService = new AuditAntiFalsificationService(),
   ) {}
 
-  public obtenirSnapshot() {
+  public async obtenirSnapshot() {
     return {
       alerts: this.alerts.detecter(),
-      tampering: this.tampering.detecter(),
+      tampering: await this.tampering.detecter(),
       falsification: this.falsification.detecter(),
     };
   }

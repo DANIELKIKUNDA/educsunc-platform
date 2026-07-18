@@ -10,3 +10,4 @@ export * from './archival';
 export * from './cold-storage';
 export * from './transaction';
 export * from './storage';
+export * from './MigrateurPostgresAudit';

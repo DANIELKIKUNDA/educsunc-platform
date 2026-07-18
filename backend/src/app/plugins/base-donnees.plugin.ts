@@ -1,5 +1,7 @@
 import type { FastifyPluginAsync } from 'fastify';
 import { MigrateurPostgresAuth, obtenirPoolPostgresAuth } from '../../shared/auth/infrastructure';
+import { MigrateurPostgresAudit } from '../../shared/audit/infrastructure';
+import { MigrateurPostgresSecurity } from '../../shared/security/infrastructure';
 
 type PluginGlobal = FastifyPluginAsync & { nom: string };
 
@@ -8,6 +10,8 @@ export const baseDonneesPlugin: PluginGlobal = Object.assign(
   async (serveur: Parameters<FastifyPluginAsync>[0]) => {
     try {
       await new MigrateurPostgresAuth(obtenirPoolPostgresAuth()).executerToutes();
+      await new MigrateurPostgresAudit(obtenirPoolPostgresAuth()).executerToutes();
+      await new MigrateurPostgresSecurity(obtenirPoolPostgresAuth()).executerToutes();
       serveur.log.info({ composant: 'auth' }, 'Migrations PostgreSQL Auth appliquees.');
     } catch (erreur) {
       serveur.log.error(

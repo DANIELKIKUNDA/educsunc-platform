@@ -10,7 +10,7 @@ export class AuditIntegrationEventDispatcher {
   ) {}
 
   public async dispatch(envelope: SharedBusEventEnvelope): Promise<void> {
-    this.monitoring.observer(envelope);
+    await this.monitoring.observer(envelope);
     await this.auditBus.orchestrator.publier(envelope.name, {
       ...envelope.payload,
       ...envelope.metadata,
@@ -19,4 +19,3 @@ export class AuditIntegrationEventDispatcher {
     });
   }
 }
-

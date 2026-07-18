@@ -22,20 +22,20 @@ import {
   SecurityFacade,
   SecurityRoleService,
 } from 'shared/security/application';
+import { PermissionCacheService } from 'shared/security/infrastructure';
+import { obtenirMemoireSecurityTest } from './SecurityLegacyMemoryStore';
 import {
-  PermissionCacheService,
-  PostgresAffectationTitulariatRepository,
-  PostgresAffectationUtilisateurRepository,
-  PostgresContexteActifRepository,
-  PostgresPermissionRepository,
-  PostgresRoleRepository,
-  obtenirMemoireSecurityStore,
-} from 'shared/security/infrastructure';
+  MemoireAffectationTestRepository,
+  MemoireContexteTestRepository,
+  MemoirePermissionTestRepository,
+  MemoireRoleTestRepository,
+  MemoireTitulariatTestRepository,
+} from './SecurityMemoryTestRepositories';
 
 // Ce fichier regroupe les fabriques et doublures simples pour les tests SECURITY.
 
 export function reinitialiserMemoireSecurity(): void {
-  const store = obtenirMemoireSecurityStore();
+  const store = obtenirMemoireSecurityTest();
   store.roles.clear();
   store.rolesParCode.clear();
   store.affectations.clear();
@@ -124,11 +124,11 @@ export function creerContexteActifUtilisateur(params?: Partial<{
 export function creerRepositoriesMemoire() {
   reinitialiserMemoireSecurity();
   return {
-    roleRepository: new PostgresRoleRepository(),
-    permissionRepository: new PostgresPermissionRepository(),
-    affectationRepository: new PostgresAffectationUtilisateurRepository(),
-    titulariatRepository: new PostgresAffectationTitulariatRepository(),
-    contexteRepository: new PostgresContexteActifRepository(),
+    roleRepository: new MemoireRoleTestRepository(),
+    permissionRepository: new MemoirePermissionTestRepository(),
+    affectationRepository: new MemoireAffectationTestRepository(),
+    titulariatRepository: new MemoireTitulariatTestRepository(),
+    contexteRepository: new MemoireContexteTestRepository(),
   };
 }
 
@@ -271,9 +271,17 @@ export function creerSecurityFacade() {
 }
 
 export function obtenirAuditLogsSecurity() {
-  return obtenirMemoireSecurityStore().securityAccessLogs;
+  return obtenirMemoireSecurityTest().securityAccessLogs;
 }
 
 export function obtenirAuditRefusSecurity() {
-  return obtenirMemoireSecurityStore().securityPermissionDeniedLogs;
+  return obtenirMemoireSecurityTest().securityPermissionDeniedLogs;
+}
+
+export class MemoireSecurityAuditTestService {
+  public async journaliser(entree: Record<string, unknown>): Promise<void> {
+    const store = obtenirMemoireSecurityTest();
+    store.securityAccessLogs.push(structuredClone(entree));
+    if (entree.succes === false) store.securityPermissionDeniedLogs.push(structuredClone(entree));
+  }
 }

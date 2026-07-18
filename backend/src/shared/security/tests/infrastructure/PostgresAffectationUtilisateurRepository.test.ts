@@ -1,11 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { PostgresAffectationUtilisateurRepository } from 'shared/security/infrastructure';
+import { MemoireAffectationTestRepository } from '../support/SecurityMemoryTestRepositories';
 import { creerAffectationUtilisateur, reinitialiserMemoireSecurity } from '../support/SecurityTestSupport';
 
 test('save affectation, update affectation et find affectations utilisateur', async () => {
   reinitialiserMemoireSecurity();
-  const repository = new PostgresAffectationUtilisateurRepository();
+  const repository = new MemoireAffectationTestRepository();
   const affectation = creerAffectationUtilisateur();
   await repository.sauvegarder(affectation);
 

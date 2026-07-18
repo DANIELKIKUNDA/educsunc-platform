@@ -1,10 +1,11 @@
 import type { AuditEntry } from '../../../../domain/aggregates';
 import type { AuditPagination, AuditSearchResult, AuditTimelineRepository } from '../../../../domain/repositories';
-import { appliquerFiltresAudit, paginer, trierChronologiquementDesc } from './audit-repository.helpers';
-import { obtenirMemoireAuditStore } from './_memoireAuditStore';
+import { paginer } from './audit-repository.helpers';
+import { PostgresAuditEntryRepository } from './PostgresAuditEntryRepository';
 
 // Ce repository reconstruit les timelines en gardant une chronologie stricte.
 export class PostgresAuditTimelineRepository implements AuditTimelineRepository {
+  public constructor(private readonly entries = new PostgresAuditEntryRepository()) {}
   public async listerTimelineRessource(idRessource: string, pagination?: AuditPagination): Promise<AuditSearchResult<AuditEntry>> {
     return this.paginerParFiltre({ idRessource }, pagination);
   }
@@ -50,10 +51,7 @@ export class PostgresAuditTimelineRepository implements AuditTimelineRepository 
     filtres: Record<string, unknown>,
     pagination?: AuditPagination,
   ): Promise<AuditSearchResult<AuditEntry>> {
-    const resultats = trierChronologiquementDesc(
-      [...obtenirMemoireAuditStore().auditEntries.values()].filter((entree) =>
-        appliquerFiltresAudit(entree, filtres as Parameters<typeof appliquerFiltresAudit>[1])),
-    );
+    const resultats = await this.entries.listerSelonFiltres(filtres);
     return paginer(resultats, pagination);
   }
 }

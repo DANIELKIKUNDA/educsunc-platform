@@ -1,4 +1,4 @@
-import { obtenirMemoireAuditStore } from '../../persistence/postgres/repositories/_memoireAuditStore';
+import { PostgresAuditDocumentStore } from '../../persistence/postgres/repositories/PostgresAuditDocumentStore';
 import { AuditRetentionForensicGuard } from '../forensic/AuditRetentionForensicGuard';
 import type { AuditRetentionCandidate } from '../RetentionTypes';
 
@@ -6,12 +6,17 @@ import type { AuditRetentionCandidate } from '../RetentionTypes';
 export class AuditRetentionPurgeService {
   public constructor(
     private readonly forensicGuard: AuditRetentionForensicGuard = new AuditRetentionForensicGuard(),
+    private readonly documents: PostgresAuditDocumentStore = new PostgresAuditDocumentStore(),
   ) {}
 
-  public executer(candidate: AuditRetentionCandidate): boolean {
+  public async executer(candidate: AuditRetentionCandidate): Promise<boolean> {
     if (!this.forensicGuard.peutPurger(candidate)) {
       return false;
     }
-    return obtenirMemoireAuditStore().auditEntries.delete(candidate.idAuditEntry);
+    await this.documents.enregistrer('RETENTION_PURGE_DECISION', candidate.idAuditEntry, {
+      ...candidate,
+      decideLe: new Date(),
+    });
+    return true;
   }
 }

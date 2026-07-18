@@ -1,8 +1,7 @@
 import { createHash } from 'node:crypto';
-import { obtenirMemoireAuditStore } from '../../persistence/postgres/repositories/_memoireAuditStore';
+import { PostgresAuditDocumentStore } from '../../persistence/postgres/repositories/PostgresAuditDocumentStore';
+import { PostgresAuditEntryRepository } from '../../persistence/postgres/repositories/PostgresAuditEntryRepository';
 import type { AuditIntegritySnapshot } from '../SecurityTypes';
-
-const empreintes = new Map<string, string>();
 
 function calculerEmpreinte(payload: Record<string, unknown>): string {
   return createHash('sha256').update(JSON.stringify(payload)).digest('hex');
@@ -10,17 +9,24 @@ function calculerEmpreinte(payload: Record<string, unknown>): string {
 
 // L intégrité historique protège la vérité append-only contre la corruption silencieuse.
 export class AuditIntegrityService {
-  public scellerEntree(idAuditEntry: string, payload: Record<string, unknown>): string {
+  public constructor(
+    private readonly documents = new PostgresAuditDocumentStore(),
+    private readonly entries = new PostgresAuditEntryRepository(),
+  ) {}
+
+  public async scellerEntree(idAuditEntry: string, payload: Record<string, unknown>): Promise<string> {
     const empreinte = calculerEmpreinte(payload);
-    empreintes.set(idAuditEntry, empreinte);
+    await this.documents.enregistrer('INTEGRITY_SEAL', idAuditEntry, { idAuditEntry, empreinte });
     return empreinte;
   }
 
-  public verifier(): AuditIntegritySnapshot {
-    const store = obtenirMemoireAuditStore();
+  public async verifier(): Promise<AuditIntegritySnapshot> {
     const anomalies: string[] = [];
+    const empreintes = new Map((await this.documents.lister<{ idAuditEntry: string; empreinte: string }>('INTEGRITY_SEAL'))
+      .map((sceau) => [sceau.idAuditEntry, sceau.empreinte]));
+    const entries = await this.entries.listerSelonFiltres({});
 
-    for (const entry of store.auditEntries.values()) {
+    for (const entry of entries) {
       const payload = {
         id: entry.obtenirId(),
         action: entry.obtenirActionAudit().obtenirValeur(),
@@ -37,7 +43,7 @@ export class AuditIntegrityService {
     }
 
     return {
-      totalEntries: store.auditEntries.size,
+      totalEntries: entries.length,
       totalEmpreintes: empreintes.size,
       anomalies,
     };

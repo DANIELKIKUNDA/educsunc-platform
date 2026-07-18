@@ -1,16 +1,13 @@
-import { obtenirMemoireAuditStore } from '../../persistence/postgres/repositories/_memoireAuditStore';
+import { PostgresAuditOperationalReader } from '../../persistence/postgres/repositories/PostgresAuditOperationalReader';
 
 export class AuditTenantMonitoringService {
-  public obtenirSnapshot() {
-    const store = obtenirMemoireAuditStore();
-    const tenants = new Map<string, number>();
-    for (const entry of store.auditEntries.values()) {
-      const key = `${entry.obtenirTenantAudit().obtenirOrganisationId() ?? 'NA'}|${entry.obtenirTenantAudit().obtenirEcoleId() ?? 'NA'}`;
-      tenants.set(key, (tenants.get(key) ?? 0) + 1);
-    }
+  public constructor(private readonly reader = new PostgresAuditOperationalReader()) {}
+
+  public async obtenirSnapshot() {
+    const activites = await this.reader.activiteTenants();
     return {
-      totalTenants: tenants.size,
-      activites: [...tenants.entries()].map(([tenant, total]) => ({ tenant, total })),
+      totalTenants: activites.length,
+      activites,
     };
   }
 }

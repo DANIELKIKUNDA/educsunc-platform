@@ -113,6 +113,7 @@ async function createRole(): Promise<void> {
     codeRole: roleCode.value.trim(),
     nomRole: roleName.value.trim(),
     niveauAcces: roleAccessLevel.value.trim(),
+    permissions: permission.value.trim() ? [permission.value.trim()] : [],
   });
 }
 

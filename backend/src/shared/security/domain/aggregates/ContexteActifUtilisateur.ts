@@ -44,6 +44,7 @@ export class ContexteActifUtilisateur extends RacineAgregat<string> {
   public obtenirIdOrganisationActive(): string | undefined { return this.idOrganisationActive; }
   public obtenirIdEcoleActive(): string | undefined { return this.idEcoleActive; }
   public obtenirDateChangement(): Date { return new Date(this.dateChangement.getTime()); }
+  public obtenirVersion(): number { return this.version; }
 
   public changerOrganisation(idOrganisationActive?: string): void {
     this.idOrganisationActive = ContexteActifUtilisateur.nettoyerOptionnel(idOrganisationActive);

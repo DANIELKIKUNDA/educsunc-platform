@@ -37,25 +37,25 @@ export class MonitoringAuditIntegrationOrchestrator {
     this.observability.enregistrerObservation({ ...observation });
   }
 
-  public obtenirSnapshot(): MonitoringAuditSnapshot {
+  public async obtenirSnapshot(): Promise<MonitoringAuditSnapshot> {
     const alerts = this.alerts.detecter();
     const observations = this.observability.listerObservations();
 
     return {
-      metrics: this.metrics.collecter(),
+      metrics: await this.metrics.collecter(),
       traces: this.traces.lister(),
       alerts,
       incidents: this.incidents.construireDepuisAlertes(alerts, observations),
       observations,
-      observability: this.observability.capturer(),
+      observability: await this.observability.capturer(),
       queues: this.queues.obtenirSnapshot(),
       workers: this.workers.obtenirSnapshot(),
       replay: this.replay.obtenirSnapshot(),
       retry: this.retry.obtenirSnapshot(),
       synchronization: this.synchronization.obtenirSnapshot(),
-      projections: this.projections.obtenirSnapshot(),
+      projections: await this.projections.obtenirSnapshot(),
       exports: this.exports.obtenirSnapshot(),
-      anomalies: this.anomalies.detecter(),
+      anomalies: await this.anomalies.detecter(),
       analytics: this.analytics.obtenirSnapshot(),
       forensic: this.forensic.obtenirSnapshot(observations),
     };

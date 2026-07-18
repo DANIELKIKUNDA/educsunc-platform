@@ -46,6 +46,8 @@ import {
   SecurityAuditInfrastructureService,
   SecurityNotificationAdapter,
   SecurityTransactionManager,
+  SecurityGovernancePostgresService,
+  SecurityGovernanceError,
   ListerAffectationsUtilisateurSQL,
   ListerPermissionsRoleSQL,
   ListerRolesSQL,
@@ -60,7 +62,6 @@ import {
   TitulariatController,
 } from '../../shared/security/interfaces/http/controllers';
 import { SecurityErrorPresenter } from '../../shared/security/interfaces/http/presenters';
-import { obtenirMemoireSecurityStore } from '../../shared/security/infrastructure/persistence/postgres/repositories/_memoireSecurityStore';
 import { ResponsabiliteClassePedagogiqueAdapter } from '../adapters/ResponsabiliteClassePedagogiqueAdapter';
 
 type PluginRoutesSecurity = FastifyPluginAsync & {
@@ -74,6 +75,7 @@ const affectationRepository = new PostgresAffectationUtilisateurRepository();
 const titulariatRepository = new PostgresAffectationTitulariatRepository();
 const permissionCache = new PermissionCacheService();
 const auditSecurity = new SecurityAuditInfrastructureService();
+const securityGovernance = new SecurityGovernancePostgresService();
 const responsabiliteClassePedagogiqueAdapter = new ResponsabiliteClassePedagogiqueAdapter();
 const securityFacade = new SecurityFacade(
   roleRepository,
@@ -144,15 +146,80 @@ const autorisationController = new AutorisationController(
   new VerifierAccesUseCase(sagaAutorisation),
 );
 const securiteAuditController = new SecuriteAuditController(
-  async () => obtenirMemoireSecurityStore().securityAccessLogs,
-  async () => obtenirMemoireSecurityStore().securityPermissionDeniedLogs,
-  async () => obtenirMemoireSecurityStore().securityAccessLogs,
+  async () => auditSecurity.lister(),
+  async () => auditSecurity.lister({ succes: false }),
+  async () => auditSecurity.lister({ succes: true }),
 );
 
 function aPorteePlateforme(requete: FastifyRequest): boolean {
   return (requete.context?.scopes ?? []).some(
     (scope) => scope.obtenirTypeScope().obtenirValeur() === 'PLATEFORME',
   );
+}
+
+function aPorteeOrganisation(requete: FastifyRequest, organisationId: string): boolean {
+  return aPorteePlateforme(requete) || (requete.context?.scopes ?? []).some(
+    (scope) => scope.obtenirTypeScope().obtenirValeur() === 'ORGANISATION'
+      && scope.obtenirValeurScope() === organisationId,
+  );
+}
+
+async function verifierAccesOrganisationSecurity(
+  requete: FastifyRequest,
+  reponse: FastifyReply,
+  permission: string,
+  organisationId: string,
+  autoriserPlateforme = true,
+): Promise<boolean> {
+  if (!requete.context?.utilisateurId) {
+    reponse.code(401).send({ success: false, error: { code: 'SECURITY_AUTH_REQUIRED', message: 'Authentification requise.' } });
+    return false;
+  }
+  const porteeValide = autoriserPlateforme
+    ? aPorteeOrganisation(requete, organisationId)
+    : !aPorteePlateforme(requete) && aPorteeOrganisation(requete, organisationId);
+  if (!(requete.context.permissions ?? []).includes(permission) || !porteeValide) {
+    reponse.code(403).send({ success: false, error: { code: 'SECURITY_PERMISSION_DENIED', message: "Vous n'êtes pas autorisé à effectuer cette action dans cette organisation." } });
+    return false;
+  }
+  return true;
+}
+
+function lireObjet(source: unknown): Record<string, unknown> {
+  return source && typeof source === 'object' && !Array.isArray(source)
+    ? source as Record<string, unknown>
+    : {};
+}
+
+function lireTexte(source: Record<string, unknown>, cle: string): string | undefined {
+  const valeur = source[cle];
+  return typeof valeur === 'string' && valeur.trim() ? valeur.trim() : undefined;
+}
+
+function contexteMutation(requete: FastifyRequest, corps: Record<string, unknown>) {
+  return {
+    auteurId: requete.context.utilisateurId!,
+    traceId: requete.context.correlationId ?? requete.context.requestId,
+    motif: lireTexte(corps, 'motif'),
+  };
+}
+
+async function executerGouvernance(
+  reponse: FastifyReply,
+  operation: () => Promise<unknown>,
+  statutSucces = 200,
+): Promise<void> {
+  try {
+    const data = await operation();
+    reponse.code(statutSucces).send({ success: true, data });
+  } catch (erreur) {
+    if (erreur instanceof SecurityGovernanceError) {
+      reponse.code(erreur.statutHttp).send({ success: false, error: { code: erreur.code, message: erreur.message } });
+      return;
+    }
+    const presentee = SecurityErrorPresenter.presenterErreur(erreur);
+    reponse.code(presentee.statutHttp).send(presentee.corps);
+  }
 }
 
 async function verifierAccesRouteSecurity(
@@ -216,123 +283,376 @@ export const routeSecurity: PluginRoutesSecurity = Object.assign(
       await responsabiliteClassePedagogiqueAdapter.fermer();
     });
 
+    serveur.get('/api/v1/security/overview', async (requete, reponse) => {
+      if (!(await verifierAccesRouteSecurity(requete, reponse, 'security.center.read'))) return;
+      await executerGouvernance(reponse, () => securityGovernance.obtenirVueEnsemble());
+    });
+
+    serveur.get('/api/v1/security/accounts', async (requete, reponse) => {
+      if (!(await verifierAccesRouteSecurity(requete, reponse, 'security.accounts.read'))) return;
+      const query = lireObjet(requete.query);
+      const niveau = lireTexte(query, 'niveau');
+      await executerGouvernance(reponse, () => securityGovernance.listerComptes({
+        niveau: ['PLATEFORME','ORGANISATION','ECOLE'].includes(niveau ?? '') ? niveau as 'PLATEFORME'|'ORGANISATION'|'ECOLE' : undefined,
+        organisationId: lireTexte(query, 'organisationId'),
+        ecoleId: lireTexte(query, 'ecoleId'),
+        recherche: lireTexte(query, 'recherche'),
+        etat: lireTexte(query, 'etat'),
+        limite: Number(query.limite) || undefined,
+        curseur: lireTexte(query, 'curseur'),
+      }));
+    });
+
+    serveur.post('/api/v1/security/accounts/platform', async (requete, reponse) => {
+      if (!(await verifierAccesRouteSecurity(requete, reponse, 'security.accounts.write'))) return;
+      const corps = lireObjet(requete.body);
+      await executerGouvernance(reponse, () => securityGovernance.creerCompteAvecAffectation({
+        nomComplet: lireTexte(corps,'nomComplet') ?? '', email: lireTexte(corps,'email') ?? '',
+        telephone: lireTexte(corps,'telephone'), motDePasseInitial: lireTexte(corps,'motDePasseInitial') ?? '',
+        codeRole: lireTexte(corps,'codeRole') ?? '', niveau:'PLATEFORME', motif:lireTexte(corps,'motif'),
+      }, contexteMutation(requete, corps)), 201);
+    });
+
+    serveur.get('/api/v1/security/accounts/:idUtilisateur', async (requete, reponse) => {
+      if (!(await verifierAccesRouteSecurity(requete, reponse, 'security.accounts.read'))) return;
+      await executerGouvernance(reponse, () => securityGovernance.obtenirCompte((requete.params as Record<string,string>).idUtilisateur));
+    });
+
+    for (const action of ['suspend','reactivate','deactivate'] as const) {
+      serveur.patch(`/api/v1/security/accounts/:idUtilisateur/${action}`, async (requete, reponse) => {
+        if (!(await verifierAccesRouteSecurity(requete, reponse, 'security.accounts.lifecycle'))) return;
+        const corps = lireObjet(requete.body);
+        const etat = action === 'suspend' ? 'SUSPENDED' : action === 'deactivate' ? 'DISABLED' : 'ACTIVE';
+        await executerGouvernance(reponse, () => securityGovernance.changerEtatCompte(
+          (requete.params as Record<string,string>).idUtilisateur, etat, contexteMutation(requete, corps),
+        ));
+      });
+    }
+
+    serveur.patch('/api/v1/security/accounts/:idUtilisateur/unlock', async (requete, reponse) => {
+      if (!(await verifierAccesRouteSecurity(requete, reponse, 'security.accounts.unlock'))) return;
+      const corps = lireObjet(requete.body);
+      await executerGouvernance(reponse, () => securityGovernance.deverrouillerCompte(
+        (requete.params as Record<string,string>).idUtilisateur, contexteMutation(requete, corps),
+      ));
+    });
+
+    serveur.patch('/api/v1/security/accounts/:idUtilisateur/reset-password', async (requete, reponse) => {
+      if (!(await verifierAccesRouteSecurity(requete, reponse, 'security.accounts.lifecycle'))) return;
+      const corps = lireObjet(requete.body);
+      await executerGouvernance(reponse, () => securityGovernance.reinitialiserMotDePasse(
+        (requete.params as Record<string,string>).idUtilisateur,
+        lireTexte(corps, 'nouveauMotDePasse') ?? '',
+        contexteMutation(requete, corps),
+      ));
+    });
+
+    serveur.get('/api/v1/security/administrators/organizations', async (requete, reponse) => {
+      if (!(await verifierAccesRouteSecurity(requete, reponse, 'security.admin.organizations.read'))) return;
+      const query = lireObjet(requete.query);
+      await executerGouvernance(reponse, () => securityGovernance.listerAdministrateurs('ORGANISATION', {
+        organisationId:lireTexte(query,'organisationId'),
+      }));
+    });
+
+    serveur.get('/api/v1/security/administration-scopes', async (requete, reponse) => {
+      if (!(await verifierAccesRouteSecurity(requete, reponse, 'security.admin.organizations.read'))) return;
+      await executerGouvernance(reponse, () => securityGovernance.listerPerimetresAdministratifs());
+    });
+
+    serveur.get('/api/v1/security/organizations/:organisationId/administrators', async (requete, reponse) => {
+      if (!(await verifierAccesRouteSecurity(requete, reponse, 'security.admin.organizations.read'))) return;
+      const { organisationId } = requete.params as Record<string,string>;
+      await executerGouvernance(reponse, () => securityGovernance.listerAdministrateurs('ORGANISATION', { organisationId }));
+    });
+
+    serveur.post('/api/v1/security/organizations/:organisationId/administrators', async (requete, reponse) => {
+      if (!(await verifierAccesRouteSecurity(requete, reponse, 'security.admin.organizations.write'))) return;
+      const { organisationId } = requete.params as Record<string,string>;
+      const corps = lireObjet(requete.body);
+      const idUtilisateur = lireTexte(corps,'idUtilisateur');
+      const operation = idUtilisateur
+        ? () => securityGovernance.affecterCompteExistant({
+          idUtilisateur,codeRole:'ADMIN_SYSTEME_ORGANISATION',niveau:'ORGANISATION',organisationId,
+          motif:lireTexte(corps,'motif'),
+        }, contexteMutation(requete, corps))
+        : () => securityGovernance.creerCompteAvecAffectation({
+          nomComplet:lireTexte(corps,'nomComplet') ?? '',email:lireTexte(corps,'email') ?? '',
+          telephone:lireTexte(corps,'telephone'),motDePasseInitial:lireTexte(corps,'motDePasseInitial') ?? '',
+          codeRole:'ADMIN_SYSTEME_ORGANISATION',niveau:'ORGANISATION',organisationId,
+          motif:lireTexte(corps,'motif'),
+        }, contexteMutation(requete, corps));
+      await executerGouvernance(reponse, operation, 201);
+    });
+
+    serveur.post('/api/v1/security/organizations/:organisationId/administrators/:idAffectation/replace', async (requete, reponse) => {
+      if (!(await verifierAccesRouteSecurity(requete,reponse,'security.admin.organizations.write'))) return;
+      const corps = lireObjet(requete.body);
+      await executerGouvernance(reponse,() => securityGovernance.remplacerAdministrateur(
+        (requete.params as Record<string,string>).idAffectation,
+        { idUtilisateur:lireTexte(corps,'idUtilisateur'),nomComplet:lireTexte(corps,'nomComplet'),
+          email:lireTexte(corps,'email'),telephone:lireTexte(corps,'telephone'),
+          motDePasseInitial:lireTexte(corps,'motDePasseInitial') },
+        contexteMutation(requete,corps),
+        { organisationId:(requete.params as Record<string,string>).organisationId },
+      ));
+    });
+
+    serveur.get('/api/v1/security/administrators/schools', async (requete, reponse) => {
+      if (!(await verifierAccesRouteSecurity(requete, reponse, 'security.admin.schools.read'))) return;
+      const query = lireObjet(requete.query);
+      await executerGouvernance(reponse, () => securityGovernance.listerAdministrateurs('ECOLE', {
+        organisationId:lireTexte(query,'organisationId'),ecoleId:lireTexte(query,'ecoleId'),
+      }));
+    });
+
+    serveur.post('/api/v1/security/organizations/:organisationId/schools/:ecoleId/administrators', async (requete, reponse) => {
+      const { organisationId,ecoleId } = requete.params as Record<string,string>;
+      if (!(await verifierAccesOrganisationSecurity(requete,reponse,'security.admin.schools.write',organisationId,false))) return;
+      const corps = lireObjet(requete.body);
+      const idUtilisateur = lireTexte(corps,'idUtilisateur');
+      const operation = idUtilisateur
+        ? () => securityGovernance.affecterCompteExistant({ idUtilisateur,codeRole:'ADMIN_SYSTEME_ECOLE',niveau:'ECOLE',organisationId,ecoleId,motif:lireTexte(corps,'motif') },contexteMutation(requete,corps))
+        : () => securityGovernance.creerCompteAvecAffectation({
+          nomComplet:lireTexte(corps,'nomComplet') ?? '',email:lireTexte(corps,'email') ?? '',
+          telephone:lireTexte(corps,'telephone'),motDePasseInitial:lireTexte(corps,'motDePasseInitial') ?? '',
+          codeRole:'ADMIN_SYSTEME_ECOLE',niveau:'ECOLE',organisationId,ecoleId,motif:lireTexte(corps,'motif'),
+        },contexteMutation(requete,corps));
+      await executerGouvernance(reponse,operation,201);
+    });
+
+    serveur.post('/api/v1/security/organizations/:organisationId/schools/:ecoleId/administrators/:idAffectation/replace', async (requete, reponse) => {
+      const { organisationId } = requete.params as Record<string,string>;
+      if (!(await verifierAccesOrganisationSecurity(requete,reponse,'security.admin.schools.write',organisationId,false))) return;
+      const corps = lireObjet(requete.body);
+      await executerGouvernance(reponse,() => securityGovernance.remplacerAdministrateur(
+        (requete.params as Record<string,string>).idAffectation,
+        { idUtilisateur:lireTexte(corps,'idUtilisateur'),nomComplet:lireTexte(corps,'nomComplet'),
+          email:lireTexte(corps,'email'),telephone:lireTexte(corps,'telephone'),
+          motDePasseInitial:lireTexte(corps,'motDePasseInitial') },
+        contexteMutation(requete,corps),
+        { organisationId,ecoleId:(requete.params as Record<string,string>).ecoleId },
+      ));
+    });
+
+    serveur.post('/api/v1/security/emergency/organizations/:organisationId/schools/:ecoleId/administrators', async (requete, reponse) => {
+      if (!(await verifierAccesRouteSecurity(requete,reponse,'security.admin.schools.emergency.write'))) return;
+      const { organisationId,ecoleId } = requete.params as Record<string,string>;
+      const corps = lireObjet(requete.body);
+      if (!lireTexte(corps,'motif')) {
+        reponse.code(400).send({success:false,error:{code:'SECURITY_REASON_REQUIRED',message:"Le motif de l'intervention exceptionnelle est obligatoire."}});
+        return;
+      }
+      const idUtilisateur = lireTexte(corps,'idUtilisateur');
+      const operation = idUtilisateur
+        ? () => securityGovernance.affecterCompteExistant({idUtilisateur,codeRole:'ADMIN_SYSTEME_ECOLE',niveau:'ECOLE',organisationId,ecoleId,motif:lireTexte(corps,'motif')},contexteMutation(requete,corps))
+        : () => securityGovernance.creerCompteAvecAffectation({
+          nomComplet:lireTexte(corps,'nomComplet') ?? '',email:lireTexte(corps,'email') ?? '',telephone:lireTexte(corps,'telephone'),
+          motDePasseInitial:lireTexte(corps,'motDePasseInitial') ?? '',codeRole:'ADMIN_SYSTEME_ECOLE',niveau:'ECOLE',organisationId,ecoleId,motif:lireTexte(corps,'motif'),
+        },contexteMutation(requete,corps));
+      await executerGouvernance(reponse,operation,201);
+    });
+
+    serveur.post('/api/v1/security/emergency/organizations/:organisationId/schools/:ecoleId/administrators/:idAffectation/replace', async (requete, reponse) => {
+      if (!(await verifierAccesRouteSecurity(requete,reponse,'security.admin.schools.emergency.write'))) return;
+      const corps = lireObjet(requete.body);
+      if (!lireTexte(corps,'motif')) {
+        reponse.code(400).send({success:false,error:{code:'SECURITY_REASON_REQUIRED',message:"Le motif de l'intervention exceptionnelle est obligatoire."}});
+        return;
+      }
+      await executerGouvernance(reponse,() => securityGovernance.remplacerAdministrateur(
+        (requete.params as Record<string,string>).idAffectation,
+        { idUtilisateur:lireTexte(corps,'idUtilisateur'),nomComplet:lireTexte(corps,'nomComplet'),
+          email:lireTexte(corps,'email'),telephone:lireTexte(corps,'telephone'),
+          motDePasseInitial:lireTexte(corps,'motDePasseInitial') },
+        contexteMutation(requete,corps),
+        { organisationId:(requete.params as Record<string,string>).organisationId,
+          ecoleId:(requete.params as Record<string,string>).ecoleId },
+      ));
+    });
+
+    serveur.get('/api/v1/security/assignments', async (requete, reponse) => {
+      if (!(await verifierAccesRouteSecurity(requete,reponse,'security.assignments.read'))) return;
+      const query = lireObjet(requete.query);
+      await executerGouvernance(reponse,() => securityGovernance.listerAffectations(lireTexte(query,'utilisateurId')));
+    });
+
+    serveur.get('/api/v1/security/sessions', async (requete, reponse) => {
+      if (!(await verifierAccesRouteSecurity(requete,reponse,'security.sessions.read'))) return;
+      const query = lireObjet(requete.query);
+      await executerGouvernance(reponse,() => securityGovernance.listerSessions({
+        utilisateurId:lireTexte(query,'utilisateurId'),organisationId:lireTexte(query,'organisationId'),ecoleId:lireTexte(query,'ecoleId'),
+      }));
+    });
+
+    serveur.delete('/api/v1/security/sessions/:idSession', async (requete, reponse) => {
+      if (!(await verifierAccesRouteSecurity(requete,reponse,'security.sessions.revoke'))) return;
+      const corps = lireObjet(requete.body);
+      await executerGouvernance(reponse,() => securityGovernance.revoquerSession((requete.params as Record<string,string>).idSession,contexteMutation(requete,corps)),204);
+    });
+
+    serveur.delete('/api/v1/security/accounts/:idUtilisateur/sessions', async (requete, reponse) => {
+      if (!(await verifierAccesRouteSecurity(requete,reponse,'security.sessions.revoke'))) return;
+      const corps = lireObjet(requete.body);
+      await executerGouvernance(reponse,() => securityGovernance.revoquerToutesSessions((requete.params as Record<string,string>).idUtilisateur,contexteMutation(requete,corps)),204);
+    });
+
+    serveur.get('/api/v1/security/login-attempts', async (requete, reponse) => {
+      if (!(await verifierAccesRouteSecurity(requete,reponse,'security.attempts.read'))) return;
+      const query = lireObjet(requete.query);
+      const resultat = lireTexte(query,'resultat');
+      await executerGouvernance(reponse,() => securityGovernance.listerTentatives({
+        recherche:lireTexte(query,'recherche'),reussie:resultat === 'SUCCES' ? true : resultat === 'ECHEC' ? false : undefined,
+        limite:Number(query.limite) || undefined,
+      }));
+    });
+
     serveur.get('/api/v1/security/roles', async (requete, reponse) => {
       if (!(await verifierAccesRouteSecurity(requete, reponse, 'roles.read'))) {
         return;
       }
-      await executerRouteSecurity(reponse, () => roleController.listerRoles());
+      await executerGouvernance(reponse, () => securityGovernance.listerRoles());
+    });
+
+    serveur.get('/api/v1/security/permission-catalog', async (requete, reponse) => {
+      if (!(await verifierAccesRouteSecurity(requete, reponse, 'permissions.read'))) return;
+      await executerGouvernance(reponse, () => securityGovernance.listerCataloguePermissions());
+    });
+
+    serveur.get('/api/v1/security/roles/:codeRole', async (requete, reponse) => {
+      if (!(await verifierAccesRouteSecurity(requete, reponse, 'roles.read'))) return;
+      await executerGouvernance(reponse, () => securityGovernance.obtenirRole(
+        (requete.params as Record<string,string>).codeRole,
+      ));
     });
 
     serveur.post('/api/v1/security/roles', async (requete, reponse) => {
       if (!(await verifierAccesRouteSecurity(requete, reponse, 'roles.write'))) {
         return;
       }
-      await executerRouteSecurity(reponse, () => roleController.creer(requete.body), 201);
+      const corps = lireObjet(requete.body);
+      await executerGouvernance(reponse, () => securityGovernance.creerRolePersonnalise({
+        codeRole:lireTexte(corps,'codeRole') ?? '',nomRole:lireTexte(corps,'nomRole') ?? '',
+        description:lireTexte(corps,'description'),niveauAcces:lireTexte(corps,'niveauAcces') ?? '',
+        permissions:Array.isArray(corps.permissions) ? corps.permissions.filter((item): item is string => typeof item === 'string') : [],
+      },contexteMutation(requete,corps)),201);
     });
 
     serveur.patch('/api/v1/security/roles/:codeRole/activate', async (requete, reponse) => {
       if (!(await verifierAccesRouteSecurity(requete, reponse, 'roles.write'))) {
         return;
       }
-      await executerRouteSecurity(
-        reponse,
-        () => roleController.activer((requete.params as Record<string, string>).codeRole),
-      );
+      const corps = lireObjet(requete.body);
+      await executerGouvernance(reponse, () => securityGovernance.changerEtatRole(
+        (requete.params as Record<string,string>).codeRole,true,contexteMutation(requete,corps),
+      ));
     });
 
     serveur.patch('/api/v1/security/roles/:codeRole/deactivate', async (requete, reponse) => {
       if (!(await verifierAccesRouteSecurity(requete, reponse, 'roles.write'))) {
         return;
       }
-      await executerRouteSecurity(
-        reponse,
-        () => roleController.desactiver((requete.params as Record<string, string>).codeRole),
-      );
+      const corps = lireObjet(requete.body);
+      await executerGouvernance(reponse, () => securityGovernance.changerEtatRole(
+        (requete.params as Record<string,string>).codeRole,false,contexteMutation(requete,corps),
+      ));
     });
 
     serveur.get('/api/v1/security/roles/:codeRole/permissions', async (requete, reponse) => {
       if (!(await verifierAccesRouteSecurity(requete, reponse, 'permissions.read'))) {
         return;
       }
-      await executerRouteSecurity(
-        reponse,
-        () => roleController.listerPermissions((requete.params as Record<string, string>).codeRole),
-      );
+      await executerGouvernance(reponse, async () => (
+        await securityGovernance.obtenirRole((requete.params as Record<string,string>).codeRole)
+      ).permissions);
+    });
+
+    serveur.get('/api/v1/security/roles/:codeRole/restrictions', async (requete, reponse) => {
+      if (!(await verifierAccesRouteSecurity(requete, reponse, 'permissions.read'))) return;
+      await executerGouvernance(reponse, async () => (
+        await securityGovernance.obtenirRole((requete.params as Record<string,string>).codeRole)
+      ).restrictions);
     });
 
     serveur.post('/api/v1/security/roles/:codeRole/permissions', async (requete, reponse) => {
       if (!(await verifierAccesRouteSecurity(requete, reponse, 'permissions.write'))) {
         return;
       }
-      await executerRouteSecurity(
-        reponse,
-        () => roleController.ajouterPermission((requete.params as Record<string, string>).codeRole, requete.body),
-        201,
-      );
+      const corps = lireObjet(requete.body);
+      await executerGouvernance(reponse, () => securityGovernance.modifierCapaciteRole(
+        (requete.params as Record<string,string>).codeRole,'PERMISSION',lireTexte(corps,'permission') ?? '',true,
+        contexteMutation(requete,corps),
+      ),201);
     });
 
     serveur.delete('/api/v1/security/roles/:codeRole/permissions/:permission', async (requete, reponse) => {
       if (!(await verifierAccesRouteSecurity(requete, reponse, 'permissions.write'))) {
         return;
       }
-      await executerRouteSecurity(
-        reponse,
-        () => roleController.retirerPermission(
-          (requete.params as Record<string, string>).codeRole,
-          (requete.params as Record<string, string>).permission,
-        ),
-      );
+      const corps = lireObjet(requete.body);
+      await executerGouvernance(reponse, () => securityGovernance.modifierCapaciteRole(
+        (requete.params as Record<string,string>).codeRole,'PERMISSION',
+        (requete.params as Record<string,string>).permission,false,contexteMutation(requete,corps),
+      ));
     });
 
     serveur.post('/api/v1/security/roles/:codeRole/restrictions', async (requete, reponse) => {
       if (!(await verifierAccesRouteSecurity(requete, reponse, 'permissions.write'))) {
         return;
       }
-      await executerRouteSecurity(
-        reponse,
-        () => roleController.ajouterRestriction((requete.params as Record<string, string>).codeRole, requete.body),
-        201,
-      );
+      const corps = lireObjet(requete.body);
+      await executerGouvernance(reponse, () => securityGovernance.modifierCapaciteRole(
+        (requete.params as Record<string,string>).codeRole,'RESTRICTION',lireTexte(corps,'codeRestriction') ?? '',true,
+        contexteMutation(requete,corps),
+      ),201);
     });
 
     serveur.delete('/api/v1/security/roles/:codeRole/restrictions/:codeRestriction', async (requete, reponse) => {
       if (!(await verifierAccesRouteSecurity(requete, reponse, 'permissions.write'))) {
         return;
       }
-      await executerRouteSecurity(
-        reponse,
-        () => roleController.retirerRestriction(
-          (requete.params as Record<string, string>).codeRole,
-          (requete.params as Record<string, string>).codeRestriction,
-        ),
-      );
+      const corps = lireObjet(requete.body);
+      await executerGouvernance(reponse, () => securityGovernance.modifierCapaciteRole(
+        (requete.params as Record<string,string>).codeRole,'RESTRICTION',
+        (requete.params as Record<string,string>).codeRestriction,false,contexteMutation(requete,corps),
+      ));
     });
 
     serveur.post('/api/v1/security/affectations', async (requete, reponse) => {
-      if (!(await verifierAccesRouteSecurity(requete, reponse, 'utilisateurs.write'))) {
+      if (!(await verifierAccesRouteSecurity(requete, reponse, 'security.assignments.write'))) {
         return;
       }
-      await executerRouteSecurity(reponse, () => affectationUtilisateurController.creer(requete.body), 201);
+      const corps = lireObjet(requete.body);
+      await executerGouvernance(reponse, () => securityGovernance.creerAffectationGouvernance({
+        idUtilisateur: lireTexte(corps,'idUtilisateur') ?? '',
+        codeRole: lireTexte(corps,'codeRole') ?? '',
+        niveau: (lireTexte(corps,'niveau') ?? '') as 'PLATEFORME'|'ORGANISATION'|'ECOLE',
+        organisationId: lireTexte(corps,'organisationId'),
+        ecoleId: lireTexte(corps,'ecoleId'),
+        motif: lireTexte(corps,'motif') ?? '',
+      }, contexteMutation(requete,corps)), 201);
     });
 
     serveur.patch('/api/v1/security/affectations/:idAffectationUtilisateur/activate', async (requete, reponse) => {
-      if (!(await verifierAccesRouteSecurity(requete, reponse, 'utilisateurs.write'))) {
+      if (!(await verifierAccesRouteSecurity(requete, reponse, 'security.assignments.write'))) {
         return;
       }
-      await executerRouteSecurity(
-        reponse,
-        () => affectationUtilisateurController.activer((requete.params as Record<string, string>).idAffectationUtilisateur),
-      );
+      const corps = lireObjet(requete.body);
+      await executerGouvernance(reponse, () => securityGovernance.activerAffectation(
+        (requete.params as Record<string, string>).idAffectationUtilisateur,
+        contexteMutation(requete, corps),
+      ), 204);
     });
 
     serveur.patch('/api/v1/security/affectations/:idAffectationUtilisateur/deactivate', async (requete, reponse) => {
-      if (!(await verifierAccesRouteSecurity(requete, reponse, 'utilisateurs.write'))) {
+      if (!(await verifierAccesRouteSecurity(requete, reponse, 'security.assignments.write'))) {
         return;
       }
-      await executerRouteSecurity(
-        reponse,
-        () => affectationUtilisateurController.desactiver((requete.params as Record<string, string>).idAffectationUtilisateur),
-      );
+      const corps = lireObjet(requete.body);
+      await executerGouvernance(reponse, () => securityGovernance.desactiverAffectation(
+        (requete.params as Record<string, string>).idAffectationUtilisateur,
+        contexteMutation(requete, corps),
+      ), 204);
     });
 
     serveur.post('/api/v1/security/affectations/:idAffectationUtilisateur/scopes', async (requete, reponse) => {
@@ -347,17 +667,16 @@ export const routeSecurity: PluginRoutesSecurity = Object.assign(
     });
 
     serveur.delete('/api/v1/security/affectations/:idAffectationUtilisateur/scopes/:typeScope/:valeurScope', async (requete, reponse) => {
-      if (!(await verifierAccesRouteSecurity(requete, reponse, 'utilisateurs.write'))) {
+      if (!(await verifierAccesRouteSecurity(requete, reponse, 'security.assignments.write'))) {
         return;
       }
-      await executerRouteSecurity(
-        reponse,
-        () => affectationUtilisateurController.retirerScope(
-          (requete.params as Record<string, string>).idAffectationUtilisateur,
-          (requete.params as Record<string, string>).typeScope,
-          (requete.params as Record<string, string>).valeurScope,
-        ),
-      );
+      const corps = lireObjet(requete.body);
+      await executerGouvernance(reponse, () => securityGovernance.retirerScope(
+        (requete.params as Record<string, string>).idAffectationUtilisateur,
+        (requete.params as Record<string, string>).typeScope,
+        (requete.params as Record<string, string>).valeurScope,
+        contexteMutation(requete, corps),
+      ), 204);
     });
 
     serveur.get('/api/v1/security/affectations/utilisateur/:idUtilisateur', async (requete, reponse) => {

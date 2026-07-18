@@ -6,6 +6,7 @@ import type {
   AuditEntryRow,
 } from '../../../../shared/audit/infrastructure/persistence/postgres/mappers/AuditPersistenceRecords';
 import { AuditJsonbMapper } from '../../../../shared/audit/infrastructure/persistence/postgres/mappers/AuditJsonbMapper';
+import type { AuditEntryRepository } from '../../../../shared/audit/domain/repositories';
 import { PostgresAuditEntryRepository } from '../../../../shared/audit/infrastructure/persistence/postgres/repositories';
 
 type ActionAuditFinancierSupportee =
@@ -114,7 +115,7 @@ const DEFINITIONS_AUDIT_FINANCIER: Record<string, DefinitionAuditFinancier> = {
 
 // Ce fichier branche les actions financieres critiques vers le registre append-only shared/audit.
 export class AuditAdapter implements AuditPort {
-  private readonly auditRepository = new PostgresAuditEntryRepository();
+  public constructor(private readonly auditRepository: AuditEntryRepository = new PostgresAuditEntryRepository()) {}
 
   public async journaliserActionFinanciere(input: AuditFinancierInput): Promise<void> {
     const definition = DEFINITIONS_AUDIT_FINANCIER[input.action];

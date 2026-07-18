@@ -15,7 +15,7 @@ import type { OrganisationHistoryItem } from '../models/organization-governance.
 import { organizationGovernanceApi } from '../services/organization-governance.api';
 import { useOrganizationGovernanceStore } from '../stores/organization-governance.store';
 
-type OrganisationDetailTab = 'general' | 'responsable' | 'modules' | 'ecoles' | 'historique';
+type OrganisationDetailTab = 'general' | 'responsable' | 'modules' | 'access' | 'ecoles' | 'historique';
 
 export function useOrganizationDetailViewModel() {
   const route = useRoute();

@@ -1,5 +1,4 @@
 import { reinitialiserSharedEventBus } from 'shared/infrastructure/bus';
-import { obtenirMemoireAuditStore } from 'shared/audit/infrastructure/persistence/postgres/repositories/_memoireAuditStore';
 import { obtenirAuditEventMemoryStore } from 'shared/audit/infrastructure/event-bus/stores/AuditEventMemoryStore';
 import { obtenirAuditConfigurationMemoryStore } from 'shared/audit/infrastructure/configuration';
 import { obtenirNotificationAuditMemoryStore } from 'shared/notifications/integration/audit/store/NotificationAuditMemoryStore';
@@ -22,20 +21,6 @@ const QUEUES = [
 
 export function reinitialiserEtatAuditTests(): void {
   reinitialiserSharedEventBus();
-
-  const auditStore = obtenirMemoireAuditStore();
-  auditStore.auditEntries.clear();
-  auditStore.auditEntryOrder.length = 0;
-  auditStore.auditEntryIdsByCorrelation.clear();
-  auditStore.auditEntryIdsByRequest.clear();
-  auditStore.auditExports.clear();
-  auditStore.auditArchives.clear();
-  auditStore.auditAnalyticsSnapshots.clear();
-  auditStore.auditProjections.clear();
-  auditStore.auditIdempotency.clear();
-  auditStore.auditSyncConflicts.clear();
-  auditStore.auditForensicLinks.length = 0;
-  auditStore.auditColdStoragePackages.clear();
 
   const eventStore = obtenirAuditEventMemoryStore();
   eventStore.events.length = 0;

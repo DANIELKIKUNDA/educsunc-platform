@@ -1,11 +1,12 @@
-import { obtenirMemoireAuditStore } from '../../persistence/postgres/repositories/_memoireAuditStore';
+import { PostgresAuditEntryRepository } from '../../persistence/postgres/repositories/PostgresAuditEntryRepository';
 import type { AuditRetentionCandidate } from '../RetentionTypes';
 
 // Le cycle de vie trace l'évolution ACTIVE -> ARCHIVE -> COLD STORAGE -> PURGE.
 export class AuditRetentionLifecycleService {
-  public listerCandidats(): AuditRetentionCandidate[] {
-    const store = obtenirMemoireAuditStore();
-    return [...store.auditEntries.values()].map((entry) => ({
+  public constructor(private readonly entries = new PostgresAuditEntryRepository()) {}
+
+  public async listerCandidats(): Promise<AuditRetentionCandidate[]> {
+    return (await this.entries.listerSelonFiltres({})).map((entry) => ({
       idAuditEntry: entry.obtenirId(),
       organisationId: entry.obtenirTenantAudit().obtenirOrganisationId(),
       ecoleId: entry.obtenirTenantAudit().obtenirEcoleId(),

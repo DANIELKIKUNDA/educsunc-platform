@@ -55,7 +55,6 @@ import {
   PostgresAffectationUtilisateurRepository,
   PostgresRoleRepository,
 } from '../../shared/security/infrastructure';
-import { obtenirMemoireSecurityStore } from '../../shared/security/infrastructure/persistence/postgres/repositories/_memoireSecurityStore';
 import {
   ArchiverProgrammeNiveau,
   ConsulterProgrammeNiveau,
@@ -353,14 +352,8 @@ function composerRoutesReferentielAcademique(): CompositionRoutesReferentielAcad
     undefined,
     {
       consulter: async (idOrganisation: string, idResponsablePrincipal?: string) => {
-        const affectations = Array.from(obtenirMemoireSecurityStore().affectations.values())
-          .filter((record) =>
-            record.id_organisation === idOrganisation
-            && record.etat_affectation === 'ACTIVE'
-          );
-        const totalUtilisateursActifs = new Set(
-          affectations.map((record) => record.id_utilisateur),
-        ).size;
+        const totalUtilisateursActifs = await affectationRepositorySecurity
+          .compterUtilisateursActifsOrganisation(idOrganisation);
 
         if (!idResponsablePrincipal) {
           return {

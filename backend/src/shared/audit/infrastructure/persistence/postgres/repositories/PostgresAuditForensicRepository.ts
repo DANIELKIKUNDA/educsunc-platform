@@ -1,9 +1,10 @@
 import type { AuditForensicRepository, AuditForensicTrace } from '../../../../domain/repositories';
-import { appliquerFiltresAudit, construireTraceForensic, trierChronologiquementDesc } from './audit-repository.helpers';
-import { obtenirMemoireAuditStore } from './_memoireAuditStore';
+import { construireTraceForensic } from './audit-repository.helpers';
+import { PostgresAuditEntryRepository } from './PostgresAuditEntryRepository';
 
 // Ce repository concentre les lectures d'investigation et de correlation avancee.
 export class PostgresAuditForensicRepository implements AuditForensicRepository {
+  public constructor(private readonly entries = new PostgresAuditEntryRepository()) {}
   public async listerEvenementsCritiques(filtres: Record<string, unknown>): Promise<AuditForensicTrace[]> {
     return this.tracer({ ...filtres, graviteAudit: String(filtres.graviteAudit ?? 'CRITIQUE') });
   }
@@ -37,13 +38,6 @@ export class PostgresAuditForensicRepository implements AuditForensicRepository 
   }
 
   private async tracer(filtres: Record<string, unknown>): Promise<AuditForensicTrace[]> {
-    const links = obtenirMemoireAuditStore().auditForensicLinks;
-    return trierChronologiquementDesc(
-      [...obtenirMemoireAuditStore().auditEntries.values()].filter((entree) =>
-        appliquerFiltresAudit(entree, filtres as Parameters<typeof appliquerFiltresAudit>[1])),
-    ).map((entree) => {
-      const relation = links.find((link) => link.auditEntrySource === entree.obtenirId() || link.auditEntryCible === entree.obtenirId());
-      return construireTraceForensic(entree, relation?.typeRelation);
-    });
+    return (await this.entries.listerSelonFiltres(filtres)).map((entree) => construireTraceForensic(entree));
   }
 }

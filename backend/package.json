@@ -23,6 +23,8 @@
     "notifications:redis:ping": "tsx src/scripts/notifications/VerifierRedisNotifications.ts",
     "auth:certify:postgres": "tsx src/scripts/auth/CertifierPersistanceAuthPostgres.ts",
     "auth:certify:tokens": "tsx src/scripts/auth/CertifierCycleJetonsAuthPostgres.ts",
+    "security:certify:postgres": "node --env-file=.env --import tsx src/scripts/security/CertifierPersistanceSecurityPostgres.ts",
+    "security:certify:governance": "node --env-file=.env --import tsx src/scripts/security/CertifierGouvernanceSecurityPostgres.ts",
     "test:auth:postgres": "tsx src/scripts/auth/ExecuterTestsPostgresAuth.ts",
     "test": "tsx --test src/contexts/referentiel-academique/tests/depot-annee-scolaire-postgres.test.ts src/contexts/referentiel-academique/tests/execution-http-referentiel-academique.test.ts src/contexts/referentiel-academique/tests/migrations-postgres-referentiel-academique.test.ts src/contexts/referentiel-academique/tests/orchestration-annee-scolaire.test.ts src/contexts/referentiel-academique/tests/publier-version-referentiel.test.ts",
     "test:audit": "node scripts/run-shared-audit-tests.cjs",

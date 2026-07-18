@@ -1,38 +1,43 @@
 import type { AuditSyncConflictRecord, AuditSyncConflictRepository } from '../../../../domain/repositories';
-import { obtenirMemoireAuditStore } from './_memoireAuditStore';
+import { PostgresAuditDocumentStore } from './PostgresAuditDocumentStore';
+import { PostgresAuditEntryRepository } from './PostgresAuditEntryRepository';
 
-// Ce repository historise les conflits de synchronisation avec leur cycle de resolution.
 export class PostgresAuditSyncConflictRepository implements AuditSyncConflictRepository {
+  public constructor(
+    private readonly documents = new PostgresAuditDocumentStore(),
+    private readonly entries = new PostgresAuditEntryRepository(),
+  ) {}
+
   public async enregistrerConflit(conflit: AuditSyncConflictRecord): Promise<void> {
-    obtenirMemoireAuditStore().auditSyncConflicts.set(conflit.idAuditConflict, conflit);
+    await this.documents.enregistrer('SYNC_CONFLICT', conflit.idAuditConflict, conflit);
   }
 
-  public async retrouverConflit(idAuditConflict: string): Promise<AuditSyncConflictRecord | null> {
-    return obtenirMemoireAuditStore().auditSyncConflicts.get(idAuditConflict) ?? null;
+  public retrouverConflit(idAuditConflict: string): Promise<AuditSyncConflictRecord | null> {
+    return this.documents.obtenir('SYNC_CONFLICT', idAuditConflict);
   }
 
   public async listerConflits(
     filtres?: { statutResolution?: string; organisationId?: string; ecoleId?: string },
   ): Promise<AuditSyncConflictRecord[]> {
-    const store = obtenirMemoireAuditStore();
-    return [...store.auditSyncConflicts.values()].filter((conflit) => {
-      if (filtres?.statutResolution && conflit.statutResolution !== filtres.statutResolution) { return false; }
-      if (!filtres?.organisationId && !filtres?.ecoleId) { return true; }
-      const audit = store.auditEntries.get(conflit.idAuditEntry);
-      if (!audit) { return false; }
-      const tenant = audit.obtenirTenantAudit();
-      if (filtres.organisationId && tenant.obtenirOrganisationId() !== filtres.organisationId) { return false; }
-      if (filtres.ecoleId && tenant.obtenirEcoleId() !== filtres.ecoleId) { return false; }
-      return true;
-    });
+    const conflits = await this.documents.lister<AuditSyncConflictRecord>('SYNC_CONFLICT');
+    const resultats: AuditSyncConflictRecord[] = [];
+    for (const conflit of conflits) {
+      if (filtres?.statutResolution && conflit.statutResolution !== filtres.statutResolution) continue;
+      if (filtres?.organisationId || filtres?.ecoleId) {
+        const audit = await this.entries.trouverParId(conflit.idAuditEntry);
+        if (!audit) continue;
+        const tenant = audit.obtenirTenantAudit();
+        if (filtres.organisationId && tenant.obtenirOrganisationId() !== filtres.organisationId) continue;
+        if (filtres.ecoleId && tenant.obtenirEcoleId() !== filtres.ecoleId) continue;
+      }
+      resultats.push(conflit);
+    }
+    return resultats;
   }
 
   public async suivreResolution(idAuditConflict: string, statutResolution: string, dateResolution?: Date): Promise<void> {
-    const conflit = obtenirMemoireAuditStore().auditSyncConflicts.get(idAuditConflict);
-    if (!conflit) {
-      return;
-    }
-    conflit.statutResolution = statutResolution;
-    conflit.dateResolution = dateResolution ?? new Date();
+    const conflit = await this.retrouverConflit(idAuditConflict);
+    if (!conflit) return;
+    await this.enregistrerConflit({ ...conflit, statutResolution, dateResolution: dateResolution ?? new Date() });
   }
 }

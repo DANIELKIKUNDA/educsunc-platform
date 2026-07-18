@@ -1,4 +1,4 @@
-import { obtenirMemoireAuditStore } from '../../persistence/postgres/repositories/_memoireAuditStore';
+import { PostgresAuditEntryRepository } from '../../persistence/postgres/repositories/PostgresAuditEntryRepository';
 import { AuditTraceService } from '../traces/AuditTraceService';
 import type { AuditMetricPoint } from '../MonitoringTypes';
 
@@ -9,15 +9,14 @@ interface AuditSchoolTechnicalFilters {
 
 // Ce service calcule une vue technique locale sans exposer les snapshots globaux plateforme.
 export class AuditSchoolTechnicalMetricsService {
-  public constructor(private readonly traces = new AuditTraceService()) {}
+  public constructor(
+    private readonly traces = new AuditTraceService(),
+    private readonly entries = new PostgresAuditEntryRepository(),
+  ) {}
 
-  public collecter(filtres: AuditSchoolTechnicalFilters): AuditMetricPoint[] {
+  public async collecter(filtres: AuditSchoolTechnicalFilters): Promise<AuditMetricPoint[]> {
     const horodatage = new Date().toISOString();
-    const entrees = [...obtenirMemoireAuditStore().auditEntries.values()].filter((entree) => {
-      const tenant = entree.obtenirTenantAudit();
-      return tenant.obtenirOrganisationId() === filtres.organisationId
-        && tenant.obtenirEcoleId() === filtres.ecoleId;
-    });
+    const entrees = await this.entries.listerSelonFiltres(filtres);
     const traces = this.traces.lister(filtres);
 
     return [

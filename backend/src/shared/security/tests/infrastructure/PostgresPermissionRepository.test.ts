@@ -1,12 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { PostgresPermissionRepository, PostgresRoleRepository } from 'shared/security/infrastructure';
+import { MemoirePermissionTestRepository, MemoireRoleTestRepository } from '../support/SecurityMemoryTestRepositories';
 import { creerRole, reinitialiserMemoireSecurity } from '../support/SecurityTestSupport';
 
 test('save permission, recherche permission et suppression permission via role', async () => {
   reinitialiserMemoireSecurity();
-  const roleRepository = new PostgresRoleRepository();
-  const permissionRepository = new PostgresPermissionRepository();
+  const roleRepository = new MemoireRoleTestRepository();
+  const permissionRepository = new MemoirePermissionTestRepository();
   const role = creerRole({ permissions: ['bulletins.read', 'cotes.write'] });
   await roleRepository.sauvegarder(role);
 

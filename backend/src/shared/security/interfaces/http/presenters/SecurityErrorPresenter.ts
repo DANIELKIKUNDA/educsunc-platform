@@ -50,7 +50,7 @@ export class SecurityErrorPresenter {
       return this.reponse(409, 'ACTIVE_CONTEXT_INVALID', erreur.message);
     }
 
-    return this.reponse(500, 'INTERNAL_SERVER_ERROR', erreur instanceof Error ? erreur.message : 'Erreur technique inconnue.');
+    return this.reponse(500, 'INTERNAL_SERVER_ERROR', "Une action demandée n'a pas pu être terminée.");
   }
 
   private static reponse(statutHttp: number, code: string, message: string): ReponseErreurSecurityHttp {

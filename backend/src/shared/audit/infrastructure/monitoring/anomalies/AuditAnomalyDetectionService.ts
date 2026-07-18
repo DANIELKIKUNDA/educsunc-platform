@@ -7,13 +7,13 @@ export class AuditAnomalyDetectionService {
     private readonly volumetry: AuditVolumetryMonitoringService = new AuditVolumetryMonitoringService(),
   ) {}
 
-  public detecter() {
+  public async detecter() {
     const anomalies = this.alerts.detecter().map((alert) => ({
       code: alert.code,
       message: alert.message,
       severite: alert.severite,
     }));
-    const volume = this.volumetry.obtenirSnapshot();
+    const volume = await this.volumetry.obtenirSnapshot();
     if (volume.auditEntries > 100_000) {
       anomalies.push({
         code: 'AUDIT_VOLUMETRY_SPIKE',

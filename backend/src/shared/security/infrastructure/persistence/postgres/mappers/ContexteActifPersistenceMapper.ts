@@ -18,7 +18,7 @@ export class ContexteActifPersistenceMapper {
       id_organisation_active: contexte.obtenirIdOrganisationActive(),
       id_ecole_active: contexte.obtenirIdEcoleActive(),
       date_changement: contexte.obtenirDateChangement().toISOString(),
-      version: 1,
+      version: contexte.obtenirVersion(),
     };
   }
 

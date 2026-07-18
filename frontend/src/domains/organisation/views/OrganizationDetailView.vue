@@ -196,6 +196,14 @@
           </SectionBlock>
 
           <SectionBlock
+            v-else-if="activeTab === 'access'"
+            title="Administration et accès"
+            description="Gérez les administrateurs système responsables de cette organisation."
+          >
+            <OrganizationAccessAdministrationSection :organisation-id="organisation.id" />
+          </SectionBlock>
+
+          <SectionBlock
             v-else
             title="Historique"
             description="Chronologie verticale de l activite disponible pour cette organisation."
@@ -288,6 +296,7 @@ import {
   Power,
   School,
   ShieldUser,
+  KeyRound,
   Users,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
@@ -301,6 +310,7 @@ import StatCard from '../../../shared/ui/StatCard.vue';
 import OrganizationConfirmDialog from '../components/OrganizationConfirmDialog.vue';
 import OrganizationDetailSkeleton from '../components/OrganizationDetailSkeleton.vue';
 import OrganizationModulesSection from '../components/OrganizationModulesSection.vue';
+import OrganizationAccessAdministrationSection from '../components/OrganizationAccessAdministrationSection.vue';
 import { useOrganizationDetailViewModel } from '../viewmodels/useOrganizationDetailViewModel';
 
 const {
@@ -345,6 +355,7 @@ const tabs = computed(() => [
   { code: 'general', label: 'Informations generales', icon: Info },
   { code: 'responsable', label: 'Responsable', icon: ShieldUser },
   { code: 'modules', label: 'Modules autorises', icon: Layers3 },
+  { code: 'access', label: 'Administration et accès', icon: KeyRound },
   { code: 'ecoles', label: 'Ecoles rattachees', icon: School },
   { code: 'historique', label: 'Historique', icon: History },
 ] as const);

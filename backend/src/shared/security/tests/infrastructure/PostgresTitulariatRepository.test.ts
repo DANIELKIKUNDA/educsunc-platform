@@ -1,11 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { PostgresAffectationTitulariatRepository } from 'shared/security/infrastructure';
+import { MemoireTitulariatTestRepository } from '../support/SecurityMemoryTestRepositories';
 import { creerAffectationTitulariat, reinitialiserMemoireSecurity } from '../support/SecurityTestSupport';
 
 test('save titulariat, find titulariat actif et cloture titulariat', async () => {
   reinitialiserMemoireSecurity();
-  const repository = new PostgresAffectationTitulariatRepository();
+  const repository = new MemoireTitulariatTestRepository();
   const titulariat = creerAffectationTitulariat();
   await repository.sauvegarder(titulariat);
 

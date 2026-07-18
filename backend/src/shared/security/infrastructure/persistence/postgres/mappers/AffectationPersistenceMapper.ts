@@ -38,12 +38,14 @@ export class AffectationPersistenceMapper {
       id_organisation: affectation.obtenirIdOrganisation(),
       id_ecole: affectation.obtenirIdEcole(),
       id_section: affectation.obtenirIdSection(),
+      id_classe: affectation.obtenirIdClasse(),
+      id_cours: affectation.obtenirIdCours(),
       etat_affectation: affectation.obtenirEtatAffectation().obtenirValeur(),
       date_debut: affectation.obtenirDateDebut().toISOString(),
       date_fin: affectation.obtenirDateFin()?.toISOString(),
       cree_le: affectation.obtenirCreeLe().toISOString(),
       cree_par: affectation.obtenirCreePar(),
-      version: 1,
+      version: affectation.obtenirVersion(),
       scopes: affectation.obtenirScopes().map((scope) => ScopePersistenceMapper.versRecord(scope, affectation.obtenirId())),
     };
   }

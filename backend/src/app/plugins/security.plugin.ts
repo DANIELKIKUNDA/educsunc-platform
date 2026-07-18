@@ -1,6 +1,6 @@
 import type { FastifyPluginAsync, FastifyRequest } from 'fastify';
 import { CONTEXT_ROLE_PAR_DEFAUT, RequestContextFactory } from 'shared/context';
-import { AffectationTitulariat, MoteurAutorisation, MoteurCapacitesEffectives, MoteurRestrictionsMetier, MoteurScope, ScopeAcces, TypeScope } from 'shared/security/domain';
+import { MoteurAutorisation, MoteurCapacitesEffectives, MoteurRestrictionsMetier, MoteurScope, ScopeAcces, TypeScope } from 'shared/security/domain';
 import { ResponsabiliteClassePedagogiqueAdapter } from '../adapters/ResponsabiliteClassePedagogiqueAdapter';
 import {
   PermissionCacheService,
@@ -10,8 +10,6 @@ import {
   SecurityAuditInfrastructureService,
 } from 'shared/security/infrastructure';
 import { SecurityCapacitesEffectivesService, SecurityFacade } from 'shared/security/application';
-import { obtenirMemoireSecurityStore } from 'shared/security/infrastructure/persistence/postgres/repositories/_memoireSecurityStore';
-import { TitulariatPersistenceMapper } from 'shared/security/infrastructure/persistence/postgres/mappers/TitulariatPersistenceMapper';
 
 type PluginGlobal = FastifyPluginAsync & { nom: string };
 
@@ -82,7 +80,7 @@ export const securityPlugin: PluginGlobal = Object.assign(
       ];
       const titulariats = capacites.titulariatsActifs.length > 0
         ? await affectationTitulariatRepository.listerActifsParUtilisateur(requete.context.utilisateurId)
-        : listerTitulariatsUtilisateur(requete.context.utilisateurId);
+        : [];
 
       await permissionCacheService.memoriserPermissions(
         requete.context.utilisateurId,
@@ -151,11 +149,4 @@ function creerScopesPlateforme(
   }
 
   return [ScopeAcces.creer(new TypeScope('PLATEFORME'), 'system')];
-}
-
-function listerTitulariatsUtilisateur(idUtilisateur: string): AffectationTitulariat[] {
-  const store = obtenirMemoireSecurityStore();
-  return Array.from(store.titulariats.values())
-    .filter((titulariat) => titulariat.id_utilisateur === idUtilisateur && titulariat.est_actif)
-    .map((titulariat) => TitulariatPersistenceMapper.depuisRecord(titulariat));
 }

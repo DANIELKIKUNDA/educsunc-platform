@@ -1,12 +1,13 @@
-import { obtenirMemoireAuditStore } from '../../persistence/postgres/repositories/_memoireAuditStore';
+import { PostgresAuditOperationalReader } from '../../persistence/postgres/repositories/PostgresAuditOperationalReader';
 
 export class AuditForensicMonitoringService {
-  public obtenirSnapshot() {
-    const store = obtenirMemoireAuditStore();
+  public constructor(private readonly reader = new PostgresAuditOperationalReader()) {}
+
+  public async obtenirSnapshot() {
     return {
-      totalLiensForensic: store.auditForensicLinks.length,
-      totalPackagesColdStorage: store.auditColdStoragePackages.size,
-      totalCorrelations: store.auditEntryIdsByCorrelation.size,
+      totalLiensForensic: await this.reader.compterDocuments('FORENSIC_LINK'),
+      totalPackagesColdStorage: await this.reader.compterDocuments('COLD_STORAGE'),
+      totalCorrelations: await this.reader.compterCorrelations(),
     };
   }
 }

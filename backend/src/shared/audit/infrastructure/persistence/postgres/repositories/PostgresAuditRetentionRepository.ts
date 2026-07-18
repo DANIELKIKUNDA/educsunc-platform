@@ -1,9 +1,9 @@
 import type { AuditRetentionRepository } from '../../../../domain/repositories';
-import { appliquerFiltresAudit } from './audit-repository.helpers';
-import { obtenirMemoireAuditStore } from './_memoireAuditStore';
+import { PostgresAuditEntryRepository } from './PostgresAuditEntryRepository';
 
 // Ce repository prepare les decisions de retention et d'archivage a partir de la volumetrie.
 export class PostgresAuditRetentionRepository implements AuditRetentionRepository {
+  public constructor(private readonly entries = new PostgresAuditEntryRepository()) {}
   public async listerExpirables(reference: Date): Promise<string[]> {
     return this.listerAvant(reference, 30);
   }
@@ -35,9 +35,7 @@ export class PostgresAuditRetentionRepository implements AuditRetentionRepositor
 
   private async listerAvant(reference: Date, ageJours: number): Promise<string[]> {
     const seuil = new Date(reference.getTime() - ageJours * 24 * 60 * 60 * 1000);
-    return [...obtenirMemoireAuditStore().auditEntries.values()]
-      .filter((entree) =>
-        appliquerFiltresAudit(entree, { dateFin: seuil }))
+    return (await this.entries.listerSelonFiltres({ dateFin: seuil }))
       .map((entree) => entree.obtenirId());
   }
 }

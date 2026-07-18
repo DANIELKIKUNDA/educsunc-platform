@@ -4,4 +4,9 @@ export interface RoleReadModel {
   nomRole: string;
   niveauAcces: string;
   estActif: boolean;
+  estSysteme: boolean;
+  description?: string;
+  nombrePermissions: number;
+  nombreRestrictions: number;
+  nombreAffectations: number;
 }

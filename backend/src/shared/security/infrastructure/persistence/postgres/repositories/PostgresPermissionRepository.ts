@@ -1,15 +1,18 @@
 import type { PermissionRepositoryPort } from '../../../../application';
-import { obtenirMemoireSecurityStore } from './_memoireSecurityStore';
+import type { SqlQueryClient } from '../../../../../infrastructure/persistence/SqlQueryClient';
+import { obtenirClientPostgresAuth } from '../../../../../auth/infrastructure/persistence/postgres/ClientPoolPostgresAuth';
 
-// Ce depot fournit la lecture des permissions attachees aux roles.
 export class PostgresPermissionRepository implements PermissionRepositoryPort {
+  constructor(private readonly clientSql: SqlQueryClient = obtenirClientPostgresAuth()) {}
+
   public async listerPermissionsRole(codeRole: string): Promise<readonly string[]> {
-    const store = obtenirMemoireSecurityStore();
-    const idRole = store.rolesParCode.get(codeRole);
-    if (!idRole) {
-      return [];
-    }
-    const role = store.roles.get(idRole);
-    return role ? role.permissions.map((permission) => permission.permission) : [];
+    const resultat = await this.clientSql.executer<{ permission: string }>(
+      `SELECT permission.permission
+       FROM security_permissions_roles permission
+       INNER JOIN security_roles role ON role.id_role = permission.id_role
+       WHERE role.code_role = $1 ORDER BY permission.permission`,
+      [String(codeRole).trim()],
+    );
+    return resultat.lignes.map((ligne) => ligne.permission);
   }
 }
