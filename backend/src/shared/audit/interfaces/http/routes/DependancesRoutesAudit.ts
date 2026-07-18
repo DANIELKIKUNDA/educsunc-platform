@@ -12,6 +12,7 @@ import type {
   AuditSecurityController,
   AuditSynchronizationController,
 } from '../controllers';
+import type { AuditMetricPoint } from '../../../infrastructure/monitoring/MonitoringTypes';
 
 export interface AuditRouteMiddlewareSet {
   onRequest?(requete: FastifyRequest, reponse: FastifyReply): Promise<void> | void;
@@ -60,6 +61,9 @@ export interface DependancesRoutesAudit {
   auditRetentionController: AuditRetentionController;
   auditSecurityController: AuditSecurityController;
   auditHealthController: AuditHealthController;
+  auditSchoolTechnicalMetricsService?: {
+    collecter(filtres: { organisationId: string; ecoleId: string }): Promise<AuditMetricPoint[]>;
+  };
   middlewares?: AuditRouteMiddlewareSet;
 }
 

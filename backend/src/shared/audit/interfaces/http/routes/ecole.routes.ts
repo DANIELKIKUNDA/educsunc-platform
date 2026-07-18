@@ -82,8 +82,10 @@ export const creerEcoleAuditRoutes = (
 
       const contexte = extraireContexteRuntime({ headers: requete.headers, context: requete.context } as never);
       const startedAt = Date.now();
+      const metricsService = dependances.auditSchoolTechnicalMetricsService
+        ?? auditSchoolTechnicalMetricsService;
       const metrics = contexte.organisationId && contexte.ecoleId
-        ? auditSchoolTechnicalMetricsService.collecter({
+        ? await metricsService.collecter({
           organisationId: contexte.organisationId,
           ecoleId: contexte.ecoleId,
         })

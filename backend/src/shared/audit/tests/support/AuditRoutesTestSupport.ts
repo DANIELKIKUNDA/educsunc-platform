@@ -13,6 +13,15 @@ const reponseNeutre = async () => ({
 
 // Les tests de routes valident les policies HTTP sans ouvrir la persistance de production.
 export function neutraliserTraitementsAuditPourTest(dependances: DependancesRoutesAudit): void {
+  dependances.auditSchoolTechnicalMetricsService = {
+    collecter: async () => [
+      {
+        nom: 'audit_school_traces_total',
+        valeur: 1,
+        horodatage: new Date(0).toISOString(),
+      },
+    ],
+  };
   Object.assign(dependances.auditController, {
     lister: reponseNeutre,
     consulterParId: reponseNeutre,
