@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { randomUUID } from 'node:crypto';
 import test from 'node:test';
 import Fastify from 'fastify';
 import { requestContextPlugin } from '../../app/plugins/request-context.plugin';
@@ -50,12 +51,13 @@ test('les routes security sont exposees et reservees a la gouvernance plateforme
   });
   assert.equal(listeRoles.statusCode, 200, listeRoles.body);
 
+  const codeRoleTest = `CUSTOM_TEST_${randomUUID().replaceAll('-', '').slice(0, 8).toUpperCase()}`;
   const creationRole = await injecterCommeActeur(serveur, managerSecurity, {
     method: 'POST',
     url: '/api/v1/security/roles',
     payload: {
-      codeRole: 'COMPTABLE',
-      nomRole: 'Comptable',
+      codeRole: codeRoleTest,
+      nomRole: 'Rôle d’intégration',
       niveauAcces: 'ECOLE',
       permissions: ['paiements.read'],
       creePar: managerSecurity.utilisateurId,
