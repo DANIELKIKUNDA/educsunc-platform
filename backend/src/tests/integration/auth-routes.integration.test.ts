@@ -23,12 +23,14 @@ import {
 import {
   PostgresAffectationUtilisateurRepository,
   PostgresRoleRepository,
+  MigrateurPostgresSecurity,
 } from '../../shared/security/infrastructure';
 
 test('les routes globales exposent le login AUTH et la lecture de session', async (contexteTest) => {
   reinitialiserMemoireAuth();
   reinitialiserMemoireSecurity();
   await new MigrateurPostgresAuth(obtenirPoolPostgresAuth()).executerToutes();
+  await new MigrateurPostgresSecurity(obtenirPoolPostgresAuth()).executerToutes();
 
   const passwordHashAdapter = new PasswordHashAdapter();
   const suffixe = randomUUID();
