@@ -3,6 +3,7 @@ import test from 'node:test';
 import Fastify from 'fastify';
 import { requestContextPlugin } from '../../app/plugins/request-context.plugin';
 import { creerAuthenticationPlugin } from '../../app/plugins/authentication.plugin';
+import { creerSecurityPlugin } from '../../app/plugins/security.plugin';
 import { tenancyPlugin } from '../../app/plugins/tenancy.plugin';
 import { JwtTokenAdapter } from 'shared/auth/infrastructure';
 import { SessionCacheService } from 'shared/auth/infrastructure';
@@ -90,7 +91,13 @@ test('pipeline RequestContext -> AUTH -> SECURITY -> TENANCY enrichit la requete
         new SessionCacheService(),
       ),
     })(instance, {});
-    await bootstrap.creerSecurityPlugin()(instance, {});
+    await creerSecurityPlugin({
+      roleRepository: securityRepositories.roleRepository,
+      affectationUtilisateurRepository: securityRepositories.affectationRepository,
+      affectationTitulariatRepository: securityRepositories.titulariatRepository,
+      auditSecurityPort: null,
+      responsabiliteClassePedagogiquePort: null,
+    })(instance, {});
     await tenancyPlugin(instance, {});
 
     instance.get('/probe', async (requete) => ({
@@ -234,7 +241,13 @@ test('tenancy refuse une ecole etrangere quand le contexte actif est deja etabli
         new SessionCacheService(),
       ),
     })(instance, {});
-    await bootstrap.creerSecurityPlugin()(instance, {});
+    await creerSecurityPlugin({
+      roleRepository: securityRepositories.roleRepository,
+      affectationUtilisateurRepository: securityRepositories.affectationRepository,
+      affectationTitulariatRepository: securityRepositories.titulariatRepository,
+      auditSecurityPort: null,
+      responsabiliteClassePedagogiquePort: null,
+    })(instance, {});
     await tenancyPlugin(instance, {});
     instance.get('/probe', async () => ({ ok: true }));
   });
