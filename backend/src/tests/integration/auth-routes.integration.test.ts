@@ -17,7 +17,6 @@ import {
 } from '../../shared/auth/tests/support/AuthTestSupport';
 import {
   creerAffectationUtilisateur,
-  creerRole,
   reinitialiserMemoireSecurity,
 } from '../../shared/security/tests/support/SecurityTestSupport';
 import {
@@ -40,6 +39,7 @@ test('les routes globales exposent le login AUTH et la lecture de session', asyn
   });
   contexteTest.after(async () => {
     const pool = obtenirPoolPostgresAuth();
+    await pool.query('DELETE FROM security_affectations_utilisateurs WHERE id_utilisateur = $1', [utilisateur.obtenirId()]);
     await pool.query('DELETE FROM auth_sessions_utilisateurs WHERE id_utilisateur = $1', [utilisateur.obtenirId()]);
     await pool.query('DELETE FROM auth_contextes_actifs WHERE id_utilisateur = $1', [utilisateur.obtenirId()]);
     await pool.query('DELETE FROM auth_tentatives_connexion WHERE email = $1', [email]);
@@ -48,12 +48,9 @@ test('les routes globales exposent le login AUTH et la lecture de session', asyn
   });
   utilisateur.changerMotDePasse(await passwordHashAdapter.hacherMotDePasse('secret-123'));
 
-  const role = creerRole({
-    codeRole: 'ADMINISTRATEUR_ECOLE',
-    nomRole: 'Administrateur Ecole',
-    permissions: ['eleves.read'],
-    niveauAcces: 'ECOLE',
-  });
+  const roleRepository = new PostgresRoleRepository();
+  const role = await roleRepository.trouverParCode('ADMINISTRATEUR_ECOLE');
+  assert.ok(role, 'Le rôle système ADMINISTRATEUR_ECOLE doit être initialisé par la migration Security.');
   const affectation = creerAffectationUtilisateur({
     idUtilisateur: utilisateur.obtenirId(),
     idRole: role.obtenirId(),
@@ -68,7 +65,6 @@ test('les routes globales exposent le login AUTH et la lecture de session', asyn
   await new PostgresContexteActifAuthRepository().sauvegarder(
     creerContexteActifAuth(utilisateur.obtenirId(), 'org-auth-1', 'ecole-auth-1'),
   );
-  await new PostgresRoleRepository().sauvegarder(role);
   await new PostgresAffectationUtilisateurRepository().sauvegarder(affectation);
 
   const serveur = Fastify();
