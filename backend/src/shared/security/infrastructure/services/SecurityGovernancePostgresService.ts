@@ -50,6 +50,7 @@ interface AffectationAdminRow {
   niveau_acces: NiveauGouvernance;
   id_organisation: string | null;
   id_ecole: string | null;
+  etat_affectation: 'ACTIVE' | 'INACTIVE' | 'EXPIREE';
 }
 
 const ROLES_ADMIN_PAR_NIVEAU: Readonly<Record<NiveauGouvernance, string>> = {
@@ -268,7 +269,9 @@ export class SecurityGovernancePostgresService {
         motDePasseHash: await this.motsDePasse.hacherMotDePasse(input.motDePasseInitial),
       });
       await this.utilisateurs.sauvegarder(utilisateur);
-      const affectation = await this.creerAffectation(utilisateur.obtenirId(), role.obtenirId(), input, contexte.auteurId);
+      const affectation = await this.creerAffectation(
+        utilisateur.obtenirId(), role.obtenirId(), input, contexte.auteurId, input.codeRole,
+      );
       await this.journaliser('COMPTE_CREE', utilisateur.obtenirId(), input, contexte, {
         etat: 'ACTIVE', role: input.codeRole, affectationId: affectation.obtenirId(),
       });
@@ -284,7 +287,9 @@ export class SecurityGovernancePostgresService {
       const role = await this.roles.trouverParCode(input.codeRole);
       if (!role || !role.obtenirEstActif()) throw new SecurityGovernanceError('SECURITY_ROLE_NOT_FOUND', 'Le rôle sélectionné est indisponible.', 422);
       if (role.obtenirNiveauAcces().obtenirValeur() !== input.niveau) throw new SecurityGovernanceError('SECURITY_ROLE_SCOPE_MISMATCH', 'Le rôle ne correspond pas au périmètre.', 422);
-      const affectation = await this.creerAffectation(input.idUtilisateur, role.obtenirId(), input, contexte.auteurId);
+      const affectation = await this.creerAffectation(
+        input.idUtilisateur, role.obtenirId(), input, contexte.auteurId, input.codeRole,
+      );
       await this.journaliser('AFFECTATION_CREEE', input.idUtilisateur, input, contexte, { affectationId: affectation.obtenirId(), role: input.codeRole });
       return this.obtenirCompte(input.idUtilisateur);
     });
@@ -307,6 +312,12 @@ export class SecurityGovernancePostgresService {
     await this.client.dansTransaction(async () => {
       const affectation = await this.chargerAffectationAdmin(idAffectation);
       if (!affectation) throw new SecurityGovernanceError('SECURITY_ASSIGNMENT_NOT_FOUND', 'Affectation introuvable.', 404);
+      await this.verifierAdministrateurEcoleMonoEcole(
+        affectation.id_utilisateur,
+        affectation.code_role,
+        affectation.id_ecole ?? undefined,
+        idAffectation,
+      );
       const conflit = await this.client.executer<{ existe: boolean }>(`
         SELECT EXISTS(
           SELECT 1 FROM security_affectations_utilisateurs
@@ -413,6 +424,52 @@ export class SecurityGovernancePostgresService {
         niveau: affectation.niveau_acces, organisationId: affectation.id_organisation ?? undefined,
         ecoleId: affectation.id_ecole ?? undefined,
       }, contexte, { affectationId: idAffectation, role: affectation.code_role });
+    });
+  }
+
+  public async ajouterScope(
+    idAffectation: string,
+    typeScope: string,
+    valeurScope: string,
+    estLectureSeule: boolean,
+    contexte: ContexteMutation,
+  ): Promise<Record<string, unknown>> {
+    this.texte(contexte.motif, 'motif');
+    const type = this.texte(typeScope, 'type de perimetre');
+    const valeur = this.texte(valeurScope, 'valeur du perimetre');
+    const typesAutorises = ['PLATEFORME', 'ORGANISATION', 'ECOLE', 'SECTION', 'CLASSE', 'COURS'];
+    if (!typesAutorises.includes(type)) {
+      throw new SecurityGovernanceError('SECURITY_SCOPE_TYPE_INVALID', 'Le type de perimetre est invalide.', 422);
+    }
+
+    return this.client.dansTransaction(async () => {
+      await this.client.executer('SELECT pg_advisory_xact_lock(hashtext($1))', [`security-assignment-scope:${idAffectation}`]);
+      const portee = await this.chargerAffectationAdmin(idAffectation);
+      if (!portee) throw new SecurityGovernanceError('SECURITY_ASSIGNMENT_NOT_FOUND', 'Affectation introuvable.', 404);
+      if (portee.etat_affectation !== 'ACTIVE') {
+        throw new SecurityGovernanceError('SECURITY_ASSIGNMENT_INACTIVE', 'Cette affectation n est pas active.', 409);
+      }
+      await this.verifierCoherenceScope(portee, type, valeur);
+
+      const doublon = await this.client.executer<{ existe: boolean }>(`
+        SELECT EXISTS(
+          SELECT 1 FROM security_scopes_acces
+          WHERE id_affectation_utilisateur=$1 AND type_scope=$2 AND valeur_scope=$3
+        ) AS existe`, [idAffectation, type, valeur]);
+      if (doublon.lignes[0]?.existe) {
+        throw new SecurityGovernanceError('SECURITY_SCOPE_CONFLICT', 'Ce perimetre est deja rattache a cette affectation.', 409);
+      }
+
+      const affectation = await this.affectations.trouverParId(idAffectation);
+      if (!affectation) throw new SecurityGovernanceError('SECURITY_ASSIGNMENT_NOT_FOUND', 'Affectation introuvable.', 404);
+      affectation.ajouterScope(type, valeur, Boolean(estLectureSeule));
+      await this.affectations.sauvegarder(affectation);
+      await this.journaliser('SCOPE_AJOUTE', portee.id_utilisateur, {
+        niveau: portee.niveau_acces,
+        organisationId: portee.id_organisation ?? undefined,
+        ecoleId: portee.id_ecole ?? undefined,
+      }, contexte, { affectationId: idAffectation, typeScope: type, valeurScope: valeur, estLectureSeule: Boolean(estLectureSeule) });
+      return { typeScope: type, valeurScope: valeur, estLectureSeule: Boolean(estLectureSeule) };
     });
   }
 
@@ -581,7 +638,8 @@ export class SecurityGovernancePostgresService {
 
   private async creerAffectation(idUtilisateur: string, idRole: string, input: {
     niveau: NiveauGouvernance; organisationId?: string; ecoleId?: string;
-  }, auteurId: string): Promise<AffectationUtilisateur> {
+  }, auteurId: string, codeRole: string): Promise<AffectationUtilisateur> {
+    await this.verifierAdministrateurEcoleMonoEcole(idUtilisateur, codeRole, input.ecoleId);
     const existante = await this.client.executer<{ id: string }>(`
       SELECT id_affectation_utilisateur AS id FROM security_affectations_utilisateurs
       WHERE id_utilisateur=$1 AND id_role=$2 AND COALESCE(id_organisation,'')=COALESCE($3,'')
@@ -598,6 +656,46 @@ export class SecurityGovernancePostgresService {
     return affectation;
   }
 
+  private async verifierAdministrateurEcoleMonoEcole(
+    idUtilisateur: string,
+    codeRole: string,
+    ecoleId?: string,
+    idAffectationIgnoree?: string,
+  ): Promise<void> {
+    if (codeRole !== 'ADMIN_SYSTEME_ECOLE') return;
+    if (!ecoleId) {
+      throw new SecurityGovernanceError(
+        'SECURITY_SCHOOL_REQUIRED',
+        'Selectionnez une ecole pour cet administrateur.',
+        422,
+      );
+    }
+    await this.client.executer(
+      'SELECT pg_advisory_xact_lock(hashtext($1))',
+      [`security-school-admin-account:${idUtilisateur}`],
+    );
+    const conflit = await this.client.executer<{ existe: boolean }>(`
+      SELECT EXISTS(
+        SELECT 1
+        FROM security_affectations_utilisateurs a
+        JOIN security_roles r ON r.id_role=a.id_role
+        WHERE a.id_utilisateur=$1
+          AND r.code_role='ADMIN_SYSTEME_ECOLE'
+          AND a.etat_affectation='ACTIVE'
+          AND a.id_ecole<>$2
+          AND ($3::text IS NULL OR a.id_affectation_utilisateur<>$3)
+      ) AS existe`,
+      [idUtilisateur, ecoleId, idAffectationIgnoree ?? null],
+    );
+    if (conflit.lignes[0]?.existe) {
+      throw new SecurityGovernanceError(
+        'SECURITY_SCHOOL_ADMIN_SINGLE_SCOPE',
+        'Ce compte administre deja une autre ecole. Choisissez un autre compte.',
+        409,
+      );
+    }
+  }
+
   private async verifierContexte(niveau: NiveauGouvernance, organisationId?: string, ecoleId?: string): Promise<void> {
     if (niveau === 'PLATEFORME') {
       if (organisationId || ecoleId) throw new SecurityGovernanceError('SECURITY_PLATFORM_CONTEXT_INVALID', 'Une affectation Plateforme ne dépend pas d’une organisation ou d’une école.', 422);
@@ -612,6 +710,37 @@ export class SecurityGovernancePostgresService {
       if (!ecole.lignes[0]?.existe) throw new SecurityGovernanceError('SECURITY_SCHOOL_SCOPE_INVALID', 'Cette école n’appartient pas à l’organisation sélectionnée.', 404);
     } else if (ecoleId) {
       throw new SecurityGovernanceError('SECURITY_ORGANIZATION_CONTEXT_INVALID', 'Une affectation Organisation ne doit pas recevoir de périmètre École.', 422);
+    }
+  }
+
+  private async verifierCoherenceScope(
+    affectation: AffectationAdminRow,
+    typeScope: string,
+    valeurScope: string,
+  ): Promise<void> {
+    if (typeScope === 'PLATEFORME') {
+      if (affectation.niveau_acces !== 'PLATEFORME' || valeurScope !== 'system') {
+        throw new SecurityGovernanceError('SECURITY_SCOPE_MISMATCH', 'Ce perimetre ne correspond pas a l affectation.', 422);
+      }
+      return;
+    }
+    if (typeScope === 'ORGANISATION') {
+      if (!affectation.id_organisation || affectation.id_organisation !== valeurScope) {
+        throw new SecurityGovernanceError('SECURITY_SCOPE_MISMATCH', 'Cette organisation ne correspond pas a l affectation.', 422);
+      }
+      return;
+    }
+    if (typeScope === 'ECOLE') {
+      if (!affectation.id_organisation) {
+        throw new SecurityGovernanceError('SECURITY_SCOPE_MISMATCH', 'Une ecole doit appartenir au perimetre de l affectation.', 422);
+      }
+      const ecole = await this.client.executer<{ existe: boolean }>(`
+        SELECT EXISTS(
+          SELECT 1 FROM ecoles WHERE id::text=$1 AND id_organisation::text=$2
+        ) AS existe`, [valeurScope, affectation.id_organisation]);
+      if (!ecole.lignes[0]?.existe || (affectation.id_ecole && affectation.id_ecole !== valeurScope)) {
+        throw new SecurityGovernanceError('SECURITY_SCOPE_MISMATCH', 'Cette ecole ne correspond pas au perimetre de l affectation.', 422);
+      }
     }
   }
 
@@ -642,7 +771,8 @@ export class SecurityGovernancePostgresService {
 
   private async chargerAffectationAdmin(idAffectation: string): Promise<AffectationAdminRow | null> {
     const resultat = await this.client.executer<AffectationAdminRow>(`
-      SELECT a.id_affectation_utilisateur,a.id_utilisateur,r.code_role,a.niveau_acces,a.id_organisation,a.id_ecole
+      SELECT a.id_affectation_utilisateur,a.id_utilisateur,r.code_role,a.niveau_acces,a.id_organisation,a.id_ecole,
+        a.etat_affectation
       FROM security_affectations_utilisateurs a JOIN security_roles r ON r.id_role=a.id_role
       WHERE a.id_affectation_utilisateur=$1`, [idAffectation]);
     return resultat.lignes[0] ?? null;

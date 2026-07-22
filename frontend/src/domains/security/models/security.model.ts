@@ -112,6 +112,7 @@ export interface SecurityScopeCreatePayload {
   typeScope: string;
   valeurScope: string;
   estLectureSeule?: boolean;
+  motif: string;
 }
 
 export interface SecurityTitulariatCreatePayload {

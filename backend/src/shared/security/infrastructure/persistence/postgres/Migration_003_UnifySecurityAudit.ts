@@ -7,7 +7,7 @@ export class Migration_003_UnifySecurityAudit implements MigrationPostgresSecuri
 
   public async executer(client: PoolClient): Promise<void> {
     const legacy = await client.query<{ existe: string | null }>(
-      "SELECT to_regclass('public.security_audit_events')::text AS existe",
+      "SELECT to_regclass('security_audit_events')::text AS existe",
     );
     if (!legacy.rows[0]?.existe) return;
     await client.query(`

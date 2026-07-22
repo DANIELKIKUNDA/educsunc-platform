@@ -71,6 +71,15 @@ jobs:
       - name: Executer les tests globaux backend
         run: npm run test:global
 
+      - name: Executer les tests du moteur de securite
+        run: npm run test:security
+
+      - name: Certifier la persistance PostgreSQL de la securite
+        run: npm run security:certify:postgres
+
+      - name: Certifier la gouvernance et l isolation multi-tenant
+        run: npm run security:certify:governance
+
       - name: Executer les tests backend
         run: npm run test:ci
 
@@ -100,3 +109,71 @@ jobs:
 
       - name: Executer les tests frontend
         run: npm test
+
+  security-certification:
+    name: Certification Centre Securite
+    needs:
+      - backend
+      - frontend
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: educsyn
+          POSTGRES_PASSWORD: educsyn
+          POSTGRES_DB: educsyn
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U educsyn -d educsyn"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      APP_ENV: test
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_USER: educsyn
+      DB_PASSWORD: educsyn
+      DB_NAME: educsyn
+      DATABASE_URL: postgres://educsyn:educsyn@localhost:5432/educsyn
+      EDUCSYN_JWT_SECRET: ci-only-secret-longer-than-thirty-two-characters
+      SECURITY_CERT_SKIP_STATIC: "1"
+
+    steps:
+      - name: Recuperer le code
+        uses: actions/checkout@v5
+
+      - name: Installer Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+
+      - name: Installer les dependances backend
+        working-directory: backend
+        run: npm ci
+
+      - name: Installer les dependances frontend
+        working-directory: frontend
+        run: npm ci
+
+      - name: Installer Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+
+      - name: Certifier le Centre Securite
+        working-directory: backend
+        run: npm run certification:security
+
+      - name: Conserver les preuves de certification
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: certification-centre-securite
+          path: artifacts/security-production-certification
+          if-no-files-found: warn

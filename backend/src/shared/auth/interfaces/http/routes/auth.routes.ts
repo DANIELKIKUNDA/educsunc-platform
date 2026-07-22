@@ -11,6 +11,16 @@ interface FastifyRequestAuthEnrichie extends FastifyRequest {
 }
 
 const DUREE_COOKIE_PERSISTANT_SECONDES = 10 * 365 * 24 * 60 * 60;
+const LIMITE_CONNEXIONS_PAR_COMPTE_PAR_MINUTE = 5;
+const LIMITE_CONNEXIONS_PAR_ADRESSE_PAR_MINUTE = 30;
+
+function lireEmailConnexion(corps: unknown): string | null {
+  if (typeof corps !== 'object' || corps === null) return null;
+  const email = (corps as Record<string, unknown>).email;
+  return typeof email === 'string' && email.trim()
+    ? email.trim().toLocaleLowerCase('fr')
+    : null;
+}
 
 function lireSouvenirDeMoi(corps: unknown): boolean {
   return typeof corps === 'object' && corps !== null
@@ -73,7 +83,19 @@ export const creerRoutesAuth = (dependances: DependancesRoutesAuth): FastifyPlug
 
   serveur.post('/auth/login', (requete, reponse) =>
     executer(reponse, async () => {
-      dependances.rateLimitMiddleware.verifier(`login:${requete.ip}`, 5, 60_000);
+      const email = lireEmailConnexion(requete.body);
+      dependances.rateLimitMiddleware.verifier(
+        `login:ip:${requete.ip}`,
+        LIMITE_CONNEXIONS_PAR_ADRESSE_PAR_MINUTE,
+        60_000,
+      );
+      if (email) {
+        dependances.rateLimitMiddleware.verifier(
+          `login:compte:${email}`,
+          LIMITE_CONNEXIONS_PAR_COMPTE_PAR_MINUTE,
+          60_000,
+        );
+      }
       const resultat = await dependances.loginController.login(requete.body, requete.headers);
       const donnee = resultat.donnee as Record<string, unknown>;
       appliquerCookiesAuth(reponse, donnee, lireSouvenirDeMoi(requete.body));

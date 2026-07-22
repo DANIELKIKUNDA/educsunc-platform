@@ -625,14 +625,17 @@ export const routeSecurity: PluginRoutesSecurity = Object.assign(
     });
 
     serveur.post('/api/v1/security/affectations/:idAffectationUtilisateur/scopes', async (requete, reponse) => {
-      if (!(await verifierAccesRouteSecurity(requete, reponse, 'utilisateurs.write'))) {
+      if (!(await verifierAccesRouteSecurity(requete, reponse, 'security.assignments.write'))) {
         return;
       }
-      await executerRouteSecurity(
-        reponse,
-        () => affectationUtilisateurController.ajouterScope((requete.params as Record<string, string>).idAffectationUtilisateur, requete.body),
-        201,
-      );
+      const corps = lireObjet(requete.body);
+      await executerGouvernance(reponse, () => securityGovernance.ajouterScope(
+        (requete.params as Record<string, string>).idAffectationUtilisateur,
+        lireTexte(corps, 'typeScope') ?? '',
+        lireTexte(corps, 'valeurScope') ?? '',
+        corps.estLectureSeule === true,
+        contexteMutation(requete, corps),
+      ), 201);
     });
 
     serveur.delete('/api/v1/security/affectations/:idAffectationUtilisateur/scopes/:typeScope/:valeurScope', async (requete, reponse) => {

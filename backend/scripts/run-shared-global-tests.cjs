@@ -37,6 +37,10 @@ for (const specFile of specFiles) {
   const result = spawnSync(process.execPath, [tsxCliPath, '--test', specPath], {
     stdio: 'inherit',
     cwd: projectRoot,
+    env: {
+      ...process.env,
+      APP_ENV: 'test',
+    },
   });
 
   if (typeof result.status !== 'number') {

@@ -31,11 +31,16 @@ const pluginsGlobaux = [
   journalisationPlugin,
 ];
 
+const originesFrontendSupplementaires = String(
+  process.env.EDUCSYN_CORS_ADDITIONAL_ORIGINS ?? '',
+).split(',').map((origine) => origine.trim()).filter((origine) => /^https?:\/\/[a-z0-9.-]+(?::\d+)?$/iu.test(origine));
+
 const originesFrontendAutorisees = new Set([
   'http://localhost:5173',
   'http://127.0.0.1:5173',
   'http://localhost:4174',
   'http://127.0.0.1:4174',
+  ...originesFrontendSupplementaires,
 ]);
 
 export const methodesCorsFrontend = 'GET,POST,PUT,PATCH,DELETE,OPTIONS';

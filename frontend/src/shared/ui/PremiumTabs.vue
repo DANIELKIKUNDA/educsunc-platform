@@ -104,7 +104,7 @@ defineEmits<{
   outline-offset:3px;
 }
 
-@media (max-width: 900px){
+@media (max-width: 1100px){
   .premium-tabs{
     justify-content:flex-start;
     padding-inline:0;
