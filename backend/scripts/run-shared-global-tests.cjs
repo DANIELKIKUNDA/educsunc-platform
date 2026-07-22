@@ -1,16 +1,10 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
+require('./load-optional-local-env.cjs');
 
 // Ce script lance tous les tests globaux du backend places dans src/tests.
 const projectRoot = path.join(__dirname, '..');
-const localEnvironmentPath = path.join(projectRoot, '.env');
-
-// En local, les tests d'integration reutilisent la connexion PostgreSQL de
-// l'application. Les variables deja injectees par la CI restent prioritaires.
-if (fs.existsSync(localEnvironmentPath)) {
-  process.loadEnvFile(localEnvironmentPath);
-}
 
 function collectSpecFiles(directory) {
   const entries = fs.readdirSync(directory, { withFileTypes: true });
