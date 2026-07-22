@@ -3,6 +3,15 @@ const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 
 // Ce script lance tous les tests globaux du backend places dans src/tests.
+const projectRoot = path.join(__dirname, '..');
+const localEnvironmentPath = path.join(projectRoot, '.env');
+
+// En local, les tests d'integration reutilisent la connexion PostgreSQL de
+// l'application. Les variables deja injectees par la CI restent prioritaires.
+if (fs.existsSync(localEnvironmentPath)) {
+  process.loadEnvFile(localEnvironmentPath);
+}
+
 function collectSpecFiles(directory) {
   const entries = fs.readdirSync(directory, { withFileTypes: true });
   const files = [];
@@ -24,7 +33,6 @@ function collectSpecFiles(directory) {
 
 const testsRoot = path.join(__dirname, '..', 'src', 'tests');
 const specFiles = collectSpecFiles(testsRoot);
-const projectRoot = path.join(__dirname, '..');
 
 if (specFiles.length === 0) {
   console.error('Aucun test global src/tests n a ete trouve.');

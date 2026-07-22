@@ -7,9 +7,11 @@ La structure prepare le backend stateless, le frontend offline-first et la synch
 
 - Node.js 24
 - npm
-- PostgreSQL 16 pour les validations d'infrastructure du backend
+- PostgreSQL 14 minimum pour le developpement local ; PostgreSQL 16 reste la reference de certification de production
 
 ## Installation locale
+
+Sous Windows, l'environnement recommande est Ubuntu WSL. La procedure certifiee, le chemin du clone Linux et les commandes de demarrage sont decrits dans [docs/architecture/developpement-ubuntu-wsl.md](docs/architecture/developpement-ubuntu-wsl.md).
 
 ```powershell
 cd backend
