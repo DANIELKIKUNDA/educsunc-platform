@@ -309,22 +309,13 @@ export const activeContextStore = {
 
     organizationsState.splice(0, organizationsState.length, ...organisationsReelles);
 
-    if (organisationsReelles.length === 0) {
-      state.organizationId = '';
-      state.organizationName = '';
-      state.schoolId = '';
-      state.schoolName = '';
-      state.sectionName = '';
-      state.schoolYearId = '';
-      state.schoolYearLabel = '';
-      persisterContexteActif();
-      return;
-    }
-
     const organisationActive = organisationsReelles.find(
       (organisation) => organisation.id === state.organizationId,
-    ) ?? organisationsReelles[0];
-    appliquerOrganisationAuContexte(organisationActive, state.schoolId);
+    );
+    if (organisationActive) {
+      state.organizationName = organisationActive.name;
+      persisterContexteActif();
+    }
   },
   remplacerEcolesDepuisBackend(
     organizationId: string,
@@ -345,8 +336,17 @@ export const activeContextStore = {
       })),
     });
 
-    if (state.organizationId === organizationId) {
-      appliquerOrganisationAuContexte(findOrganization(organizationId), state.schoolId);
+    if (state.organizationId === organizationId && state.schoolId) {
+      const ecoleActive = findOrganization(organizationId).schools.find(
+        (ecole) => ecole.id === state.schoolId,
+      );
+      if (ecoleActive) {
+        state.schoolName = ecoleActive.name;
+        state.sectionName = ecoleActive.sectionName;
+        const anneeActive = ecoleActive.years.find((annee) => annee.id === state.schoolYearId);
+        if (anneeActive) state.schoolYearLabel = anneeActive.label;
+        persisterContexteActif();
+      }
     }
   },
   enregistrerOrganisation(

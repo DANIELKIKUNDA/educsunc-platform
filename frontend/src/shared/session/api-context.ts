@@ -11,6 +11,8 @@ interface PilotageHeaderOptions {
   organisationId?: string;
   ecoleId?: string;
   lectureOrganisationnelle?: boolean;
+  inclureOrganisationActive?: boolean;
+  inclureEcoleActive?: boolean;
 }
 
 function lireVariableEnvironnement(nom: string): string | null {
@@ -105,8 +107,14 @@ export function construireEntetesPilotageActif(
   contexte: SharedApiContext,
   options?: PilotageHeaderOptions,
 ): Record<string, string> {
-  const organisationId = prefererValeur(options?.organisationId, contexte.organisationId);
-  const ecoleId = prefererValeur(options?.ecoleId, contexte.ecoleId);
+  const organisationId = prefererValeur(
+    options?.organisationId,
+    options?.inclureOrganisationActive === false ? null : contexte.organisationId,
+  );
+  const ecoleId = prefererValeur(
+    options?.ecoleId,
+    options?.inclureEcoleActive === false ? null : contexte.ecoleId,
+  );
 
   if (contexte.utilisateurId === null) {
     throw new Error(

@@ -31,7 +31,7 @@ export function useOrganizationDetailViewModel() {
   const historiqueOrganisation = ref<readonly OrganisationHistoryItem[]>([]);
   const moduleCatalog = ref<readonly ConfigurationModuleCatalogItem[]>(configurationModuleCatalog);
   const modulesDraft = ref<ConfigurationModuleCode[]>([]);
-  const modulesStatus = ref<'idle' | 'loading' | 'ready' | 'error'>('idle');
+  const modulesStatus = ref<'idle' | 'loading' | 'ready' | 'error'>('loading');
   const modulesMutationStatus = ref<'idle' | 'loading'>('idle');
   const modulesErrorMessage = ref<string | null>(null);
   const modulesConfirmDialogOpen = ref(false);
@@ -100,6 +100,8 @@ export function useOrganizationDetailViewModel() {
       return;
     }
 
+    modulesStatus.value = 'loading';
+    modulesErrorMessage.value = null;
     await store.chargerOrganisation(organisationId.value);
     await store.chargerEcolesParOrganisation(organisationId.value, 1, 20);
     schoolCount.value = store.state.ecolesPagination?.total ?? store.state.ecoles.length;

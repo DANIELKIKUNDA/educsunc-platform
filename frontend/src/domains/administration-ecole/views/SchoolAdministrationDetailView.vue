@@ -75,12 +75,13 @@
           <section class="school-detail__card">
             <div class="school-detail__section-heading"><div><small>Services disponibles</small><h2>Modules de l’école</h2></div><button v-if="canManageModules" type="button" @click="openModal('modules')">Gérer les modules</button></div>
             <div v-if="modulesLoading" class="school-detail__module-skeleton">Lecture des modules…</div>
-            <div v-else-if="modulesErrorMessage" class="school-detail__inline-error">{{ modulesErrorMessage }} <button type="button" @click="loadModules">Réessayer</button></div>
-            <div v-else class="school-detail__module-columns">
+            <div v-else-if="modulesLoadErrorMessage" class="school-detail__inline-error">{{ modulesLoadErrorMessage }} <button type="button" @click="loadModules">Réessayer</button></div>
+            <div v-else-if="modulesAllowed.length" class="school-detail__module-columns">
               <ModuleGroup title="Autorisés par l’organisation" :items="moduleGroups.allowed" empty-message="Aucun module autorisé." />
               <ModuleGroup title="Activés pour l’école" :items="moduleGroups.enabled" empty-message="Aucun module activé." tone="active" />
               <ModuleGroup title="Disponibles à activer" :items="moduleGroups.available" empty-message="Tous les modules autorisés sont déjà activés." tone="available" />
             </div>
+            <EmptyState v-else title="Aucun module disponible" message="L’organisation n’a encore autorisé aucun module pour cette école." />
           </section>
         </div>
 
@@ -136,10 +137,14 @@
       </SchoolActionModal>
 
       <SchoolActionModal :open="activeModal === 'modules'" title="Gérer les modules de l’école" description="Activez uniquement les modules préalablement autorisés par l’organisation." submit-label="Enregistrer les changements" :can-submit="canSaveModules" :pending="modulesSaving" :dirty="modulesDirty" @close="closeModal" @discard="closeModal" @submit="saveModules">
-        <div v-if="modulesErrorMessage" class="school-detail__inline-error">{{ modulesErrorMessage }}</div>
-        <div v-if="modulesAllowed.length" class="school-detail__module-picker">
-          <label v-for="module in moduleGroups.allowed" :key="module.code" :class="{ 'is-selected': modulesDraft.includes(module.code) }"><input type="checkbox" :checked="modulesDraft.includes(module.code)" @change="toggleModule(module.code)" /><span><strong>{{ module.label }}</strong>{{ module.description }}</span></label>
-        </div>
+        <div v-if="modulesLoading" class="school-detail__module-skeleton">Lecture des modules…</div>
+        <div v-else-if="modulesLoadErrorMessage" class="school-detail__inline-error">{{ modulesLoadErrorMessage }} <button type="button" @click="loadModules">Réessayer</button></div>
+        <template v-else-if="modulesAllowed.length">
+          <div v-if="modulesSaveErrorMessage" class="school-detail__inline-error">{{ modulesSaveErrorMessage }}</div>
+          <div class="school-detail__module-picker">
+            <label v-for="module in moduleGroups.allowed" :key="module.code" :class="{ 'is-selected': modulesDraft.includes(module.code) }"><input type="checkbox" :checked="modulesDraft.includes(module.code)" @change="toggleModule(module.code)" /><span><strong>{{ module.label }}</strong>{{ module.description }}</span></label>
+          </div>
+        </template>
         <EmptyState v-else title="Aucun module disponible" message="L’organisation doit d’abord autoriser des modules pour cette école." />
       </SchoolActionModal>
 
@@ -165,7 +170,8 @@ import { useSchoolAdministrationDetailViewModel } from '../viewmodels/useSchoolA
 const {
   store, school, organization, canMutateDetail, canManageModules, returnPath, returnLabel,
   activeModal, renameTarget, identityForm, schoolModeOptions, renameEvaluation, modeEvaluation,
-  identityEvaluation, completeness, modulesLoading, modulesSaving, modulesErrorMessage,
+  identityEvaluation, completeness, modulesLoading, modulesSaving,
+  modulesLoadErrorMessage, modulesSaveErrorMessage,
   modulesAllowed, modulesDraft, moduleGroups, modulesDirty, canSaveModules,
   lifecycleModalOpen, lifecycleAction, formatDate, loadModules, openModal, closeModal,
   renameSchool, updateMode, updateInstitutionalInfo, toggleModule, saveModules,

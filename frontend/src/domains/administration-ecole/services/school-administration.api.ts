@@ -35,7 +35,10 @@ function generateIdempotencyKey(prefix: string): string {
 
 function buildReadHeaders() {
   const context = lireContexteApiGouvernancePlateforme();
-  return construireEntetesPilotageActif(context);
+  return construireEntetesPilotageActif(context, {
+    inclureOrganisationActive: false,
+    inclureEcoleActive: false,
+  });
 }
 
 function buildMutationHeaders(prefix: string) {
@@ -45,9 +48,8 @@ function buildMutationHeaders(prefix: string) {
   };
 }
 
-function buildTargetSchoolHeaders(idEcole: string) {
-  const context = lireContexteApiGouvernancePlateforme();
-  return construireEntetesPilotageActif(context, { ecoleId: idEcole });
+function buildTargetSchoolHeaders(_idEcole: string) {
+  return buildReadHeaders();
 }
 
 function buildTargetSchoolMutationHeaders(idEcole: string, prefix: string) {
@@ -72,6 +74,7 @@ export const schoolAdministrationApi = {
       chemin: `/api/organisations/${idOrganisation}/ecoles${buildQueryString({ page, taillePage })}`,
       entetes: construireEntetesPilotageActif(context, {
         organisationId: idOrganisation,
+        inclureEcoleActive: false,
         lectureOrganisationnelle: true,
       }),
     });

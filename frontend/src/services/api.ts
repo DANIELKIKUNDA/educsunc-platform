@@ -22,6 +22,7 @@ export interface RequeteApi {
   entetes?: Record<string, string>;
   authRecovery?: boolean;
   signal?: AbortSignal;
+  cache?: RequestCache;
 }
 
 const baseUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
@@ -95,6 +96,7 @@ async function envoyerAvecReprise<TSortie>(requete: RequeteApi, dejaRejouee: boo
     try {
       reponse = await fetch(`${baseUrl}${requete.chemin}`, {
         method: requete.methode ?? 'GET',
+        cache: requete.cache ?? ((requete.methode ?? 'GET') === 'GET' ? 'no-store' : 'default'),
         credentials: 'include',
         headers: {
           Accept: 'application/json',

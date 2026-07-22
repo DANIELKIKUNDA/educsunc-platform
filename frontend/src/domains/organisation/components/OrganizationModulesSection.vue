@@ -45,6 +45,8 @@
           <div class="org-modules__checkbox">
             <input
               :checked="modelValue.includes(card.code)"
+              :value="card.code"
+              :data-module-code="card.code"
               type="checkbox"
               :disabled="card.disabled || saveBusy"
               @change="mettreAJourSelection(card.code, ($event.target as HTMLInputElement).checked)"

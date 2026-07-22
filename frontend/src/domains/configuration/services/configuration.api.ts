@@ -92,24 +92,24 @@ function construireEntetesPorteeConfiguration(
   if (
     scope.niveau === 'ORGANIZATION'
     && scope.organisationId
-    && contexte.ecoleId === null
   ) {
     return construireEntetesPilotageActif(lireContexteApiPlateformeGlobal(), {
       organisationId: scope.organisationId,
       lectureOrganisationnelle: true,
+      inclureEcoleActive: false,
     });
   }
 
-  if (
-    scope.niveau === 'SCHOOL'
-    && scope.organisationId
-    && scope.ecoleId
-    && contexte.ecoleId === null
-  ) {
-    return construireEntetesPilotageActif(lireContexteApiPlateformeGlobal(), {
-      organisationId: scope.organisationId,
-      ecoleId: scope.ecoleId,
-    });
+  if (scope.niveau === 'SCHOOL' && scope.organisationId && scope.ecoleId) {
+    if (contexte.ecoleId === null) {
+      return construireEntetesPilotageActif(lireContexteApiPlateformeGlobal(), {
+        inclureOrganisationActive: false,
+        inclureEcoleActive: false,
+      });
+    }
+
+    // Les acteurs d'une ecole restent strictement bornes par leur contexte de session.
+    return construireEntetesContexte(contexte);
   }
 
   return construireEntetesContexte(contexte);
@@ -128,6 +128,10 @@ function construireEntetesMutation(
 
 export function lireContexteApiConfiguration(): ConfigurationApiContext {
   return lireContexteApiActif();
+}
+
+export function lireContexteApiConfigurationPlateforme(): ConfigurationApiContext {
+  return lireContexteApiPlateformeGlobal();
 }
 
 export const configurationApi = {

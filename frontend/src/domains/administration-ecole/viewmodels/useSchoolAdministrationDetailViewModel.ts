@@ -6,7 +6,10 @@ import {
   type ConfigurationModuleCatalogItem,
   type ConfigurationModuleCode,
 } from '../../configuration/models/configuration.model';
-import { configurationApi, lireContexteApiConfiguration } from '../../configuration/services/configuration.api';
+import {
+  configurationApi,
+  lireContexteApiConfigurationPlateforme,
+} from '../../configuration/services/configuration.api';
 import { schoolModeOptions, type SchoolModeValue } from '../models/school-administration.model';
 import { useSchoolAdministrationStore } from '../stores/school-administration.store';
 import {
@@ -29,7 +32,8 @@ export function useSchoolAdministrationDetailViewModel() {
   const lifecycleAction = ref<LifecycleAction>('activate');
   const modulesLoading = ref(false);
   const modulesSaving = ref(false);
-  const modulesErrorMessage = ref<string | null>(null);
+  const modulesLoadErrorMessage = ref<string | null>(null);
+  const modulesSaveErrorMessage = ref<string | null>(null);
   const modulesAllowed = ref<ConfigurationModuleCode[]>([]);
   const modulesEnabled = ref<ConfigurationModuleCode[]>([]);
   const modulesDraft = ref<ConfigurationModuleCode[]>([]);
@@ -131,13 +135,14 @@ export function useSchoolAdministrationDetailViewModel() {
   async function loadModules(): Promise<void> {
     if (!school.value) return resetModules();
     modulesLoading.value = true;
-    modulesErrorMessage.value = null;
+    modulesLoadErrorMessage.value = null;
     try {
+      const contextePlateforme = lireContexteApiConfigurationPlateforme();
       const [catalogueResponse, resolution] = await Promise.all([
-        configurationApi.consulterCatalogueModules(lireContexteApiConfiguration()),
+        configurationApi.consulterCatalogueModules(contextePlateforme),
         configurationApi.resoudreModulesEffectifs(
           { organisationId: school.value.idOrganisation, ecoleId: school.value.id },
-          lireContexteApiConfiguration(),
+          contextePlateforme,
         ),
       ]);
       moduleCatalog.value = catalogueResponse.donnees.modules.length > 0
@@ -149,7 +154,7 @@ export function useSchoolAdministrationDetailViewModel() {
       modulesEffective.value = [...resolution.donnees.modulesEffectifs];
     } catch {
       resetModules();
-      modulesErrorMessage.value = 'Les modules de cette école ne peuvent pas être affichés pour le moment.';
+      modulesLoadErrorMessage.value = 'Les modules de cette école ne peuvent pas être affichés pour le moment.';
     } finally {
       modulesLoading.value = false;
     }
@@ -166,6 +171,7 @@ export function useSchoolAdministrationDetailViewModel() {
     renameTarget.value = school.value?.nom ?? '';
     syncFormFromSchool();
     modulesDraft.value = [...modulesEnabled.value];
+    modulesSaveErrorMessage.value = null;
     activeModal.value = modal;
   }
 
@@ -207,17 +213,17 @@ export function useSchoolAdministrationDetailViewModel() {
   async function saveModules(): Promise<void> {
     if (!school.value || !canSaveModules.value) return;
     modulesSaving.value = true;
-    modulesErrorMessage.value = null;
+    modulesSaveErrorMessage.value = null;
     try {
       await configurationApi.configurerModulesEcole(
         school.value.id,
         { organisationId: school.value.idOrganisation, modules: modulesDraft.value },
-        lireContexteApiConfiguration(),
+        lireContexteApiConfigurationPlateforme(),
       );
       await loadModules();
       closeModal();
     } catch {
-      modulesErrorMessage.value = 'Les changements n’ont pas pu être enregistrés. Votre sélection est conservée.';
+      modulesSaveErrorMessage.value = 'Les changements n’ont pas pu être enregistrés. Votre sélection est conservée.';
     } finally {
       modulesSaving.value = false;
     }
@@ -253,7 +259,8 @@ export function useSchoolAdministrationDetailViewModel() {
   return {
     store, school, organization, canMutateDetail, canManageModules, returnPath, returnLabel,
     activeModal, renameTarget, identityForm, schoolModeOptions, renameEvaluation, modeEvaluation,
-    identityEvaluation, completeness, modulesLoading, modulesSaving, modulesErrorMessage,
+    identityEvaluation, completeness, modulesLoading, modulesSaving,
+    modulesLoadErrorMessage, modulesSaveErrorMessage,
     modulesAllowed, modulesDraft, moduleGroups, modulesDirty, canSaveModules,
     lifecycleModalOpen, lifecycleAction, formatDate, load, loadModules, openModal, closeModal,
     renameSchool, updateMode, updateInstitutionalInfo, toggleModule, saveModules,

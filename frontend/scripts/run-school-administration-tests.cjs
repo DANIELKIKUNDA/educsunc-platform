@@ -220,14 +220,17 @@ test("le formulaire contextualise verrouille l organisation parente", () => {
   assert.match(modal, /:disabled="organizationLocked"/);
 });
 
-test("les lectures et mutations d une ecole transmettent son perimetre explicite", () => {
+test("les lectures et mutations Plateforme n usurpent jamais le contexte de l ecole consultee", () => {
   const service = fs.readFileSync(
     path.resolve(__dirname, '..', 'src/domains/administration-ecole/services/school-administration.api.ts'),
     'utf8',
   );
 
-  assert.match(service, /function buildTargetSchoolHeaders\(idEcole: string\)/);
-  assert.match(service, /construireEntetesPilotageActif\(context, \{ ecoleId: idEcole \}\)/);
+  assert.match(service, /function buildTargetSchoolHeaders\(_idEcole: string\)/);
+  assert.match(service, /return buildReadHeaders\(\)/);
+  assert.equal(service.includes('{ ecoleId: idEcole }'), false);
+  assert.match(service, /inclureOrganisationActive: false/);
+  assert.match(service, /inclureEcoleActive: false/);
   assert.match(service, /entetes: buildTargetSchoolHeaders\(idEcole\)/);
   assert.equal(
     (service.match(/buildTargetSchoolMutationHeaders\(idEcole,/g) ?? []).length,
@@ -235,14 +238,16 @@ test("les lectures et mutations d une ecole transmettent son perimetre explicite
   );
 });
 
-test("le contexte remplace les organisations de demonstration par les donnees reelles", () => {
+test("la lecture des catalogues remplace les demonstrations sans changer le contexte actif", () => {
   const contextStore = fs.readFileSync(
     path.resolve(__dirname, '..', 'src/shared/session/active-context.store.ts'),
     'utf8',
   );
 
   assert.match(contextStore, /organizationsState\.splice\(0, organizationsState\.length, \.\.\.organisationsReelles\)/);
-  assert.match(contextStore, /appliquerOrganisationAuContexte\(organisationActive, state\.schoolId\)/);
+  assert.equal(contextStore.includes('?? organisationsReelles[0]'), false);
+  assert.equal(contextStore.includes('appliquerOrganisationAuContexte(organisationActive, state.schoolId)'), false);
+  assert.match(contextStore, /state\.organizationName = organisationActive\.name/);
 });
 
 test("tous les acces Voir convergent vers la fiche canonique administration ecole", () => {
@@ -299,4 +304,49 @@ test("la fiche distingue les modules autorises, actives et disponibles", () => {
   assert.match(viewModel, /modulesEffectifs/);
   assert.match(viewModel, /configuration\.modules\.school\.write/);
   assert.match(viewModel, /Votre sélection est conservée/);
+});
+
+test("l attribution des modules attend sa lecture et isole le contexte organisation cible", () => {
+  const organizationViewModel = fs.readFileSync(
+    path.resolve(__dirname, '..', 'src/domains/organisation/viewmodels/useOrganizationDetailViewModel.ts'),
+    'utf8',
+  );
+  const configurationApi = fs.readFileSync(
+    path.resolve(__dirname, '..', 'src/domains/configuration/services/configuration.api.ts'),
+    'utf8',
+  );
+  const modulesSection = fs.readFileSync(
+    path.resolve(__dirname, '..', 'src/domains/organisation/components/OrganizationModulesSection.vue'),
+    'utf8',
+  );
+
+  assert.match(organizationViewModel, /modulesStatus = ref<[^>]+>\('loading'\)/);
+  assert.match(organizationViewModel, /modulesStatus\.value = 'loading'/);
+  assert.match(configurationApi, /scope\.niveau === 'ORGANIZATION'[\s\S]*organisationId: scope\.organisationId,[\s\S]*lectureOrganisationnelle: true,[\s\S]*inclureEcoleActive: false/);
+  assert.match(configurationApi, /scope\.niveau === 'SCHOOL' && scope\.organisationId && scope\.ecoleId/);
+  assert.match(configurationApi, /contexte\.ecoleId === null[\s\S]*inclureOrganisationActive: false,[\s\S]*inclureEcoleActive: false/);
+  assert.equal(
+    /scope\.niveau === 'SCHOOL'[\s\S]{0,500}organisationId: scope\.organisationId,[\s\S]{0,200}ecoleId: scope\.ecoleId/.test(configurationApi),
+    false,
+  );
+  assert.match(modulesSection, /:data-module-code="card\.code"/);
+});
+
+test("la fiche ecole isole la cible metier du contexte et affiche un seul etat de modules", () => {
+  const viewModel = fs.readFileSync(
+    path.resolve(__dirname, '..', 'src/domains/administration-ecole/viewmodels/useSchoolAdministrationDetailViewModel.ts'),
+    'utf8',
+  );
+  const view = fs.readFileSync(
+    path.resolve(__dirname, '..', 'src/domains/administration-ecole/views/SchoolAdministrationDetailView.vue'),
+    'utf8',
+  );
+
+  assert.match(viewModel, /lireContexteApiConfigurationPlateforme/);
+  assert.match(viewModel, /modulesLoadErrorMessage/);
+  assert.match(viewModel, /modulesSaveErrorMessage/);
+  assert.equal(viewModel.includes('modulesErrorMessage'), false);
+  assert.match(view, /v-else-if="modulesLoadErrorMessage"/);
+  assert.match(view, /v-else-if="modulesAllowed\.length"/);
+  assert.equal(view.includes('v-if="modulesErrorMessage"'), false);
 });

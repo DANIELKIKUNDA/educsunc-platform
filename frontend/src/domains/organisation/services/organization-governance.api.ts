@@ -40,7 +40,10 @@ function genererIdempotencyKey(prefixe: string): string {
 function construireEntetesLecture() {
   const contexte = lireContexteApiGouvernancePlateforme();
 
-  return construireEntetesPilotageActif(contexte);
+  return construireEntetesPilotageActif(contexte, {
+    inclureOrganisationActive: false,
+    inclureEcoleActive: false,
+  });
 }
 
 function construireEntetesMutation(prefixe: string) {
@@ -131,17 +134,16 @@ export const organizationGovernanceApi = {
       chemin: `/api/organisations/${idOrganisation}/ecoles${construireQueryString({ page, taillePage })}`,
       entetes: construireEntetesPilotageActif(contexte, {
         organisationId: idOrganisation,
+        inclureEcoleActive: false,
         lectureOrganisationnelle: true,
       }),
     });
   },
 
   async consulterEcole(idEcole: string) {
-    const contexte = lireContexteApiGouvernancePlateforme();
-
     return clientApi.envoyer<DetailResponse<EcoleItem>>({
       chemin: `/api/ecoles/${idEcole}`,
-      entetes: construireEntetesPilotageActif(contexte),
+      entetes: construireEntetesLecture(),
     });
   },
 
@@ -155,28 +157,24 @@ export const organizationGovernanceApi = {
   },
 
   async renommerEcole(idEcole: string, nouveauNom: string) {
-    const contexte = lireContexteApiGouvernancePlateforme();
-
     return clientApi.envoyer<DetailResponse<EcoleItem>>({
       chemin: `/api/ecoles/${idEcole}/renommer`,
       methode: 'PATCH',
       corps: { nouveauNom },
       entetes: {
-        ...construireEntetesPilotageActif(contexte),
+        ...construireEntetesLecture(),
         'idempotency-key': genererIdempotencyKey('ecole-rename'),
       },
     });
   },
 
   async changerModeExploitationEcole(idEcole: string, nouveauModeExploitation: string) {
-    const contexte = lireContexteApiGouvernancePlateforme();
-
     return clientApi.envoyer<DetailResponse<EcoleItem>>({
       chemin: `/api/ecoles/${idEcole}/changer-mode`,
       methode: 'POST',
       corps: { nouveauModeExploitation },
       entetes: {
-        ...construireEntetesPilotageActif(contexte),
+        ...construireEntetesLecture(),
         'idempotency-key': genererIdempotencyKey('ecole-mode'),
       },
     });
@@ -186,42 +184,36 @@ export const organizationGovernanceApi = {
     idEcole: string,
     payload: InformationsInstitutionnellesPayload,
   ) {
-    const contexte = lireContexteApiGouvernancePlateforme();
-
     return clientApi.envoyer<DetailResponse<EcoleItem>>({
       chemin: `/api/ecoles/${idEcole}/informations-institutionnelles`,
       methode: 'PATCH',
       corps: payload,
       entetes: {
-        ...construireEntetesPilotageActif(contexte),
+        ...construireEntetesLecture(),
         'idempotency-key': genererIdempotencyKey('ecole-institutions'),
       },
     });
   },
 
   async activerEcole(idEcole: string) {
-    const contexte = lireContexteApiGouvernancePlateforme();
-
     return clientApi.envoyer<DetailResponse<EcoleItem>>({
       chemin: `/api/ecoles/${idEcole}/activer`,
       methode: 'POST',
       corps: {},
       entetes: {
-        ...construireEntetesPilotageActif(contexte),
+        ...construireEntetesLecture(),
         'idempotency-key': genererIdempotencyKey('ecole-activate'),
       },
     });
   },
 
   async desactiverEcole(idEcole: string) {
-    const contexte = lireContexteApiGouvernancePlateforme();
-
     return clientApi.envoyer<DetailResponse<EcoleItem>>({
       chemin: `/api/ecoles/${idEcole}/desactiver`,
       methode: 'POST',
       corps: {},
       entetes: {
-        ...construireEntetesPilotageActif(contexte),
+        ...construireEntetesLecture(),
         'idempotency-key': genererIdempotencyKey('ecole-deactivate'),
       },
     });
