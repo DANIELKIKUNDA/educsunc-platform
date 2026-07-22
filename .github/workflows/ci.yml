@@ -74,6 +74,9 @@ jobs:
       - name: Executer les tests du moteur de securite
         run: npm run test:security
 
+      - name: Initialiser le schema des organisations et des ecoles
+        run: npm run db:migrate:referentiel
+
       - name: Certifier la persistance PostgreSQL de la securite
         run: npm run security:certify:postgres
 
