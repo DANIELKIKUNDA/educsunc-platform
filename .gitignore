@@ -25,6 +25,7 @@ backend/.tmp/
 
 # Donnees et preuves locales generees pendant les certifications
 .codex-backups/
+artifacts/
 backend/stockage-local/
 frontend/artifacts/
 tmp_docx_pagesorganisation/
