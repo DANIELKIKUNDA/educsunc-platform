@@ -115,6 +115,7 @@ jobs:
 
   security-certification:
     name: Certification Centre Securite
+    timeout-minutes: 25
     needs:
       - backend
       - frontend

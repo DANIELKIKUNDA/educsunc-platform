@@ -56,6 +56,7 @@ function writeLog(name, content) {
 function spawnLogged(command, args, options, logName) {
   const child = spawn(command, args, {
     ...options,
+    detached: process.platform !== 'win32',
     windowsHide: true,
     stdio: ['ignore', 'pipe', 'pipe'],
   });
@@ -90,8 +91,24 @@ function run(command, args, options = {}) {
   });
 }
 
+function waitForExit(child, timeoutMs) {
+  if (!child || child.exitCode !== null) return Promise.resolve(true);
+  return new Promise((resolve) => {
+    const finish = () => {
+      clearTimeout(timer);
+      child.off('exit', finish);
+      resolve(true);
+    };
+    const timer = setTimeout(() => {
+      child.off('exit', finish);
+      resolve(false);
+    }, timeoutMs);
+    child.once('exit', finish);
+  });
+}
+
 async function stopTree(child) {
-  if (!child || child.exitCode !== null) return;
+  if (!child?.pid) return;
   if (process.platform === 'win32') {
     await new Promise((resolve) => {
       const killer = spawn('taskkill', ['/pid', String(child.pid), '/t', '/f'], { windowsHide: true, stdio: 'ignore' });
@@ -99,7 +116,19 @@ async function stopTree(child) {
       killer.once('error', resolve);
     });
   } else {
-    child.kill('SIGTERM');
+    try {
+      process.kill(-child.pid, 'SIGTERM');
+    } catch (error) {
+      if (error.code !== 'ESRCH') throw error;
+    }
+    if (!(await waitForExit(child, 5000))) {
+      try {
+        process.kill(-child.pid, 'SIGKILL');
+      } catch (error) {
+        if (error.code !== 'ESRCH') throw error;
+      }
+      await waitForExit(child, 2000);
+    }
   }
 }
 

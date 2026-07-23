@@ -41,7 +41,8 @@ defineEmits<{
 <style scoped>
 .premium-tabs{
   display:flex;
-  justify-content:center;
+  /* Keep the first and last tabs reachable when the row is wider than its viewport. */
+  justify-content:safe center;
   gap:.75rem;
   overflow:auto;
   width:100%;

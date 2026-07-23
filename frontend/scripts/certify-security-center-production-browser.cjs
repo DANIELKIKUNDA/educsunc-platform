@@ -42,6 +42,7 @@ const report = phase === 'restart' && fs.existsSync(reportPath)
       scenarios: [], responsiveMatrix: [], telemetry: { consoleErrors: [], expectedHttpRejections: [], requestFailures: [] }, summary: null,
     };
 report.telemetry.expectedHttpRejections ||= [];
+const requestTimeoutMs = 30000;
 
 const save = () => {
   fs.mkdirSync(artifactDir, { recursive: true });
@@ -104,24 +105,30 @@ async function initializeManager(page) {
 
 async function request(page, auth, method, requestPath, body, scope = {}) {
   return page.evaluate(async (input) => {
-    const response = await fetch(`${input.apiUrl}${input.requestPath}`, {
-      method: input.method, credentials: 'include',
-      headers: {
-        Accept: 'application/json', ...(input.body === undefined ? {} : { 'Content-Type': 'application/json' }),
-        ...(input.auth?.accessToken ? { authorization: `Bearer ${input.auth.accessToken}` } : {}),
-        ...(input.auth?.sessionId ? { 'x-session-id': input.auth.sessionId } : {}),
-        ...(input.auth?.userId ? { 'x-user-id': input.auth.userId } : {}),
-        ...(input.auth?.actorCode ? { 'x-role-actif': input.auth.actorCode } : {}),
-        ...(input.scope.organisationId ? { 'x-organisation-id': input.scope.organisationId } : {}),
-        ...(input.scope.ecoleId ? { 'x-ecole-id': input.scope.ecoleId, 'x-tenant-id': input.scope.ecoleId } : {}),
-        'idempotency-key': `security-cert-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-      },
-      body: input.body === undefined ? undefined : JSON.stringify(input.body),
-    });
-    let parsed = null;
-    try { parsed = await response.json(); } catch { parsed = await response.text().catch(() => null); }
-    return { status: response.status, ok: response.ok, body: parsed };
-  }, { apiUrl, auth, method, requestPath, body, scope });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), input.timeoutMs);
+    try {
+      const response = await fetch(`${input.apiUrl}${input.requestPath}`, {
+        method: input.method, credentials: 'include', signal: controller.signal,
+        headers: {
+          Accept: 'application/json', ...(input.body === undefined ? {} : { 'Content-Type': 'application/json' }),
+          ...(input.auth?.accessToken ? { authorization: `Bearer ${input.auth.accessToken}` } : {}),
+          ...(input.auth?.sessionId ? { 'x-session-id': input.auth.sessionId } : {}),
+          ...(input.auth?.userId ? { 'x-user-id': input.auth.userId } : {}),
+          ...(input.auth?.actorCode ? { 'x-role-actif': input.auth.actorCode } : {}),
+          ...(input.scope.organisationId ? { 'x-organisation-id': input.scope.organisationId } : {}),
+          ...(input.scope.ecoleId ? { 'x-ecole-id': input.scope.ecoleId, 'x-tenant-id': input.scope.ecoleId } : {}),
+          'idempotency-key': `security-cert-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        },
+        body: input.body === undefined ? undefined : JSON.stringify(input.body),
+      });
+      let parsed = null;
+      try { parsed = await response.json(); } catch { parsed = await response.text().catch(() => null); }
+      return { status: response.status, ok: response.ok, body: parsed };
+    } finally {
+      clearTimeout(timeout);
+    }
+  }, { apiUrl, auth, method, requestPath, body, scope, timeoutMs: requestTimeoutMs });
 }
 
 async function devSession(page, actorCode, scope = {}, deviceId = `cert-${actorCode}-${Date.now()}`) {
@@ -149,11 +156,13 @@ async function login(page, email, motDePasse, deviceId) {
 
 async function runScenario(id, execute) {
   const result = { id, title: titles[Number(id.slice(4)) - 1], status: 'failed', startedAt: new Date().toISOString(), evidence: null };
+  process.stdout.write(`[${id}] ${result.title}...\n`);
   try { result.evidence = await execute(); result.status = 'passed'; }
   catch (error) { result.error = { message: error.message, stack: error.stack }; }
   result.finishedAt = new Date().toISOString();
   report.scenarios = report.scenarios.filter((entry) => entry.id !== id).concat(result);
   save();
+  process.stdout.write(`[${id}] ${result.status === 'passed' ? 'OK' : 'ECHEC'}\n`);
   if (result.status !== 'passed') throw new Error(`${id} ${result.title}: ${result.error.message}`);
 }
 
@@ -441,6 +450,8 @@ async function runMain(page, manager) {
     report.responsiveMatrix = [];
     for (const width of [1440, 1280, 1024, 768, 430, 390, 360]) {
       await page.setViewportSize({ width, height: 1000 });
+      await page.waitForFunction((expectedWidth) => window.innerWidth === expectedWidth, width);
+      await page.waitForTimeout(100);
       for (const tab of tabs) {
         await openTab(page, tab);
         const measure = await page.evaluate(() => ({ client: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth }));
