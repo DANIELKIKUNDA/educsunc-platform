@@ -51,7 +51,7 @@ async function run() {
     }));
   });
 
-  let original = 'system';
+  let original;
   try {
     await page.goto(route, { waitUntil: 'domcontentloaded', timeout: 120000 });
     await page.getByRole('heading', { name: 'Centre Configuration' }).waitFor({ timeout: 60000 });

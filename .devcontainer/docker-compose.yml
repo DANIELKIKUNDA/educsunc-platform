@@ -1,0 +1,74 @@
+services:
+  workspace:
+    image: mcr.microsoft.com/devcontainers/typescript-node:1-24-bookworm
+    init: true
+    command: sleep infinity
+    environment:
+      APP_ENV: development
+      HOST: 0.0.0.0
+      PORT: 3000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: ""
+      DB_NAME: educsyn
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_URL: redis://redis:6379
+      EDUCSYN_REDIS_MODE: reel
+      EDUCSYN_REDIS_HOST: redis
+      EDUCSYN_REDIS_PORT: 6379
+      EDUCSYN_REDIS_DB: 0
+      EDUCSYN_REDIS_PREFIX: educsyn-codespaces
+      EDUCSYN_RUN_POSTGRES_INTEGRATION: 1
+      VITE_APP_NAME: EduSync
+      VITE_APP_MODE: SYNC
+      VITE_AUTH_ENTRY_MODE: developer
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ..:/workspaces/EducSyn:cached
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: educsyn
+      POSTGRES_USER: postgres
+      POSTGRES_HOST_AUTH_METHOD: trust
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U postgres -d educsyn
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7.4-alpine
+    restart: unless-stopped
+    command:
+      - redis-server
+      - --appendonly
+      - "yes"
+    healthcheck:
+      test:
+        - CMD
+        - redis-cli
+        - ping
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 5s
+    volumes:
+      - redis-data:/data
+
+volumes:
+  postgres-data:
+  redis-data:

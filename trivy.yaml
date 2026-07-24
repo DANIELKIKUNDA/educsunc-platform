@@ -1,0 +1,25 @@
+cache:
+  dir: .tmp/trivy-cache
+
+exit-code: 1
+format: table
+ignore-unfixed: false
+list-all-pkgs: false
+dependency-tree: false
+
+severity:
+  - HIGH
+  - CRITICAL
+
+scan:
+  skip-dirs:
+    - .git
+    - .tmp
+    - artifacts
+    - backend/node_modules
+    - frontend/node_modules
+    - backend/dist
+    - frontend/dist
+    - backend/coverage
+    - frontend/coverage
+    - backend/stockage-local

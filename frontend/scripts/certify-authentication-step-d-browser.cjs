@@ -66,8 +66,6 @@ async function run() {
   const consoleErrors = [];
   const failedRequests = [];
   const httpErrors = [];
-  let loginResponseBody = null;
-
   page.on('console', (message) => {
     if (message.type() === 'error') consoleErrors.push(message.text());
   });
@@ -80,9 +78,6 @@ async function run() {
       httpErrors.push(item);
       item.headers = await response.request().allHeaders();
       item.body = await response.text().catch(() => '');
-    }
-    if (response.url().endsWith('/api/auth/login') && response.ok()) {
-      loginResponseBody = await response.json();
     }
   });
 
@@ -109,7 +104,7 @@ async function run() {
   { timeout: 60000 });
   await page.getByRole('button', { name: 'Se connecter' }).click();
   const loginResponse = await loginResponsePromise;
-  loginResponseBody = await loginResponse.json();
+  const loginResponseBody = await loginResponse.json();
   await page.waitForURL(/\/app(?:\/|$)/, { timeout: 60000 });
   console.log('auth-certification: valid login ok');
   console.log(`auth-certification: login response keys=${Object.keys(loginResponseBody ?? {}).join(',')}`);

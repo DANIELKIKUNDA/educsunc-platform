@@ -1,0 +1,56 @@
+{
+  "name": "EduSync Codespaces",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "workspace",
+  "workspaceFolder": "/workspaces/EducSyn",
+  "shutdownAction": "stopCompose",
+  "remoteUser": "node",
+  "hostRequirements": {
+    "cpus": 4,
+    "memory": "16gb",
+    "storage": "32gb"
+  },
+  "forwardPorts": [
+    3000,
+    4174
+  ],
+  "portsAttributes": {
+    "3000": {
+      "label": "EduSync Backend",
+      "onAutoForward": "notify",
+      "protocol": "http",
+      "visibility": "private"
+    },
+    "4174": {
+      "label": "EduSync Frontend",
+      "onAutoForward": "openBrowser",
+      "protocol": "http",
+      "visibility": "private"
+    }
+  },
+  "postCreateCommand": "bash .devcontainer/scripts/post-create.sh",
+  "postStartCommand": "node .devcontainer/scripts/check-services.mjs",
+  "waitFor": "postCreateCommand",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "Vue.volar"
+      ],
+      "settings": {
+        "editor.formatOnSave": false,
+        "eslint.workingDirectories": [
+          {
+            "mode": "auto"
+          }
+        ],
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
+    },
+    "codespaces": {
+      "openFiles": [
+        "docs/developpement/codespaces-edusync.md"
+      ]
+    }
+  }
+}

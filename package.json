@@ -1,0 +1,36 @@
+{
+  "name": "educsyn-quality-pipeline",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Pipeline officielle de qualité, sécurité, certification et performance d'EduSync.",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "lint": "eslint backend/src backend/scripts frontend/src frontend/scripts scripts --max-warnings=0",
+    "lint:backend": "eslint backend/src backend/scripts --max-warnings=0",
+    "lint:frontend": "eslint frontend/src frontend/scripts --max-warnings=0",
+    "verify:fast": "node scripts/quality/run-verification.mjs fast",
+    "verify:code": "node scripts/quality/run-verification.mjs code",
+    "verify:security": "node scripts/quality/run-verification.mjs security",
+    "verify:security:dependencies": "node scripts/quality/run-verification.mjs security dependencies",
+    "verify:security:semgrep": "node scripts/quality/run-verification.mjs security semgrep",
+    "verify:security:gitleaks": "node scripts/quality/run-verification.mjs security gitleaks",
+    "verify:security:trivy": "node scripts/quality/run-verification.mjs security trivy",
+    "verify:e2e": "node scripts/quality/run-verification.mjs e2e",
+    "verify:performance": "node scripts/quality/run-verification.mjs performance",
+    "verify:all": "node scripts/quality/run-verification.mjs all",
+    "verify:postgres": "node scripts/quality/verify-postgres.mjs",
+    "verify:ci-pinning": "node scripts/quality/verify-ci-pinning.mjs",
+    "verify:secrets:fast": "node scripts/quality/verify-secrets.mjs staged",
+    "verify:secrets:tracked": "node scripts/quality/verify-secrets.mjs tracked"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "eslint": "10.7.0",
+    "eslint-plugin-vue": "10.10.0",
+    "globals": "17.7.0",
+    "typescript-eslint": "8.65.0",
+    "vue-eslint-parser": "10.4.1"
+  }
+}

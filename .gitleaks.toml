@@ -1,0 +1,24 @@
+title = "EduSync - detection de secrets"
+
+[extend]
+useDefault = true
+
+# Ces valeurs sont des identifiants de certification deterministes, jamais des
+# secrets de production. La condition AND interdit d'etendre cette tolerance a
+# un autre chemin ou a une autre valeur.
+[[allowlists]]
+description = "Valeurs factices des certifications de securite EduSync"
+condition = "AND"
+regexTarget = "match"
+paths = [
+  '''(?:^|[\\/])backend[\\/]scripts[\\/]certify-security-production\.cjs$''',
+  '''(?:^|[\\/])backend[\\/]src[\\/]scripts[\\/]security[\\/]Certifier(?:Gouvernance|Persistance)SecurityPostgres\.ts$''',
+  '''(?:^|[\\/])frontend[\\/]scripts[\\/]certify-security-center-production-browser\.cjs$''',
+]
+regexes = [
+  '''Certification#2026!''',
+  '''CertificationEduSync2026''',
+  '''MotDePasseInvalide#2026''',
+  '''Nouveau#Certification2026!''',
+  '''doit-etre-masque''',
+]

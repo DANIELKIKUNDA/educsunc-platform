@@ -149,7 +149,7 @@ async function login(page, email, motDePasse, deviceId) {
       method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: input.email, motDePasse: input.motDePasse, deviceId: input.deviceId }),
     });
-    let body = null; try { body = await http.json(); } catch { body = null; }
+    let body; try { body = await http.json(); } catch { body = null; }
     return { status: http.status, body };
   }, { apiUrl, email, motDePasse, deviceId });
 }
