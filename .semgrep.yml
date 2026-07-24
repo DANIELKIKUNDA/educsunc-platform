@@ -18,7 +18,7 @@ rules:
       likelihood: MEDIUM
     paths:
       include:
-        - backend/src/**/*.ts
+        - /backend/src/**/*.ts
     pattern: "{ ..., rejectUnauthorized: false, ... }"
 
   - id: edusync-cors-dynamic-allow-origin
@@ -40,7 +40,7 @@ rules:
       likelihood: LOW
     paths:
       include:
-        - backend/src/**/*.ts
+        - /backend/src/**/*.ts
     patterns:
       - pattern: $RESPONSE.header("Access-Control-Allow-Origin", $ORIGIN)
       - pattern-not: $RESPONSE.header("Access-Control-Allow-Origin", "...")
@@ -64,7 +64,7 @@ rules:
       likelihood: MEDIUM
     paths:
       include:
-        - backend/src/**/*.ts
+        - /backend/src/**/*.ts
     pattern-regex: 'Object\.assign\s*\([^;\n]*(?:requete|request|req)\.(?:params|query|body)'
 
   - id: edusync-dynamic-document-write
@@ -85,8 +85,8 @@ rules:
       likelihood: MEDIUM
     paths:
       include:
-        - frontend/src/**/*.ts
-        - frontend/src/**/*.vue
+        - /frontend/src/**/*.ts
+        - /frontend/src/**/*.vue
     pattern-regex: '(?:document|[A-Za-z_$][A-Za-z0-9_$]*\.document)\.write\s*\('
 
   - id: edusync-dynamic-regular-expression
@@ -108,8 +108,8 @@ rules:
       likelihood: LOW
     paths:
       include:
-        - backend/src/**/*.ts
-        - frontend/src/**/*.ts
+        - /backend/src/**/*.ts
+        - /frontend/src/**/*.ts
     pattern-either:
       - pattern: new RegExp($PATTERN)
       - pattern: new RegExp($PATTERN, $FLAGS)

@@ -1,6 +1,7 @@
 import { Pool, type PoolClient } from 'pg';
 import { configurationBaseDonnees } from '../../../../../config/database.config';
 import { InfrastructureError } from '../../../../../shared/exceptions/InfrastructureError';
+import { creerConfigurationTlsPostgres } from '../../../../../shared/infrastructure/postgres/ConfigurationTlsPostgres';
 import type {
   ClientPostgresPaiementsFacturation,
   ResultatExecutionPostgresPaiementsFacturation,
@@ -295,7 +296,7 @@ export function creerPoolPostgresPaiementsFacturation(
     max: configuration.maxConnexions,
     idleTimeoutMillis: configuration.temporisationIdleMs,
     connectionTimeoutMillis: configuration.temporisationConnexionMs,
-    ssl: configuration.ssl ? { rejectUnauthorized: false } : undefined,
+    ssl: creerConfigurationTlsPostgres(configuration.ssl),
     application_name: 'educsyn-paiements-facturation',
   });
 }

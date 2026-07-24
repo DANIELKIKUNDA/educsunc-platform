@@ -1,6 +1,7 @@
 import { Pool, type PoolClient } from 'pg';
 import { configurationBaseDonnees } from '../../../../../config/database.config';
 import { InfrastructureError } from '../../../../../shared/exceptions/InfrastructureError';
+import { creerConfigurationTlsPostgres } from '../../../../../shared/infrastructure/postgres/ConfigurationTlsPostgres';
 import type { ClientPostgresReferentielAcademique, ResultatExecutionPostgres } from './depots/ClientPostgresReferentielAcademique';
 
 // Cette interface represente les parametres de session PostgreSQL utiles au tenant courant.
@@ -316,7 +317,7 @@ export function creerPoolPostgresReferentielAcademique(
     max: configuration.maxConnexions,
     idleTimeoutMillis: configuration.temporisationIdleMs,
     connectionTimeoutMillis: configuration.temporisationConnexionMs,
-    ssl: configuration.ssl ? { rejectUnauthorized: false } : undefined,
+    ssl: creerConfigurationTlsPostgres(configuration.ssl),
     application_name: 'educsyn-referentiel-academique',
   });
 }

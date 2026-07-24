@@ -2,6 +2,7 @@ import { AsyncLocalStorage } from 'node:async_hooks';
 import { Pool, type PoolClient } from 'pg';
 import { configurationBaseDonnees } from '../../../../../config/database.config';
 import { InfrastructureError } from '../../../../../shared/exceptions/InfrastructureError';
+import { creerConfigurationTlsPostgres } from '../../../../../shared/infrastructure/postgres/ConfigurationTlsPostgres';
 import type { ResultatExecutionSql, SqlQueryClient } from '../../../../../shared/infrastructure/persistence/SqlQueryClient';
 import type { PortUniteTravailConfiguration } from '../../../application/ports';
 
@@ -44,7 +45,7 @@ export function creerPoolPostgresConfiguration(
     max: configuration.maxConnexions,
     idleTimeoutMillis: configuration.temporisationIdleMs,
     connectionTimeoutMillis: configuration.temporisationConnexionMs,
-    ssl: configuration.ssl ? { rejectUnauthorized: false } : undefined,
+    ssl: creerConfigurationTlsPostgres(configuration.ssl),
   });
 }
 

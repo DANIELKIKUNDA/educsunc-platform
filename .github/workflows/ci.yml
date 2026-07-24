@@ -35,6 +35,20 @@ jobs:
   quality-backend:
     name: Qualite backend
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: educsyn
+          POSTGRES_PASSWORD: educsyn
+          POSTGRES_DB: educsyn
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U educsyn -d educsyn"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
     steps:
       - name: Recuperer le code
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
@@ -306,7 +320,7 @@ jobs:
           npm --prefix frontend ci
 
       - name: Installer Chromium
-        run: npm --prefix frontend exec playwright install --with-deps chromium
+        run: npm --prefix frontend exec -- playwright install --with-deps chromium
 
       - name: Certifier les parcours sensibles
         run: npm run verify:e2e

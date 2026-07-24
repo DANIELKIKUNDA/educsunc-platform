@@ -17,7 +17,7 @@ if (!validModes.has(mode)) {
   throw new Error(`Vérification inconnue : ${mode ?? 'aucune'}.`);
 }
 
-const reportFile = path.join(qualityArtifacts, mode, 'report.json');
+const reportFile = path.join(qualityArtifacts, mode, 'summary.json');
 
 function rootLint() {
   return runRootNpm('eslint', 'lint');

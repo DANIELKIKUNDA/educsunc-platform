@@ -39,24 +39,41 @@ async function runDependencies() {
 }
 
 async function runSemgrep() {
-  return runCommand({
-    id: 'semgrep',
+  const targets = ['backend/src', 'frontend/src', 'scripts'];
+  const advisory = await runCommand({
+    id: 'semgrep-advisory',
     command: resolveCommand('semgrep'),
     args: [
       'scan',
       '--config',
       '.semgrep.yml',
-      '--error',
       '--metrics=off',
       '--json-output',
       path.join(reportDirectory, 'semgrep.json'),
       '--sarif-output',
       path.join(reportDirectory, 'semgrep.sarif'),
-      'backend/src',
-      'frontend/src',
-      'scripts',
+      ...targets,
     ],
   });
+  const blocking = await runCommand({
+    id: 'semgrep-blocking',
+    command: resolveCommand('semgrep'),
+    args: [
+      'scan',
+      '--config',
+      '.semgrep.yml',
+      '--severity',
+      'ERROR',
+      '--error',
+      '--metrics=off',
+      '--json-output',
+      path.join(reportDirectory, 'semgrep-blocking.json'),
+      '--sarif-output',
+      path.join(reportDirectory, 'semgrep-blocking.sarif'),
+      ...targets,
+    ],
+  });
+  return [advisory, blocking];
 }
 
 async function runGitleaks() {
