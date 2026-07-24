@@ -47,7 +47,7 @@ export const options = {
 };
 
 export function setup() {
-  const session = ouvrirSession('initialisation');
+  const session = ouvrirSession('initialisation', 'setup');
   check(session, {
     'session de baseline ouverte': (value) => value.accessToken.length > 0,
   });
@@ -55,7 +55,7 @@ export function setup() {
 }
 
 export function authentifier() {
-  const session = ouvrirSession('authentification');
+  const session = ouvrirSession('authentification', `${__VU}-${__ITER}`);
   check(session, {
     'authentification reussie': (value) => value.accessToken.length > 0,
   });
@@ -78,16 +78,16 @@ export function lireDonnees(session) {
     'liste paginee des organisations',
   );
   verifierReponse(
-    http.get(`${baseUrl}/api/organisations/${organisationA}/ecoles`, {
-      headers,
+    http.get(`${baseUrl}/api/organisations/${organisationA}/ecoles?page=1&taillePage=20`, {
+      headers: entetesOrganisation(headers, organisationA),
       tags: { scenario_metier: 'organisation-a' },
     }),
     [200],
     'ecoles organisation A',
   );
   verifierReponse(
-    http.get(`${baseUrl}/api/organisations/${organisationB}/ecoles`, {
-      headers,
+    http.get(`${baseUrl}/api/organisations/${organisationB}/ecoles?page=1&taillePage=20`, {
+      headers: entetesOrganisation(headers, organisationB),
       tags: { scenario_metier: 'organisation-b' },
     }),
     [200],
@@ -143,13 +143,13 @@ export function handleSummary(data) {
   };
 }
 
-function ouvrirSession(tag) {
+function ouvrirSession(tag, executionId) {
   const response = http.post(
     `${baseUrl}/api/auth/login`,
     JSON.stringify({
       email,
       motDePasse,
-      deviceId: `k6-${tag}-${__VU}-${__ITER}`,
+      deviceId: `k6-${tag}-${executionId}`,
     }),
     {
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
@@ -166,6 +166,14 @@ function entetes(accessToken) {
     Authorization: `Bearer ${accessToken}`,
     'Content-Type': 'application/json',
     Accept: 'application/json',
+  };
+}
+
+function entetesOrganisation(headers, organisationId) {
+  return {
+    ...headers,
+    'x-organisation-id': organisationId,
+    'x-lecture-organisation': 'true',
   };
 }
 

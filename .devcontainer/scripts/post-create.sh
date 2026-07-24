@@ -12,6 +12,9 @@ fi
 echo "[codespaces] Verification de PostgreSQL et Redis..."
 node .devcontainer/scripts/check-services.mjs
 
+echo "[codespaces] Installation des outils de certification..."
+bash .devcontainer/scripts/install-k6.sh
+
 echo "[codespaces] Installation des dependances racine..."
 npm ci
 

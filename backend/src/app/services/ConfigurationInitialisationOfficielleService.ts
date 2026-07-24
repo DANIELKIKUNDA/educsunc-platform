@@ -261,8 +261,31 @@ export class ConfigurationInitialisationOfficielleService {
     commande: CreateConfigurationCommand,
     resultat: { createdKeys: string[]; skippedKeys: string[] },
   ): Promise<void> {
+    if (await this.configurationExiste(commande)) {
+      resultat.skippedKeys.push(commande.key);
+      return;
+    }
+
+    try {
+      await this.createConfigurationUseCase.executer({
+        ...commande,
+        configurationId: commande.configurationId ?? randomUUID(),
+        actorId: commande.actorId ?? ACTEUR_SYSTEME_CONFIGURATION,
+      });
+    } catch (erreur) {
+      // Un premier usage concurrent peut avoir cree la meme valeur entre la lecture et l'insertion.
+      if (await this.configurationExiste(commande)) {
+        resultat.skippedKeys.push(commande.key);
+        return;
+      }
+      throw erreur;
+    }
+    resultat.createdKeys.push(commande.key);
+  }
+
+  private async configurationExiste(commande: CreateConfigurationCommand): Promise<boolean> {
     const configurations = await this.listerConfigurations();
-    const existeDeja = configurations.some((configuration) => {
+    return configurations.some((configuration) => {
       const details = configuration.details();
       if (
         details.key !== commande.key
@@ -281,18 +304,6 @@ export class ConfigurationInitialisationOfficielleService {
         && details.scope.utilisateurId === commande.scope.utilisateurId
       );
     });
-
-    if (existeDeja) {
-      resultat.skippedKeys.push(commande.key);
-      return;
-    }
-
-    await this.createConfigurationUseCase.executer({
-      ...commande,
-      configurationId: commande.configurationId ?? randomUUID(),
-      actorId: commande.actorId ?? ACTEUR_SYSTEME_CONFIGURATION,
-    });
-    resultat.createdKeys.push(commande.key);
   }
 
   private async journaliser(

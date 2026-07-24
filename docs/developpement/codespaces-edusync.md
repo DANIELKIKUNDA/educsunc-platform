@@ -13,6 +13,7 @@ Le socle est conforme aux preuves du depot :
 - frontend Vue/Vite sur le port `4174` ;
 - PostgreSQL 16 ;
 - Redis 7.4 ;
+- k6 2.0.0, telecharge avec verification d'integrite ;
 - migration officielle `db:migrate:referentiel`.
 
 ## Creation
@@ -71,11 +72,32 @@ npm --prefix frontend run build
 npm --prefix frontend test
 ```
 
+Certification performance legere :
+
+```bash
+npm run verify:performance
+```
+
 Migration explicite du referentiel :
 
 ```bash
 npm --prefix backend run db:migrate:referentiel
 ```
+
+## Temps de reference mesures
+
+Mesures relevees le 24 juillet 2026 sur le Codespace recommande
+(`4 coeurs`, `16 Go`) :
+
+- verification rapide complete : environ 43 secondes ;
+- verification code complete : environ 3 minutes 4 secondes ;
+- typecheck backend strict : entre 12 et 24 secondes ;
+- build frontend : environ 22 secondes ;
+- baseline k6 : environ 29 secondes, dont 20 secondes de charge.
+
+La baseline certifiee a traite `1 217` requetes avec un p95 de `46,9 ms` et un
+p99 de `64,7 ms`, sans erreur fonctionnelle ni reponse 5xx. Ces valeurs sont des
+reperes de developpement, pas des engagements de production.
 
 Seeds officiels, uniquement sur decision explicite :
 

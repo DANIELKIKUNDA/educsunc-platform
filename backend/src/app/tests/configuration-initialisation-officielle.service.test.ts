@@ -6,8 +6,10 @@ import test from 'node:test';
 
 import { ConfigurationInitialisationOfficielleService } from '../services/ConfigurationInitialisationOfficielleService';
 import {
+  type Configuration,
   type ConfigurationBootstrapJournalStore,
   CreateConfigurationUseCase,
+  type CreateConfigurationCommand,
   RepositoryConfigurationMemoire,
 } from '../../shared/configuration';
 import {
@@ -238,6 +240,55 @@ test("ConfigurationInitialisationOfficielleService ne duplique pas les preferenc
 
   assert.deepEqual(secondPassage.createdKeys, []);
   assert.equal(repository.stockageMemoire().lister().length, 4);
+});
+
+test("ConfigurationInitialisationOfficielleService resiste a deux premiers usages utilisateur concurrents", async () => {
+  const configurations = new Map<string, CreateConfigurationCommand>();
+  const creationsEnCours = new Map<string, Promise<void>>();
+  const serviceCreationConcurrent = {
+    async executer(commande: CreateConfigurationCommand) {
+      const identifiant = `${commande.scope.niveau}:${commande.scope.utilisateurId}:${commande.key}`;
+      const creationExistante = creationsEnCours.get(identifiant);
+      if (creationExistante) {
+        await creationExistante;
+        throw new Error('Contrainte unique simulee.');
+      }
+
+      let terminerCreation!: () => void;
+      const creation = new Promise<void>((resolve) => {
+        terminerCreation = resolve;
+      });
+      creationsEnCours.set(identifiant, creation);
+      await new Promise<void>((resolve) => setImmediate(resolve));
+      configurations.set(identifiant, commande);
+      terminerCreation();
+      creationsEnCours.delete(identifiant);
+      return {} as never;
+    },
+  } as unknown as CreateConfigurationUseCase;
+  const listerConfigurations = (): readonly Configuration[] =>
+    [...configurations.values()].map((commande) => ({
+      details: () => ({
+        key: commande.key,
+        scope: commande.scope,
+      }),
+    })) as unknown as readonly Configuration[];
+  const journal = new JournalBootstrapMemoireTestDouble();
+  const service = new ConfigurationInitialisationOfficielleService(
+    serviceCreationConcurrent,
+    listerConfigurations,
+    undefined,
+    journal,
+  );
+
+  const [premierAcces, secondAcces] = await Promise.all([
+    service.amorcerUtilisateur({ utilisateurId: 'user-concurrent' }),
+    service.amorcerUtilisateur({ utilisateurId: 'user-concurrent' }),
+  ]);
+
+  assert.equal(configurations.size, 4);
+  assert.equal(premierAcces.createdKeys.length + secondAcces.createdKeys.length, 4);
+  assert.equal(premierAcces.skippedKeys.length + secondAcces.skippedKeys.length, 4);
 });
 
 test('ConfigurationInitialisationOfficielleService supporte un lister asynchrone et journalise via un store externe', async () => {
