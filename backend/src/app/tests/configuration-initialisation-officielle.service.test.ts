@@ -259,7 +259,9 @@ test("ConfigurationInitialisationOfficielleService resiste a deux premiers usage
         terminerCreation = resolve;
       });
       creationsEnCours.set(identifiant, creation);
-      await new Promise<void>((resolve) => setImmediate(resolve));
+      await new Promise<void>((resolve) => {
+        setImmediate(resolve);
+      });
       configurations.set(identifiant, commande);
       terminerCreation();
       creationsEnCours.delete(identifiant);
