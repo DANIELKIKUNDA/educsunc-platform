@@ -147,7 +147,10 @@ test.describe('G1 - gouvernance globale des accès frontend', () => {
     }
     await expect(financialAuditLink).toBeVisible();
     await expect(sidebar.getByRole('link', { name: 'Audit plateforme' })).toHaveCount(0);
-    await expect(sidebar.getByRole('button', { name: /Configuration/i })).toHaveCount(0);
+    await expect(sidebar.getByRole('link', { name: 'Audit technique ecole' })).toHaveCount(0);
+    await expect(
+      sidebar.getByRole('link', { name: /Audit pedagogique/i }),
+    ).toHaveCount(0);
 
     const forbiddenPlatformCalls = observeRequests(
       page,
