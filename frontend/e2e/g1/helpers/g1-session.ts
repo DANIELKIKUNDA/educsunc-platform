@@ -1,4 +1,5 @@
 import { expect, type Page, type Response } from '@playwright/test';
+import { randomUUID } from 'node:crypto';
 
 export type G1ActorCode =
   | 'MANAGER_SYSTEME'
@@ -99,7 +100,7 @@ export async function openRealDeveloperSession(
         actorCode,
         organisationActiveId,
         ecoleActiveId,
-        deviceId: `g1-browser-${actorCode.toLowerCase()}`,
+        deviceId: `g1-browser-${actorCode.toLowerCase()}-${randomUUID()}`,
       },
     },
   );

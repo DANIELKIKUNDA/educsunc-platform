@@ -225,7 +225,7 @@ export const moduleDoctrine: readonly FrontendModuleDoctrine[] = [
   {
     code: 'AUDIT',
     label: 'Audit',
-    description: 'Audit plateforme, organisationnel, technique, administratif et pedagogique.',
+    description: 'Traces et controles accessibles selon votre perimetre.',
     icon: 'Shield',
     route: '/app/audit',
     ownerLevels: ['PLATEFORME', 'ORGANISATION', 'ECOLE'],
