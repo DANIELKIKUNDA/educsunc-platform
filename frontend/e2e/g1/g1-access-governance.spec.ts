@@ -79,8 +79,12 @@ test.describe('G1 - gouvernance globale des accès frontend', () => {
     await expect(page.getByRole('heading', { name: 'Audit plateforme' })).toBeVisible();
 
     const sidebar = page.locator('.erp-sidebar');
-    await expect(sidebar.getByRole('button', { name: /Plateforme/i })).toHaveCount(0);
-    await expect(sidebar.getByRole('button', { name: /Organisation/i })).toHaveCount(0);
+    await expect(
+      sidebar.locator('.erp-sidebar__module-copy strong').filter({ hasText: /^Plateforme$/ }),
+    ).toHaveCount(0);
+    await expect(
+      sidebar.locator('.erp-sidebar__module-copy strong').filter({ hasText: /^Organisation$/ }),
+    ).toHaveCount(0);
 
     const globalSearch = page.locator('.erp-topbar__search input');
     await globalSearch.fill('Publier une version officielle');

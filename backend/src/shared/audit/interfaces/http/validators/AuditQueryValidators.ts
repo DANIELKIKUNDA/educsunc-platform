@@ -9,8 +9,8 @@ export class AuditListValidator {
     ValidationHttpAudit.validerCorrelation(donnees);
 
     return {
-      page: ValidationHttpAudit.lireEntierDansBornes(donnees, 'page', 1, 10_000),
-      taillePage: ValidationHttpAudit.lireEntierDansBornes(donnees, 'taillePage', 1, 500),
+      page: ValidationHttpAudit.lireEntierQueryDansBornes(donnees, 'page', 1, 10_000),
+      taillePage: ValidationHttpAudit.lireEntierQueryDansBornes(donnees, 'taillePage', 1, 500),
       action: ValidationHttpAudit.lireChaineOptionnelle(donnees, 'action'),
       typeAuditPrincipal: ValidationHttpAudit.lireChaineOptionnelle(donnees, 'typeAuditPrincipal'),
       categorieAudit: ValidationHttpAudit.lireChaineOptionnelle(donnees, 'categorieAudit'),
@@ -54,10 +54,6 @@ export class AuditTimelineValidator {
 
 export class AuditHistoryValidator {
   public static valider(query: unknown): SearchAuditQuery {
-    const resultat = AuditListValidator.valider(query);
-    if (!resultat.acteurId && !resultat.ressourceId) {
-      throw new Error('history requiert au moins acteurId ou ressourceId.');
-    }
-    return resultat;
+    return AuditListValidator.valider(query);
   }
 }
