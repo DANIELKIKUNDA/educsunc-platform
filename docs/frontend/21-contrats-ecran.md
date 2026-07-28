@@ -184,6 +184,9 @@ Autres acteurs pouvant consommer cet ecran dans des variantes legitimes.
 Exemples :
 
 - module actif
+- permission effective
+- scope compatible
+- restriction respectee
 - organisation active
 - ecole active
 - classe concernee
@@ -200,11 +203,19 @@ Les blocs de donnees visibles a l'utilisateur.
 
 ### 12. Actions visibles
 
-Les actions que l'utilisateur peut voir et utiliser.
+Les actions que l'utilisateur peut voir et utiliser apres resolution de la projection des capacites effectives.
 
 ### 13. Actions masquées ou interdites
 
 Les actions que l'ecran ne doit pas exposer dans certains contextes.
+
+La regle officielle est :
+
+- action interdite : absente
+- mutation non autorisee en lecture seule : absente
+- action autorisee mais temporairement indisponible pour une condition metier : visible et desactivee avec explication
+
+Le contrat ne doit jamais demander de charger une donnee interdite avant de la masquer.
 
 ### 14. Etats obligatoires
 

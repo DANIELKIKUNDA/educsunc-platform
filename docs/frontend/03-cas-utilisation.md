@@ -1906,15 +1906,16 @@ Exception transverse maintenant materialisee :
 - `OPERATEUR_SYSTEME`
 - `SUPPORT_SYSTEME`
   - disposent maintenant d'un cas d'utilisation positif atteste sur `SHD-AUD-01`
-  - consultation de la liste d'audit plateforme filtree sur l'ecole active
-  - consultation de la timeline d'audit plateforme filtree sur l'ecole active
-  - consultation de l'historique d'audit plateforme filtre sur l'ecole active
+  - consultation de la liste d'audit plateforme globale
+  - consultation de la timeline d'audit plateforme globale
+  - consultation de l'historique d'audit plateforme global
   - le backend prouve aussi le refus d'un acteur ecole sans permissions `audit.*`
 
 Lecture doctrinale obligatoire :
 
 - ce cas d'utilisation positif ne doit pas etre relu comme un cas d'utilisation metier ecole
-- il prouve un usage plateforme actuellement borne par un scope `ECOLE`
+- il prouve un usage plateforme borne par un scope `PLATEFORME`
+- il n'exige ni organisation ni ecole active
 - les futurs cas d'utilisation d'audit doivent etre separes par famille :
   - audit organisationnel
   - audit administratif et financier ecole

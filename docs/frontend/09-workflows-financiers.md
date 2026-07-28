@@ -807,7 +807,7 @@ Lecture officielle :
 - elle est maintenant lue comme :
   - `role CAISSIER ou ADMINISTRATEUR_ECOLE + paiements.read + organisation + ecole`
   - `role GESTIONNAIRE_ORGANISATION ou PROMOTEUR_ORGANISATION + paiements.read + organisation`
-  - `role TITULAIRE + paiements.read + organisation + ecole + classe titulaire effective + annee scolaire courante + parametrage ecole`
+  - `role ENSEIGNANT + capacite derivee TITULAIRE + paiements.read + organisation + ecole + classe titulaire effective + annee scolaire courante + parametrage ecole`
   - `role PARENT + paiements.read + organisation + ecole + rattachement famille utilisateur -> eleve`
   - `role PREFET_ETUDES ou DIRECTEUR_ETUDES ou DIRECTEUR_PRIMAIRE ou DIRECTEUR_MATERNELLE + paiements.read + organisation + ecole + section + parametrage ecole`
 
@@ -977,7 +977,7 @@ Lecture officielle :
 - elle est maintenant lue comme :
   - `role CAISSIER ou ADMINISTRATEUR_ECOLE + paiements.read + organisation + ecole`
   - `role GESTIONNAIRE_ORGANISATION ou PROMOTEUR_ORGANISATION + paiements.read + organisation`
-  - `role TITULAIRE + paiements.read + organisation + ecole + classe titulaire effective + annee scolaire courante + parametrage ecole`
+  - `role ENSEIGNANT + capacite derivee TITULAIRE + paiements.read + organisation + ecole + classe titulaire effective + annee scolaire courante + parametrage ecole`
   - `role PARENT + paiements.read + organisation + ecole + rattachement famille utilisateur -> eleve`
   - `role PREFET_ETUDES ou DIRECTEUR_ETUDES ou DIRECTEUR_PRIMAIRE ou DIRECTEUR_MATERNELLE + paiements.read + organisation + ecole + section + parametrage ecole`
 

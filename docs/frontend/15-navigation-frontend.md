@@ -97,12 +97,16 @@ La navigation ne doit jamais :
 
 La chaine officielle devient :
 
-Acteur
--> Permissions effectives
+Session authentifiee
+-> Projection des capacites effectives
+-> Acteur actif
+-> Permissions, restrictions et scopes effectifs
+-> Modules effectivement disponibles
 -> Perimetre actif
 -> Workflows visibles
 -> Navigation
 -> Vues
+-> Actions
 
 Cette chaine est obligatoire.
 
@@ -110,6 +114,8 @@ Elle signifie :
 
 - l'acteur seul ne suffit pas
 - la permission seule ne suffit pas
+- les permissions de plusieurs roles disponibles ne sont pas fusionnees
+- un module indisponible ferme les entrees qui en dependent
 - le perimetre actif borne ce qui peut devenir visible
 - les workflows reels restent la source de la navigation
 - les vues n'arrivent qu'apres la navigation
@@ -172,6 +178,14 @@ Une route frontend ne doit pas etre exposee comme accessible si son workflow ree
 ### Regle 10
 
 Un changement de contexte actif doit pouvoir recomposer la navigation sans redefinition manuelle de tout le shell.
+
+### Regle 11
+
+Un element interdit est absent. Un element autorise mais temporairement indisponible peut rester visible et desactive avec une explication metier.
+
+### Regle 12
+
+La navigation et le garde-route consomment la meme projection de capacites. Une URL directe, un favori ancien ou un retour navigateur ne peut pas contourner le filtrage du menu.
 
 ## Definition Des Niveaux De Navigation
 
@@ -341,6 +355,8 @@ La navigation doit toujours appliquer le filtre suivant :
 
 Si l'un de ces six points manque, le module ou la page ne doit pas etre presente comme normalement ouvrable.
 
+Dans G1, « ne doit pas etre presente comme ouvrable » signifie que l'entree interdite est absente, et non simplement desactivee. La desactivation est reservee aux conditions metier temporaires d'une action deja autorisee.
+
 ## Navigation Et Contexte Actif
 
 La navigation EduSync est gouvernee par le contexte actif.
@@ -356,10 +372,17 @@ Les contextes les plus structurants sont :
 
 Le frontend doit donc prevoir une navigation capable d'etre recomposee lorsque :
 
+- l'utilisateur ou la session change
+- l'acteur actif change
 - l'ecole change
 - l'organisation change
+- l'annee scolaire change
 - le module actif change
 - le scope metier change
+
+Cette recomposition intervient uniquement apres validation du nouveau contexte et relecture de la projection serveur. Elle invalide les stores de l'ancien contexte, annule leurs requetes et refuse leurs reponses tardives avant d'afficher la nouvelle navigation.
+
+Si la page courante n'est plus autorisee, le router redirige vers la premiere page reellement ouvrable ou vers l'etat d'acces refuse. Aucun contenu interdit ne doit apparaitre pendant cette transition.
 
 ## Menus Officiels
 

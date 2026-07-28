@@ -310,10 +310,12 @@ Le contexte actif represente la position courante de l'utilisateur dans le syste
 - plateforme active
 - organisation active
 - ecole active
+- annee scolaire active
 - utilisateur courant
 - scope courant
 - permissions effectives
 - capacites UI effectives
+- modules effectivement disponibles
 
 Le contexte actif pilote :
 
@@ -378,6 +380,39 @@ et jamais :
 
 - le role brut seul
 - la permission brute seule
+
+## Projection Unique Des Capacites Effectives
+
+Le frontend consomme une projection authentifiee unique produite par le backend pour la session et le contexte courants.
+
+Cette projection porte au minimum :
+
+- l'identite et l'etat du compte
+- l'etat de la session
+- les acteurs disponibles et l'acteur actif
+- les permissions effectives de l'acteur actif
+- les scopes autorises
+- les restrictions applicables
+- le niveau de gouvernance
+- l'organisation, l'ecole et l'annee scolaire actives
+- les modules effectivement disponibles
+- les capacites metier derivees, dont le titulariat effectif
+
+La chaine officielle est :
+
+`session authentifiee`
+-> `projection backend des capacites effectives`
+-> `resolver frontend unique`
+-> `modules`
+-> `menus`
+-> `routes`
+-> `composants`
+-> `actions`
+-> `appels API`
+
+Le frontend ne fabrique jamais une projection de secours a partir d'un role visible, d'un profil de demonstration ou d'une permission stockee localement. Une projection absente, invalide ou obsolete ferme les acces jusqu'a sa relecture.
+
+Lorsque plusieurs roles sont disponibles, les permissions de tous les roles ne sont jamais fusionnees. Seules les permissions, restrictions et scopes de l'acteur actif dans le contexte courant alimentent la projection.
 
 ## Doctrine Officielle du Titulariat
 
@@ -450,7 +485,62 @@ Dans le cas du titulariat, cela signifie qu'un menu ou une action specifique tit
 
 - ne doit pas etre affiche a partir du seul role `ENSEIGNANT`
 - ne doit pas etre affiche a partir d'une simple hypothese sur la section
-- doit etre pilote par la capacite effective ou le contrat backend expose
+- doit etre affiche uniquement lorsque la projection authentifiee confirme le titulariat sur la classe et l'annee scolaire concernees
+
+## Regle D'Absence Des Elements Interdits
+
+Un element interdit par l'acteur actif, la permission, le scope, le tenant, le module, une restriction ou l'ownership est absent de l'interface.
+
+Cette regle s'applique aux :
+
+- modules
+- menus et sous-menus
+- pages et routes
+- onglets et cartes
+- boutons et actions
+- filtres, exports, liens et raccourcis
+- appels API associes
+
+Un element peut rester visible mais desactive uniquement lorsque l'acteur est autorise en principe et qu'une condition metier temporaire n'est pas satisfaite. Cette indisponibilite doit alors etre expliquee en langage metier.
+
+Le frontend ne charge pas une donnee interdite pour la masquer ensuite. Le backend reste l'autorite finale pour toute requete, y compris lorsqu'une URL ou une requete est fabriquee manuellement.
+
+## Cycle De Vie Du Contexte Et Des Acces
+
+Tout changement d'utilisateur, de session, d'acteur actif, d'organisation, d'ecole, d'annee scolaire ou de contexte metier constitue une transition atomique.
+
+La transition officielle impose :
+
+1. validation du nouveau contexte par le backend
+2. relecture de la projection des capacites effectives
+3. invalidation des stores lies a l'ancien contexte
+4. annulation des requetes de l'ancien contexte
+5. rejet de toute reponse tardive portant une ancienne version de contexte
+6. recalcul des modules, menus, routes et actions
+7. redirection si la page courante n'est plus autorisee
+
+Aucune donnee de l'ancien tenant ne doit rester visible, meme temporairement. Les options de contexte doivent provenir des contextes reellement autorises par le backend ; aucune organisation, ecole ou annee scolaire de demonstration ne constitue un choix implicite en production.
+
+### Strategie D'Invalidation Des Stores
+
+Chaque store consommant des donnees tenant-aware doit exposer une reinitialisation centralement orchestrable. La purge est obligatoire au logout et lors d'un changement incompatible d'organisation, d'ecole, d'annee ou d'acteur.
+
+Une donnee globale peut etre conservee uniquement si son independance au tenant est explicite et prouvee. A defaut, le comportement est la purge.
+
+Les stores ne choisissent pas individuellement de conserver une ancienne donnee par commodite. L'orchestrateur de cycle de vie applique la transition a tous les domaines concernes.
+
+### Strategie D'Annulation Des Requetes
+
+Chaque requete metier est rattachee a une version monotone du contexte et a un signal d'annulation.
+
+Lors d'une transition :
+
+- les requetes de l'ancienne version sont annulees
+- une reponse tardive ne peut plus muter un store
+- une nouvelle requete est emise uniquement avec le contexte confirme
+- une reprise apres renouvellement de session utilise la nouvelle version de contexte
+
+Cette regle protege notamment le scenario Organisation A vers Organisation B et Ecole A vers Ecole B.
 
 ## Workflows
 

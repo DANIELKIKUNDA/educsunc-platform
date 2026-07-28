@@ -392,6 +392,7 @@ Modules visibles prioritaires :
 
 - `Scolarite`
 - `Paiements et facturation`
+- `Audit` uniquement avec `audit.finance.read`, module actif et scope ecole compatible
 
 Centres de travail prioritaires :
 
@@ -401,6 +402,7 @@ Centres de travail prioritaires :
 - centre caisse
 - centre recus
 - centre dette et historique paiements
+- centre audit financier de son ecole lorsque la capacite effective est presente
 
 Pages d'entree candidates :
 
@@ -415,6 +417,7 @@ Pages d'entree candidates :
 - consulter historique paiements d'un eleve
 - consulter situation financiere d'un eleve
 - analyses financieres locales
+- consulter l'audit financier de son ecole
 
 Exclusions :
 
@@ -518,6 +521,7 @@ Pages d'entree candidates :
 Regle critique :
 
 - toute cette navigation depend d'un titulariat effectif sur la bonne classe et la bonne annee scolaire
+- `TITULAIRE` n'est jamais propose comme role selectionnable ; ces entrees enrichissent la navigation de l'`ENSEIGNANT` lorsque la capacite derivee est confirmee
 
 Exclusions :
 
