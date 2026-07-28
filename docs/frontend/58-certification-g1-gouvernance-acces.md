@@ -74,6 +74,8 @@ PostgreSQL et Redis reels.
 G1 n'est certifiable que si :
 
 - les onze acteurs passent leur precontrole de session reelle ;
+- chaque acteur est ouvert et verifie directement par son scenario, sans
+  duplication de sessions dans le precontrole global ;
 - chaque scenario obligatoire possede une preuve verte ;
 - les builds backend et frontend sont verts ;
 - les tests securite, authentification, contexte et audit sont verts ;

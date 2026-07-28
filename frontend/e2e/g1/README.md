@@ -21,15 +21,15 @@ active les modules par les workflows Configuration existants.
 - PostgreSQL initialisé avec le premier Manager système ;
 - Redis disponible si le démarrage backend courant l'exige ;
 - environnement backend `development`, afin d'exposer la vraie session développeur ;
-- les fixtures développeur `MANAGER_SYSTEME`, `SUPPORT_SYSTEME` et `CAISSIER`.
+- le catalogue officiel des rôles système utilisé par les sessions développeur.
 
 Le précontrôle échoue avec un code explicite si une fixture manque :
 
 - `G1_BASE_NON_INITIALISEE` ;
-- `G1_FIXTURE_MANAGER_PLATEFORME_INCOHERENTE` ;
-- `G1_FIXTURE_CAISSIER_ECOLE_ABSENTE` ;
-- `G1_FIXTURE_CAISSIER_AUDIT_FINANCE_ABSENTE` ;
-- `G1_FIXTURE_ORGANISATION_ABSENTE`.
+- `G1_ORGANISATION_REELLE_ABSENTE` ;
+- `G1_ECOLE_REELLE_ABSENTE` ;
+- `G1_MODULES_ORGANISATION_INDISPONIBLES` ;
+- `G1_MODULES_ECOLE_INDISPONIBLES`.
 
 Ces erreurs sont des blocages de certification. La suite ne les remplace jamais
 par un mock ou un identifiant de démonstration.

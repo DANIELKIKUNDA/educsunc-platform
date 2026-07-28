@@ -1,32 +1,9 @@
 import type { FullConfig } from '@playwright/test';
 import { randomBytes } from 'node:crypto';
 
-type G1ActorCode =
-  | 'MANAGER_SYSTEME'
-  | 'SUPPORT_SYSTEME'
-  | 'PROMOTEUR_ORGANISATION'
-  | 'ADMIN_SYSTEME_ORGANISATION'
-  | 'ADMINISTRATEUR_ECOLE'
-  | 'ADMIN_SYSTEME_ECOLE'
-  | 'PREFET_ETUDES'
-  | 'SECRETAIRE'
-  | 'CAISSIER'
-  | 'ENSEIGNANT'
-  | 'PARENT';
-
 interface DeveloperSessionPayload {
   accessToken?: string;
   sessionId?: string;
-}
-
-interface EffectiveProfilePayload {
-  acteurCodeActif?: string;
-  permissionsEffectives?: readonly string[];
-  contexte?: {
-    governanceLevel?: string;
-    organisationId?: string | null;
-    ecoleId?: string | null;
-  };
 }
 
 interface SessionTenant {
@@ -125,7 +102,7 @@ async function ensurePlatformInitialized(
 
 async function openDeveloperSession(
   backendUrl: string,
-  actorCode: G1ActorCode,
+  actorCode: 'MANAGER_SYSTEME',
   tenant?: SessionTenant,
 ): Promise<DeveloperSessionPayload> {
   const response = await fetch(`${backendUrl}/api/auth/dev/session`, {
@@ -283,82 +260,6 @@ async function ensureCertificationTenant(
   };
 }
 
-async function verifyDeveloperActor(
-  backendUrl: string,
-  actorCode: G1ActorCode,
-  tenant: CertificationTenant,
-): Promise<void> {
-  const actorLevel = actorCode === 'MANAGER_SYSTEME' || actorCode === 'SUPPORT_SYSTEME'
-    ? 'PLATEFORME'
-    : actorCode === 'PROMOTEUR_ORGANISATION' || actorCode === 'ADMIN_SYSTEME_ORGANISATION'
-      ? 'ORGANISATION'
-      : 'ECOLE';
-  const session = await openDeveloperSession(
-    backendUrl,
-    actorCode,
-    actorLevel === 'PLATEFORME'
-      ? undefined
-      : {
-          organisationId: tenant.organisationId,
-          ecoleId: actorLevel === 'ECOLE' ? tenant.ecoleId : undefined,
-        },
-  );
-  const headers = authHeaders(session);
-  const profileResponse = await fetch(`${backendUrl}/api/auth/profil`, {
-    headers,
-  });
-  await assertResponse(profileResponse, `G1_PROFIL_EFFECTIF_${actorCode}_INDISPONIBLE`);
-  const profile = await readJson(profileResponse) as unknown as EffectiveProfilePayload;
-
-  if (profile.acteurCodeActif !== actorCode) {
-    throw new Error(
-      `G1_PROFIL_EFFECTIF_${actorCode}_INCOHERENT: acteur actif reçu ${profile.acteurCodeActif ?? 'aucun'}.`,
-    );
-  }
-
-  if (actorCode === 'MANAGER_SYSTEME') {
-    if (
-      profile.contexte?.governanceLevel !== 'PLATEFORME'
-      || profile.contexte.ecoleId
-    ) {
-      throw new Error(
-        'G1_FIXTURE_MANAGER_PLATEFORME_INCOHERENTE: le Manager système doit ouvrir un contexte Plateforme sans école.',
-      );
-    }
-    if (!profile.permissionsEffectives?.includes('audit.read')) {
-      throw new Error(
-        'G1_FIXTURE_MANAGER_AUDIT_ABSENTE: la permission effective audit.read est requise.',
-      );
-    }
-  }
-
-  if (actorCode === 'CAISSIER') {
-    if (
-      profile.contexte?.governanceLevel !== 'ECOLE'
-      || profile.contexte.organisationId !== tenant.organisationId
-      || profile.contexte.ecoleId !== tenant.ecoleId
-    ) {
-      throw new Error(
-        'G1_FIXTURE_CAISSIER_ECOLE_ABSENTE: la session développeur CAISSIER doit fournir une organisation et une école réelles.',
-      );
-    }
-    if (!profile.permissionsEffectives?.includes('audit.finance.read')) {
-      throw new Error(
-        'G1_FIXTURE_CAISSIER_AUDIT_FINANCE_ABSENTE: la permission effective audit.finance.read est requise.',
-      );
-    }
-  }
-
-  await fetch(`${backendUrl}/api/auth/logout`, {
-    method: 'POST',
-    headers: {
-      ...headers,
-      'content-type': 'application/json',
-    },
-    body: JSON.stringify({ sessionId: session.sessionId }),
-  }).catch(() => undefined);
-}
-
 export default async function globalSetup(config: FullConfig): Promise<void> {
   const backendUrl = backendUrlFrom(config);
   const initializationResponse = await fetch(
@@ -377,20 +278,4 @@ export default async function globalSetup(config: FullConfig): Promise<void> {
   const tenant = await ensureCertificationTenant(backendUrl);
   process.env.EDUCSYN_G1_ORGANISATION_ID = tenant.organisationId;
   process.env.EDUCSYN_G1_ECOLE_ID = tenant.ecoleId;
-
-  for (const actorCode of [
-    'MANAGER_SYSTEME',
-    'SUPPORT_SYSTEME',
-    'PROMOTEUR_ORGANISATION',
-    'ADMIN_SYSTEME_ORGANISATION',
-    'ADMINISTRATEUR_ECOLE',
-    'ADMIN_SYSTEME_ECOLE',
-    'PREFET_ETUDES',
-    'SECRETAIRE',
-    'CAISSIER',
-    'ENSEIGNANT',
-    'PARENT',
-  ] as const) {
-    await verifyDeveloperActor(backendUrl, actorCode, tenant);
-  }
 }
