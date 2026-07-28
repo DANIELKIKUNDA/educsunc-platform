@@ -46,6 +46,21 @@ const actorLabels: Record<G1ActorCode, RegExp> = {
   PARENT: /Parent/i,
 };
 
+function actorGovernanceLevel(
+  actorCode: G1ActorCode,
+): G1EffectiveProfile['contexte']['governanceLevel'] {
+  if (actorCode === 'MANAGER_SYSTEME' || actorCode === 'SUPPORT_SYSTEME') {
+    return 'PLATEFORME';
+  }
+  if (
+    actorCode === 'PROMOTEUR_ORGANISATION'
+    || actorCode === 'ADMIN_SYSTEME_ORGANISATION'
+  ) {
+    return 'ORGANISATION';
+  }
+  return 'ECOLE';
+}
+
 function isResponsePath(response: Response, method: string, pathname: string): boolean {
   const url = new URL(response.url());
   return response.request().method() === method && url.pathname === pathname;
@@ -62,11 +77,28 @@ export async function openRealDeveloperSession(
 ): Promise<G1EffectiveProfile> {
   const backendUrl = (process.env.EDUCSYN_BACKEND_URL ?? 'http://127.0.0.1:3000')
     .replace(/\/$/, '');
+  const governanceLevel = actorGovernanceLevel(actorCode);
+  const organisationActiveId = governanceLevel === 'PLATEFORME'
+    ? undefined
+    : process.env.EDUCSYN_G1_ORGANISATION_ID;
+  const ecoleActiveId = governanceLevel === 'ECOLE'
+    ? process.env.EDUCSYN_G1_ECOLE_ID
+    : undefined;
+  if (
+    governanceLevel !== 'PLATEFORME'
+    && (!organisationActiveId || (governanceLevel === 'ECOLE' && !ecoleActiveId))
+  ) {
+    throw new Error(
+      `G1_TENANT_REEL_${actorCode}_ABSENT: le precontrole doit fournir le contexte reel.`,
+    );
+  }
   const developerSessionResponse = await page.request.post(
     `${backendUrl}/api/auth/dev/session`,
     {
       data: {
         actorCode,
+        organisationActiveId,
+        ecoleActiveId,
         deviceId: `g1-browser-${actorCode.toLowerCase()}`,
       },
     },

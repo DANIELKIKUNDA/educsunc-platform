@@ -29,6 +29,37 @@ interface EffectiveProfilePayload {
   };
 }
 
+interface SessionTenant {
+  readonly organisationId: string;
+  readonly ecoleId?: string;
+}
+
+interface CertificationTenant extends SessionTenant {
+  readonly ecoleId: string;
+}
+
+interface OrganisationPayload {
+  readonly id?: string;
+  readonly code?: string;
+}
+
+interface EcolePayload {
+  readonly id?: string;
+  readonly code?: string;
+}
+
+const CERTIFICATION_ORGANISATION_CODE = 'G1-CERTIFICATION';
+const CERTIFICATION_ECOLE_CODE = 'G1-ECOLE';
+const CERTIFICATION_MODULES = [
+  'REFERENTIEL_ACADEMIQUE',
+  'SCOLARITE_ELEVES',
+  'PAIEMENTS_FACTURATION',
+  'BULLETINS_EVALUATIONS',
+  'NOTIFICATIONS',
+  'AUDIT',
+  'MONITORING',
+] as const;
+
 function backendUrlFrom(config: FullConfig): string {
   const configured = process.env.EDUCSYN_BACKEND_URL?.trim();
   if (configured) return configured.replace(/\/$/, '');
@@ -83,33 +114,184 @@ async function ensurePlatformInitialized(
   }
 }
 
-async function verifyDeveloperActor(
+async function openDeveloperSession(
   backendUrl: string,
   actorCode: G1ActorCode,
-): Promise<void> {
-  const sessionResponse = await fetch(`${backendUrl}/api/auth/dev/session`, {
+  tenant?: SessionTenant,
+): Promise<DeveloperSessionPayload> {
+  const response = await fetch(`${backendUrl}/api/auth/dev/session`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({
       actorCode,
+      organisationActiveId: tenant?.organisationId,
+      ecoleActiveId: tenant?.ecoleId,
       deviceId: `g1-preflight-${actorCode.toLowerCase()}`,
     }),
   });
-  await assertResponse(sessionResponse, `G1_SESSION_DEVELOPPEUR_${actorCode}_INDISPONIBLE`);
-  const session = await readJson(sessionResponse) as unknown as DeveloperSessionPayload;
+  await assertResponse(response, `G1_SESSION_DEVELOPPEUR_${actorCode}_INDISPONIBLE`);
+  const session = await readJson(response) as unknown as DeveloperSessionPayload;
 
   if (!session.accessToken || !session.sessionId) {
     throw new Error(
       `G1_SESSION_DEVELOPPEUR_${actorCode}_INCOMPLETE: access token ou session absente.`,
     );
   }
+  return session;
+}
 
-  const authHeaders = {
+function authHeaders(session: DeveloperSessionPayload): Record<string, string> {
+  return {
     authorization: `Bearer ${session.accessToken}`,
-    'x-session-id': session.sessionId,
+    'x-session-id': String(session.sessionId),
   };
+}
+
+async function ensureCertificationTenant(
+  backendUrl: string,
+): Promise<CertificationTenant> {
+  const manager = await openDeveloperSession(backendUrl, 'MANAGER_SYSTEME');
+  const headers = authHeaders(manager);
+  const organisationsResponse = await fetch(
+    `${backendUrl}/api/organisations?page=1&taillePage=100`,
+    { headers },
+  );
+  await assertResponse(organisationsResponse, 'G1_LISTE_ORGANISATIONS_INDISPONIBLE');
+  const organisationsPayload = await readJson(organisationsResponse);
+  const organisations = Array.isArray(organisationsPayload.donnees)
+    ? organisationsPayload.donnees as OrganisationPayload[]
+    : [];
+  let organisation = organisations.find(
+    (candidate) => candidate.code === CERTIFICATION_ORGANISATION_CODE,
+  );
+
+  if (!organisation?.id) {
+    const creationResponse = await fetch(`${backendUrl}/api/organisations`, {
+      method: 'POST',
+      headers: {
+        ...headers,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        code: CERTIFICATION_ORGANISATION_CODE,
+        nom: 'Organisation Certification G1',
+        typeOrganisation: 'RESEAU',
+        description: 'Tenant reel reserve a la certification automatisee G1.',
+      }),
+    });
+    await assertResponse(creationResponse, 'G1_CREATION_ORGANISATION_ECHOUEE');
+    const creation = await readJson(creationResponse);
+    organisation = creation.donnee as OrganisationPayload | undefined;
+  }
+
+  if (!organisation?.id) {
+    throw new Error('G1_ORGANISATION_REELLE_ABSENTE: identifiant non retourne.');
+  }
+
+  const ecolesResponse = await fetch(
+    `${backendUrl}/api/organisations/${organisation.id}/ecoles?page=1&taillePage=100`,
+    { headers },
+  );
+  await assertResponse(ecolesResponse, 'G1_LISTE_ECOLES_INDISPONIBLE');
+  const ecolesPayload = await readJson(ecolesResponse);
+  const ecoles = Array.isArray(ecolesPayload.donnees)
+    ? ecolesPayload.donnees as EcolePayload[]
+    : [];
+  let ecole = ecoles.find((candidate) => candidate.code === CERTIFICATION_ECOLE_CODE);
+
+  if (!ecole?.id) {
+    const creationResponse = await fetch(`${backendUrl}/api/ecoles`, {
+      method: 'POST',
+      headers: {
+        ...headers,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        idOrganisation: organisation.id,
+        code: CERTIFICATION_ECOLE_CODE,
+        nom: 'Ecole Certification G1',
+        modeExploitation: 'SYNC',
+      }),
+    });
+    await assertResponse(creationResponse, 'G1_CREATION_ECOLE_ECHOUEE');
+    const creation = await readJson(creationResponse);
+    ecole = creation.donnee as EcolePayload | undefined;
+  }
+
+  if (!ecole?.id) {
+    throw new Error('G1_ECOLE_REELLE_ABSENTE: identifiant non retourne.');
+  }
+
+  const modulesOrganisationResponse = await fetch(
+    `${backendUrl}/api/v1/configuration/modules/organisations/${organisation.id}`,
+    {
+      method: 'PUT',
+      headers: {
+        ...headers,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({ modules: CERTIFICATION_MODULES }),
+    },
+  );
+  await assertResponse(
+    modulesOrganisationResponse,
+    'G1_MODULES_ORGANISATION_INDISPONIBLES',
+  );
+
+  const modulesEcoleResponse = await fetch(
+    `${backendUrl}/api/v1/configuration/modules/ecoles/${ecole.id}`,
+    {
+      method: 'PUT',
+      headers: {
+        ...headers,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        organisationId: organisation.id,
+        modules: CERTIFICATION_MODULES,
+      }),
+    },
+  );
+  await assertResponse(modulesEcoleResponse, 'G1_MODULES_ECOLE_INDISPONIBLES');
+
+  await fetch(`${backendUrl}/api/auth/logout`, {
+    method: 'POST',
+    headers: {
+      ...headers,
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({ sessionId: manager.sessionId }),
+  }).catch(() => undefined);
+
+  return {
+    organisationId: organisation.id,
+    ecoleId: ecole.id,
+  };
+}
+
+async function verifyDeveloperActor(
+  backendUrl: string,
+  actorCode: G1ActorCode,
+  tenant: CertificationTenant,
+): Promise<void> {
+  const actorLevel = actorCode === 'MANAGER_SYSTEME' || actorCode === 'SUPPORT_SYSTEME'
+    ? 'PLATEFORME'
+    : actorCode === 'PROMOTEUR_ORGANISATION' || actorCode === 'ADMIN_SYSTEME_ORGANISATION'
+      ? 'ORGANISATION'
+      : 'ECOLE';
+  const session = await openDeveloperSession(
+    backendUrl,
+    actorCode,
+    actorLevel === 'PLATEFORME'
+      ? undefined
+      : {
+          organisationId: tenant.organisationId,
+          ecoleId: actorLevel === 'ECOLE' ? tenant.ecoleId : undefined,
+        },
+  );
+  const headers = authHeaders(session);
   const profileResponse = await fetch(`${backendUrl}/api/auth/profil`, {
-    headers: authHeaders,
+    headers,
   });
   await assertResponse(profileResponse, `G1_PROFIL_EFFECTIF_${actorCode}_INDISPONIBLE`);
   const profile = await readJson(profileResponse) as unknown as EffectiveProfilePayload;
@@ -139,8 +321,8 @@ async function verifyDeveloperActor(
   if (actorCode === 'CAISSIER') {
     if (
       profile.contexte?.governanceLevel !== 'ECOLE'
-      || !profile.contexte.organisationId
-      || !profile.contexte.ecoleId
+      || profile.contexte.organisationId !== tenant.organisationId
+      || profile.contexte.ecoleId !== tenant.ecoleId
     ) {
       throw new Error(
         'G1_FIXTURE_CAISSIER_ECOLE_ABSENTE: la session développeur CAISSIER doit fournir une organisation et une école réelles.',
@@ -156,7 +338,7 @@ async function verifyDeveloperActor(
   await fetch(`${backendUrl}/api/auth/logout`, {
     method: 'POST',
     headers: {
-      ...authHeaders,
+      ...headers,
       'content-type': 'application/json',
     },
     body: JSON.stringify({ sessionId: session.sessionId }),
@@ -178,6 +360,9 @@ export default async function globalSetup(config: FullConfig): Promise<void> {
     backendUrl,
     initialization.initialisationRequise === true,
   );
+  const tenant = await ensureCertificationTenant(backendUrl);
+  process.env.EDUCSYN_G1_ORGANISATION_ID = tenant.organisationId;
+  process.env.EDUCSYN_G1_ECOLE_ID = tenant.ecoleId;
 
   for (const actorCode of [
     'MANAGER_SYSTEME',
@@ -192,6 +377,6 @@ export default async function globalSetup(config: FullConfig): Promise<void> {
     'ENSEIGNANT',
     'PARENT',
   ] as const) {
-    await verifyDeveloperActor(backendUrl, actorCode);
+    await verifyDeveloperActor(backendUrl, actorCode, tenant);
   }
 }

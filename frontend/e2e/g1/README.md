@@ -2,7 +2,9 @@
 
 Cette suite certifie la gouvernance frontend avec les vraies routes, les vraies
 sessions développeur et les projections effectives du backend. Elle
-n'intercepte aucune réponse métier et n'invente aucun tenant.
+n'intercepte aucune réponse métier. Son précontrôle crée ou relit son
+organisation et son école de certification par les routes officielles, puis
+active les modules par les workflows Configuration existants.
 
 ## Couverture
 
@@ -19,7 +21,6 @@ n'intercepte aucune réponse métier et n'invente aucun tenant.
 - PostgreSQL initialisé avec le premier Manager système ;
 - Redis disponible si le démarrage backend courant l'exige ;
 - environnement backend `development`, afin d'exposer la vraie session développeur ;
-- une organisation réelle pour le scénario de changement de contexte ;
 - les fixtures développeur `MANAGER_SYSTEME`, `SUPPORT_SYSTEME` et `CAISSIER`.
 
 Le précontrôle échoue avec un code explicite si une fixture manque :

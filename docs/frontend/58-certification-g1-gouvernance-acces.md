@@ -5,7 +5,8 @@
 Cette matrice relie chaque exigence G1 a une preuve executable. La
 certification combine les tests unitaires frontend, les tests d'integration
 backend et les parcours navigateur reels. Aucune interception de reponse
-metier et aucun tenant fictif ne sont autorises dans la suite Playwright G1.
+metier n'est autorisee. Le tenant de certification est cree ou relu par les
+routes officielles puis configure par les workflows Modules existants.
 
 ## 2. Matrice des acteurs
 
