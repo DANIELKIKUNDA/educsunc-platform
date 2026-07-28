@@ -1,7 +1,15 @@
-import { authApi, type BackendLoginApiData } from './auth.api';
+import {
+  authApi,
+  type BackendEffectiveProfileApiData,
+  type BackendLoginApiData,
+} from './auth.api';
 import { authEntryMode } from './auth-entry-mode';
 import { registerAuthRecoveryHandler } from './auth-recovery';
-import { sessionStore, type FrontendActorCode } from './session.store';
+import {
+  sessionStore,
+  type FrontendActorCode,
+  type FrontendGovernanceLevel,
+} from './session.store';
 import { activeContextStore } from '../session/active-context.store';
 
 const PERSISTENT_STORAGE_KEY = 'educsync.auth.session';
@@ -93,9 +101,10 @@ function applyGovernanceContext(
   actorCode: FrontendActorCode,
   organisationActiveId?: string,
   ecoleActiveId?: string,
+  governanceLevel?: FrontendGovernanceLevel,
 ): void {
   const profile = sessionStore.actorProfiles.find((candidate) => candidate.code === actorCode);
-  const level = profile?.governanceLevels[0] ?? 'ECOLE';
+  const level = governanceLevel ?? profile?.governanceLevels[0] ?? 'ECOLE';
   activeContextStore.setGovernanceLevel(level);
   activeContextStore.applyResolvedContext({
     organizationId: level === 'PLATEFORME' ? null : organisationActiveId ?? null,
@@ -116,12 +125,38 @@ function snapshotFromState(rememberMe: boolean): PersistedAuthSnapshot {
   };
 }
 
-function applyLoginResult(
+function applyEffectiveProjection(profile: BackendEffectiveProfileApiData): FrontendActorCode {
+  const actorCandidate = profile.acteurCodeActif ?? profile.roleActif ?? profile.acteurCode;
+  if (!isKnownActor(actorCandidate)) {
+    throw new Error("Le profil de travail actif n'est pas reconnu.");
+  }
+
+  sessionStore.applyEffectiveProfile(profile);
+  applyGovernanceContext(
+    actorCandidate,
+    profile.contexte?.organisationId ?? profile.contexte?.idOrganisation,
+    profile.contexte?.ecoleId ?? profile.contexte?.idEcole,
+    profile.contexte?.governanceLevel
+      ?? profile.contexte?.niveauGouvernance
+      ?? profile.contexte?.niveau,
+  );
+  return actorCandidate;
+}
+
+async function applyLoginResult(
   result: BackendLoginApiData,
   rememberMe: boolean,
   options?: { actorCode?: FrontendActorCode; developer?: boolean },
-): void {
-  const actorCandidate = options?.actorCode ?? result.acteurCode ?? decodeActorFromAccessToken(result.accessToken);
+): Promise<void> {
+  const effectiveProfile = await authApi.obtenirProfil({
+    accessToken: result.accessToken,
+    sessionId: result.sessionId,
+  });
+  const actorCandidate =
+    effectiveProfile.acteurCodeActif
+    ?? options?.actorCode
+    ?? result.acteurCode
+    ?? decodeActorFromAccessToken(result.accessToken);
   if (!isKnownActor(actorCandidate)) {
     throw new Error("Le profil de travail associe a ce compte n'est pas disponible.");
   }
@@ -136,7 +171,7 @@ function applyLoginResult(
     developer: options?.developer,
     permissions: result.permissions,
   });
-  applyGovernanceContext(actorCandidate, result.organisationActiveId, result.ecoleActiveId);
+  applyEffectiveProjection(effectiveProfile);
   writeSnapshot(snapshotFromState(rememberMe));
   authChannel?.postMessage({ type: 'authenticated' });
 }
@@ -147,9 +182,6 @@ async function validateRestoredSession(
 ): Promise<void> {
   const session = await authApi.obtenirSession({ accessToken, sessionId: snapshot.sessionId });
   const profile = await authApi.obtenirProfil({ accessToken, sessionId: snapshot.sessionId });
-  if (!isKnownActor(profile.acteurCode)) {
-    throw new Error("Le profil de travail actif n'est pas reconnu.");
-  }
   const context = await authApi.obtenirContexte({
     accessToken,
     sessionId: session.sessionId,
@@ -161,18 +193,31 @@ async function validateRestoredSession(
     accessToken,
     sessionId: session.sessionId,
     userId: session.utilisateurId,
-    actorCode: profile.acteurCode,
+    actorCode: profile.acteurCodeActif,
     displayName: snapshot.displayName,
     email: snapshot.email,
     developer: authEntryMode === 'developer' && snapshot.email.startsWith('dev.'),
-    permissions: profile.permissions,
+    permissions: profile.permissionsEffectives,
   });
-  applyGovernanceContext(
-    profile.acteurCode,
-    context.organisationActiveId ?? session.organisationActiveId,
-    context.ecoleActiveId ?? session.ecoleActiveId,
-  );
-  writeSnapshot({ ...snapshot, actorCode: profile.acteurCode, sessionId: session.sessionId });
+  applyEffectiveProjection({
+    ...profile,
+    contexte: {
+      ...profile.contexte,
+      organisationId:
+        profile.contexte?.organisationId
+        ?? context.organisationActiveId
+        ?? session.organisationActiveId,
+      ecoleId:
+        profile.contexte?.ecoleId
+        ?? context.ecoleActiveId
+        ?? session.ecoleActiveId,
+    },
+  });
+  writeSnapshot({
+    ...snapshot,
+    actorCode: profile.acteurCodeActif as FrontendActorCode,
+    sessionId: session.sessionId,
+  });
 }
 
 async function refreshSession(): Promise<boolean> {
@@ -199,15 +244,15 @@ async function refreshSession(): Promise<boolean> {
   return refreshInFlight;
 }
 
-async function openDeveloperSessionForCurrentActor(): Promise<void> {
-  if (sessionStore.state.isAuthenticated && sessionStore.state.accessToken && sessionStore.state.sessionId) {
-    await authApi.deconnecter({
-      accessToken: sessionStore.state.accessToken,
-      sessionId: sessionStore.state.sessionId,
-    }).catch(() => undefined);
-  }
-  clearSnapshot();
-  const actorCode = sessionStore.state.actorCode;
+async function openDeveloperSessionForCurrentActor(
+  actorCode = sessionStore.state.actorCode,
+): Promise<void> {
+  const ancienneSession = sessionStore.state.accessToken && sessionStore.state.sessionId
+    ? {
+        accessToken: sessionStore.state.accessToken,
+        sessionId: sessionStore.state.sessionId,
+      }
+    : null;
   const profile = sessionStore.actorProfiles.find((candidate) => candidate.code === actorCode);
   const organizationId = profile?.governanceLevels.includes('PLATEFORME')
     ? undefined
@@ -221,7 +266,10 @@ async function openDeveloperSessionForCurrentActor(): Promise<void> {
     ecoleActiveId: schoolId,
     deviceId: getDeviceId(),
   });
-  applyLoginResult(result, false, { actorCode, developer: true });
+  await applyLoginResult(result, false, { actorCode, developer: true });
+  if (ancienneSession && ancienneSession.sessionId !== result.sessionId) {
+    await authApi.deconnecter(ancienneSession).catch(() => undefined);
+  }
 }
 
 function installMultiTabSync(): void {
@@ -292,7 +340,7 @@ export async function connecterUtilisateur(params: {
   seSouvenirDeMoi: boolean;
 }): Promise<void> {
   const result = await authApi.connecter({ ...params, deviceId: getDeviceId() });
-  applyLoginResult(result, params.seSouvenirDeMoi);
+  await applyLoginResult(result, params.seSouvenirDeMoi);
 }
 
 export async function initialiserPremierManager(params: {
@@ -306,7 +354,7 @@ export async function initialiserPremierManager(params: {
 }): Promise<void> {
   const result = await authApi.initialiserPlateforme({ ...params, deviceId: getDeviceId() });
   sessionStore.setInitializationRequired(false);
-  applyLoginResult(result, params.seSouvenirDeMoi, { actorCode: 'MANAGER_SYSTEME' });
+  await applyLoginResult(result, params.seSouvenirDeMoi, { actorCode: 'MANAGER_SYSTEME' });
 }
 
 export async function deconnecterUtilisateur(): Promise<void> {
@@ -316,41 +364,119 @@ export async function deconnecterUtilisateur(): Promise<void> {
   }
   clearSnapshot();
   sessionStore.clearBackendSession('logout');
+  activeContextStore.clear();
   authChannel?.postMessage({ type: 'terminated' });
 }
 
-export async function ouvrirSessionDeveloppeurActeurSelectionne(): Promise<void> {
+export async function ouvrirSessionDeveloppeurActeurSelectionne(
+  actorCode?: FrontendActorCode,
+): Promise<void> {
   if (authEntryMode !== 'developer') throw new Error('Le mode developpeur est desactive.');
-  await openDeveloperSessionForCurrentActor();
+  await openDeveloperSessionForCurrentActor(actorCode);
   sessionStore.completeInitialization('dev');
+}
+
+async function rechargerProjectionApresChangementContexte(
+  context: {
+    organisationActiveId?: string;
+    ecoleActiveId?: string;
+  },
+): Promise<void> {
+  if (!sessionStore.state.accessToken || !sessionStore.state.sessionId) {
+    return;
+  }
+  const profile = await authApi.obtenirProfil({
+    accessToken: sessionStore.state.accessToken,
+    sessionId: sessionStore.state.sessionId,
+  }).catch((error) => {
+    sessionStore.invalidateEffectiveProfile();
+    throw error;
+  });
+  applyEffectiveProjection({
+    ...profile,
+    contexte: {
+      ...profile.contexte,
+      organisationId: context.organisationActiveId,
+      ecoleId: context.ecoleActiveId,
+    },
+  });
+}
+
+export async function rechargerProfilEffectifFrontend(): Promise<void> {
+  if (!sessionStore.state.accessToken || !sessionStore.state.sessionId) {
+    sessionStore.invalidateEffectiveProfile();
+    return;
+  }
+  const profile = await authApi.obtenirProfil({
+    accessToken: sessionStore.state.accessToken,
+    sessionId: sessionStore.state.sessionId,
+  });
+  applyEffectiveProjection(profile);
+}
+
+export async function activerContextePlateformeFrontend(): Promise<void> {
+  if (!sessionStore.state.accessToken || !sessionStore.state.sessionId) return;
+  sessionStore.invalidateEffectiveProfile();
+  try {
+    const context = await authApi.activerContextePlateforme({
+      accessToken: sessionStore.state.accessToken,
+      sessionId: sessionStore.state.sessionId,
+    });
+    await rechargerProjectionApresChangementContexte(context);
+  } catch (error) {
+    await rechargerProfilEffectifFrontend().catch(() => undefined);
+    throw error;
+  }
+  const snapshot = readSnapshot();
+  if (snapshot) {
+    writeSnapshot({
+      ...snapshot,
+      organisationActiveId: undefined,
+      ecoleActiveId: undefined,
+    });
+  }
 }
 
 export async function changerOrganisationActiveFrontend(organizationId: string): Promise<void> {
   if (!sessionStore.state.accessToken || !sessionStore.state.sessionId) return;
-  const context = await authApi.changerOrganisationActive({
-    accessToken: sessionStore.state.accessToken,
-    sessionId: sessionStore.state.sessionId,
-    organisationActiveId: organizationId,
-  });
-  activeContextStore.applyResolvedContext({
-    organizationId: context.organisationActiveId ?? organizationId,
-    schoolId: context.ecoleActiveId ?? null,
-  });
+  sessionStore.invalidateEffectiveProfile();
+  try {
+    const context = await authApi.changerOrganisationActive({
+      accessToken: sessionStore.state.accessToken,
+      sessionId: sessionStore.state.sessionId,
+      organisationActiveId: organizationId,
+    });
+    await rechargerProjectionApresChangementContexte({
+      organisationActiveId: context.organisationActiveId ?? organizationId,
+      ecoleActiveId: context.ecoleActiveId,
+    });
+  } catch (error) {
+    await rechargerProfilEffectifFrontend().catch(() => undefined);
+    throw error;
+  }
   const snapshot = readSnapshot();
   if (snapshot) writeSnapshot({ ...snapshot, organisationActiveId: organizationId, ecoleActiveId: undefined });
 }
 
 export async function changerEcoleActiveFrontend(schoolId: string): Promise<void> {
   if (!sessionStore.state.accessToken || !sessionStore.state.sessionId) return;
-  const context = await authApi.changerEcoleActive({
-    accessToken: sessionStore.state.accessToken,
-    sessionId: sessionStore.state.sessionId,
-    ecoleActiveId: schoolId,
-  });
-  activeContextStore.applyResolvedContext({
-    organizationId: context.organisationActiveId ?? activeContextStore.state.organizationId,
-    schoolId: context.ecoleActiveId ?? schoolId,
-  });
+  sessionStore.invalidateEffectiveProfile();
+  try {
+    const context = await authApi.changerEcoleActive({
+      accessToken: sessionStore.state.accessToken,
+      sessionId: sessionStore.state.sessionId,
+      ecoleActiveId: schoolId,
+    });
+    await rechargerProjectionApresChangementContexte({
+      organisationActiveId:
+        context.organisationActiveId
+        ?? activeContextStore.state.organizationId,
+      ecoleActiveId: context.ecoleActiveId ?? schoolId,
+    });
+  } catch (error) {
+    await rechargerProfilEffectifFrontend().catch(() => undefined);
+    throw error;
+  }
   const snapshot = readSnapshot();
   if (snapshot) writeSnapshot({ ...snapshot, ecoleActiveId: schoolId });
 }

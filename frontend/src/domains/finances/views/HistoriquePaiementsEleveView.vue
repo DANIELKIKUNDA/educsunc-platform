@@ -57,6 +57,13 @@
         />
       </template>
 
+      <template v-else-if="uiState === 'ownership-denied'">
+        <ErrorState
+          title="Historique non accessible"
+          message="Cet eleve ne fait pas partie des enfants autorises pour votre compte."
+        />
+      </template>
+
       <template v-else-if="uiState === 'technical-error'">
         <ErrorState
           title="Lecture technique indisponible"
@@ -169,7 +176,7 @@
                 <strong>Regles visibles</strong>
               </div>
               <ul>
-                <li>`TITULAIRE` reste limite a sa classe titulaire et a la bonne annee scolaire.</li>
+                <li>L enseignant titulaire effectif reste limite a sa classe et a la bonne annee scolaire.</li>
                 <li>`PARENT` ne peut voir que ses enfants autorises.</li>
                 <li>Les acteurs pedagogiques delegues restent bornes par section et parametrage ecole.</li>
               </ul>
@@ -258,6 +265,8 @@ import EmptyState from '../../../shared/ui/EmptyState.vue';
 import { activeContextStore } from '../../../shared/session/active-context.store';
 import { sessionStore } from '../../../shared/auth/session.store';
 import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
+import { isOwnedStudentTargetAllowed } from '../../../shared/permissions/parent-ownership';
+import { hasTitulariatEffectif } from '../access/titulariat-experience';
 import { usePaymentHistoryStore } from '../stores/payment-history.store';
 
 const route = useRoute();
@@ -278,11 +287,17 @@ const technicalErrorMessage = computed(() =>
   ?? 'Le backend n a pas pu restituer l historique des paiements pour cet eleve.',
 );
 
-const uiState = computed<'loading' | 'idle' | 'missing-student' | 'technical-error'>(() => {
+const uiState = computed<
+  'loading' | 'idle' | 'missing-student' | 'ownership-denied' | 'technical-error'
+>(() => {
   const idEleve = lireIdEleveRoute();
 
   if (!idEleve) {
     return 'missing-student';
+  }
+
+  if (!isOwnedStudentTargetAllowed(idEleve)) {
+    return 'ownership-denied';
   }
 
   if (paymentHistoryStore.state.status === 'loading') {
@@ -297,9 +312,11 @@ const uiState = computed<'loading' | 'idle' | 'missing-student' | 'technical-err
 });
 
 const perimeterMessage = computed(() => {
+  if (hasTitulariatEffectif()) {
+    return 'Lecture financiere bornee a la classe titulaire effective et a la bonne annee scolaire.';
+  }
+
   switch (session.actorCode) {
-    case 'TITULAIRE':
-      return 'Lecture financiere bornee a la classe titulaire effective et a la bonne annee scolaire.';
     case 'PARENT':
       return 'Lecture financiere bornee aux enfants autorises rattaches a ce parent.';
     case 'PREFET_ETUDES':
@@ -376,7 +393,11 @@ watch(
     selectedMode.value = '';
     selectedStatus.value = '';
 
-    if (!idEleve || !isAuthorized.value) {
+    if (
+      !idEleve
+      || !isAuthorized.value
+      || !isOwnedStudentTargetAllowed(idEleve)
+    ) {
       paymentHistoryStore.reinitialiser();
       return;
     }

@@ -221,7 +221,6 @@ async function chargerCentrePlateforme(): Promise<void> {
 
 async function activerOrganisationDansContexte(idOrganisation: string): Promise<void> {
   await changerOrganisationActiveFrontend(idOrganisation);
-  activeContextStore.setGovernanceLevel('ORGANISATION');
   await store.chargerEcolesParOrganisation(idOrganisation);
 }
 
@@ -236,7 +235,6 @@ async function relireOrganisationMemoiree(): Promise<void> {
 async function activerEcoleDansContexte(idOrganisation: string, idEcole: string): Promise<void> {
   await changerOrganisationActiveFrontend(idOrganisation);
   await changerEcoleActiveFrontend(idEcole);
-  activeContextStore.setGovernanceLevel('ECOLE');
 }
 
 onMounted(() => {

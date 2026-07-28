@@ -4,7 +4,7 @@ import { initializeFrontendSession } from '../shared/auth/session.bootstrap';
 import { activeContextStore } from '../shared/session/active-context.store';
 import {
   getFirstAccessibleRoute,
-  isPageAccessible,
+  isPageAccessibleForPath,
   resolveAppEntryRoute,
   resolvePageByRouteName,
   resolvePageByRoutePath,
@@ -32,21 +32,27 @@ export function installNavigationGuards(router: Router): void {
     }
 
     if (to.path.startsWith('/app')) {
+      if (to.meta.accessFallback === true) {
+        return true;
+      }
       const actorCode = sessionStore.state.actorCode;
       const governanceLevel = activeContextStore.state.governanceLevel;
 
       if (to.path === '/app') {
-        return resolveAppEntryRoute(actorCode, governanceLevel);
+        const entryRoute = resolveAppEntryRoute(actorCode, governanceLevel);
+        return entryRoute === '/app' ? false : entryRoute;
       }
 
       const doctrinePage = resolvePageByRouteName(to.name) ?? resolvePageByRoutePath(to.path);
 
       if (doctrinePage) {
-        if (!isPageAccessible(doctrinePage, actorCode, governanceLevel)) {
-          return getFirstAccessibleRoute(actorCode, governanceLevel);
+        if (!isPageAccessibleForPath(doctrinePage, to.path, actorCode, governanceLevel)) {
+          const fallback = getFirstAccessibleRoute(actorCode, governanceLevel);
+          return fallback === to.path ? true : fallback;
         }
       } else {
-        return getFirstAccessibleRoute(actorCode, governanceLevel);
+        const fallback = getFirstAccessibleRoute(actorCode, governanceLevel);
+        return fallback === to.path ? true : fallback;
       }
     }
 

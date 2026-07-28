@@ -5,7 +5,7 @@ export type StudentFinancialSituationActorCode =
   | 'ADMINISTRATEUR_ECOLE'
   | 'GESTIONNAIRE_ORGANISATION'
   | 'PROMOTEUR_ORGANISATION'
-  | 'TITULAIRE'
+  | 'ENSEIGNANT'
   | 'PARENT'
   | 'PREFET_ETUDES'
   | 'DIRECTEUR_ETUDES'
@@ -88,4 +88,3 @@ export interface StudentFinancialSituationViewModel {
 export type StudentDebtResponse = DetailResponse<StudentDebtApiData>;
 export type StudentDueFeesResponse = DetailResponse<StudentDueFeesApiData>;
 export type StudentDetailResponse = DetailResponse<StudentDetailApiData>;
-

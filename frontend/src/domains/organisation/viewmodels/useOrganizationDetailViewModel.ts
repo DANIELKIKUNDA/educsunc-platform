@@ -2,7 +2,6 @@ import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { configurationApi, lireContexteApiConfiguration } from '../../configuration/services/configuration.api';
 import { changerOrganisationActiveFrontend } from '../../../shared/auth/session.bootstrap';
-import { activeContextStore } from '../../../shared/session/active-context.store';
 import { notificationsService } from '../../../services/notifications.service';
 import type {
   ConfigurationModuleCatalogItem,
@@ -114,7 +113,6 @@ export function useOrganizationDetailViewModel() {
   async function activerOrganisationDansContexte(): Promise<void> {
     if (!organisation.value) return;
     await changerOrganisationActiveFrontend(organisation.value.id);
-    activeContextStore.setGovernanceLevel('ORGANISATION');
     notificationsService.succes('Contexte active', `${organisation.value.nom} est maintenant l organisation active.`);
   }
 

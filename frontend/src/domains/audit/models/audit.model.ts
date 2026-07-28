@@ -6,8 +6,9 @@ export type AuditActorCode =
   | 'GESTIONNAIRE_ORGANISATION'
   | 'ADMINISTRATEUR_ECOLE'
   | 'CAISSIER'
+  | 'COMPTABLE'
   | 'ADMIN_SYSTEME_ECOLE'
-  | 'TITULAIRE'
+  | 'ENSEIGNANT'
   | 'PREFET_ETUDES'
   | 'DIRECTEUR_ETUDES'
   | 'DIRECTEUR_DISCIPLINE'
@@ -115,6 +116,7 @@ export const authorizedOrganizationAuditActors: AuditActorCode[] = [
 export const authorizedSchoolFinancialAuditActors: AuditActorCode[] = [
   'ADMINISTRATEUR_ECOLE',
   'CAISSIER',
+  'COMPTABLE',
 ];
 
 export const authorizedSchoolTechnicalAuditActors: AuditActorCode[] = [
@@ -122,7 +124,7 @@ export const authorizedSchoolTechnicalAuditActors: AuditActorCode[] = [
 ];
 
 export const authorizedPedagogicalAuditActors: AuditActorCode[] = [
-  'TITULAIRE',
+  'ENSEIGNANT',
   'PREFET_ETUDES',
   'DIRECTEUR_ETUDES',
   'DIRECTEUR_DISCIPLINE',

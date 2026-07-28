@@ -20,5 +20,6 @@ export interface NavigationEntry {
   icon: string;
   governanceLevels: readonly FrontendGovernanceLevel[];
   actorCodes: readonly string[];
+  visibleActions: readonly FrontendPageAction[];
   children: readonly NavigationChildEntry[];
 }

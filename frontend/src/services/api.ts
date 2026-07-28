@@ -1,5 +1,11 @@
 import { lireEntetesAuthentificationActive } from '../shared/session/api-context';
 import { recoverAuthentication } from '../shared/auth/auth-recovery';
+import {
+  frontendLifecycle,
+} from '../shared/lifecycle/frontend-lifecycle.runtime';
+import type {
+  FrontendRequestScope,
+} from '../shared/lifecycle/frontend-lifecycle.coordinator';
 
 type MethodeHttp = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
@@ -81,6 +87,20 @@ function messageHttpParDefaut(status: number): string {
   return 'Une action demandee n a pas pu etre terminee.';
 }
 
+function creerErreurAnnulation(): ApiError {
+  return new ApiError(
+    'La demande a ete interrompue car le contexte actif a change.',
+    0,
+    'REQUEST_CANCELLED',
+  );
+}
+
+function verifierRequeteCourante(scope: FrontendRequestScope): void {
+  if (!scope.isCurrent()) {
+    throw creerErreurAnnulation();
+  }
+}
+
 // Centralise les appels HTTP du frontend.
 export const clientApi = {
   baseUrl,
@@ -91,6 +111,9 @@ export const clientApi = {
 };
 
 async function envoyerAvecReprise<TSortie>(requete: RequeteApi, dejaRejouee: boolean): Promise<TSortie> {
+  const requestScope = frontendLifecycle.createRequestScope(requete.signal);
+
+  try {
     let reponse: Response;
 
     try {
@@ -105,11 +128,16 @@ async function envoyerAvecReprise<TSortie>(requete: RequeteApi, dejaRejouee: boo
           ...requete.entetes,
         },
         body: requete.corps === undefined ? undefined : JSON.stringify(requete.corps),
-        signal: requete.signal,
+        signal: requestScope.signal,
       });
     } catch {
+      if (!requestScope.isCurrent() || requestScope.signal.aborted) {
+        throw creerErreurAnnulation();
+      }
       throw new ApiError('Connexion au serveur perdue.', 0, 'NETWORK_ERROR');
     }
+
+    verifierRequeteCourante(requestScope);
 
     if (!reponse.ok) {
       if (
@@ -118,6 +146,8 @@ async function envoyerAvecReprise<TSortie>(requete: RequeteApi, dejaRejouee: boo
         && !dejaRejouee
         && await recoverAuthentication()
       ) {
+        // La restauration de session invalide volontairement l'ancien cycle.
+        // La reprise repart donc avec un nouveau scope au lieu de reutiliser la requete 401.
         return envoyerAvecReprise<TSortie>(requete, true);
       }
 
@@ -133,13 +163,20 @@ async function envoyerAvecReprise<TSortie>(requete: RequeteApi, dejaRejouee: boo
         }
       }
 
+      verifierRequeteCourante(requestScope);
       const code = extraireCodeBackend(payload) ?? reponse.statusText;
       const message = extraireMessageBackend(payload) ?? messageHttpParDefaut(reponse.status);
       throw new ApiError(message, reponse.status, code, payload);
     }
 
     if (reponse.status === 204) {
+      verifierRequeteCourante(requestScope);
       return undefined as TSortie;
     }
-    return (await reponse.json()) as TSortie;
+    const payload = (await reponse.json()) as TSortie;
+    verifierRequeteCourante(requestScope);
+    return payload;
+  } finally {
+    requestScope.release();
+  }
 }

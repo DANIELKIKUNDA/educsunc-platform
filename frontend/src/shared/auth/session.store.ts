@@ -1,10 +1,22 @@
 import { computed, reactive } from 'vue';
 import { actorProfiles } from '../doctrine/frontend-doctrine';
 import type { FrontendActorCode, FrontendActorProfile, FrontendGovernanceLevel } from '../doctrine/doctrine.types';
+import {
+  createEmptyEffectiveProfile,
+  normalizeEffectiveProfile,
+} from '../permissions/effective-profile';
+import {
+  hasDerivedCapability as profileHasDerivedCapability,
+  listEffectiveActorCodes,
+} from '../permissions/effective-access.engine';
+import type {
+  DerivedCapabilityCode,
+  EffectiveAccessTarget,
+  EffectiveProfilePayloadV1,
+  EffectiveProfileV1,
+} from '../permissions/effective-profile.types';
 
 export type { FrontendActorCode, FrontendActorProfile, FrontendGovernanceLevel } from '../doctrine/doctrine.types';
-
-const DEV_SESSION_STORAGE_KEY = 'educsync.frontend.dev-session';
 
 export interface FrontendSessionState {
   isAuthenticated: boolean;
@@ -21,43 +33,17 @@ export interface FrontendSessionState {
   initializationRequired: boolean;
   lastTerminationReason: 'none' | 'logout' | 'revoked' | 'expired';
   permissions: readonly string[];
+  effectiveProfile: EffectiveProfileV1;
 }
 
-function findProfile(actorCode: FrontendActorCode): FrontendActorProfile {
-  return actorProfiles.find((profile) => profile.code === actorCode) ?? actorProfiles[0];
+function findProfile(actorCode: FrontendActorCode): FrontendActorProfile | undefined {
+  return actorProfiles.find((profile) => profile.code === actorCode);
 }
 
-function lireSessionDevPersisted(): { actorCode?: FrontendActorCode } | null {
-  if (typeof window === 'undefined') {
-    return null;
-  }
-
-  const brut = window.localStorage.getItem(DEV_SESSION_STORAGE_KEY);
-  if (!brut) {
-    return null;
-  }
-
-  try {
-    return JSON.parse(brut) as { actorCode?: FrontendActorCode };
-  } catch {
-    return null;
-  }
-}
-
-function persisterSessionDev(actorCode: FrontendActorCode): void {
-  if (typeof window === 'undefined') {
-    return;
-  }
-
-  window.localStorage.setItem(
-    DEV_SESSION_STORAGE_KEY,
-    JSON.stringify({ actorCode }),
-  );
-}
-
-const initialProfile = findProfile(
-  lireSessionDevPersisted()?.actorCode ?? 'ADMINISTRATEUR_ECOLE',
-);
+const defaultProfile = actorProfiles.find(
+  (profile) => profile.code === 'ADMINISTRATEUR_ECOLE',
+) as FrontendActorProfile;
+const initialProfile = defaultProfile;
 
 const state = reactive<FrontendSessionState>({
   isAuthenticated: false,
@@ -74,12 +60,40 @@ const state = reactive<FrontendSessionState>({
   initializationRequired: false,
   lastTerminationReason: 'none',
   permissions: [],
+  effectiveProfile: createEmptyEffectiveProfile(),
 });
 
 export const sessionStore = {
   state,
   actorProfiles,
-  activeProfile: computed(() => findProfile(state.actorCode)),
+  activeProfile: computed(() => findProfile(state.actorCode) ?? defaultProfile),
+  effectiveGovernanceLevels: computed<readonly FrontendGovernanceLevel[]>(() => {
+    const scopeTypes = new Set(
+      state.effectiveProfile.scopes.map((scope) => scope.typeScope),
+    );
+    if (scopeTypes.has('PLATEFORME')) {
+      return ['PLATEFORME', 'ORGANISATION', 'ECOLE'];
+    }
+    if (scopeTypes.has('ORGANISATION')) {
+      return ['ORGANISATION', 'ECOLE'];
+    }
+    if (
+      scopeTypes.has('ECOLE')
+      || scopeTypes.has('SECTION')
+      || scopeTypes.has('CLASSE')
+      || scopeTypes.has('COURS')
+    ) {
+      return ['ECOLE'];
+    }
+    return [];
+  }),
+  effectiveActorCodes: computed(() => listEffectiveActorCodes(state.effectiveProfile)),
+  hasDerivedCapability(
+    capability: DerivedCapabilityCode,
+    target?: EffectiveAccessTarget,
+  ): boolean {
+    return profileHasDerivedCapability(state.effectiveProfile, capability, target);
+  },
   beginInitialization(): void {
     state.initializing = true;
   },
@@ -87,15 +101,6 @@ export const sessionStore = {
     state.initializing = false;
     state.initialized = true;
     state.authMode = mode;
-  },
-  setActor(actorCode: string): void {
-    const profile = findProfile(actorCode as FrontendActorCode);
-    state.actorCode = profile.code;
-    state.actorLabel = profile.label;
-    if (!state.displayName) {
-      state.displayName = profile.displayName;
-    }
-    persisterSessionDev(profile.code);
   },
   setTransportSession(params: { accessToken: string; sessionId: string }): void {
     state.accessToken = params.accessToken;
@@ -113,21 +118,54 @@ export const sessionStore = {
   }): void {
     if (params.actorCode) {
       const profile = findProfile(params.actorCode as FrontendActorCode);
-      state.actorCode = profile.code;
-      state.actorLabel = profile.label;
+      if (profile) {
+        state.actorCode = profile.code;
+        state.actorLabel = profile.label;
+      }
     }
     state.accessToken = params.accessToken;
     state.sessionId = params.sessionId;
     state.userId = params.userId;
-    state.displayName = params.displayName?.trim() || state.displayName || findProfile(state.actorCode).displayName;
+    state.displayName =
+      params.displayName?.trim()
+      || state.displayName
+      || findProfile(state.actorCode)?.displayName
+      || defaultProfile.displayName;
     state.email = params.email?.trim() || state.email;
-    state.permissions = params.permissions ? [...params.permissions] : state.permissions;
+    state.permissions = params.permissions ? [...params.permissions] : [];
+    // Le transport authentifie ne constitue jamais une preuve d'autorisation.
+    // La navigation reste fermee jusqu'a la projection effective signee par le serveur.
+    state.effectiveProfile = createEmptyEffectiveProfile();
     state.isAuthenticated = true;
     state.authMode = params.developer ? 'dev' : 'backend';
     state.lastTerminationReason = 'none';
   },
+  applyEffectiveProfile(payload: EffectiveProfilePayloadV1): void {
+    const normalized = normalizeEffectiveProfile(payload, {
+      actorCode: state.actorCode,
+      userId: state.userId,
+      sessionId: state.sessionId ?? '',
+      governanceLevel: findProfile(state.actorCode)?.governanceLevels[0] ?? 'ECOLE',
+    });
+    const knownActor = [
+      normalized.roleActif,
+      ...normalized.actorCodes,
+    ].find((actorCode) =>
+      actorProfiles.some((profile) => profile.code === actorCode),
+    ) as FrontendActorCode | undefined;
+    if (knownActor) {
+      state.actorCode = knownActor;
+      state.actorLabel = findProfile(knownActor)?.label ?? state.actorLabel;
+    }
+    state.permissions = [...normalized.permissionsEffectives];
+    state.effectiveProfile = normalized;
+  },
   setInitializationRequired(required: boolean): void {
     state.initializationRequired = required;
+  },
+  invalidateEffectiveProfile(): void {
+    state.permissions = [];
+    state.effectiveProfile = createEmptyEffectiveProfile();
   },
   clearBackendSession(reason: FrontendSessionState['lastTerminationReason'] = 'none'): void {
     state.accessToken = null;
@@ -139,5 +177,6 @@ export const sessionStore = {
     state.isAuthenticated = false;
     state.lastTerminationReason = reason;
     state.permissions = [];
+    state.effectiveProfile = createEmptyEffectiveProfile();
   },
 };

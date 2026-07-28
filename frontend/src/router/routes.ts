@@ -2,6 +2,7 @@ import type { RouteRecordRaw } from 'vue-router';
 import AppShellSwitcher from '../shell/AppShellSwitcher.vue';
 import LoginView from '../features/auth/views/LoginView.vue';
 import InitializationView from '../features/auth/views/InitializationView.vue';
+import AccessDeniedView from '../shared/permissions/AccessDeniedView.vue';
 import { routesAdministrationEcole } from '../domains/administration-ecole/routes';
 import { routesAcademique } from '../domains/academique/routes';
 import { routesAudit } from '../domains/audit/routes';
@@ -49,6 +50,15 @@ export const routesFrontend: RouteRecordRaw[] = [
       {
         path: '',
         redirect: () => resolveAppEntryRoute(),
+      },
+      {
+        path: 'acces-refuse',
+        name: 'access-denied',
+        component: AccessDeniedView,
+        meta: {
+          accessFallback: true,
+          title: 'Accès protégé',
+        },
       },
       ...routesPlateforme,
       ...routesOrganisation,

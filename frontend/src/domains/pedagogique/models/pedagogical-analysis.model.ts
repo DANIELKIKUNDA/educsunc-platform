@@ -1,7 +1,7 @@
 import type { DetailResponse } from '../../finances/models/payment-history.model';
 
 export type PedagogicalAnalysisActorCode =
-  | 'TITULAIRE'
+  | 'ENSEIGNANT'
   | 'PREFET_ETUDES'
   | 'DIRECTEUR_ETUDES';
 
@@ -221,7 +221,7 @@ export interface PedagogicalAnalysisCenterViewModel {
 export type StudentResultDetailResponse = DetailResponse<ResultatBulletinApiData>;
 
 export const authorizedPedagogicalAnalysisActors: PedagogicalAnalysisActorCode[] = [
-  'TITULAIRE',
+  'ENSEIGNANT',
   'PREFET_ETUDES',
   'DIRECTEUR_ETUDES',
 ];

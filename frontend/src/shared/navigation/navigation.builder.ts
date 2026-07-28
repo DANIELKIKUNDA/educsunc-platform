@@ -8,12 +8,28 @@ export function buildVisibleNavigation(): NavigationEntry[] {
 }
 
 export function flattenNavigation(entries: readonly NavigationEntry[]) {
-  return entries.flatMap((entry) =>
-    entry.children.map((child) => ({
+  return entries.flatMap((entry) => {
+    const parent = {
+      code: entry.code,
+      label: entry.label,
+      route: entry.route,
+      routeName: '',
+      icon: entry.icon,
+      sectionCode: 'home',
+      sectionLabel: entry.label,
+      visibleActions: entry.visibleActions,
+      moduleCode: entry.code,
+      moduleLabel: entry.label,
+      moduleRoute: entry.route,
+    };
+    return [
+      parent,
+      ...entry.children.map((child) => ({
       moduleCode: entry.code,
       moduleLabel: entry.label,
       moduleRoute: entry.route,
       ...child,
-    })),
-  );
+      })),
+    ];
+  });
 }

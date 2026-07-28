@@ -11,7 +11,10 @@
     "preview": "vite preview",
     "certify:security-browser": "node scripts/certify-security-center-browser.cjs",
     "certify:platform-governance-navigation": "node scripts/certify-platform-governance-navigation.cjs",
-    "test": "vue-tsc --noEmit && node -e \"require('./scripts/run-configuration-form-tests.cjs'); require('./scripts/run-school-administration-tests.cjs')\""
+    "test:e2e:g1": "playwright test --config e2e/g1/playwright.g1.config.ts",
+    "test:e2e:g1:list": "playwright test --config e2e/g1/playwright.g1.config.ts --list",
+    "test:access": "node --test scripts/run-effective-access-tests.cjs scripts/run-frontend-lifecycle-tests.cjs",
+    "test": "vue-tsc --noEmit && node -e \"require('./scripts/run-configuration-form-tests.cjs'); require('./scripts/run-school-administration-tests.cjs')\" && npm run test:access"
   },
   "dependencies": {
     "@vitejs/plugin-vue": "^5.2.4",

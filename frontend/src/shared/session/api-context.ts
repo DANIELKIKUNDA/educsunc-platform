@@ -15,16 +15,6 @@ interface PilotageHeaderOptions {
   inclureEcoleActive?: boolean;
 }
 
-function lireVariableEnvironnement(nom: string): string | null {
-  const valeur = import.meta.env[nom];
-  if (typeof valeur !== 'string') {
-    return null;
-  }
-
-  const nettoyee = valeur.trim();
-  return nettoyee.length > 0 ? nettoyee : null;
-}
-
 function prefererValeur(...valeurs: Array<string | null | undefined>): string | null {
   for (const valeur of valeurs) {
     if (typeof valeur === 'string' && valeur.trim().length > 0) {
@@ -37,18 +27,9 @@ function prefererValeur(...valeurs: Array<string | null | undefined>): string | 
 
 export function lireContexteApiActif(): SharedApiContext {
   return {
-    organisationId: prefererValeur(
-      activeContextStore.state.organizationId,
-      lireVariableEnvironnement('VITE_REFERENTIEL_ORGANISATION_ID'),
-    ),
-    ecoleId: prefererValeur(
-      activeContextStore.state.schoolId,
-      lireVariableEnvironnement('VITE_REFERENTIEL_ECOLE_ID'),
-    ),
-    utilisateurId: prefererValeur(
-      sessionStore.state.userId,
-      lireVariableEnvironnement('VITE_REFERENTIEL_UTILISATEUR_ID'),
-    ),
+    organisationId: prefererValeur(activeContextStore.state.organizationId),
+    ecoleId: prefererValeur(activeContextStore.state.schoolId),
+    utilisateurId: prefererValeur(sessionStore.state.userId),
   };
 }
 
@@ -56,7 +37,7 @@ export function lireContexteApiPlateformeGlobal(): SharedApiContext {
   const contexte = lireContexteApiActif();
 
   return {
-    organisationId: contexte.organisationId,
+    organisationId: null,
     ecoleId: null,
     utilisateurId: contexte.utilisateurId,
   };

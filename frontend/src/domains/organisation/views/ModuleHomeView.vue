@@ -187,7 +187,6 @@ async function promouvoirContexteOrganisation(): Promise<void> {
   }
 
   await changerOrganisationActiveFrontend(context.organizationId);
-  activeContextStore.setGovernanceLevel('ORGANISATION');
 }
 
 async function activerEcoleDansContexte(idEcole: string): Promise<void> {
@@ -197,7 +196,6 @@ async function activerEcoleDansContexte(idEcole: string): Promise<void> {
 
   await changerOrganisationActiveFrontend(context.organizationId);
   await changerEcoleActiveFrontend(idEcole);
-  activeContextStore.setGovernanceLevel('ECOLE');
 }
 
 onMounted(() => {

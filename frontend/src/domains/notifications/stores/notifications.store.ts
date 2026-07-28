@@ -1,4 +1,5 @@
 import { reactive } from 'vue';
+import { registerScopedLifecycleStore } from '../../../shared/lifecycle/frontend-lifecycle.runtime';
 import {
   formatJson,
   lireArchives,
@@ -208,6 +209,25 @@ export function useNotificationsStore() {
     }
   }
 
+  function reinitialiser(): void {
+    state.status = 'idle';
+    state.errorMessage = null;
+    state.list = [];
+    state.detail = null;
+    state.timeline = [];
+    state.monitoring = null;
+    state.deadLetters = [];
+    state.retries = [];
+    state.replayDiagnostic = null;
+    state.archives = [];
+    state.tenant = null;
+    state.escalades = null;
+    state.realtime = null;
+    state.lastMutation = null;
+  }
+
+  registerScopedLifecycleStore('notifications', 'context', reinitialiser);
+
   return {
     state,
     creer,
@@ -228,6 +248,7 @@ export function useNotificationsStore() {
     chargerCapacitesRealtime,
     publierTestRealtime,
     viderErreur,
+    reinitialiser,
     formatJson,
   };
 }

@@ -1,4 +1,5 @@
 import { reactive } from 'vue';
+import { registerScopedLifecycleStore } from '../../../shared/lifecycle/frontend-lifecycle.runtime';
 import { formatJson, lireEnveloppe, lireListe } from '../mappers/monitoring.mapper';
 import type { MonitoringMutationPayload } from '../models/monitoring.model';
 import { lireContexteApiMonitoring, monitoringApi } from '../services/monitoring.api';
@@ -152,6 +153,24 @@ export function useMonitoringStore() {
     }, 'La capture de trace a echoue.');
   }
 
+  function reinitialiser(): void {
+    state.status = 'idle';
+    state.errorMessage = null;
+    state.stateData = null;
+    state.dashboardData = null;
+    state.observabilityData = null;
+    state.healthData = null;
+    state.healthSnapshotData = null;
+    state.incidents = [];
+    state.alerts = [];
+    state.diagnostics = [];
+    state.capacityData = null;
+    state.traces = [];
+    state.lastMutation = null;
+  }
+
+  registerScopedLifecycleStore('monitoring', 'platform', reinitialiser);
+
   return {
     state,
     chargerEtat,
@@ -172,5 +191,6 @@ export function useMonitoringStore() {
     chargerTraces,
     capturerTrace,
     formatJson,
+    reinitialiser,
   };
 }

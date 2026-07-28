@@ -1,6 +1,7 @@
 import { clientApi } from '../../../services/api';
 import {
   construireEntetesContexteActif,
+  construireEntetesPilotageActif,
   lireContexteApiActif,
 } from '../../../shared/session/api-context';
 import type {
@@ -29,7 +30,24 @@ function construireQueryString(query: Record<string, string | number | undefined
   return sortie.length > 0 ? `?${sortie}` : '';
 }
 
-function construireEntetesContexte(contexte: AuditApiContext): Record<string, string> {
+function construireEntetesPlateforme(contexte: AuditApiContext): Record<string, string> {
+  return construireEntetesPilotageActif(contexte, {
+    inclureOrganisationActive: false,
+    inclureEcoleActive: false,
+  });
+}
+
+function construireEntetesOrganisation(contexte: AuditApiContext): Record<string, string> {
+  if (contexte.organisationId === null) {
+    throw new Error("Sélectionnez une organisation pour consulter cet audit.");
+  }
+  return construireEntetesPilotageActif(contexte, {
+    inclureEcoleActive: false,
+    lectureOrganisationnelle: true,
+  });
+}
+
+function construireEntetesEcole(contexte: AuditApiContext): Record<string, string> {
   if (
     contexte.organisationId === null
     || contexte.ecoleId === null
@@ -65,7 +83,7 @@ export const auditApi = {
 
     return clientApi.envoyer<unknown>({
       chemin: `/api/v1/audit${query}`,
-      entetes: construireEntetesContexte(contexte),
+      entetes: construireEntetesPlateforme(contexte),
     });
   },
 
@@ -82,7 +100,7 @@ export const auditApi = {
 
     return clientApi.envoyer<unknown>({
       chemin: `/api/v1/audit/timeline${query}`,
-      entetes: construireEntetesContexte(contexte),
+      entetes: construireEntetesPlateforme(contexte),
     });
   },
 
@@ -101,7 +119,7 @@ export const auditApi = {
 
     return clientApi.envoyer<unknown>({
       chemin: `/api/v1/audit/history${query}`,
-      entetes: construireEntetesContexte(contexte),
+      entetes: construireEntetesPlateforme(contexte),
     });
   },
 
@@ -117,7 +135,7 @@ export const auditApi = {
 
     return clientApi.envoyer<unknown>({
       chemin: `/api/v1/analytics/audit${query}`,
-      entetes: construireEntetesContexte(contexte),
+      entetes: construireEntetesOrganisation(contexte),
     });
   },
 
@@ -133,7 +151,7 @@ export const auditApi = {
 
     return clientApi.envoyer<unknown>({
       chemin: `/api/v1/analytics/tenants${query}`,
-      entetes: construireEntetesContexte(contexte),
+      entetes: construireEntetesOrganisation(contexte),
     });
   },
 
@@ -149,7 +167,7 @@ export const auditApi = {
 
     return clientApi.envoyer<unknown>({
       chemin: `/api/v1/security/anomalies${query}`,
-      entetes: construireEntetesContexte(contexte),
+      entetes: construireEntetesOrganisation(contexte),
     });
   },
 
@@ -165,7 +183,7 @@ export const auditApi = {
 
     return clientApi.envoyer<unknown>({
       chemin: `/api/v1/security/access${query}`,
-      entetes: construireEntetesContexte(contexte),
+      entetes: construireEntetesOrganisation(contexte),
     });
   },
 
@@ -186,7 +204,7 @@ export const auditApi = {
 
     return clientApi.envoyer<unknown>({
       chemin: `/api/v1/ecole/audit/administratif-financier${query}`,
-      entetes: construireEntetesContexte(contexte),
+      entetes: construireEntetesEcole(contexte),
     });
   },
 
@@ -202,7 +220,7 @@ export const auditApi = {
 
     return clientApi.envoyer<unknown>({
       chemin: `/api/v1/ecole/audit/administratif-financier/timeline${query}`,
-      entetes: construireEntetesContexte(contexte),
+      entetes: construireEntetesEcole(contexte),
     });
   },
 
@@ -220,7 +238,7 @@ export const auditApi = {
 
     return clientApi.envoyer<unknown>({
       chemin: `/api/v1/ecole/audit/administratif-financier/history${query}`,
-      entetes: construireEntetesContexte(contexte),
+      entetes: construireEntetesEcole(contexte),
     });
   },
 
@@ -235,7 +253,7 @@ export const auditApi = {
 
     return clientApi.envoyer<unknown>({
       chemin: `/api/v1/ecole/audit/technique/traces${query}`,
-      entetes: construireEntetesContexte(contexte),
+      entetes: construireEntetesEcole(contexte),
     });
   },
 
@@ -250,7 +268,7 @@ export const auditApi = {
 
     return clientApi.envoyer<unknown>({
       chemin: `/api/v1/ecole/audit/technique/metrics${query}`,
-      entetes: construireEntetesContexte(contexte),
+      entetes: construireEntetesEcole(contexte),
     });
   },
 
@@ -264,7 +282,7 @@ export const auditApi = {
 
     return clientApi.envoyer<unknown>({
       chemin: `/api/audit/cotes${query}`,
-      entetes: construireEntetesContexte(contexte),
+      entetes: construireEntetesEcole(contexte),
     });
   },
 
@@ -278,7 +296,7 @@ export const auditApi = {
 
     return clientApi.envoyer<unknown>({
       chemin: `/api/audit/conduite${query}`,
-      entetes: construireEntetesContexte(contexte),
+      entetes: construireEntetesEcole(contexte),
     });
   },
 
@@ -292,7 +310,7 @@ export const auditApi = {
 
     return clientApi.envoyer<unknown>({
       chemin: `/api/audit/bulletins${query}`,
-      entetes: construireEntetesContexte(contexte),
+      entetes: construireEntetesEcole(contexte),
     });
   },
 
@@ -308,7 +326,7 @@ export const auditApi = {
 
     return clientApi.envoyer<unknown>({
       chemin: `/api/audit/classements${query}`,
-      entetes: construireEntetesContexte(contexte),
+      entetes: construireEntetesEcole(contexte),
     });
   },
 };

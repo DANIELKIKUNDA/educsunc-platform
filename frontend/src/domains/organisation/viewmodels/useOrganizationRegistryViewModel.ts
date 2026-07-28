@@ -233,7 +233,6 @@ export function useOrganizationRegistryViewModel() {
   async function activerOrganisationDansContexte(idOrganisation: string): Promise<void> {
     selectedOrganisationId.value = idOrganisation;
     await changerOrganisationActiveFrontend(idOrganisation);
-    activeContextStore.setGovernanceLevel('ORGANISATION');
   }
 
   async function ouvrirAdministrationEcolesPourOrganisation(idOrganisation: string): Promise<void> {

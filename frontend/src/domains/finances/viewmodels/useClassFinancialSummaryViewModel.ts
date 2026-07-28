@@ -3,6 +3,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { sessionStore } from '../../../shared/auth/session.store';
 import { activeContextStore } from '../../../shared/session/active-context.store';
 import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
+import { hasTitulariatEffectif } from '../access/titulariat-experience';
 import type { ClassFinancialSummaryFilters } from '../models/class-financial-summary.model';
 import { useClassFinancialSummaryStore } from '../stores/class-financial-summary.store';
 import {
@@ -62,12 +63,14 @@ export function useClassFinancialSummaryViewModel() {
     },
   }));
   const perimeterMessage = computed(() => {
+    if (hasTitulariatEffectif()) {
+      return 'Lecture bornee a la classe titulaire et a la bonne annee scolaire.';
+    }
+
     switch (session.actorCode) {
       case 'PROMOTEUR_ORGANISATION':
       case 'GESTIONNAIRE_ORGANISATION':
         return `Lecture bornee a l organisation active ${context.organizationName}, avec descente controlee vers la classe cible.`;
-      case 'TITULAIRE':
-        return 'Lecture bornee a la classe titulaire et a la bonne annee scolaire.';
       case 'PREFET_ETUDES':
       case 'DIRECTEUR_ETUDES':
         return 'Lecture bornee a la section secondaire autorisee.';

@@ -1,8 +1,6 @@
 import { computed, reactive } from 'vue';
 import type { FrontendGovernanceLevel } from '../auth/session.store';
 
-const ACTIVE_CONTEXT_STORAGE_KEY = 'educsync.frontend.active-context';
-
 interface SchoolContextOption {
   id: string;
   name: string;
@@ -21,13 +19,6 @@ interface OrganizationContextOption {
   schools: readonly SchoolContextOption[];
 }
 
-interface PersistedFrontendContext {
-  governanceLevel?: FrontendGovernanceLevel;
-  organizationId?: string;
-  schoolId?: string;
-  schoolYearId?: string;
-}
-
 export interface ActiveFrontendContext {
   governanceLevel: FrontendGovernanceLevel;
   organizationId: string;
@@ -39,71 +30,9 @@ export interface ActiveFrontendContext {
   schoolYearLabel: string;
 }
 
-const initialOrganizations: readonly OrganizationContextOption[] = [
-  {
-    id: 'org-archedu',
-    name: 'Archi Logiciel Education',
-    schools: [
-      {
-        id: 'ecole-saint-raphael',
-        name: 'College Saint Raphael',
-        sectionName: 'Secondaire',
-        years: [
-          { id: 'annee-saint-raphael-2025-2026', label: '2025 - 2026' },
-          { id: 'annee-saint-raphael-2024-2025', label: '2024 - 2025' },
-        ],
-      },
-      {
-        id: 'ecole-sainte-marie',
-        name: 'Ecole Sainte Marie',
-        sectionName: 'Primaire',
-        years: [
-          { id: 'annee-sainte-marie-2025-2026', label: '2025 - 2026' },
-          { id: 'annee-sainte-marie-2024-2025', label: '2024 - 2025' },
-        ],
-      },
-    ],
-  },
-  {
-    id: 'org-edusync-demo',
-    name: 'Fondation EduSync Demo',
-    schools: [
-      {
-        id: 'ecole-lumumba',
-        name: 'Institut Patrice Lumumba',
-        sectionName: 'Secondaire',
-        years: [
-          { id: 'annee-lumumba-2025-2026', label: '2025 - 2026' },
-          { id: 'annee-lumumba-2024-2025', label: '2024 - 2025' },
-        ],
-      },
-    ],
-  },
-];
-
-const organizationsState = reactive<OrganizationContextOption[]>(
-  initialOrganizations.map((organization) => ({
-    ...organization,
-    schools: [...organization.schools],
-  })),
-);
-
-function lireContextePersisted(): PersistedFrontendContext | null {
-  if (typeof window === 'undefined') {
-    return null;
-  }
-
-  const brut = window.localStorage.getItem(ACTIVE_CONTEXT_STORAGE_KEY);
-  if (!brut) {
-    return null;
-  }
-
-  try {
-    return JSON.parse(brut) as PersistedFrontendContext;
-  } catch {
-    return null;
-  }
-}
+// Les options sont alimentees par les scopes et les lectures backend.
+// Aucun tenant de demonstration ne doit devenir un contexte autorise implicite.
+const organizationsState = reactive<OrganizationContextOption[]>([]);
 
 function findOrganization(organizationId: string): OrganizationContextOption {
   return organizationsState.find((organization) => organization.id === organizationId) ?? {
@@ -117,8 +46,8 @@ function findSchool(organization: OrganizationContextOption, schoolId: string): 
   return organization.schools.find((school) => school.id === schoolId) ?? {
     id: schoolId,
     name: schoolId,
-    sectionName: organization.schools[0]?.sectionName ?? '',
-    years: organization.schools[0]?.years ?? [],
+    sectionName: '',
+    years: [],
   };
 }
 
@@ -151,71 +80,35 @@ function upsertOrganizationOption(option: OrganizationContextOption): void {
   });
 }
 
-function appliquerOrganisationAuContexte(
-  organisation: OrganizationContextOption,
-  schoolIdPrefere?: string,
-): void {
-  const ecole = organisation.schools.find((candidate) => candidate.id === schoolIdPrefere)
-    ?? organisation.schools[0];
-
+function appliquerOrganisationAuContexte(organisation: OrganizationContextOption): void {
   state.organizationId = organisation.id;
   state.organizationName = organisation.name;
-
-  if (!ecole) {
-    state.schoolId = '';
-    state.schoolName = '';
-    state.sectionName = '';
-    state.schoolYearId = '';
-    state.schoolYearLabel = '';
-    persisterContexteActif();
-    return;
-  }
-
-  const annee = getFirstSchoolYear(ecole);
-  state.schoolId = ecole.id;
-  state.schoolName = ecole.name;
-  state.sectionName = ecole.sectionName;
-  state.schoolYearId = annee.id;
-  state.schoolYearLabel = annee.label;
-  persisterContexteActif();
+  viderContexteEcole();
 }
 
-const contextePersisted = lireContextePersisted();
-const contexteDemonstrationAutorise = import.meta.env.DEV && import.meta.env.VITE_AUTH_ENTRY_MODE !== 'login';
-const initialOrganization = findOrganization(
-  contextePersisted?.organizationId
-    ?? (contexteDemonstrationAutorise ? organizationsState[0]?.id ?? '' : ''),
-);
-const initialSchool = findSchool(initialOrganization, contextePersisted?.schoolId ?? initialOrganization.schools[0]?.id ?? '');
-const initialSchoolYear = contextePersisted?.schoolYearId
-  ? resolveSchoolYear(initialSchool, contextePersisted.schoolYearId)
-  : getFirstSchoolYear(initialSchool);
-
 const state = reactive<ActiveFrontendContext>({
-  governanceLevel: contextePersisted?.governanceLevel ?? (contexteDemonstrationAutorise ? 'ECOLE' : 'PLATEFORME'),
-  organizationId: initialOrganization.id,
-  organizationName: initialOrganization.name,
-  schoolId: initialSchool.id,
-  schoolName: initialSchool.name,
-  sectionName: initialSchool.sectionName,
-  schoolYearId: initialSchoolYear.id,
-  schoolYearLabel: initialSchoolYear.label,
+  governanceLevel: 'PLATEFORME',
+  organizationId: '',
+  organizationName: '',
+  schoolId: '',
+  schoolName: '',
+  sectionName: '',
+  schoolYearId: '',
+  schoolYearLabel: '',
 });
 
-function persisterContexteActif(): void {
-  if (typeof window === 'undefined') {
-    return;
-  }
+function viderContexteEcole(): void {
+  state.schoolId = '';
+  state.schoolName = '';
+  state.sectionName = '';
+  state.schoolYearId = '';
+  state.schoolYearLabel = '';
+}
 
-  window.localStorage.setItem(
-    ACTIVE_CONTEXT_STORAGE_KEY,
-    JSON.stringify({
-      governanceLevel: state.governanceLevel,
-      organizationId: state.organizationId,
-      schoolId: state.schoolId,
-      schoolYearId: state.schoolYearId,
-    } satisfies PersistedFrontendContext),
-  );
+function viderContexteOrganisationEtEcole(): void {
+  state.organizationId = '';
+  state.organizationName = '';
+  viderContexteEcole();
 }
 
 export const activeContextStore = {
@@ -226,7 +119,11 @@ export const activeContextStore = {
   schoolYearOptions: computed(() => findSchool(findOrganization(state.organizationId), state.schoolId).years),
   setGovernanceLevel(governanceLevel: FrontendGovernanceLevel): void {
     state.governanceLevel = governanceLevel;
-    persisterContexteActif();
+    if (governanceLevel === 'PLATEFORME') {
+      viderContexteOrganisationEtEcole();
+    } else if (governanceLevel === 'ORGANISATION') {
+      viderContexteEcole();
+    }
   },
   ensureAllowedLevel(levels: readonly FrontendGovernanceLevel[]): void {
     if (levels.includes(state.governanceLevel)) {
@@ -234,7 +131,11 @@ export const activeContextStore = {
     }
 
     state.governanceLevel = levels[0] ?? 'ECOLE';
-    persisterContexteActif();
+    if (state.governanceLevel === 'PLATEFORME') {
+      viderContexteOrganisationEtEcole();
+    } else if (state.governanceLevel === 'ORGANISATION') {
+      viderContexteEcole();
+    }
   },
   setOrganization(organizationId: string): void {
     const organization = findOrganization(organizationId);
@@ -249,7 +150,6 @@ export const activeContextStore = {
     state.sectionName = school.sectionName;
     state.schoolYearId = schoolYear.id;
     state.schoolYearLabel = schoolYear.label;
-    persisterContexteActif();
   },
   setSchoolYear(schoolYearLabelOrId: string, schoolYearId?: string): void {
     const school = findSchool(findOrganization(state.organizationId), state.schoolId);
@@ -258,7 +158,6 @@ export const activeContextStore = {
       : resolveSchoolYear(school, schoolYearLabelOrId);
     state.schoolYearId = schoolYear.id;
     state.schoolYearLabel = schoolYear.label;
-    persisterContexteActif();
   },
   remplacerAnneesScolairesEcole(
     schoolId: string,
@@ -289,7 +188,6 @@ export const activeContextStore = {
     if (state.schoolId === schoolId && schoolYears.length > 0) {
       state.schoolYearId = schoolYears[0].id;
       state.schoolYearLabel = schoolYears[0].label;
-      persisterContexteActif();
     }
   },
   remplacerOrganisationsDepuisBackend(
@@ -314,7 +212,6 @@ export const activeContextStore = {
     );
     if (organisationActive) {
       state.organizationName = organisationActive.name;
-      persisterContexteActif();
     }
   },
   remplacerEcolesDepuisBackend(
@@ -345,7 +242,6 @@ export const activeContextStore = {
         state.sectionName = ecoleActive.sectionName;
         const anneeActive = ecoleActive.years.find((annee) => annee.id === state.schoolYearId);
         if (anneeActive) state.schoolYearLabel = anneeActive.label;
-        persisterContexteActif();
       }
     }
   },
@@ -374,8 +270,8 @@ export const activeContextStore = {
     const nouvelleEcole: SchoolContextOption = {
       id: payload.id,
       name: payload.nom,
-      sectionName: index >= 0 ? ecoles[index].sectionName : 'Secondaire',
-      years: index >= 0 ? ecoles[index].years : [{ id: `annee-${payload.id}`, label: '2025 - 2026' }],
+      sectionName: index >= 0 ? ecoles[index].sectionName : '',
+      years: index >= 0 ? ecoles[index].years : [],
     };
 
     if (index >= 0) {
@@ -395,30 +291,32 @@ export const activeContextStore = {
     schoolId?: string | null;
   }): void {
     if (params.organizationId === null) {
-      state.organizationId = '';
-      state.organizationName = '';
-      state.schoolId = '';
-      state.schoolName = '';
-      state.sectionName = '';
-      state.schoolYearId = '';
-      state.schoolYearLabel = '';
-      persisterContexteActif();
+      viderContexteOrganisationEtEcole();
       return;
     }
 
     const organizationId = params.organizationId ?? state.organizationId;
     const organization = findOrganization(organizationId);
-    const schoolId = params.schoolId === null ? '' : params.schoolId ?? state.schoolId;
-    const school = findSchool(organization, schoolId);
-    const schoolYear = getFirstSchoolYear(school);
-
     state.organizationId = organization.id;
     state.organizationName = organization.name;
+
+    if (params.schoolId === null || (!params.schoolId && !state.schoolId)) {
+      viderContexteEcole();
+      return;
+    }
+
+    const schoolId = params.schoolId ?? state.schoolId;
+    const school = findSchool(organization, schoolId);
+    const schoolYear = getFirstSchoolYear(school);
     state.schoolId = school.id;
     state.schoolName = school.name;
     state.sectionName = school.sectionName;
     state.schoolYearId = schoolYear.id;
     state.schoolYearLabel = schoolYear.label || state.schoolYearLabel;
-    persisterContexteActif();
+  },
+  clear(): void {
+    organizationsState.splice(0, organizationsState.length);
+    state.governanceLevel = 'PLATEFORME';
+    viderContexteOrganisationEtEcole();
   },
 };

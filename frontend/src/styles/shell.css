@@ -3,6 +3,17 @@
 @import './shell-finance.css';
 @import './shell-responsive.css';
 
+.erp-user-menu__feedback {
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid #f0d3a2;
+  border-radius: 12px;
+  color: #7a4b08;
+  background: #fff9ed;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
 .erp-user-menu__logout {
   width: 100%;
   min-height: 44px;

@@ -4,6 +4,7 @@ import { configurationOffline } from './config/offline.config';
 import App from './App.vue';
 import { routeur } from './router';
 import { initializeFrontendSession } from './shared/auth/session.bootstrap';
+import { initializeDomainStoreLifecycleRegistry } from './shared/lifecycle/domain-store-lifecycle.registry';
 import { useTheme } from './composables/useTheme';
 import { registerServiceWorker } from './shared/pwa/register-sw';
 import './styles/variables.css';
@@ -21,6 +22,7 @@ void configurationApplicationFrontend;
 void configurationOffline;
 
 async function demarrerFrontend(): Promise<void> {
+  initializeDomainStoreLifecycleRegistry();
   const initialisationSession = initializeFrontendSession();
 
   const application = createApp(App);

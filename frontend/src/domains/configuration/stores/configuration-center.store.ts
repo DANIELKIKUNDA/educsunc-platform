@@ -1,4 +1,5 @@
 import { reactive } from 'vue';
+import { registerScopedLifecycleStore } from '../../../shared/lifecycle/frontend-lifecycle.runtime';
 import type {
   ConfigurationDiffItem,
   ConfigurationItem,
@@ -188,6 +189,8 @@ export function useConfigurationCenterStore() {
   function oublierConfiguration(): void {
     state.configuration = null;
   }
+
+  registerScopedLifecycleStore('configuration-center', 'context', reinitialiser);
 
   return {
     state,

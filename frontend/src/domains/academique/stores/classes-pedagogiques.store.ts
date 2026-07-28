@@ -82,6 +82,13 @@ async function archiver(idClassePedagogique: string, modifiePar: string): Promis
   }, 'L archivage de la classe pedagogique a echoue.');
 }
 
+function reinitialiser(): void {
+  state.status = 'idle';
+  state.errorMessage = null;
+  state.entries = [];
+  state.reglesFrais = null;
+}
+
 export function useClassesPedagogiquesStore() {
   return {
     state,
@@ -91,5 +98,6 @@ export function useClassesPedagogiquesStore() {
     renommer,
     desactiver,
     archiver,
+    reinitialiser,
   };
 }

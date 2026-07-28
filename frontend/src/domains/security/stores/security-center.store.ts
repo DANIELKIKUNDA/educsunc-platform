@@ -212,8 +212,25 @@ function mapRoleDetail(raw: unknown): SecurityRoleDetail {
   };
 }
 
+function reinitialiser(): void {
+  state.status = 'idle';
+  state.errorMessage = null;
+  state.overview = { ...emptyOverview };
+  state.accounts = [];
+  state.organizationAdministrators = [];
+  state.schoolAdministrators = [];
+  state.assignments = [];
+  state.sessions = [];
+  state.attempts = [];
+  state.auditEntries = [];
+  state.roles = [];
+  state.permissionCatalog = [];
+  state.administrationScopes = [];
+  state.nextAccountsCursor = undefined;
+}
+
 export const securityCenterStore = {
-  state: readonly(state), loadAll, loadMoreAccounts,
+  state: readonly(state), loadAll, loadMoreAccounts, reinitialiser,
   createPlatformAccount: (payload: SecurityCreateAccountPayload) => mutate(() => securityApi.creerComptePlateforme(payload)),
   changeAccountState: (id: string, action: 'suspend'|'reactivate'|'deactivate', motif?: string) => mutate(() => securityApi.changerEtatCompte(id, action, motif)),
   unlockAccount: (id: string, motif: string) => mutate(() => securityApi.deverrouillerCompte(id, motif)),

@@ -1,4 +1,5 @@
 import { clientApi } from '../../services/api';
+import type { EffectiveProfilePayloadV1 } from '../permissions/effective-profile.types';
 
 export interface BackendSessionApiData {
   sessionId: string;
@@ -35,6 +36,13 @@ export interface BackendRefreshApiData {
 
 export interface BackendDeveloperSessionApiData extends BackendLoginApiData {
   refreshToken?: string;
+}
+
+export interface BackendEffectiveProfileApiData extends EffectiveProfilePayloadV1 {
+  versionContrat: 1;
+  acteurCodeActif: string;
+  actorCodes: readonly string[];
+  permissionsEffectives: readonly string[];
 }
 
 function construireEntetesAuth(params: {
@@ -138,10 +146,10 @@ export const authApi = {
     });
   },
 
-  async obtenirProfil(params: { accessToken: string; sessionId: string }): Promise<{
-    acteurCode: string;
-    permissions: readonly string[];
-  }> {
+  async obtenirProfil(params: {
+    accessToken: string;
+    sessionId: string;
+  }): Promise<BackendEffectiveProfileApiData> {
     return clientApi.envoyer({
       chemin: '/api/auth/profil',
       entetes: construireEntetesAuth(params),
@@ -172,6 +180,17 @@ export const authApi = {
       chemin: '/api/auth/contexte/organisation-active',
       methode: 'PUT',
       corps: { organisationActiveId: params.organisationActiveId },
+      entetes: construireEntetesAuth(params),
+    });
+  },
+
+  async activerContextePlateforme(params: {
+    accessToken: string;
+    sessionId: string;
+  }): Promise<BackendContexteActifApiData> {
+    return clientApi.envoyer({
+      chemin: '/api/auth/contexte/plateforme-active',
+      methode: 'PUT',
       entetes: construireEntetesAuth(params),
     });
   },

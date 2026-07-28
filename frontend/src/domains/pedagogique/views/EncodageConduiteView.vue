@@ -260,6 +260,10 @@ import EmptyState from '../../../shared/ui/EmptyState.vue';
 import { activeContextStore } from '../../../shared/session/active-context.store';
 import { sessionStore } from '../../../shared/auth/session.store';
 import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
+import {
+  hasTitulariatEffectif,
+  isTitulariatTargetAllowed,
+} from '../access/titulariat-experience';
 import { type ConduiteClasseFilters } from '../models/conduite-management.model';
 import { useConduiteManagementStore } from '../stores/conduite-management.store';
 
@@ -310,6 +314,16 @@ const missingFields = computed(() => {
   if (!idClassePedagogiqueInput.value.trim()) {
     manquants.push('classe');
   }
+  if (
+    idClassePedagogiqueInput.value.trim()
+    && context.schoolYearId.trim()
+    && !isTitulariatTargetAllowed(
+      idClassePedagogiqueInput.value,
+      context.schoolYearId,
+    )
+  ) {
+    manquants.push('classe hors de votre perimetre');
+  }
 
   return manquants;
 });
@@ -324,9 +338,11 @@ const scopeLabel = computed(() =>
 );
 
 const perimeterMessage = computed(() => {
+  if (hasTitulariatEffectif()) {
+    return 'Encodage borne a la classe titulaire et a la bonne annee scolaire.';
+  }
+
   switch (session.actorCode) {
-    case 'TITULAIRE':
-      return 'Encodage borne a la classe titulaire et a la bonne annee scolaire.';
     case 'DIRECTEUR_DISCIPLINE':
       return 'Encodage borne a la meme ecole et a la meme section secondaire.';
     default:

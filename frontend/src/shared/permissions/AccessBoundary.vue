@@ -17,12 +17,12 @@ const props = defineProps<{
 const doctrineAccess = useDoctrineAccess();
 
 const allowed = computed(() => {
-  if (props.pageCode !== undefined) {
-    return doctrineAccess.canAccessPage(props.pageCode);
-  }
-
   if (props.actionCode !== undefined) {
     return doctrineAccess.canUseAction(props.actionCode, props.pageCode);
+  }
+
+  if (props.pageCode !== undefined) {
+    return doctrineAccess.canAccessPage(props.pageCode);
   }
 
   if (props.capability === undefined) {
