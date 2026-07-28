@@ -20,7 +20,7 @@ export default defineConfig({
     timeout: 15_000,
   },
   reporter: [
-    ['list'],
+    ['line'],
     ['html', {
       open: 'never',
       outputFolder: path.join(frontendRoot, 'artifacts', 'g1-playwright-report'),
@@ -45,7 +45,7 @@ export default defineConfig({
       url: `${backendUrl}/api/auth/initialisation`,
       reuseExistingServer: false,
       timeout: 120_000,
-      stdout: 'pipe',
+      stdout: 'ignore',
       stderr: 'pipe',
     },
     {
@@ -59,7 +59,7 @@ export default defineConfig({
       url: frontendUrl,
       reuseExistingServer: false,
       timeout: 120_000,
-      stdout: 'pipe',
+      stdout: 'ignore',
       stderr: 'pipe',
     },
   ],

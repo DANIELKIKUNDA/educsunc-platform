@@ -42,8 +42,9 @@ npx playwright install chromium
 npx playwright test --config e2e/g1/playwright.g1.config.ts
 ```
 
-La configuration réutilise les services déjà actifs. Sinon, elle démarre le
-backend sur `3000` et Vite sur `4174`. Pour des ports différents :
+La configuration démarre toujours des services frais et isolés pour éviter
+qu'un backend ou un frontend ancien ne fausse la certification. Elle démarre
+le backend sur `3000` et Vite sur `4174`. Pour des ports différents :
 
 ```powershell
 $env:EDUCSYN_BACKEND_URL='http://127.0.0.1:3000'
