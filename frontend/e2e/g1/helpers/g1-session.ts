@@ -33,6 +33,13 @@ interface G1DeveloperSession {
   };
 }
 
+interface BrowserDeveloperSessionResult {
+  readonly ok: boolean;
+  readonly status: number;
+  readonly message: string;
+  readonly session?: G1DeveloperSession;
+}
+
 const actorLabels: Record<G1ActorCode, RegExp> = {
   MANAGER_SYSTEME: /Manager syst[eè]me/i,
   SUPPORT_SYSTEME: /Support syst[eè]me/i,
@@ -93,9 +100,34 @@ export async function openRealDeveloperSession(
       `G1_TENANT_REEL_${actorCode}_ABSENT: le precontrole doit fournir le contexte reel.`,
     );
   }
-  const developerSessionResponse = await page.request.post(
-    `${backendUrl}/api/auth/dev/session`,
+  await page.goto('/icons/edusync-icon-192x192.png', {
+    waitUntil: 'domcontentloaded',
+  });
+  const developerSessionResponse = await page.evaluate(
+    async ({ url, data }): Promise<BrowserDeveloperSessionResult> => {
+      const response = await fetch(`${url}/api/auth/dev/session`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      const payload = await response.json().catch(() => ({})) as Record<string, unknown>;
+      if (!response.ok) {
+        return {
+          ok: false,
+          status: response.status,
+          message: String(payload.message ?? payload.code ?? response.statusText),
+        };
+      }
+      return {
+        ok: true,
+        status: response.status,
+        message: '',
+        session: payload as unknown as G1DeveloperSession,
+      };
+    },
     {
+      url: backendUrl,
       data: {
         actorCode,
         organisationActiveId,
@@ -105,34 +137,35 @@ export async function openRealDeveloperSession(
     },
   );
   expect(
-    developerSessionResponse.ok(),
-    `La vraie session développeur ${actorCode} doit être ouverte. ${
-      (await developerSessionResponse.text()).replace(/\s+/g, ' ').slice(0, 600)
-    }`,
+    developerSessionResponse.ok,
+    `La vraie session développeur ${actorCode} doit être ouverte. HTTP ${
+      developerSessionResponse.status
+    }: ${developerSessionResponse.message.slice(0, 600)}`,
   ).toBeTruthy();
-  const developerSession = await developerSessionResponse.json() as G1DeveloperSession;
+  const developerSession = developerSessionResponse.session;
+  expect(developerSession?.sessionId).toBeTruthy();
 
-  await page.addInitScript((session) => {
+  await page.evaluate((session) => {
     window.localStorage.removeItem('educsync.auth.session');
     window.localStorage.removeItem('educsync.frontend.active-context');
     window.sessionStorage.removeItem('educsync.auth.session-current-tab');
-    window.localStorage.setItem(
-      'educsync.auth.session',
+    window.sessionStorage.setItem(
+      'educsync.auth.session-current-tab',
       JSON.stringify({
         sessionId: session.sessionId,
         actorCode: session.actorCode,
         userId: session.userId,
         displayName: session.displayName,
         email: session.email,
-        rememberMe: true,
+        rememberMe: false,
       }),
     );
   }, {
-    sessionId: developerSession.sessionId,
+    sessionId: String(developerSession?.sessionId),
     actorCode,
-    userId: developerSession.utilisateur.idUtilisateur,
-    displayName: developerSession.utilisateur.nomComplet,
-    email: developerSession.utilisateur.email,
+    userId: String(developerSession?.utilisateur.idUtilisateur),
+    displayName: String(developerSession?.utilisateur.nomComplet),
+    email: String(developerSession?.utilisateur.email),
   });
 
   const profileResponse = page.waitForResponse((response) =>
