@@ -78,8 +78,8 @@ import { AffectationUtilisateur, Role, obtenirDefinitionRoleSysteme } from '../.
 import { moduleActivationConfigurationService } from './configuration.routes';
 
 const MOT_DE_PASSE_SESSION_DEV = 'EducSyn.dev.session.2026';
-const ORGANISATION_DEV_PAR_DEFAUT = 'org-edusync-dev';
-const ECOLE_DEV_PAR_DEFAUT = 'ecole-edusync-dev';
+const ORGANISATION_DEV_PAR_DEFAUT = '00000000-0000-5000-a000-000000000001';
+const ECOLE_DEV_PAR_DEFAUT = '00000000-0000-5000-a000-000000000002';
 
 export function sessionDeveloppeurDisponible(environnement: string): boolean {
   return environnement === 'development';
