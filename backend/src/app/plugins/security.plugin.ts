@@ -1,7 +1,8 @@
 import type { FastifyPluginAsync, FastifyRequest } from 'fastify';
 import { CONTEXT_ROLE_PAR_DEFAUT, RequestContextFactory } from 'shared/context';
-import { MoteurAutorisation, MoteurCapacitesEffectives, MoteurRestrictionsMetier, MoteurScope, ScopeAcces, TypeScope, type Role } from 'shared/security/domain';
+import { MoteurAutorisation, MoteurCapacitesEffectives, MoteurRestrictionsMetier, MoteurScope, ScopeAcces, TypeScope } from 'shared/security/domain';
 import { ResponsabiliteClassePedagogiqueAdapter } from '../adapters/ResponsabiliteClassePedagogiqueAdapter';
+import { OwnershipParentAdapter } from '../adapters/OwnershipParentAdapter';
 import {
   PermissionCacheService,
   PostgresAffectationTitulariatRepository,
@@ -16,6 +17,7 @@ import {
   type AffectationUtilisateurRepositoryPort,
   type AuditSecurityPort,
   type PermissionCachePort,
+  type OwnershipParentPort,
   type ResponsabiliteClassePedagogiquePort,
   type RoleRepositoryPort,
 } from 'shared/security/application';
@@ -29,6 +31,9 @@ interface SecurityPluginDependencies {
   permissionCacheService?: PermissionCachePort;
   auditSecurityPort?: AuditSecurityPort | null;
   responsabiliteClassePedagogiquePort?: (ResponsabiliteClassePedagogiquePort & {
+    fermer?: () => Promise<void>;
+  }) | null;
+  ownershipParentPort?: (OwnershipParentPort & {
     fermer?: () => Promise<void>;
   }) | null;
 }
@@ -46,6 +51,9 @@ export function creerSecurityPlugin(
   const responsabiliteClassePedagogiquePort = dependances.responsabiliteClassePedagogiquePort === undefined
     ? new ResponsabiliteClassePedagogiqueAdapter()
     : dependances.responsabiliteClassePedagogiquePort ?? undefined;
+  const ownershipParentPort = dependances.ownershipParentPort === undefined
+    ? new OwnershipParentAdapter()
+    : dependances.ownershipParentPort ?? undefined;
   const auditSecurityPort = dependances.auditSecurityPort === undefined
     ? new SecurityAuditInfrastructureService()
     : dependances.auditSecurityPort ?? undefined;
@@ -55,6 +63,7 @@ export function creerSecurityPlugin(
     affectationTitulariatRepository,
     new MoteurCapacitesEffectives(),
     responsabiliteClassePedagogiquePort,
+    ownershipParentPort,
   );
   const securityFacade = new SecurityFacade(
     roleRepository,
@@ -73,6 +82,7 @@ export function creerSecurityPlugin(
     async (serveur: Parameters<FastifyPluginAsync>[0]) => {
       serveur.addHook('onClose', async () => {
         await responsabiliteClassePedagogiquePort?.fermer?.();
+        await ownershipParentPort?.fermer?.();
       });
 
       serveur.addHook('preHandler', async (requete: FastifyRequest) => {
@@ -80,36 +90,33 @@ export function creerSecurityPlugin(
           return;
         }
 
-      const affectations = await affectationUtilisateurRepository.listerActivesParUtilisateur(
-        requete.context.utilisateurId,
-      );
-      const roles = (
-        await Promise.all(
-          affectations.map((affectation) =>
-            roleRepository.trouverParId(affectation.obtenirIdRole()),
-          ),
-        )
-      ).filter((role): role is NonNullable<typeof role> => role !== null);
       const capacites = await securityCapacitesEffectivesService.calculerPourUtilisateur({
         idUtilisateur: requete.context.utilisateurId,
         idOrganisationActive: requete.context.organisationActiveId,
         idEcoleActive: requete.context.ecoleActiveId,
+        acteurCodePrefere:
+          requete.context.roleActif === CONTEXT_ROLE_PAR_DEFAUT
+            ? undefined
+            : requete.context.roleActif,
       });
       const permissions = [...capacites.permissions];
       const restrictions = [...capacites.restrictions];
-      const scopes = [
-        ...affectations.flatMap((affectation) => [
-          ...affectation.obtenirScopes(),
-          ...creerScopesImplicites(
-            affectation.obtenirIdOrganisation(),
-            affectation.obtenirIdEcole(),
-            affectation.obtenirIdSection(),
-          ),
-        ]),
-        ...creerScopesPlateforme(roles),
-      ];
-      const titulariats = capacites.titulariatsActifs.length > 0
-        ? await affectationTitulariatRepository.listerActifsParUtilisateur(requete.context.utilisateurId)
+      const scopes = capacites.scopes.map((scope) =>
+        ScopeAcces.creer(
+          new TypeScope(scope.typeScope),
+          scope.valeurScope,
+          scope.estLectureSeule,
+        ),
+      );
+      const idsTitulariats = new Set(
+        capacites.titulariatsActifs.map((titulariat) => titulariat.idAffectationTitulariat),
+      );
+      const titulariats = idsTitulariats.size > 0
+        ? (
+            await affectationTitulariatRepository.listerActifsParUtilisateur(
+              requete.context.utilisateurId,
+            )
+          ).filter((titulariat) => idsTitulariats.has(titulariat.obtenirId()))
         : [];
 
       await permissionCacheService.memoriserPermissions(
@@ -125,18 +132,21 @@ export function creerSecurityPlugin(
         });
       }
 
-      const roleActif =
-        requete.context.roleActif
-        && requete.context.roleActif !== CONTEXT_ROLE_PAR_DEFAUT
-          ? requete.context.roleActif
-          : roles[0]?.obtenirCodeRole().obtenirValeur();
+      const roleActif = capacites.acteurCodeActif === CONTEXT_ROLE_PAR_DEFAUT
+        ? undefined
+        : capacites.acteurCodeActif;
 
         requete.context = RequestContextFactory.enrichirSecurity(requete.context, {
+          actorCodes: capacites.actorCodes,
           roleActif,
           permissions,
           scopes,
           restrictions,
           titulariats,
+          titulariatsEffectifs: capacites.titulariatsEffectifs,
+          estTitulaireEffectif: capacites.estTitulaireEffectif,
+          sourceTitulariatEffectif: capacites.sourceTitulariatEffectif,
+          elevesAutorises: capacites.elevesAutorises,
         });
       });
     },
@@ -147,39 +157,3 @@ export function creerSecurityPlugin(
 }
 
 export const securityPlugin: PluginGlobal = creerSecurityPlugin();
-
-function creerScopesImplicites(
-  idOrganisation?: string,
-  idEcole?: string,
-  idSection?: string,
-): ScopeAcces[] {
-  const scopes: ScopeAcces[] = [];
-
-  if (idOrganisation) {
-    scopes.push(ScopeAcces.creer(new TypeScope('ORGANISATION'), idOrganisation));
-  }
-
-  if (idEcole) {
-    scopes.push(ScopeAcces.creer(new TypeScope('ECOLE'), idEcole));
-  }
-
-  if (idSection) {
-    scopes.push(ScopeAcces.creer(new TypeScope('SECTION'), idSection));
-  }
-
-  return scopes;
-}
-
-function creerScopesPlateforme(
-  roles: Array<Role | null>,
-): ScopeAcces[] {
-  const portePlateforme = roles.some((role) =>
-    role?.obtenirNiveauAcces().obtenirValeur() === 'PLATEFORME',
-  );
-
-  if (!portePlateforme) {
-    return [];
-  }
-
-  return [ScopeAcces.creer(new TypeScope('PLATEFORME'), 'system')];
-}

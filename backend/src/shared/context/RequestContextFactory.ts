@@ -24,6 +24,9 @@ export class RequestContextFactory {
       scopes: [],
       restrictions: [],
       titulariats: [],
+      titulariatsEffectifs: [],
+      estTitulaireEffectif: false,
+      sourceTitulariatEffectif: 'AUCUNE',
       modeOffline: params?.modeOffline === true,
       adresseIp: RequestContextFactory.nettoyerOptionnel(params?.adresseIp),
       userAgent: RequestContextFactory.nettoyerOptionnel(params?.userAgent),
@@ -70,6 +73,7 @@ export class RequestContextFactory {
   ): RequestContext {
     return {
       ...contexte,
+      actorCodes: RequestContextFactory.nettoyerListeTextes(enrichissement.actorCodes),
       roleActif:
         RequestContextFactory.nettoyerOptionnel(enrichissement.roleActif)
         ?? contexte.roleActif
@@ -78,6 +82,16 @@ export class RequestContextFactory {
       scopes: enrichissement.scopes ? [...enrichissement.scopes] : [],
       restrictions: RequestContextFactory.nettoyerListeTextes(enrichissement.restrictions),
       titulariats: enrichissement.titulariats ? [...enrichissement.titulariats] : [],
+      titulariatsEffectifs: enrichissement.titulariatsEffectifs
+        ? enrichissement.titulariatsEffectifs.map((titulariat) => ({ ...titulariat }))
+        : [],
+      estTitulaireEffectif: enrichissement.estTitulaireEffectif === true,
+      sourceTitulariatEffectif:
+        enrichissement.sourceTitulariatEffectif
+        ?? (enrichissement.estTitulaireEffectif ? 'AFFECTATION_TITULARIAT' : 'AUCUNE'),
+      elevesAutorises: RequestContextFactory.nettoyerListeTextes(
+        enrichissement.elevesAutorises,
+      ),
     };
   }
 

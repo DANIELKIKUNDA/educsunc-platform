@@ -50,6 +50,27 @@ export class DepotResponsabiliteClassePedagogiquePostgres
       );
   }
 
+  public async listerActivesParUtilisateur(
+    idUtilisateur: string,
+  ): Promise<ResponsabiliteClassePedagogique[]> {
+    const clauseIsolation = this.construireClauseIsolationLectureParEcole('"id_ecole"', 2);
+    const lignes =
+      await this.executerRequete<PersistanceResponsabiliteClassePedagogiquePostgres>(
+        [
+          'SELECT * FROM responsabilites_classes_pedagogiques',
+          `WHERE id_utilisateur_enseignant = $1 AND active = true ${clauseIsolation.clauseSql}`,
+          'ORDER BY id_annee_scolaire, id_classe_pedagogique',
+        ].join(' '),
+        [idUtilisateur, ...clauseIsolation.parametres],
+      );
+
+    return lignes.map((ligne) =>
+      this.marquerAgregatCharge(
+        ResponsabiliteClassePedagogiquePostgresMapper.depuisPersistance(ligne),
+      ),
+    );
+  }
+
   public async sauvegarder(
     responsabiliteClassePedagogique: ResponsabiliteClassePedagogique,
   ): Promise<void> {

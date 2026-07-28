@@ -13,6 +13,10 @@ export class ChangerOrganisationActiveUseCase implements UseCase<ChangerOrganisa
 
   public async executer(entree: ChangerOrganisationActiveInput): Promise<ContexteActifOutput> {
     const session = await this.sessionApplicationService.obtenirSessionActive(entree.sessionId);
-    return this.changerContexteActifSaga.changerOrganisationActive(session.utilisateurId, entree.organisationActiveId);
+    return this.changerContexteActifSaga.changerOrganisationActive(
+      session.sessionId,
+      session.utilisateurId,
+      entree.organisationActiveId,
+    );
   }
 }

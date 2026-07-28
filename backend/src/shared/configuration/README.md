@@ -310,7 +310,7 @@ Inventaire officiel actuellement prouve :
 - `modules.allowed`
   - scope : `ORGANIZATION`
   - valeur initiale : catalogue complet des modules connus
-  - justification : l absence de cette cle etait deja interpretee comme une autorisation globale
+  - justification : l organisation nouvellement creee recoit une autorisation explicite, tandis qu une cle absente ou invalide ferme tous les modules
 - `modules.enabled`
   - scope : `SCHOOL`
   - valeur initiale : `[]`
@@ -399,7 +399,7 @@ La gouvernance des modules suit strictement cette doctrine :
   - `modulesEffectifs = intersection(modules.allowed, modules.enabled)`
 
 Regle critique :
-- l absence de `modules.allowed` peut etre traitee comme catalogue autorisable complet
+- l absence ou l invalidite de `modules.allowed` ne doit autoriser aucun module implicitement
 - l absence de `modules.enabled` ne doit jamais signifier activation implicite de tous les modules
 
 Autrement dit :

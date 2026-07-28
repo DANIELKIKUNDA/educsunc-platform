@@ -3,6 +3,7 @@ import { SessionCachePort } from '../ports/cache/SessionCachePort';
 import { DepotRefreshToken, DepotSessionUtilisateur } from '../../domain';
 import { SessionIntrouvableApplicationException } from '../exceptions';
 import { SessionMapper } from '../mappers/SessionMapper';
+import type { ContexteActifOutput } from '../dto/output';
 
 // Ce service applicatif porte les operations transverses sur les sessions AUTH.
 export class SessionApplicationService {
@@ -47,6 +48,37 @@ export class SessionApplicationService {
 
   // Cette methode met a jour le cache d'une session.
   public async memoriserSession(sortie: SessionOutput): Promise<void> {
+    await this.sessionCachePort.memoriserSession(sortie);
+  }
+
+  // Cette methode aligne la session persistante sur le contexte actif dans la transaction appelante.
+  public async synchroniserContexteActif(
+    idSessionUtilisateur: string,
+    contexte: ContexteActifOutput,
+  ): Promise<SessionOutput> {
+    const session = await this.depotSessionUtilisateur.trouverSessionActive(idSessionUtilisateur);
+    if (!session) {
+      throw new SessionIntrouvableApplicationException();
+    }
+
+    let modifiee = false;
+    if (session.obtenirOrganisationActiveId() !== contexte.organisationActiveId) {
+      session.changerOrganisationActive(contexte.organisationActiveId);
+      modifiee = true;
+    }
+    if (session.obtenirEcoleActiveId() !== contexte.ecoleActiveId) {
+      session.changerEcoleActive(contexte.ecoleActiveId, true);
+      modifiee = true;
+    }
+    if (modifiee) {
+      await this.depotSessionUtilisateur.sauvegarder(session);
+    }
+    return SessionMapper.depuisDomaine(session);
+  }
+
+  // Le cache est actualise apres commit; l'invalidation empeche toute relecture d'un ancien tenant.
+  public async actualiserCacheSession(sortie: SessionOutput): Promise<void> {
+    await this.sessionCachePort.invaliderSession(sortie.sessionId);
     await this.sessionCachePort.memoriserSession(sortie);
   }
 }

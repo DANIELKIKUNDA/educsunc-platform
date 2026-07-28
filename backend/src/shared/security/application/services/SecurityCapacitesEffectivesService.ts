@@ -1,12 +1,25 @@
-import { MoteurCapacitesEffectives, PolicyTitulariatEffectifParSection } from '../../../security/domain';
+import {
+  MoteurCapacitesEffectives,
+  PolicyTitulariatEffectifParSection,
+  ScopeAcces,
+  TypeScope,
+  type AffectationTitulariat,
+  type AffectationUtilisateur,
+  type Role,
+} from '../../../security/domain';
 import type {
   AffectationTitulariatRepositoryPort,
   AffectationUtilisateurRepositoryPort,
+  OwnershipParentPort,
   ResponsabiliteClassePedagogiquePort,
   RoleRepositoryPort,
 } from '../ports';
-import { CapacitesEffectivesMapper, TitulariatMapper } from '../mappers';
-import type { CapacitesEffectivesReadModel } from '../read-models';
+import { CapacitesEffectivesMapper, ScopeMapper, TitulariatMapper } from '../mappers';
+import type {
+  CapacitesEffectivesReadModel,
+  ResponsabiliteClassePedagogiqueReadModel,
+  TitulariatEffectifReadModel,
+} from '../read-models';
 
 export class SecurityCapacitesEffectivesService {
   constructor(
@@ -15,6 +28,7 @@ export class SecurityCapacitesEffectivesService {
     private readonly affectationTitulariatRepositoryPort: AffectationTitulariatRepositoryPort,
     private readonly moteurCapacitesEffectives: MoteurCapacitesEffectives,
     private readonly responsabiliteClassePedagogiquePort?: ResponsabiliteClassePedagogiquePort,
+    private readonly ownershipParentPort?: OwnershipParentPort,
   ) {}
 
   public async calculerPourUtilisateur(params: {
@@ -23,17 +37,35 @@ export class SecurityCapacitesEffectivesService {
     idEcoleActive?: string;
     idClasse?: string;
     idAnneeScolaire?: string;
+    acteurCodePrefere?: string;
   }): Promise<CapacitesEffectivesReadModel> {
-    const affectations = await this.affectationUtilisateurRepositoryPort.listerActivesParUtilisateur(
-      params.idUtilisateur,
-    );
-    const roles = (
-      await Promise.all(
-        affectations.map((affectation) =>
-          this.roleRepositoryPort.trouverParId(affectation.obtenirIdRole()),
-        ),
+    const affectations = (
+      await this.affectationUtilisateurRepositoryPort.listerActivesParUtilisateur(
+        params.idUtilisateur,
       )
-    ).filter((role): role is NonNullable<typeof role> => role !== null);
+    ).filter((affectation) => this.affectationCouvreContexte(affectation, params));
+    const candidats = (
+      await Promise.all(
+        affectations.map(async (affectation) => ({
+          affectation,
+          role: await this.roleRepositoryPort.trouverParId(affectation.obtenirIdRole()),
+        })),
+      )
+    ).filter(
+      (candidat): candidat is { affectation: AffectationUtilisateur; role: Role } =>
+        candidat.role !== null && candidat.role.obtenirEstActif(),
+    );
+    const actorCodes = Array.from(
+      new Set(candidats.map(({ role }) => role.obtenirCodeRole().obtenirValeur())),
+    );
+    const acteurCodeActif = this.resoudreActeurActif(actorCodes, params);
+    const candidatsActifs = acteurCodeActif
+      ? candidats.filter(
+          ({ role }) => role.obtenirCodeRole().obtenirValeur() === acteurCodeActif,
+        )
+      : [];
+    const roles = candidatsActifs.map((candidat) => candidat.role);
+    const scopes = this.construireScopesContextualises(candidatsActifs, params);
 
     const permissionsBase = Array.from(
       new Set(
@@ -53,55 +85,43 @@ export class SecurityCapacitesEffectivesService {
         ),
       ),
     );
-    const titulariats = await this.affectationTitulariatRepositoryPort.listerActifsParUtilisateur(
-      params.idUtilisateur,
-    );
-    const responsabiliteClassePedagogique =
-      params.idClasse && params.idAnneeScolaire && this.responsabiliteClassePedagogiquePort
-        ? await this.responsabiliteClassePedagogiquePort.consulterActiveParClasseEtAnnee({
+    const titulariats = params.idEcoleActive
+      ? (
+          await this.affectationTitulariatRepositoryPort.listerActifsParUtilisateur(
+            params.idUtilisateur,
+          )
+        ).filter((titulariat) =>
+          titulariat.estActifDansScope({
             idOrganisation: params.idOrganisationActive,
             idEcole: params.idEcoleActive,
-            idClassePedagogique: params.idClasse,
-            idAnneeScolaire: params.idAnneeScolaire,
+          }),
+        )
+      : [];
+    const responsabilitesActives =
+      acteurCodeActif === 'ENSEIGNANT'
+      && params.idEcoleActive
+      && this.responsabiliteClassePedagogiquePort?.listerActivesParUtilisateur
+        ? await this.responsabiliteClassePedagogiquePort.listerActivesParUtilisateur({
+            idOrganisation: params.idOrganisationActive,
+            idEcole: params.idEcoleActive,
+            idUtilisateur: params.idUtilisateur,
           })
-        : null;
-    const titulariatEffectifParResponsabilite =
-      params.idClasse !== undefined
-      && params.idAnneeScolaire !== undefined
-      && PolicyTitulariatEffectifParSection.estTitulariatEffectif({
-        responsabiliteClassePedagogique,
-        idUtilisateur: params.idUtilisateur,
-        idOrganisation: params.idOrganisationActive,
-        idEcole: params.idEcoleActive,
-        idClasse: params.idClasse,
-        idAnneeScolaire: params.idAnneeScolaire,
-      });
-    const titulariatActifDansScope = this.moteurCapacitesEffectives.possedeTitulariatActifDansScope(
+        : [];
+    const titulariatsEffectifs = this.resoudreTitulariatsEffectifs({
+      responsabilites: responsabilitesActives,
       titulariats,
-      {
-        idOrganisation: params.idOrganisationActive,
-        idEcole: params.idEcoleActive,
-        idClasse: params.idClasse,
-        idAnneeScolaire: params.idAnneeScolaire,
-      },
-    );
-    const responsabiliteValideHorsSectionAuto =
-      responsabiliteClassePedagogique !== null
-      && responsabiliteClassePedagogique.active
-      && responsabiliteClassePedagogique.idUtilisateurEnseignant === params.idUtilisateur
-      && responsabiliteClassePedagogique.idClassePedagogique === params.idClasse
-      && responsabiliteClassePedagogique.idAnneeScolaire === params.idAnneeScolaire
-      && (!params.idOrganisationActive
-        || responsabiliteClassePedagogique.idOrganisation === params.idOrganisationActive)
-      && (!params.idEcoleActive
-        || responsabiliteClassePedagogique.idEcole === params.idEcoleActive)
-      && !PolicyTitulariatEffectifParSection.estSectionAutoTitulariat(
-        responsabiliteClassePedagogique.sectionCode,
-        responsabiliteClassePedagogique.sectionLibelle,
-      );
-    const titulariatEffectifFinal =
-      titulariatEffectifParResponsabilite
-      || (responsabiliteValideHorsSectionAuto && titulariatActifDansScope);
+      idUtilisateur: params.idUtilisateur,
+      idOrganisation: params.idOrganisationActive,
+      idEcole: params.idEcoleActive,
+    });
+    const titulariatEffectifCible = params.idClasse && params.idAnneeScolaire
+      ? titulariatsEffectifs.find(
+          (titulariat) =>
+            titulariat.idClasse === params.idClasse
+            && titulariat.idAnneeScolaire === params.idAnneeScolaire,
+        )
+      : undefined;
+    const titulariatEffectifFinal = titulariatEffectifCible !== undefined;
     const permissions = this.moteurCapacitesEffectives.calculerPermissionsEffectives({
       permissionsBase,
       titulariats,
@@ -113,21 +133,177 @@ export class SecurityCapacitesEffectivesService {
         idAnneeScolaire: params.idAnneeScolaire,
       },
     });
-    const estTitulaireEffectif = this.moteurCapacitesEffectives.aTitulariatEffectif(
-      titulariatEffectifFinal,
-    );
+    const estTitulaireEffectif = params.idClasse && params.idAnneeScolaire
+      ? this.moteurCapacitesEffectives.aTitulariatEffectif(titulariatEffectifFinal)
+      : titulariatsEffectifs.length > 0;
+    const elevesAutorises =
+      acteurCodeActif === 'PARENT'
+      && params.idEcoleActive
+      && this.ownershipParentPort
+        ? await this.ownershipParentPort.listerElevesAutorises({
+            idUtilisateur: params.idUtilisateur,
+            idEcole: params.idEcoleActive,
+          })
+        : [];
 
     return CapacitesEffectivesMapper.depuisCalcul({
+      actorCodes,
+      acteurCodeActif,
       permissions,
+      scopes: scopes.map((scope) => ScopeMapper.depuisDomaine(scope)),
       restrictions,
       titulariatsActifs: titulariats.map((titulariat) => TitulariatMapper.depuisDomaine(titulariat)),
+      titulariatsEffectifs,
       estTitulaireEffectif,
       sourceTitulariatEffectif:
-        titulariatEffectifParResponsabilite
-          ? 'RESPONSABILITE_CLASSE'
-          : titulariatEffectifFinal
-            ? 'AFFECTATION_TITULARIAT'
-            : 'AUCUNE',
+        titulariatEffectifCible?.source
+        ?? titulariatsEffectifs[0]?.source
+        ?? 'AUCUNE',
+      elevesAutorises,
     });
+  }
+
+  private resoudreTitulariatsEffectifs(params: {
+    responsabilites: readonly ResponsabiliteClassePedagogiqueReadModel[];
+    titulariats: readonly AffectationTitulariat[];
+    idUtilisateur: string;
+    idOrganisation?: string;
+    idEcole?: string;
+  }): TitulariatEffectifReadModel[] {
+    const effectifs: TitulariatEffectifReadModel[] = [];
+
+    for (const responsabilite of params.responsabilites) {
+      if (
+        !responsabilite.active
+        || responsabilite.idUtilisateurEnseignant !== params.idUtilisateur
+        || (params.idOrganisation
+          && responsabilite.idOrganisation !== params.idOrganisation)
+        || (params.idEcole && responsabilite.idEcole !== params.idEcole)
+      ) {
+        continue;
+      }
+
+      const sectionAuto = PolicyTitulariatEffectifParSection.estSectionAutoTitulariat(
+        responsabilite.sectionCode,
+        responsabilite.sectionLibelle,
+      );
+      const titulariatExplicite = params.titulariats.some((titulariat) =>
+        titulariat.obtenirIdUtilisateur() === params.idUtilisateur
+        && titulariat.obtenirIdOrganisation() === responsabilite.idOrganisation
+        && titulariat.obtenirIdEcole() === responsabilite.idEcole
+        && titulariat.obtenirIdClasse() === responsabilite.idClassePedagogique
+        && titulariat.obtenirIdAnneeScolaire() === responsabilite.idAnneeScolaire
+        && titulariat.obtenirEstActif(),
+      );
+      if (!sectionAuto && !titulariatExplicite) {
+        continue;
+      }
+
+      effectifs.push({
+        idOrganisation: responsabilite.idOrganisation,
+        idEcole: responsabilite.idEcole,
+        idClasse: responsabilite.idClassePedagogique,
+        idAnneeScolaire: responsabilite.idAnneeScolaire,
+        idSectionScolaire: responsabilite.idSectionScolaire,
+        source: sectionAuto ? 'RESPONSABILITE_CLASSE' : 'AFFECTATION_TITULARIAT',
+      });
+    }
+
+    return effectifs;
+  }
+
+  private affectationCouvreContexte(
+    affectation: AffectationUtilisateur,
+    contexte: {
+      idOrganisationActive?: string;
+      idEcoleActive?: string;
+    },
+  ): boolean {
+    const niveau = affectation.obtenirNiveauAcces().obtenirValeur();
+    if (niveau === 'PLATEFORME') {
+      return true;
+    }
+
+    if (niveau === 'ORGANISATION') {
+      return Boolean(
+        contexte.idOrganisationActive
+        && affectation.obtenirIdOrganisation() === contexte.idOrganisationActive,
+      );
+    }
+
+    return Boolean(
+      contexte.idOrganisationActive
+      && contexte.idEcoleActive
+      && affectation.obtenirIdOrganisation() === contexte.idOrganisationActive
+      && affectation.obtenirIdEcole() === contexte.idEcoleActive,
+    );
+  }
+
+  private resoudreActeurActif(
+    actorCodes: readonly string[],
+    contexte: {
+      idOrganisationActive?: string;
+      idEcoleActive?: string;
+      acteurCodePrefere?: string;
+    },
+  ): string | undefined {
+    const prefere = contexte.acteurCodePrefere?.trim();
+    if (prefere) {
+      return actorCodes.includes(prefere) ? prefere : undefined;
+    }
+
+    // Les appels historiques qui ne portent pas encore l'acteur actif restent
+    // compatibles uniquement lorsqu'un seul rôle couvre le contexte. Avec
+    // plusieurs rôles, choisir implicitement reviendrait à élever les droits.
+    return actorCodes.length === 1 ? actorCodes[0] : undefined;
+  }
+
+  private construireScopesContextualises(
+    candidats: readonly { affectation: AffectationUtilisateur; role: Role }[],
+    contexte: {
+      idOrganisationActive?: string;
+      idEcoleActive?: string;
+    },
+  ): ScopeAcces[] {
+    const scopes = candidats.flatMap(({ affectation, role }) => {
+      const scopesAffectation = [...affectation.obtenirScopes()];
+      if (role.obtenirNiveauAcces().obtenirValeur() === 'PLATEFORME') {
+        scopesAffectation.push(ScopeAcces.creer(new TypeScope('PLATEFORME'), 'system'));
+      }
+      if (affectation.obtenirIdOrganisation()) {
+        scopesAffectation.push(
+          ScopeAcces.creer(
+            new TypeScope('ORGANISATION'),
+            affectation.obtenirIdOrganisation() as string,
+          ),
+        );
+      }
+      if (affectation.obtenirIdEcole()) {
+        scopesAffectation.push(
+          ScopeAcces.creer(new TypeScope('ECOLE'), affectation.obtenirIdEcole() as string),
+        );
+      }
+      if (affectation.obtenirIdSection()) {
+        scopesAffectation.push(
+          ScopeAcces.creer(new TypeScope('SECTION'), affectation.obtenirIdSection() as string),
+        );
+      }
+      return scopesAffectation;
+    });
+
+    const uniques = new Map<string, ScopeAcces>();
+    for (const scope of scopes) {
+      const type = scope.obtenirTypeScope().obtenirValeur();
+      const valeur = scope.obtenirValeurScope();
+      if (type === 'ORGANISATION' && contexte.idOrganisationActive !== valeur) {
+        continue;
+      }
+      if (type === 'ECOLE' && contexte.idEcoleActive !== valeur) {
+        continue;
+      }
+      const cle = `${type}:${valeur}:${scope.obtenirEstLectureSeule()}`;
+      uniques.set(cle, scope);
+    }
+    return [...uniques.values()];
   }
 }

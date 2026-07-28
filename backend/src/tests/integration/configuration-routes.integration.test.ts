@@ -13,6 +13,30 @@ import { ROLE_FIXTURES, TENANT_FIXTURES } from '../../shared/tests/fixtures/Glob
 import { injecterCommeActeur } from '../../shared/tests/helpers/GlobalTestHelpers';
 import { GlobalTestBootstrap } from '../../shared/tests/setup/GlobalTestBootstrap';
 
+test('la garde modulaire reste fermee quand la configuration organisation manque', async () => {
+  assert.equal(
+    await moduleActivationConfigurationService.moduleActif({
+      organisationId: 'organisation-sans-configuration-g1',
+      module: 'MONITORING',
+    }),
+    false,
+  );
+  assert.equal(
+    await moduleActivationConfigurationService.moduleActif({
+      organisationId: 'organisation-sans-configuration-g1',
+      ecoleId: 'ecole-sans-configuration-g1',
+      module: 'MONITORING',
+    }),
+    false,
+  );
+  assert.equal(
+    await moduleActivationConfigurationService.moduleActif({
+      module: 'MONITORING',
+    }),
+    true,
+  );
+});
+
 test('les routes configuration exposent la gouvernance modulaire organisation et ecole', async () => {
   const bootstrap = new GlobalTestBootstrap();
   const promoteur = await bootstrap.creerActeur({
@@ -166,7 +190,7 @@ test("la lecture modulaire n'active jamais implicitement tous les modules d'une 
   });
 
   assert.equal(lectureEffective.statusCode, 200, lectureEffective.body);
-  assert.deepEqual(lectureEffective.json().donnees.modulesAutorisesOrganisation, TYPES_MODULE_CONFIGURATION);
+  assert.deepEqual(lectureEffective.json().donnees.modulesAutorisesOrganisation, []);
   assert.deepEqual(lectureEffective.json().donnees.modulesActivesEcole, []);
   assert.deepEqual(lectureEffective.json().donnees.modulesEffectifs, []);
 

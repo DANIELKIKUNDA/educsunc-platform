@@ -266,7 +266,13 @@ interface ResolutionModulesEcole {
   readonly modulesEffectifs: readonly TypeModuleConfiguration[];
 }
 
-class ServiceActivationModulesConfiguration {
+export interface ResolutionModulesContexte {
+  readonly niveau: 'PLATEFORME' | 'ORGANISATION' | 'ECOLE';
+  readonly modulesDisponibles: readonly TypeModuleConfiguration[];
+  readonly modulesEffectifs: readonly TypeModuleConfiguration[];
+}
+
+export class ServiceActivationModulesConfiguration {
   constructor(
     private readonly readModel: ConfigurationReadModelAvecListage,
     private readonly createUseCase: CreateConfigurationUseCase,
@@ -393,13 +399,59 @@ class ServiceActivationModulesConfiguration {
     };
   }
 
+  public async resoudreModulesPourContexte(params: {
+    organisationId?: string;
+    ecoleId?: string;
+  }): Promise<ResolutionModulesContexte> {
+    if (!params.organisationId) {
+      return {
+        niveau: 'PLATEFORME',
+        modulesDisponibles: [...MODULES_CONFIGURATION],
+        modulesEffectifs: [...MODULES_CONFIGURATION],
+      };
+    }
+
+    const allowedConfig = await this.trouverParCleEtScope(CLE_MODULES_ALLOWED, {
+      niveau: 'ORGANIZATION',
+      organisationId: params.organisationId,
+    });
+    const modulesDisponibles = this.extraireModulesAutorises(allowedConfig?.details().valeur);
+    if (!params.ecoleId) {
+      return {
+        niveau: 'ORGANISATION',
+        modulesDisponibles,
+        modulesEffectifs: modulesDisponibles,
+      };
+    }
+
+    const resolution = await this.resoudreModulesEffectifs({
+      organisationId: params.organisationId,
+      ecoleId: params.ecoleId,
+    });
+    return {
+      niveau: 'ECOLE',
+      modulesDisponibles: resolution.modulesAutorisesOrganisation,
+      modulesEffectifs: resolution.modulesEffectifs,
+    };
+  }
+
   public async moduleActif(params: {
     organisationId?: string;
     ecoleId?: string;
     module: TypeModuleConfiguration;
   }): Promise<boolean> {
-    if (!params.organisationId || !params.ecoleId) {
+    if (!params.organisationId) {
       return true;
+    }
+
+    if (!params.ecoleId) {
+      const allowedConfig = await this.trouverParCleEtScope(CLE_MODULES_ALLOWED, {
+        niveau: 'ORGANIZATION',
+        organisationId: params.organisationId,
+      });
+      return this.extraireModulesAutorises(
+        allowedConfig?.details().valeur,
+      ).includes(params.module);
     }
 
     const resolution = await this.resoudreModulesEffectifs({
@@ -411,7 +463,7 @@ class ServiceActivationModulesConfiguration {
 
   private extraireModulesAutorises(value: ValeurConfiguration | undefined): readonly TypeModuleConfiguration[] {
     if (!Array.isArray(value)) {
-      return MODULES_CONFIGURATION;
+      return [];
     }
     return this.normaliserModules(value as readonly string[]);
   }

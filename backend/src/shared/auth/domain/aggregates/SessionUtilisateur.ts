@@ -118,8 +118,9 @@ export class SessionUtilisateur extends RacineAgregat<string> {
 
   // Cette methode change l'organisation active de la session.
   public changerOrganisationActive(organisationActiveId?: string): void {
+    const organisationPrecedente = this.organisationActiveId;
     this.organisationActiveId = SessionUtilisateur.nettoyerOptionnel(organisationActiveId);
-    if (!this.organisationActiveId) {
+    if (organisationPrecedente !== this.organisationActiveId) {
       this.ecoleActiveId = undefined;
     }
     PolicyContexteActif.verifier({

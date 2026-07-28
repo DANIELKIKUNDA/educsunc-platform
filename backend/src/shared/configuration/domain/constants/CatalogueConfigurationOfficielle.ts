@@ -286,7 +286,7 @@ export const CATALOGUE_CONFIGURATION_OFFICIELLE: readonly DefinitionConfiguratio
     restartRequis: false,
     moteurConsommateur: 'Resolution modulaire organisation',
     momentInitialisation: 'CREATION_ORGANISATION',
-    preuve: 'La resolution modulaire existante interprete deja l absence de modules.allowed comme catalogue complet autorisable.',
+    preuve: 'La creation d organisation initialise explicitement le catalogue autorise; une absence reste fermee par securite.',
   },
   {
     key: 'modules.enabled',

@@ -8,3 +8,4 @@ export * from './RoleReadModel';
 export * from './ResponsabiliteClassePedagogiqueReadModel';
 export * from './ScopeUtilisateurReadModel';
 export * from './TitulariatReadModel';
+export * from './TitulariatEffectifReadModel';

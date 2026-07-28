@@ -28,7 +28,15 @@ export class AuditSearchApplicationService {
       acteur: { idUtilisateur: query.acteurId, typeActeur: 'UTILISATEUR' },
       ressource: query.ressourceId ? { typeRessource: 'RESSOURCE', idRessource: query.ressourceId } : undefined,
       contexte: { sourceAudit: 'SEARCH', modeOffline: false, correlationId: query.correlationId },
-      tenant: { organisationId: query.organisationId, ecoleId: query.ecoleId, scope: query.ecoleId ? 'ECOLE' : 'ORGANISATION' },
+      tenant: {
+        organisationId: query.organisationId,
+        ecoleId: query.ecoleId,
+        scope: query.ecoleId
+          ? 'ECOLE'
+          : query.organisationId
+            ? 'ORGANISATION'
+            : 'PLATEFORME',
+      },
     });
   }
 

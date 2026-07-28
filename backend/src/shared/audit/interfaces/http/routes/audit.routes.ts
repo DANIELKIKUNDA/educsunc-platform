@@ -7,7 +7,7 @@ export const creerAuditRoutes = (dependances: DependancesRoutesAudit): FastifyPl
     executerRouteAudit(dependances, requete, reponse, async () => {
       await appliquerPoliciesRouteAudit(dependances, requete, reponse, {
         permission: 'audit.read',
-        scope: 'ECOLE',
+        scope: 'PLATEFORME',
       });
       return dependances.auditController.lister({
         query: requete.query as never,
@@ -20,7 +20,7 @@ export const creerAuditRoutes = (dependances: DependancesRoutesAudit): FastifyPl
     executerRouteAudit(dependances, requete, reponse, async () => {
       await appliquerPoliciesRouteAudit(dependances, requete, reponse, {
         permission: 'audit.read',
-        scope: 'ECOLE',
+        scope: 'PLATEFORME',
       });
       return dependances.auditController.consulterParId({
         params: requete.params as never,
@@ -34,7 +34,7 @@ export const creerAuditRoutes = (dependances: DependancesRoutesAudit): FastifyPl
     executerRouteAudit(dependances, requete, reponse, async () => {
       await appliquerPoliciesRouteAudit(dependances, requete, reponse, {
         permission: 'audit.timeline.read',
-        scope: 'ECOLE',
+        scope: 'PLATEFORME',
       });
       return dependances.auditController.obtenirTimeline({
         query: requete.query as never,
@@ -47,7 +47,7 @@ export const creerAuditRoutes = (dependances: DependancesRoutesAudit): FastifyPl
     executerRouteAudit(dependances, requete, reponse, async () => {
       await appliquerPoliciesRouteAudit(dependances, requete, reponse, {
         permission: 'audit.history.read',
-        scope: 'ECOLE',
+        scope: 'PLATEFORME',
       });
       return dependances.auditController.obtenirHistorique({
         query: requete.query as never,

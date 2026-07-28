@@ -38,8 +38,8 @@ test('pipeline RequestContext -> AUTH -> SECURITY -> TENANCY enrichit la requete
   });
   const contexteActif = creerContexteActifAuth(
     utilisateur.obtenirId(),
-    'org-1',
-    'ecole-1',
+    'org-autre-session',
+    'ecole-autre-session',
   );
 
   await authRepositories.depotUtilisateurAuth.sauvegarder(utilisateur);
@@ -96,7 +96,22 @@ test('pipeline RequestContext -> AUTH -> SECURITY -> TENANCY enrichit la requete
       affectationUtilisateurRepository: securityRepositories.affectationRepository,
       affectationTitulariatRepository: securityRepositories.titulariatRepository,
       auditSecurityPort: null,
-      responsabiliteClassePedagogiquePort: null,
+      ownershipParentPort: null,
+      responsabiliteClassePedagogiquePort: {
+        consulterActiveParClasseEtAnnee: async () => null,
+        listerActivesParUtilisateur: async () => [{
+          idOrganisation: 'org-1',
+          idEcole: 'ecole-1',
+          idClassePedagogique: 'classe-1',
+          idClasseAcademique: 'classe-academique-1',
+          idSectionScolaire: 'section-primaire',
+          sectionCode: 'PRIMAIRE',
+          sectionLibelle: 'Primaire',
+          idAnneeScolaire: 'annee-1',
+          idUtilisateurEnseignant: utilisateur.obtenirId(),
+          active: true,
+        }],
+      },
     })(instance, {});
     await tenancyPlugin(instance, {});
 
@@ -117,6 +132,8 @@ test('pipeline RequestContext -> AUTH -> SECURITY -> TENANCY enrichit la requete
         idUtilisateur: titulariat.obtenirIdUtilisateur(),
         idClasse: titulariat.obtenirIdClasse(),
       })),
+      titulariatsEffectifs: requete.context.titulariatsEffectifs,
+      estTitulaireEffectif: requete.context.estTitulaireEffectif,
       deviceId: requete.context.deviceId,
       tenantHeader: requete.headers['x-tenant-id'],
       organisationHeader: requete.headers['x-organisation-id'],
@@ -145,6 +162,8 @@ test('pipeline RequestContext -> AUTH -> SECURITY -> TENANCY enrichit la requete
     restrictions: string[];
     scopes: Array<{ typeScope: string; valeurScope: string }>;
     titulariats: Array<{ idUtilisateur: string; idClasse: string }>;
+    titulariatsEffectifs: Array<{ idClasse: string; idAnneeScolaire: string }>;
+    estTitulaireEffectif: boolean;
     deviceId: string;
     tenantHeader: string;
     organisationHeader: string;
@@ -161,9 +180,17 @@ test('pipeline RequestContext -> AUTH -> SECURITY -> TENANCY enrichit la requete
   assert.deepEqual(corps.scopes, [
     { typeScope: 'ECOLE', valeurScope: 'ecole-1' },
     { typeScope: 'ORGANISATION', valeurScope: 'org-1' },
-    { typeScope: 'ECOLE', valeurScope: 'ecole-1' },
   ]);
   assert.equal(corps.titulariats[0]?.idUtilisateur, utilisateur.obtenirId());
+  assert.equal(corps.estTitulaireEffectif, true);
+  assert.deepEqual(corps.titulariatsEffectifs, [{
+    idOrganisation: 'org-1',
+    idEcole: 'ecole-1',
+    idClasse: 'classe-1',
+    idAnneeScolaire: 'annee-1',
+    idSectionScolaire: 'section-primaire',
+    source: 'RESPONSABILITE_CLASSE',
+  }]);
   assert.equal(corps.tenantHeader, 'ecole-1');
   assert.equal(corps.organisationHeader, 'org-1');
 
@@ -246,6 +273,7 @@ test('tenancy refuse une ecole etrangere quand le contexte actif est deja etabli
       affectationUtilisateurRepository: securityRepositories.affectationRepository,
       affectationTitulariatRepository: securityRepositories.titulariatRepository,
       auditSecurityPort: null,
+      ownershipParentPort: null,
       responsabiliteClassePedagogiquePort: null,
     })(instance, {});
     await tenancyPlugin(instance, {});

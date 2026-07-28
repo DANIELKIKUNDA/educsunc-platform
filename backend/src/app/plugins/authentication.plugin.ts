@@ -1,5 +1,11 @@
 import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
-import { RequestContextFactory, REQUEST_CONTEXT_HEADER_ORGANISATION, REQUEST_CONTEXT_HEADER_SESSION, REQUEST_CONTEXT_HEADER_TENANT } from 'shared/context';
+import {
+  CONTEXT_ROLE_PAR_DEFAUT,
+  RequestContextFactory,
+  REQUEST_CONTEXT_HEADER_ORGANISATION,
+  REQUEST_CONTEXT_HEADER_SESSION,
+  REQUEST_CONTEXT_HEADER_TENANT,
+} from 'shared/context';
 import { PolicyTokenVersion } from 'shared/auth/domain';
 import { AuthenticationMiddleware, JwtTokenAdapter, PostgresContexteActifAuthRepository, PostgresRefreshTokenRepository, PostgresSessionUtilisateurRepository, PostgresUtilisateurAuthRepository, SessionCacheService } from 'shared/auth/infrastructure';
 import { SessionApplicationService } from 'shared/auth/application/services/SessionApplicationService';
@@ -109,22 +115,18 @@ export function creerAuthenticationPlugin(
             401,
           );
         }
-        const contexteActif = await dependances.contexteActifAuthRepository.trouverContexteUtilisateur(
-          utilisateur.obtenirId(),
-        );
-
-        const organisationActiveId =
-          session.organisationActiveId
-          ?? contexteActif?.obtenirOrganisationActiveId()
-          ?? lireValeurChaine(payload.organisationActiveId);
-        const ecoleActiveId =
-          session.ecoleActiveId
-          ?? contexteActif?.obtenirEcoleActiveId()
-          ?? lireValeurChaine(payload.ecoleActiveId);
+        // Le contexte appartient a la session courante. Le contexte historique
+        // par utilisateur ne doit jamais contaminer un autre appareil.
+        const organisationActiveId = session.organisationActiveId;
+        const ecoleActiveId = session.ecoleActiveId;
+        const roleActifContexte =
+          requete.context.roleActif === CONTEXT_ROLE_PAR_DEFAUT
+            ? undefined
+            : requete.context.roleActif;
         const roleActif =
           lireValeurChaine(payload.roleActif)
           ?? lireValeurChaine(payload.role)
-          ?? requete.context.roleActif;
+          ?? roleActifContexte;
         const lectureOrganisationnellePlateforme =
           lireHeaderChaine(requete.headers, 'x-lecture-organisation') === 'true'
           && roleActif !== undefined

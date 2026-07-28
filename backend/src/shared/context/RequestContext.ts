@@ -1,4 +1,5 @@
 import type { AffectationTitulariat, ScopeAcces } from 'shared/security/domain';
+import type { TitulariatEffectifContext } from './ContextTypes';
 
 // Ce contrat represente le contexte runtime partage par tout le backend pour une requete.
 export interface RequestContext {
@@ -6,6 +7,7 @@ export interface RequestContext {
   correlationId?: string;
   utilisateurId?: string;
   sessionId?: string;
+  actorCodes?: string[];
   roleActif?: string;
   organisationActiveId?: string;
   ecoleActiveId?: string;
@@ -13,6 +15,10 @@ export interface RequestContext {
   scopes: ScopeAcces[];
   restrictions: string[];
   titulariats: AffectationTitulariat[];
+  titulariatsEffectifs?: TitulariatEffectifContext[];
+  estTitulaireEffectif?: boolean;
+  sourceTitulariatEffectif?: 'AUCUNE' | 'AFFECTATION_TITULARIAT' | 'RESPONSABILITE_CLASSE';
+  elevesAutorises?: string[];
   modeOffline: boolean;
   deviceId?: string;
   appVersion?: string;
