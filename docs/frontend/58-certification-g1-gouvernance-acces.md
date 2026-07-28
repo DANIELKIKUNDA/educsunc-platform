@@ -69,13 +69,37 @@ Les tests PostgreSQL d'authentification, les routes Configuration et les
 routes Audit ciblees sont executes dans le Codespace de certification avec
 PostgreSQL et Redis reels.
 
-## 5. Regles de verdict
+## 5. Resultats de certification
+
+| Controle | Resultat |
+| --- | --- |
+| Parcours navigateur G1 | 13/13 passes |
+| Tests frontend | 55/55 passes |
+| Tests backend SECURITY | 72/72 passes |
+| Matrice backend ciblee | 25/25 passes |
+| Certification E2E racine | passee en 75,9 s |
+| Builds backend et frontend | passes |
+| Verification rapide et verification code | passees |
+| Semgrep bloquant | 0 resultat |
+| Gitleaks | aucun secret detecte |
+| Trivy filesystem et configuration | aucun risque HIGH ou CRITICAL |
+| Baseline k6 | 1 493 requetes, p95 29 ms, p99 44 ms |
+
+La mise a jour de `vue-tsc` a supprime la vulnerabilite transitive
+`CVE-2026-14257`. Les onze alertes Semgrep non bloquantes restent documentees :
+politique CORS dynamique, impressions historiques utilisant `document.write`
+et expression reguliere dynamique du resolveur doctrinal. Le bundle frontend
+principal depasse encore 500 Ko minifies. Les avertissements deprecation
+Fastify et PostgreSQL observes pendant les tests ne bloquent pas G1, mais
+doivent etre traites avant les prochaines montes de versions majeures.
+
+## 6. Regles de verdict
 
 G1 n'est certifiable que si :
 
-- les onze acteurs passent leur precontrole de session reelle ;
+- les onze acteurs passent leurs scenarios de session reelle ;
 - chaque acteur est ouvert et verifie directement par son scenario, sans
-  duplication de sessions dans le precontrole global ;
+  duplication prealable de sessions ;
 - chaque scenario obligatoire possede une preuve verte ;
 - les builds backend et frontend sont verts ;
 - les tests securite, authentification, contexte et audit sont verts ;
