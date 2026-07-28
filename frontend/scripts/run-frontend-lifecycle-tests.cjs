@@ -306,6 +306,25 @@ test('un changement de tenant ferme les capacites avant tout appel serveur', () 
   }
 });
 
+test("une cible de changement de contexte n'est jamais envoyee comme contexte deja actif", () => {
+  const source = fs.readFileSync(
+    path.resolve(__dirname, '../src/shared/auth/auth.api.ts'),
+    'utf8',
+  );
+
+  for (const functionName of [
+    'changerOrganisationActive',
+    'changerEcoleActive',
+  ]) {
+    const start = source.indexOf(`async ${functionName}`);
+    assert.notEqual(start, -1);
+    const nextFunction = source.indexOf('\n  async ', start + 1);
+    const body = source.slice(start, nextFunction === -1 ? undefined : nextFunction);
+    assert.match(body, /entetes: construireEntetesSession\(params\)/);
+    assert.doesNotMatch(body, /entetes: construireEntetesAuth\(params\)/);
+  }
+});
+
 test('un acteur inconnu ne peut pas retomber sur le premier profil plateforme', () => {
   const source = fs.readFileSync(
     path.resolve(__dirname, '../src/shared/auth/session.store.ts'),

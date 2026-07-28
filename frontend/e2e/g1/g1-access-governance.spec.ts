@@ -138,10 +138,14 @@ test.describe('G1 - gouvernance globale des accès frontend', () => {
     }
 
     const sidebar = page.locator('.erp-sidebar');
-    await sidebar.getByRole('button', { name: /Audit/i }).click();
-    await expect(
-      sidebar.getByRole('link', { name: 'Audit administratif et financier' }),
-    ).toBeVisible();
+    const financialAuditLink = sidebar.getByRole(
+      'link',
+      { name: 'Audit administratif et financier' },
+    );
+    if (await financialAuditLink.count() === 0) {
+      await sidebar.getByRole('button', { name: /Audit/i }).click();
+    }
+    await expect(financialAuditLink).toBeVisible();
     await expect(sidebar.getByRole('link', { name: 'Audit plateforme' })).toHaveCount(0);
     await expect(sidebar.getByRole('button', { name: /Configuration/i })).toHaveCount(0);
 

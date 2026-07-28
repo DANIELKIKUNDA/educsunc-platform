@@ -61,6 +61,16 @@ function construireEntetesAuth(params: {
   };
 }
 
+function construireEntetesSession(params: {
+  accessToken: string;
+  sessionId: string;
+}): Record<string, string> {
+  return construireEntetesAuth({
+    accessToken: params.accessToken,
+    sessionId: params.sessionId,
+  });
+}
+
 export const authApi = {
   async obtenirEtatInitialisation(): Promise<{ initialisationRequise: boolean }> {
     return clientApi.envoyer({
@@ -180,7 +190,7 @@ export const authApi = {
       chemin: '/api/auth/contexte/organisation-active',
       methode: 'PUT',
       corps: { organisationActiveId: params.organisationActiveId },
-      entetes: construireEntetesAuth(params),
+      entetes: construireEntetesSession(params),
     });
   },
 
@@ -204,7 +214,7 @@ export const authApi = {
       chemin: '/api/auth/contexte/ecole-active',
       methode: 'PUT',
       corps: { ecoleActiveId: params.ecoleActiveId },
-      entetes: construireEntetesAuth(params),
+      entetes: construireEntetesSession(params),
     });
   },
 };
