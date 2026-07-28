@@ -2,6 +2,10 @@
   "name": "educsyn-backend",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "npm@10.8.2",
+  "engines": {
+    "node": ">=24 <25"
+  },
   "description": "Socle backend Clean Architecture et DDD pour EducSyn.",
   "scripts": {
     "dev": "tsx watch src/main.ts",
@@ -28,7 +32,7 @@
     "certification:security": "node scripts/certify-security-production.cjs",
     "test:auth:postgres": "tsx src/scripts/auth/ExecuterTestsPostgresAuth.ts",
     "test": "tsx --test src/contexts/referentiel-academique/tests/depot-annee-scolaire-postgres.test.ts src/contexts/referentiel-academique/tests/execution-http-referentiel-academique.test.ts src/contexts/referentiel-academique/tests/migrations-postgres-referentiel-academique.test.ts src/contexts/referentiel-academique/tests/orchestration-annee-scolaire.test.ts src/contexts/referentiel-academique/tests/publier-version-referentiel.test.ts",
-    "test:audit": "node scripts/run-shared-audit-tests.cjs",
+    "test:audit": "node --require ./scripts/load-optional-local-env.cjs scripts/run-shared-audit-tests.cjs",
     "test:security": "node scripts/run-shared-security-tests.cjs",
     "test:global": "node scripts/run-shared-global-tests.cjs",
     "test:workflows": "node scripts/run-workflow-scenario-tests.cjs",
@@ -44,10 +48,10 @@
     "redis": "^6.0.0"
   },
   "devDependencies": {
-    "@types/node": "^25.5.0",
+    "@types/node": "24.13.3",
     "@types/pg": "^8.20.0",
     "tsx": "^4.21.0",
-    "typescript": "^6.0.2"
+    "typescript": "5.9.3"
   },
   "allowScripts": {
     "esbuild@0.27.4": true,

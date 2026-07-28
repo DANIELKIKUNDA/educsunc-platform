@@ -22,6 +22,7 @@ concurrency:
 
 env:
   NODE_VERSION: "24"
+  NPM_VERSION: "10.8.2"
   APP_ENV: test
   DB_HOST: localhost
   DB_PORT: "5432"
@@ -62,6 +63,9 @@ jobs:
             package-lock.json
             backend/package-lock.json
 
+      - name: Aligner npm officiel
+        run: npm install -g npm@${{ env.NPM_VERSION }}
+
       - name: Installer les dependances
         run: |
           npm ci
@@ -98,6 +102,9 @@ jobs:
           cache-dependency-path: |
             package-lock.json
             frontend/package-lock.json
+
+      - name: Aligner npm officiel
+        run: npm install -g npm@${{ env.NPM_VERSION }}
 
       - name: Installer les dependances
         run: |
@@ -143,6 +150,9 @@ jobs:
             package-lock.json
             backend/package-lock.json
 
+      - name: Aligner npm officiel
+        run: npm install -g npm@${{ env.NPM_VERSION }}
+
       - name: Installer les dependances
         run: |
           npm ci
@@ -171,6 +181,9 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
+      - name: Aligner npm officiel
+        run: npm install -g npm@${{ env.NPM_VERSION }}
+
       - name: Auditer les dependances
         run: npm run verify:security:dependencies
 
@@ -193,6 +206,9 @@ jobs:
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: ${{ env.NODE_VERSION }}
+
+      - name: Aligner npm officiel
+        run: npm install -g npm@${{ env.NPM_VERSION }}
 
       - name: Installer Semgrep 1.164.0
         run: |
@@ -224,6 +240,9 @@ jobs:
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: ${{ env.NODE_VERSION }}
+
+      - name: Aligner npm officiel
+        run: npm install -g npm@${{ env.NPM_VERSION }}
 
       - name: Installer Gitleaks 8.30.1 et verifier son integrite
         run: |
@@ -313,6 +332,9 @@ jobs:
             backend/package-lock.json
             frontend/package-lock.json
 
+      - name: Aligner npm officiel
+        run: npm install -g npm@${{ env.NPM_VERSION }}
+
       - name: Installer les dependances
         run: |
           npm ci
@@ -367,6 +389,9 @@ jobs:
             package-lock.json
             backend/package-lock.json
             frontend/package-lock.json
+
+      - name: Aligner npm officiel
+        run: npm install -g npm@${{ env.NPM_VERSION }}
 
       - name: Installer les dependances
         run: |
