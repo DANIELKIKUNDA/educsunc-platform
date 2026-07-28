@@ -76,8 +76,17 @@ async function readJson(response: Response): Promise<Record<string, unknown>> {
 async function assertResponse(response: Response, code: string): Promise<void> {
   if (response.ok) return;
   const payload = await readJson(response);
+  const nestedError = payload.error && typeof payload.error === 'object'
+    ? payload.error as Record<string, unknown>
+    : undefined;
   throw new Error(
-    `${code}: HTTP ${response.status}. ${String(payload.message ?? payload.code ?? 'Réponse sans détail métier.')}`,
+    `${code}: HTTP ${response.status}. ${String(
+      payload.message
+      ?? payload.code
+      ?? nestedError?.message
+      ?? nestedError?.code
+      ?? 'Réponse sans détail métier.',
+    )}`,
   );
 }
 
@@ -190,7 +199,12 @@ async function ensureCertificationTenant(
 
   const ecolesResponse = await fetch(
     `${backendUrl}/api/organisations/${organisation.id}/ecoles?page=1&taillePage=100`,
-    { headers },
+    {
+      headers: {
+        ...headers,
+        'x-lecture-organisation': 'true',
+      },
+    },
   );
   await assertResponse(ecolesResponse, 'G1_LISTE_ECOLES_INDISPONIBLE');
   const ecolesPayload = await readJson(ecolesResponse);
