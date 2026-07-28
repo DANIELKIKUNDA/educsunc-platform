@@ -1,4 +1,5 @@
 import type { FullConfig } from '@playwright/test';
+import { randomBytes } from 'node:crypto';
 
 type G1ActorCode =
   | 'MANAGER_SYSTEME'
@@ -47,6 +48,39 @@ async function assertResponse(response: Response, code: string): Promise<void> {
   throw new Error(
     `${code}: HTTP ${response.status}. ${String(payload.message ?? payload.code ?? 'Réponse sans détail métier.')}`,
   );
+}
+
+async function ensurePlatformInitialized(
+  backendUrl: string,
+  initializationRequired: boolean,
+): Promise<void> {
+  if (!initializationRequired) return;
+
+  const password = `G1!${randomBytes(18).toString('base64url')}a9`;
+  const initializationResponse = await fetch(`${backendUrl}/api/auth/initialisation`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      nom: 'Certification',
+      postnom: 'G1',
+      prenom: 'EduSync',
+      email: `g1-${Date.now()}@certification.educsync.test`,
+      motDePasse: password,
+      confirmationMotDePasse: password,
+      seSouvenirDeMoi: false,
+      deviceId: 'g1-platform-bootstrap',
+    }),
+  });
+  await assertResponse(initializationResponse, 'G1_INITIALISATION_PLATEFORME_ECHOUEE');
+
+  const statusResponse = await fetch(`${backendUrl}/api/auth/initialisation`);
+  await assertResponse(statusResponse, 'G1_INITIALISATION_PLATEFORME_ILLISIBLE');
+  const status = await readJson(statusResponse);
+  if (status.initialisationRequise === true) {
+    throw new Error(
+      'G1_INITIALISATION_PLATEFORME_INCOMPLETE: PostgreSQL demande toujours une initialisation.',
+    );
+  }
 }
 
 async function verifyDeveloperActor(
@@ -140,12 +174,10 @@ export default async function globalSetup(config: FullConfig): Promise<void> {
   });
   await assertResponse(initializationResponse, 'G1_INITIALISATION_ILLISIBLE');
   const initialization = await readJson(initializationResponse);
-
-  if (initialization.initialisationRequise === true) {
-    throw new Error(
-      'G1_BASE_NON_INITIALISEE: initialisez la plateforme avant la certification E2E G1.',
-    );
-  }
+  await ensurePlatformInitialized(
+    backendUrl,
+    initialization.initialisationRequise === true,
+  );
 
   for (const actorCode of [
     'MANAGER_SYSTEME',
