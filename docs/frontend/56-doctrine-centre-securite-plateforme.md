@@ -16,7 +16,7 @@ Doctrine figée pour le périmètre Plateforme. PostgreSQL et les contrôles HTT
 
 ## Autorisation effective
 
-Une autorisation exige simultanément : utilisateur authentifié, compte actif, session PostgreSQL active, version de jeton valide, affectation active, rôle actif, permission réelle et périmètre compatible. Une route Plateforme globale n’exige ni organisation ni école active.
+Une autorisation exige simultanément : utilisateur authentifié, compte actif, session PostgreSQL active, version de jeton valide, affectation active, rôle actif, permission réelle et périmètre compatible. Le rôle actif appartient à la session PostgreSQL ; une rotation ne choisit jamais silencieusement un autre rôle et les permissions de plusieurs rôles ne sont jamais fusionnées implicitement. Une route Plateforme globale n’exige ni organisation ni école active.
 
 ## Invariants critiques
 
@@ -29,6 +29,7 @@ Une autorisation exige simultanément : utilisateur authentifié, compte actif, 
 - La réactivation ne restaure aucune session et exige une nouvelle connexion.
 - La réinitialisation administrative du mot de passe applique la politique existante, invalide tous les accès et ne révèle jamais le secret.
 - Toute mutation critique exige un motif et produit un audit durable.
+- Après une mutation de sécurité, le frontend invalide immédiatement sa projection, la relit depuis le serveur et synchronise les autres onglets avant de réafficher menus et actions.
 - Aucun mot de passe, hash, jeton, cookie ou secret n’est conservé dans l’audit.
 
 ## Persistance et audit

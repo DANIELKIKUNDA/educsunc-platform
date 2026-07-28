@@ -345,6 +345,59 @@ test("limite un parent a ses enfants autorises", () => {
   );
 });
 
+test("les vues du titulaire bloquent tout chargement avant l'appel au store", () => {
+  const vues = [
+    'ClassementClasseView.vue',
+    'StatistiquesPedagogiquesClasseView.vue',
+    'EncodageConduiteView.vue',
+  ];
+
+  for (const nomVue of vues) {
+    const source = fs.readFileSync(
+      path.resolve(
+        __dirname,
+        '../src/domains/pedagogique/views',
+        nomVue,
+      ),
+      'utf8',
+    );
+
+    assert.match(source, /if \(!isAuthorized\.value \|\| !canLoad\.value\)/);
+    assert.match(
+      source,
+      /isAuthorized\.value && canLoad\.value\) \{\s+void charger/,
+    );
+  }
+});
+
+test("les mutations securite invalident et rechargent la projection effective", () => {
+  const storeSource = fs.readFileSync(
+    path.resolve(
+      __dirname,
+      '../src/domains/security/stores/security-center.store.ts',
+    ),
+    'utf8',
+  );
+  const bootstrapSource = fs.readFileSync(
+    path.resolve(__dirname, '../src/shared/auth/session.bootstrap.ts'),
+    'utf8',
+  );
+
+  assert.match(storeSource, /await notifierChangementCapacitesFrontend\(\)/);
+  assert.match(
+    bootstrapSource,
+    /postMessage\(\{ type: 'capabilities-changed' \}\)/,
+  );
+  assert.match(
+    bootstrapSource,
+    /event\.data\?\.type === 'capabilities-changed'/,
+  );
+  assert.match(
+    bootstrapSource,
+    /sessionStore\.invalidateEffectiveProfile\(\);\s+authChannel\?\.postMessage/,
+  );
+});
+
 test('toutes les actions et tous les modules documentes ont une politique effective', () => {
   const actionCodes = new Set(
     pageDoctrine.flatMap((page) => page.visibleActions.map((action) => action.code)),

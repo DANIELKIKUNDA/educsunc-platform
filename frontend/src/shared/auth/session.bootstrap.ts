@@ -287,6 +287,10 @@ function installMultiTabSync(): void {
           if (restored) window.location.assign('/app');
         });
       }
+      if (event.data?.type === 'capabilities-changed' && sessionStore.state.isAuthenticated) {
+        sessionStore.invalidateEffectiveProfile();
+        void rechargerProfilEffectifFrontend().catch(() => undefined);
+      }
     });
   }
 }
@@ -412,6 +416,12 @@ export async function rechargerProfilEffectifFrontend(): Promise<void> {
     sessionId: sessionStore.state.sessionId,
   });
   applyEffectiveProjection(profile);
+}
+
+export async function notifierChangementCapacitesFrontend(): Promise<void> {
+  sessionStore.invalidateEffectiveProfile();
+  authChannel?.postMessage({ type: 'capabilities-changed' });
+  await rechargerProfilEffectifFrontend();
 }
 
 export async function activerContextePlateformeFrontend(): Promise<void> {

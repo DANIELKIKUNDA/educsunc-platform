@@ -343,7 +343,7 @@ function buildFilters(): ClassRankingFilters {
 }
 
 async function chargerClassement(): Promise<void> {
-  if (!isAuthorized.value) {
+  if (!isAuthorized.value || !canLoad.value) {
     rankingStore.reinitialiser();
     return;
   }
@@ -402,7 +402,7 @@ function imprimerPage(): void {
 }
 
 synchroniserDepuisRoute();
-if (context.schoolYearId && idClassePedagogiqueInput.value && isAuthorized.value) {
+if (context.schoolYearId && idClassePedagogiqueInput.value && isAuthorized.value && canLoad.value) {
   void chargerClassement();
 }
 </script>

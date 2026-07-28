@@ -33,6 +33,7 @@ test('pipeline RequestContext -> AUTH -> SECURITY -> TENANCY enrichit la requete
   const session = creerSessionUtilisateur({
     idUtilisateur: utilisateur.obtenirId(),
     refreshTokenId: refreshToken.obtenirId(),
+    roleActif: 'ENSEIGNANT',
     organisationActiveId: 'org-1',
     ecoleActiveId: 'ecole-1',
   });
@@ -76,6 +77,7 @@ test('pipeline RequestContext -> AUTH -> SECURITY -> TENANCY enrichit la requete
     tokenVersion: utilisateur.obtenirTokenVersion().obtenirValeur(),
     organisationActiveId: 'org-1',
     ecoleActiveId: 'ecole-1',
+    roleActif: 'ENSEIGNANT',
   });
 
   const serveur = Fastify();
@@ -206,6 +208,26 @@ test('pipeline RequestContext -> AUTH -> SECURITY -> TENANCY enrichit la requete
   assert.equal(usurpationIdentite.statusCode, 403, usurpationIdentite.body);
   assert.equal(usurpationIdentite.json().code, 'IDENTITY_CONTEXT_MISMATCH');
 
+  const jetonAutreRole = await jwt.genererJwt({
+    sub: utilisateur.obtenirId(),
+    sid: session.obtenirId(),
+    email: utilisateur.obtenirEmail().obtenirValeur(),
+    tokenVersion: utilisateur.obtenirTokenVersion().obtenirValeur(),
+    organisationActiveId: 'org-1',
+    ecoleActiveId: 'ecole-1',
+    roleActif: 'CAISSIER',
+  });
+  const roleIncoherent = await serveur.inject({
+    method: 'GET',
+    url: '/probe',
+    headers: {
+      authorization: `Bearer ${jetonAutreRole}`,
+      'x-session-id': session.obtenirId(),
+    },
+  });
+  assert.equal(roleIncoherent.statusCode, 401, roleIncoherent.body);
+  assert.equal(roleIncoherent.json().code, 'ACTIVE_ROLE_MISMATCH');
+
   await serveur.close();
 });
 
@@ -220,6 +242,7 @@ test('tenancy refuse une ecole etrangere quand le contexte actif est deja etabli
   const session = creerSessionUtilisateur({
     idUtilisateur: utilisateur.obtenirId(),
     refreshTokenId: refreshToken.obtenirId(),
+    roleActif: 'CAISSIER',
     organisationActiveId: 'org-1',
     ecoleActiveId: 'ecole-1',
   });
@@ -253,6 +276,7 @@ test('tenancy refuse une ecole etrangere quand le contexte actif est deja etabli
     tokenVersion: utilisateur.obtenirTokenVersion().obtenirValeur(),
     organisationActiveId: 'org-1',
     ecoleActiveId: 'ecole-1',
+    roleActif: 'CAISSIER',
   });
 
   const serveur = Fastify();

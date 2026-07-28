@@ -373,7 +373,7 @@ function buildFilters(): ConduiteClasseFilters {
 }
 
 async function chargerClasse(): Promise<void> {
-  if (!isAuthorized.value) {
+  if (!isAuthorized.value || !canLoad.value) {
     conduiteStore.reinitialiser();
     return;
   }
@@ -444,7 +444,7 @@ function formatDate(value: string): string {
 }
 
 synchroniserDepuisRoute();
-if (context.schoolYearId && idClassePedagogiqueInput.value && isAuthorized.value) {
+if (context.schoolYearId && idClassePedagogiqueInput.value && isAuthorized.value && canLoad.value) {
   void chargerClasse();
 }
 </script>

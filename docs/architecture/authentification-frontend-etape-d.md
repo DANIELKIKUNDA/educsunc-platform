@@ -58,7 +58,7 @@ Le client HTTP central :
 5. rejoue la requete initiale une seule fois ;
 6. ferme proprement la session si le refresh est refuse.
 
-La rotation regenere un JWT portant le role et le contexte verifies de la session. Les acteurs Plateforme ne conservent jamais un ancien contexte Organisation ou Ecole apres connexion.
+La rotation regenere un JWT portant le role et le contexte verifies de la session. Le role actif est persiste avec la session PostgreSQL : une rotation ne le recalcule pas depuis une autre affectation et un jeton portant un role different de celui de la session est refuse. Lorsqu'un compte possede plusieurs roles actifs, aucun cumul implicite de permissions n'est autorise ; le profil de travail doit rester explicite. Les acteurs Plateforme ne conservent jamais un ancien contexte Organisation ou Ecole apres connexion.
 
 ## Changement De Contexte Et Invalidation
 
@@ -74,11 +74,11 @@ Apres confirmation, le frontend :
 6. recalcule menus, routes et actions
 7. redirige si la page courante n'est plus autorisee
 
-Une erreur pendant la transition conserve l'ancien contexte valide ; elle ne laisse jamais un etat hybride. Une expiration, une revocation ou une suspension invalide immediatement la projection et ferme les acces prives.
+Une erreur pendant la transition conserve l'ancien contexte valide ; elle ne laisse jamais un etat hybride. Une expiration, une revocation ou une suspension invalide immediatement la projection et ferme les acces prives. Une mutation du Centre Securite invalide egalement la projection avant sa relecture et diffuse ce changement aux autres onglets, afin qu'une permission retiree ne reste pas affichee localement.
 
 ## Multi-onglets et deconnexion
 
-Un canal navigateur diffuse uniquement les changements d'etat de session, jamais les secrets. Un nouvel onglet restaure sa propre preuve backend. La deconnexion appelle le backend, revoque la session de l'appareil courant, efface cookies, contexte et caches locaux, puis redirige vers la connexion. Les autres appareils restent connectes tant qu'une revocation globale ou un evenement de securite ne les concerne pas.
+Un canal navigateur diffuse uniquement les changements d'etat de session et de capacites, jamais les secrets. Un nouvel onglet restaure sa propre preuve backend. La deconnexion appelle le backend, revoque la session de l'appareil courant, efface cookies, contexte et caches locaux, puis redirige vers la connexion. Les autres appareils restent connectes tant qu'une revocation globale ou un evenement de securite ne les concerne pas.
 
 ## Interface et accessibilite
 

@@ -7,6 +7,7 @@ test('doit ouvrir une session valide avec utilisateur, contexte et metadonnees a
   const session = creerSessionUtilisateur({
     idUtilisateur: 'utilisateur-1',
     refreshTokenId: 'refresh-1',
+    roleActif: 'MANAGER_SYSTEME',
     organisationActiveId: 'org-1',
     ecoleActiveId: 'ecole-1',
     deviceId: 'device-1',
@@ -14,10 +15,19 @@ test('doit ouvrir une session valide avec utilisateur, contexte et metadonnees a
   });
 
   assert.equal(session.obtenirIdUtilisateur(), 'utilisateur-1');
+  assert.equal(session.obtenirRoleActif(), 'MANAGER_SYSTEME');
   assert.equal(session.obtenirOrganisationActiveId(), 'org-1');
   assert.equal(session.obtenirEcoleActiveId(), 'ecole-1');
   assert.equal(session.obtenirDeviceId(), 'device-1');
   assert.equal(session.obtenirUserAgent(), 'test-agent');
+});
+
+test('doit conserver et permettre de changer explicitement le role actif', () => {
+  const session = creerSessionUtilisateur({ roleActif: 'PREFET_ETUDES' });
+
+  session.definirRoleActif('DIRECTEUR_ETUDES');
+
+  assert.equal(session.obtenirRoleActif(), 'DIRECTEUR_ETUDES');
 });
 
 test('doit revoquer une session et produire un evenement SessionRevoquee', () => {

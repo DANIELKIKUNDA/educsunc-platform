@@ -13,7 +13,11 @@ test('rotation complete refresh token avec nouveau JWT', async () => {
   const brut = 'refresh-source';
   const hash = await jwt.hacherRefreshToken(brut);
   const token = creerRefreshToken(utilisateur.obtenirId(), hash);
-  const session = creerSessionUtilisateur({ idUtilisateur: utilisateur.obtenirId(), refreshTokenId: token.obtenirId() });
+  const session = creerSessionUtilisateur({
+    idUtilisateur: utilisateur.obtenirId(),
+    refreshTokenId: token.obtenirId(),
+    roleActif: 'MANAGER_SYSTEME',
+  });
   token.associerSession(session.obtenirId());
   await repositories.depotRefreshToken.sauvegarder(token);
   await repositories.depotSessionUtilisateur.sauvegarder(session);
@@ -29,9 +33,24 @@ test('rotation complete refresh token avec nouveau JWT', async () => {
       hacherRefreshToken: (valeur) => `hash:${valeur}`,
     }),
     new SessionCachePortMemoire(),
+    undefined,
+    {
+      verifierScopes: async () => undefined,
+      verifierAccesOrganisation: async () => true,
+      verifierAccesEcole: async () => true,
+      resoudreRoleActif: async () => {
+        throw new Error('Le role persiste de la session doit rester la source de verite.');
+      },
+    },
   );
 
   const resultat = await saga.executer({ refreshToken: brut, sessionId: session.obtenirId() });
   assert.ok(resultat.accessToken.length > 0);
   assert.equal(resultat.refreshToken, 'refresh-nouveau');
+  const claims = await jwt.decoderJwt<Record<string, unknown>>(resultat.accessToken);
+  assert.equal(claims.roleActif, 'MANAGER_SYSTEME');
+  assert.equal(
+    (await repositories.depotSessionUtilisateur.trouverParId(session.obtenirId()))?.obtenirRoleActif(),
+    'MANAGER_SYSTEME',
+  );
 });

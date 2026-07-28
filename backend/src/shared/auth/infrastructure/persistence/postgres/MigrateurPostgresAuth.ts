@@ -5,6 +5,7 @@ import { Migration_002_DurcirJetonsSessions } from './Migration_002_DurcirJetons
 import { Migration_003_ExigerSessionRefreshActif } from './Migration_003_ExigerSessionRefreshActif';
 import { Migration_004_ConnexionPersistante } from './Migration_004_ConnexionPersistante';
 import { Migration_005_InitialisationPlateforme } from './Migration_005_InitialisationPlateforme';
+import { Migration_006_RoleActifSession } from './Migration_006_RoleActifSession';
 import type { MigrationPostgresAuth } from './MigrationPostgresAuth';
 
 export class MigrateurPostgresAuth {
@@ -14,6 +15,7 @@ export class MigrateurPostgresAuth {
     new Migration_003_ExigerSessionRefreshActif(),
     new Migration_004_ConnexionPersistante(),
     new Migration_005_InitialisationPlateforme(),
+    new Migration_006_RoleActifSession(),
   ];
 
   constructor(private readonly pool: Pool) {}

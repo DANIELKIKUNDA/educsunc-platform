@@ -1174,6 +1174,8 @@ Perimetre reel :
 - la permission seule reste insuffisante
 - `modules.allowed` est maintenant borne a `ORGANISATION`
 - `modules.enabled` est maintenant borne a `ECOLE`
+- toute lecture ou mutation des modules d'une ecole verifie le rattachement officiel `ecole -> organisation` dans le referentiel academique
+- un acteur Plateforme ne peut pas contourner cette coherence en transmettant un autre couple organisation-ecole
 - la resolution effective recalcule `organisation autorisee + ecole active`
 - le blocage runtime reapplique ensuite cette resolution sur les routes globales des modules actives
 
@@ -1210,6 +1212,7 @@ Le frontend devra toujours raisonner en termes de :
 - transport explicite du contexte de securite attendu
 - modules effectivement disponibles
 - acteur actif sans union des permissions de ses autres roles
+- role actif persiste par session et stable pendant la rotation des jetons
 
 Et jamais en termes de :
 

@@ -29,6 +29,13 @@ export interface ConfigurationInitialeInventaireItem {
     | 'AUCUN_DEFAUT_OFFICIEL';
 }
 
+interface EnregistrementRattachementEcoleOrganisationPort {
+  enregistrerRattachement(params: {
+    readonly organisationId: string;
+    readonly ecoleId: string;
+  }): void;
+}
+
 const ACTEUR_SYSTEME_CONFIGURATION = 'SYSTEM_CONFIGURATION_BOOTSTRAP';
 const CHEMIN_JOURNAL_PAR_DEFAUT = path.resolve(
   process.cwd(),
@@ -66,6 +73,7 @@ export class ConfigurationInitialisationOfficielleService {
     private readonly listerConfigurations: () => Promise<readonly Configuration[]> | readonly Configuration[],
     cheminJournal = CHEMIN_JOURNAL_PAR_DEFAUT,
     journalStore?: ConfigurationBootstrapJournalStore,
+    private readonly rattachementEcoleOrganisation?: EnregistrementRattachementEcoleOrganisationPort,
   ) {
     this.journalStore = journalStore ?? new ConfigurationBootstrapJournalStoreFichier(cheminJournal);
   }
@@ -169,6 +177,7 @@ export class ConfigurationInitialisationOfficielleService {
     readonly skippedKeys: readonly string[];
   }> {
     const resultat = { createdKeys: [] as string[], skippedKeys: [] as string[] };
+    this.rattachementEcoleOrganisation?.enregistrerRattachement(params);
 
     await this.creerSiAbsent(
       {

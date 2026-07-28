@@ -105,13 +105,14 @@ export class RefreshTokenSaga {
       const rotation = this.moteurRefreshToken.generer(utilisateur.obtenirId(), sessionId, tokenVersionCourante);
       refreshTokenCourant.marquerRemplacement(rotation.refreshToken.obtenirId());
       session.remplacerRefreshToken(rotation.refreshToken.obtenirId());
+      const roleActif = session.obtenirRoleActif()
+        ?? await this.securityAuthorizationPort?.resoudreRoleActif?.(
+          utilisateur.obtenirId(),
+        );
+      session.definirRoleActif(roleActif);
       await this.depotRefreshToken.sauvegarder(refreshTokenCourant);
       await this.depotRefreshToken.sauvegarder(rotation.refreshToken);
       await this.depotSessionUtilisateur.sauvegarder(session);
-
-      const roleActif = await this.securityAuthorizationPort?.resoudreRoleActif?.(
-        utilisateur.obtenirId(),
-      );
 
       const accessToken = await this.jwtTokenPort.genererJwt({
         sub: utilisateur.obtenirId(),

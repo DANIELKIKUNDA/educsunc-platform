@@ -17,6 +17,7 @@ import type {
   SecurityAdministratorPayload,
 } from '../models/security.model';
 import { securityApi } from '../services/security.api';
+import { sessionStore } from '../../../shared/auth/session.store';
 
 type LoadState = 'idle' | 'loading' | 'ready' | 'error';
 type Raw = Record<string, unknown>;
@@ -189,6 +190,18 @@ async function loadAll(): Promise<void> {
 
 async function mutate(operation: () => Promise<unknown>): Promise<void> {
   await operation();
+  const { notifierChangementCapacitesFrontend } = await import(
+    '../../../shared/auth/session.bootstrap'
+  );
+  await notifierChangementCapacitesFrontend().catch(() => undefined);
+  const conserveAccesSecurite = sessionStore.state.effectiveProfile.resolved
+    && sessionStore.state.permissions.some((permission) =>
+      permission.startsWith('security.'),
+    );
+  if (!conserveAccesSecurite) {
+    reinitialiser();
+    return;
+  }
   await loadAll();
 }
 

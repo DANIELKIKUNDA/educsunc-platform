@@ -79,6 +79,7 @@ export class MoteurAuthentification {
       userAgent: params.userAgent,
       deviceId: params.deviceId,
       estOffline: Boolean(params.modeOffline),
+      roleActif: params.roleActif,
       organisationActiveId: params.organisationActiveId,
       ecoleActiveId: params.ecoleActiveId,
     });

@@ -381,19 +381,31 @@ function composerRoutesAuth(): CompositionRoutesAuth {
     },
     resoudreRoleActif: async (utilisateurId) => {
       const affectations = await affectationUtilisateurRepository.listerActivesParUtilisateur(utilisateurId);
+      const rolesActifs = new Set<string>();
       for (const affectation of affectations) {
         const role = await roleRepository.trouverParId(affectation.obtenirIdRole());
         if (role?.obtenirEstActif()) {
-          return role.obtenirCodeRole().obtenirValeur();
+          rolesActifs.add(role.obtenirCodeRole().obtenirValeur());
         }
       }
-      return undefined;
+      return rolesActifs.size === 1 ? [...rolesActifs][0] : undefined;
     },
     resoudrePermissionsEffectives: async (utilisateurId) => {
       const affectations = await affectationUtilisateurRepository.listerActivesParUtilisateur(utilisateurId);
-      const permissions = new Set<string>();
+      const rolesActifs: Role[] = [];
+      const codesRoles = new Set<string>();
       for (const affectation of affectations) {
         const role = await roleRepository.trouverParId(affectation.obtenirIdRole());
+        if (role?.obtenirEstActif()) {
+          rolesActifs.push(role);
+          codesRoles.add(role.obtenirCodeRole().obtenirValeur());
+        }
+      }
+      if (codesRoles.size !== 1) {
+        return [];
+      }
+      const permissions = new Set<string>();
+      for (const role of rolesActifs) {
         role?.obtenirPermissions().forEach((permission) => {
           permissions.add(permission.obtenirPermission().obtenirValeur());
         });

@@ -14,6 +14,7 @@ export class ObtenirSessionActiveSQL implements ObtenirSessionActiveQuery {
     return {
       sessionId: session.obtenirId(),
       utilisateurId: session.obtenirIdUtilisateur(),
+      roleActif: session.obtenirRoleActif(),
       organisationActiveId: session.obtenirOrganisationActiveId(),
       ecoleActiveId: session.obtenirEcoleActiveId(),
       estOffline: session.obtenirEstOffline(),

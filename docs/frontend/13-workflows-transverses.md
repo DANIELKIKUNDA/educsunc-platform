@@ -1754,6 +1754,8 @@ Aucun acteur humain direct, controle runtime transverse
 - un module inactif renvoie `403 MODULE_INACTIF`
 - l'absence ou l'invalidite de `modules.allowed` ferme le module
 - l'absence de `modules.enabled` ne produit aucune activation implicite pour une ecole
+- la portee `modules.enabled` ne constitue pas seule une preuve de rattachement : le backend verifie aussi que l'ecole appartient reellement a l'organisation dans le referentiel academique
+- un couple organisation-ecole incoherent est refuse avant toute lecture ou mutation des modules
 
 ### Statut de figement
 

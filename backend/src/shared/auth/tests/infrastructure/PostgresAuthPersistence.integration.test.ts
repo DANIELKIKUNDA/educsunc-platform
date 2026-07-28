@@ -66,6 +66,7 @@ test('PostgreSQL Auth persiste les agregats, rollback et arbitre les refresh con
     const session = SessionUtilisateur.ouvrir({
       idUtilisateur: utilisateurId,
       refreshTokenId: refreshToken.obtenirId(),
+      roleActif: 'MANAGER_SYSTEME',
       organisationActiveId: `org-${suffixe}`,
     });
     refreshToken.associerSession(session.obtenirId());
@@ -83,7 +84,10 @@ test('PostgreSQL Auth persiste les agregats, rollback et arbitre les refresh con
     });
 
     assert.ok(await utilisateurs.trouverParEmail(email));
-    assert.ok(await sessions.trouverSessionActive(session.obtenirId()));
+    assert.equal(
+      (await sessions.trouverSessionActive(session.obtenirId()))?.obtenirRoleActif(),
+      'MANAGER_SYSTEME',
+    );
     assert.ok(await refreshTokens.trouverParHash(refreshToken.obtenirTokenHash()));
     assert.equal((await contextes.trouverContexteUtilisateur(utilisateurId))?.obtenirOrganisationActiveId(), `org-${suffixe}`);
     assert.equal((await tentatives.listerTentativesUtilisateur(utilisateurId)).length, 1);

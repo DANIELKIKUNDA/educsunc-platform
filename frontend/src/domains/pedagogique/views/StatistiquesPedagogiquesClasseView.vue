@@ -332,7 +332,7 @@ function buildFilters(): ClassStatisticsFilters {
 }
 
 async function chargerStatistiques(): Promise<void> {
-  if (!isAuthorized.value) {
+  if (!isAuthorized.value || !canLoad.value) {
     statisticsStore.reinitialiser();
     return;
   }
@@ -403,7 +403,7 @@ function imprimerPage(): void {
 }
 
 synchroniserDepuisRoute();
-if (context.schoolYearId && idClassePedagogiqueInput.value && isAuthorized.value) {
+if (context.schoolYearId && idClassePedagogiqueInput.value && isAuthorized.value && canLoad.value) {
   void chargerStatistiques();
 }
 </script>

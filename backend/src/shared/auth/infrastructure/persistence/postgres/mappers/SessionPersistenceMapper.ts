@@ -11,6 +11,7 @@ export interface SessionUtilisateurRecord {
   revoquee_le?: string;
   raison_revocation?: string;
   dernier_refresh_le?: string;
+  role_actif?: string;
   organisation_active_id?: string;
   ecole_active_id?: string;
   cree_le: string;
@@ -31,6 +32,7 @@ export class SessionPersistenceMapper {
       revoquee_le: session.obtenirRevoqueeLe()?.toISOString(),
       raison_revocation: session.obtenirRaisonRevocation(),
       dernier_refresh_le: session.obtenirDernierRefreshLe()?.toISOString(),
+      role_actif: session.obtenirRoleActif(),
       organisation_active_id: session.obtenirOrganisationActiveId(),
       ecole_active_id: session.obtenirEcoleActiveId(),
       cree_le: session.obtenirCreeLe().toISOString(),
@@ -50,6 +52,7 @@ export class SessionPersistenceMapper {
       revoqueeLe: record.revoquee_le ? new Date(record.revoquee_le) : undefined,
       raisonRevocation: record.raison_revocation,
       dernierRefreshLe: record.dernier_refresh_le ? new Date(record.dernier_refresh_le) : undefined,
+      roleActif: record.role_actif,
       organisationActiveId: record.organisation_active_id,
       ecoleActiveId: record.ecole_active_id,
       creeLe: new Date(record.cree_le),
