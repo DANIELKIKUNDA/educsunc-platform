@@ -31,6 +31,7 @@
     "security:certify:governance": "node --require ./scripts/load-optional-local-env.cjs --import tsx src/scripts/security/CertifierGouvernanceSecurityPostgres.ts",
     "certification:security": "node scripts/certify-security-production.cjs",
     "test:auth:postgres": "tsx src/scripts/auth/ExecuterTestsPostgresAuth.ts",
+    "test:http": "node scripts/run-http-platform-tests.cjs",
     "test": "tsx --test src/contexts/referentiel-academique/tests/depot-annee-scolaire-postgres.test.ts src/contexts/referentiel-academique/tests/execution-http-referentiel-academique.test.ts src/contexts/referentiel-academique/tests/migrations-postgres-referentiel-academique.test.ts src/contexts/referentiel-academique/tests/orchestration-annee-scolaire.test.ts src/contexts/referentiel-academique/tests/publier-version-referentiel.test.ts",
     "test:audit": "node --require ./scripts/load-optional-local-env.cjs scripts/run-shared-audit-tests.cjs",
     "test:security": "node scripts/run-shared-security-tests.cjs",
@@ -40,6 +41,8 @@
     "test:ci": "npm run verifier:donnees-reference && npm run test && npm run test:verification"
   },
   "dependencies": {
+    "@fastify/cors": "11.3.0",
+    "@fastify/helmet": "13.1.0",
     "bullmq": "^5.77.6",
     "fastify": "^5.8.4",
     "pdf-lib": "^1.17.1",

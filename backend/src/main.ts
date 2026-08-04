@@ -3,6 +3,7 @@ import { createServer } from './app/serveur';
 import { configurationApplication } from './config/app.config';
 import { InfrastructureError } from './shared/exceptions/InfrastructureError';
 import { PinoLogger } from './shared/infrastructure/logger/PinoLogger';
+import { installerArretGracieux } from './app/lifecycle/arret-gracieux';
 
 // Normalise l'erreur pour la journalisation.
 const normaliserErreur = (erreur: unknown): Record<string, unknown> => {
@@ -41,6 +42,7 @@ const demarrer = async (): Promise<void> => {
       },
       'Serveur demarre.',
     );
+    installerArretGracieux(serveur);
   } catch (erreur) {
     const erreurDemarrage = new InfrastructureError(
       'Echec du demarrage du serveur.',

@@ -79,6 +79,7 @@ jobs:
 
       - name: Executer les tests backend
         run: |
+          npm --prefix backend run test:http
           npm --prefix backend run test:global
           npm --prefix backend run test:security
           npm --prefix backend run test:audit
