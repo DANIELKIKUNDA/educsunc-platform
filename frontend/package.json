@@ -23,7 +23,8 @@
     "test:forms": "node --test scripts/run-frontend-form-tests.cjs scripts/run-configuration-form-tests.cjs scripts/run-school-administration-tests.cjs",
     "test:design-system": "node --test scripts/run-design-system-tests.cjs",
     "test:offline": "node --test scripts/run-offline-first-tests.cjs",
-    "test": "vue-tsc --noEmit && npm run test:forms && npm run test:access && npm run test:design-system && npm run test:offline"
+    "test:performance": "node --test scripts/run-performance-tests.cjs",
+    "test": "vue-tsc --noEmit && npm run test:forms && npm run test:access && npm run test:design-system && npm run test:performance && npm run test:offline"
   },
   "dependencies": {
     "dexie": "4.4.4",

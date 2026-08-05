@@ -25,6 +25,8 @@
           type="button"
           class="erp-sidebar__module-trigger"
           :class="{ 'erp-sidebar__module-trigger--active': isModuleActive(entry.route) }"
+          @pointerenter="preload(entry.route)"
+          @focus="preload(entry.route)"
           @click="handleModuleTrigger(entry)"
         >
           <span class="erp-sidebar__module-leading">
@@ -44,6 +46,8 @@
             :to="child.route"
             class="erp-sidebar__child"
             :class="{ 'erp-sidebar__child--active': isRouteActive(child.route) }"
+            @pointerenter="preload(child.route)"
+            @focus="preload(child.route)"
           >
             <component :is="resolveIcon(child.icon)" class="erp-sidebar__child-icon" />
             <span>{{ child.label }}</span>
@@ -61,6 +65,7 @@ import { ChevronDown, LayoutGrid } from 'lucide-vue-next';
 import { activeContextStore } from '../../shared/session/active-context.store';
 import type { NavigationEntry } from '../../shared/navigation/navigation.types';
 import { shellIconMap } from '../icon-map';
+import { preloadRouteOnIntent } from '../../router/route-preloader';
 
 const props = defineProps<{
   actorLabel: string;
@@ -121,6 +126,10 @@ function isModuleActive(routePrefix: string): boolean {
 
 function isRouteActive(targetRoute: string): boolean {
   return route.path === targetRoute || route.path.startsWith(`${targetRoute}/`);
+}
+
+function preload(targetRoute: string): void {
+  preloadRouteOnIntent(router, targetRoute);
 }
 
 function resolveIcon(iconName: string) {

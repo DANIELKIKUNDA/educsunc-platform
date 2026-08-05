@@ -1,11 +1,10 @@
 import type { RouteRecordRaw } from 'vue-router';
-import ModuleHomeView from './views/ModuleHomeView.vue';
 
 export const routesNotifications: RouteRecordRaw[] = [
   {
     path: 'notifications',
     name: 'notifications-home',
-    component: ModuleHomeView,
+    component: () => import('./views/ModuleHomeView.vue'),
     meta: { title: 'Notifications' },
   },
   {

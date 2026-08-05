@@ -3,11 +3,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
-import AppShellDesktop from './AppShellDesktop.vue';
-import AppShellMobile from './AppShellMobile.vue';
+import { computed, defineAsyncComponent, onBeforeUnmount, onMounted, ref } from 'vue';
 
-const isMobile = ref(false);
+const AppShellDesktop = defineAsyncComponent(() => import('./AppShellDesktop.vue'));
+const AppShellMobile = defineAsyncComponent(() => import('./AppShellMobile.vue'));
+const isMobile = ref(typeof window !== 'undefined' && window.matchMedia('(max-width: 959px)').matches);
 let mediaQuery: MediaQueryList | null = null;
 
 function syncViewport(): void {

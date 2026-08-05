@@ -29,6 +29,8 @@
           :key="`${result.code}-${result.actionLabel ?? 'page'}`"
           :to="result.route"
           class="erp-topbar__search-result"
+          @pointerenter="preload(result.route)"
+          @focus="preload(result.route)"
           @click="query = ''"
         >
           <span>{{ result.moduleLabel }}</span>
@@ -75,7 +77,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { Bell, MessagesSquare, PanelLeftClose, PanelLeftOpen, Search } from 'lucide-vue-next';
 import { resolvePageByRouteName } from '../../shared/doctrine/doctrine.resolver';
 import { flattenNavigation } from '../../shared/navigation/navigation.builder';
@@ -85,6 +87,7 @@ import type { NavigationEntry } from '../../shared/navigation/navigation.types';
 import ContextSwitcher from './ContextSwitcher.vue';
 import ConnectivityCenter from './ConnectivityCenter.vue';
 import UserMenu from './UserMenu.vue';
+import { preloadRouteOnIntent } from '../../router/route-preloader';
 
 const props = defineProps<{
   entries: NavigationEntry[];
@@ -106,6 +109,7 @@ type TopbarSearchResult = {
 };
 
 const route = useRoute();
+const router = useRouter();
 const context = activeContextStore.state;
 const session = sessionStore.state;
 const query = ref('');
@@ -176,4 +180,8 @@ const searchResults = computed(() => {
     .filter((entry) => entry.searchText.includes(search))
     .slice(0, 8);
 });
+
+function preload(targetRoute: string): void {
+  preloadRouteOnIntent(router, targetRoute);
+}
 </script>

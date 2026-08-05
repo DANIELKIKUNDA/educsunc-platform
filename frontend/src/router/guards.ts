@@ -9,9 +9,12 @@ import {
   resolvePageByRouteName,
   resolvePageByRoutePath,
 } from '../shared/doctrine/doctrine.resolver';
+import { prepareDomainLifecycleStores } from '../shared/lifecycle/domain-store-lifecycle.registry';
+import { navigationProgressStore } from './navigation-progress.store';
 
 export function installNavigationGuards(router: Router): void {
   router.beforeEach(async (to) => {
+    navigationProgressStore.begin();
     await initializeFrontendSession();
     const isPublicRoute = to.meta.public === true;
 
@@ -54,14 +57,21 @@ export function installNavigationGuards(router: Router): void {
         const fallback = getFirstAccessibleRoute(actorCode, governanceLevel);
         return fallback === to.path ? true : fallback;
       }
+
+      await prepareDomainLifecycleStores(to.path);
     }
 
     return true;
   });
 
   router.afterEach((to) => {
+    navigationProgressStore.complete();
     const doctrinePage = resolvePageByRouteName(to.name);
     const title = doctrinePage?.label ?? (typeof to.meta.title === 'string' ? to.meta.title : 'EduSync');
     document.title = `${title} | EduSync`;
+  });
+
+  router.onError(() => {
+    navigationProgressStore.complete();
   });
 }

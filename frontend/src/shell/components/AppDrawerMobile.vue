@@ -27,6 +27,8 @@
               :to="child.route"
               class="erp-drawer__child"
               :class="{ 'erp-drawer__child--active': isRouteActive(child.route) }"
+              @pointerdown="preload(child.route)"
+              @focus="preload(child.route)"
               @click="$emit('update:modelValue', false)"
             >
               <component :is="resolveIcon(child.icon)" class="erp-drawer__child-icon" />
@@ -41,10 +43,11 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { ChevronDown, LayoutGrid } from 'lucide-vue-next';
 import type { NavigationEntry } from '../../shared/navigation/navigation.types';
 import { shellIconMap } from '../icon-map';
+import { preloadRouteOnIntent } from '../../router/route-preloader';
 
 const props = defineProps<{
   modelValue: boolean;
@@ -57,6 +60,7 @@ defineEmits<{
 }>();
 
 const route = useRoute();
+const router = useRouter();
 const openCode = ref(props.entries.find((entry) => route.path.startsWith(entry.route))?.code ?? props.entries[0]?.code ?? '');
 
 watch(
@@ -76,6 +80,10 @@ function toggleModule(code: string): void {
 
 function isRouteActive(targetRoute: string): boolean {
   return route.path === targetRoute || route.path.startsWith(`${targetRoute}/`);
+}
+
+function preload(targetRoute: string): void {
+  preloadRouteOnIntent(router, targetRoute);
 }
 
 function resolveIcon(iconName: string) {

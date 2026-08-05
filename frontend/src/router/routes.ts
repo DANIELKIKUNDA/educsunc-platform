@@ -1,8 +1,4 @@
 import type { RouteRecordRaw } from 'vue-router';
-import AppShellSwitcher from '../shell/AppShellSwitcher.vue';
-import LoginView from '../features/auth/views/LoginView.vue';
-import InitializationView from '../features/auth/views/InitializationView.vue';
-import AccessDeniedView from '../shared/permissions/AccessDeniedView.vue';
 import { routesAdministrationEcole } from '../domains/administration-ecole/routes';
 import { routesAcademique } from '../domains/academique/routes';
 import { routesAudit } from '../domains/audit/routes';
@@ -25,7 +21,7 @@ export const routesFrontend: RouteRecordRaw[] = [
   {
     path: '/connexion',
     name: 'connexion',
-    component: LoginView,
+    component: () => import('../features/auth/views/LoginView.vue'),
     meta: {
       public: true,
       title: 'Connexion',
@@ -34,7 +30,7 @@ export const routesFrontend: RouteRecordRaw[] = [
   {
     path: '/initialisation',
     name: 'initialisation',
-    component: InitializationView,
+    component: () => import('../features/auth/views/InitializationView.vue'),
     meta: {
       public: true,
       title: 'Première initialisation',
@@ -42,7 +38,7 @@ export const routesFrontend: RouteRecordRaw[] = [
   },
   {
     path: '/app',
-    component: AppShellSwitcher,
+    component: () => import('../shell/AppShellSwitcher.vue'),
     meta: {
       requiresAuth: true,
     },
@@ -54,7 +50,7 @@ export const routesFrontend: RouteRecordRaw[] = [
       {
         path: 'acces-refuse',
         name: 'access-denied',
-        component: AccessDeniedView,
+        component: () => import('../shared/permissions/AccessDeniedView.vue'),
         meta: {
           accessFallback: true,
           title: 'Accès protégé',

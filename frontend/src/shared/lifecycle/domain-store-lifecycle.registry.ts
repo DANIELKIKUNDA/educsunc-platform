@@ -6,11 +6,13 @@ interface ResettableStore {
 }
 
 type DomainStoreModule = Record<string, unknown>;
+type DomainStoreLoader = () => Promise<DomainStoreModule>;
 
 const domainStoreModules = import.meta.glob<DomainStoreModule>(
   '../../domains/**/stores/*.store.ts',
-  { eager: true },
 );
+const registeredStoreFiles = new Set<string>();
+const domainLoading = new Map<string, Promise<void>>();
 
 const scopedInstanceStoreFiles = new Set([
   'configuration-center.store.ts',
@@ -72,16 +74,46 @@ export function initializeDomainStoreLifecycleRegistry(): void {
     return;
   }
   initialized = true;
+}
 
-  for (const [path, moduleExports] of Object.entries(domainStoreModules)) {
+const ROUTE_DOMAIN_NAMES = new Set([
+  'academique',
+  'administration-ecole',
+  'audit',
+  'configuration',
+  'finances',
+  'monitoring',
+  'notifications',
+  'organisation',
+  'pedagogique',
+  'plateforme',
+  'scolarite',
+  'security',
+]);
+
+function routeDomain(path: string): string | null {
+  const segment = path.split('/').filter(Boolean)[1];
+  return segment && ROUTE_DOMAIN_NAMES.has(segment) ? segment : null;
+}
+
+async function registerDomainStores(domain: string): Promise<void> {
+  const matchingLoaders = Object.entries(domainStoreModules).filter(([path]) =>
+    path.includes(`/domains/${domain}/stores/`),
+  ) as Array<[string, DomainStoreLoader]>;
+
+  await Promise.all(matchingLoaders.map(async ([path, loadModule]) => {
+    if (registeredStoreFiles.has(path)) return;
     const fileName = path.split('/').at(-1) ?? path;
     if (scopedInstanceStoreFiles.has(fileName)) {
-      continue;
+      registeredStoreFiles.add(path);
+      return;
     }
 
+    const moduleExports = await loadModule();
     const store = resolveStore(moduleExports);
     if (!store) {
-      continue;
+      registeredStoreFiles.add(path);
+      return;
     }
 
     frontendLifecycle.registerStore({
@@ -89,5 +121,18 @@ export function initializeDomainStoreLifecycleRegistry(): void {
       scope: storeScope(path),
       reset: store.reinitialiser,
     });
-  }
+    registeredStoreFiles.add(path);
+  }));
+}
+
+export function prepareDomainLifecycleStores(path: string): Promise<void> {
+  if (!initialized) initializeDomainStoreLifecycleRegistry();
+  const domain = routeDomain(path);
+  if (!domain) return Promise.resolve();
+
+  const existing = domainLoading.get(domain);
+  if (existing) return existing;
+  const loading = registerDomainStores(domain).finally(() => domainLoading.delete(domain));
+  domainLoading.set(domain, loading);
+  return loading;
 }
