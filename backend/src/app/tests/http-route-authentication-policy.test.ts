@@ -9,6 +9,9 @@ import {
 test('la surface publique de production reste explicite et minimale', () => {
   assert.deepEqual(listPublicHttpRoutes('production'), [
     { method: 'GET', url: '/health' },
+    { method: 'GET', url: '/health/live' },
+    { method: 'GET', url: '/health/ready' },
+    { method: 'GET', url: '/metrics' },
     { method: 'POST', url: '/api/auth/login' },
     { method: 'POST', url: '/api/auth/refresh' },
     { method: 'GET', url: '/api/auth/initialisation' },
@@ -22,6 +25,8 @@ test('la session developpeur est publique uniquement en environnement developmen
 
   assert.equal(development.isPublic({ method: 'POST', url: '/api/auth/dev/session' }), true);
   assert.equal(production.isPublic({ method: 'POST', url: '/api/auth/dev/session' }), false);
+  assert.equal(development.isPublic({ method: 'GET', url: '/openapi.json' }), true);
+  assert.equal(production.isPublic({ method: 'GET', url: '/openapi.json' }), false);
 });
 
 test('une route nouvelle, une mauvaise methode et les routes metier sont privees par defaut', () => {

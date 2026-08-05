@@ -14,6 +14,15 @@ interface PublicHttpRoute {
 // Cette liste explicite constitue l'unique surface HTTP accessible sans session.
 const PUBLIC_HTTP_ROUTES: readonly PublicHttpRoute[] = [
   { method: 'GET', path: '/health' },
+  { method: 'GET', path: '/health/live' },
+  { method: 'GET', path: '/health/ready' },
+  // Prometheus utilise un jeton de supervision dedie gere par la route elle-meme.
+  { method: 'GET', path: '/metrics' },
+  {
+    method: 'GET',
+    path: '/openapi.json',
+    environments: ['development', 'test'],
+  },
   { method: 'POST', path: '/api/auth/login' },
   { method: 'POST', path: '/api/auth/refresh' },
   { method: 'GET', path: '/api/auth/initialisation' },

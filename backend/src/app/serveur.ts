@@ -1,4 +1,4 @@
-import Fastify from 'fastify';
+import Fastify, { LogController } from 'fastify';
 
 import { auditContextPlugin } from './plugins/audit-context.plugin';
 import { auditEventsPlugin } from './plugins/audit-events.plugin';
@@ -14,6 +14,8 @@ import { securityPlugin } from './plugins/security.plugin';
 import { tenancyPlugin } from './plugins/tenancy.plugin';
 import { validationPlugin } from './plugins/validation.plugin';
 import { configurerSocleHttp } from './plugins/http-security.plugin';
+import { configurerObservabiliteHttp } from './plugins/observabilite-http.plugin';
+import { configurerOpenApi, enregistrerRouteOpenApi } from './plugins/openapi.plugin';
 import { configurationApplication } from '../config/app.config';
 import { PinoLogger } from '../shared/infrastructure/logger/PinoLogger';
 
@@ -45,7 +47,9 @@ const preparerPluginsGlobaux = (logger: PinoLogger): void => {
 export const createServer = () => {
   const logger = new PinoLogger();
   const serveur = Fastify({
-    disableRequestLogging: configurationApplication.environnement === 'test',
+    logController: new LogController({
+      disableRequestLogging: configurationApplication.environnement === 'test',
+    }),
     loggerInstance: logger.instance,
     pluginTimeout: 120000,
   });
@@ -53,11 +57,14 @@ export const createServer = () => {
   preparerPluginsGlobaux(logger);
   serveur.register(async (instance) => {
     await configurerSocleHttp(instance);
+    await configurerOpenApi(instance);
+    await configurerObservabiliteHttp(instance);
 
     for (const plugin of pluginsGlobaux) {
       await plugin(instance, {});
     }
 
+    await enregistrerRouteOpenApi(instance);
     await instance.register(registerGlobalRoutes);
   });
 

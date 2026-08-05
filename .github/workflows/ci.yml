@@ -85,6 +85,17 @@ jobs:
           npm --prefix backend run test:audit
           npm --prefix backend run test:ci
 
+      - name: Verifier la couverture de l observabilite
+        run: npm --prefix backend run test:coverage
+
+      - name: Conserver la couverture backend
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: couverture-observabilite-backend
+          path: backend/coverage/observability/lcov.info
+          if-no-files-found: error
+
       - name: Construire le backend
         run: npm --prefix backend run build
 

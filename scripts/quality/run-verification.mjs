@@ -58,6 +58,7 @@ async function verifyCode() {
     () => runNpm('tests-backend-sécurité', 'backend', 'test:security'),
     () => runNpm('tests-backend-audit', 'backend', 'test:audit'),
     () => runNpm('tests-backend-ci', 'backend', 'test:ci'),
+    () => runNpm('couverture-backend-observabilite', 'backend', 'test:coverage'),
     () => runNpm('tests-frontend', 'frontend', 'test'),
   ]));
   results.push(...await runParallel('Compilations', [
