@@ -97,7 +97,7 @@ Les erreurs sont traduites en messages utilisateur. Aucun JWT, identifiant techn
 - `frontend/src/features/auth/viewmodels/useLoginViewModel.ts`
 - `frontend/src/features/auth/viewmodels/useInitializationViewModel.ts`
 - `frontend/src/shared/auth/session.bootstrap.ts`
-- `frontend/src/services/api.ts`
+- `frontend/src/shared/http/api.client.ts`
 - `backend/src/app/routes/auth.routes.ts`
 - `backend/src/shared/auth/infrastructure/persistence/postgres/Migration_005_InitialisationPlateforme.ts`
 - `backend/src/shared/auth/application/sagas/LoginSaga.ts`

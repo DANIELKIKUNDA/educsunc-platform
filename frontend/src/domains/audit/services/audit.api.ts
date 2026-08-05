@@ -1,4 +1,4 @@
-import { clientApi } from '../../../services/api';
+import { clientApi } from '../../../shared/http/api.client';
 import {
   construireEntetesContexteActif,
   construireEntetesPilotageActif,

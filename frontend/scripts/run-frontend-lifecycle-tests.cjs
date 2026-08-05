@@ -221,7 +221,7 @@ test('la deconnexion purge toutes les portees utilisateur et tenant', () => {
 
 test('le client API distingue annulation et panne reseau', () => {
   const source = fs.readFileSync(
-    path.resolve(__dirname, '../src/services/api.ts'),
+    path.resolve(__dirname, '../src/shared/http/api.client.ts'),
     'utf8',
   );
 

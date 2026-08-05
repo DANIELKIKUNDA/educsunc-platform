@@ -17,7 +17,8 @@
     "certify:platform-governance-navigation": "node scripts/certify-platform-governance-navigation.cjs",
     "test:e2e:g1": "playwright test --config e2e/g1/playwright.g1.config.ts",
     "test:e2e:g1:list": "playwright test --config e2e/g1/playwright.g1.config.ts --list",
-    "test:access": "node --test scripts/run-effective-access-tests.cjs scripts/run-frontend-lifecycle-tests.cjs",
+    "test:access": "node --test scripts/run-effective-access-tests.cjs scripts/run-frontend-lifecycle-tests.cjs scripts/run-frontend-data-tests.cjs",
+    "test:data": "node --test scripts/run-frontend-data-tests.cjs",
     "test": "vue-tsc --noEmit && node -e \"require('./scripts/run-configuration-form-tests.cjs'); require('./scripts/run-school-administration-tests.cjs')\" && npm run test:access"
   },
   "dependencies": {

@@ -1,4 +1,4 @@
-import { clientApi } from '../../services/api';
+import { clientApi } from '../http/api.client';
 import type { EffectiveProfilePayloadV1 } from '../permissions/effective-profile.types';
 
 export interface BackendSessionApiData {

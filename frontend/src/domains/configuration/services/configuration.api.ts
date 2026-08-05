@@ -1,4 +1,4 @@
-import { clientApi } from '../../../services/api';
+import { clientApi } from '../../../shared/http/api.client';
 import {
   construireEntetesPilotageActif,
   construireEntetesContexteActif,
@@ -415,6 +415,10 @@ export const configurationApi = {
     }>>({
       chemin: '/api/v1/configuration/modules/catalogue',
       entetes: construireEntetesSelonNiveau(contexte, 'SYSTEM'),
+      cacheDonnees: {
+        cle: 'catalogue-modules-plateforme',
+        dureeMs: 60_000,
+      },
     });
   },
 };

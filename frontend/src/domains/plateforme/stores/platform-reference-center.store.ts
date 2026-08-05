@@ -1,7 +1,7 @@
 import { computed, reactive } from 'vue';
 import { sessionStore } from '../../../shared/auth/session.store';
 import { notificationsService } from '../../../services/notifications.service';
-import { ApiError } from '../../../services/api';
+import { ApiError } from '../../../shared/http/api.client';
 import type {
   AjouterLigneVersionReferentielRequest,
   ClasseAcademiqueItem,

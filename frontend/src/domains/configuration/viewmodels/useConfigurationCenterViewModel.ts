@@ -8,7 +8,7 @@ import {
   type LucideIcon,
 } from 'lucide-vue-next';
 import { notificationsService } from '../../../services/notifications.service';
-import { ApiError } from '../../../services/api';
+import { ApiError } from '../../../shared/http/api.client';
 import { sessionStore } from '../../../shared/auth/session.store';
 import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
 import { activeContextStore } from '../../../shared/session/active-context.store';

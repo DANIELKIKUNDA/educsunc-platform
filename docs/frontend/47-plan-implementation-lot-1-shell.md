@@ -203,7 +203,7 @@ Les fichiers de base a viser sont :
 
 Les elements suivants peuvent etre conserves puis reclasses :
 
-- [frontend/src/services/api.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/services/api.ts)
+- [frontend/src/shared/http/api.client.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/shared/http/api.client.ts)
 - [frontend/src/services/auth.service.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/services/auth.service.ts)
 - [frontend/src/services/tenancy.service.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/services/tenancy.service.ts)
 - [frontend/src/store/auth.store.ts](/C:/Users/MON%20PC/Documents/EducSyn/frontend/src/store/auth.store.ts)

@@ -1,5 +1,5 @@
 import { reactive } from 'vue';
-import { ApiError } from '../../../services/api';
+import { ApiError } from '../../../shared/http/api.client';
 import { notificationsService } from '../../../services/notifications.service';
 import { activeContextStore } from '../../../shared/session/active-context.store';
 import type {
