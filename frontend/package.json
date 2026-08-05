@@ -19,7 +19,8 @@
     "test:e2e:g1:list": "playwright test --config e2e/g1/playwright.g1.config.ts --list",
     "test:access": "node --test scripts/run-effective-access-tests.cjs scripts/run-frontend-lifecycle-tests.cjs scripts/run-frontend-data-tests.cjs",
     "test:data": "node --test scripts/run-frontend-data-tests.cjs",
-    "test": "vue-tsc --noEmit && node -e \"require('./scripts/run-configuration-form-tests.cjs'); require('./scripts/run-school-administration-tests.cjs')\" && npm run test:access"
+    "test:forms": "node --test scripts/run-frontend-form-tests.cjs scripts/run-configuration-form-tests.cjs scripts/run-school-administration-tests.cjs",
+    "test": "vue-tsc --noEmit && npm run test:forms && npm run test:access"
   },
   "dependencies": {
     "lucide-vue-next": "^1.0.0",

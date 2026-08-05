@@ -118,6 +118,8 @@
       :open="isCreationModalOpen"
       :organisation-form="organisationForm"
       :promoteur-form="promoteurForm"
+      :organisation-errors="creationEvaluation.organizationErrors"
+      :promoteur-errors="creationEvaluation.ownerErrors"
       :can-submit="canSubmitCreation"
       :busy="isBusy"
       :error-message="modalErrorMessage"
@@ -186,6 +188,7 @@ const {
   inactiveCount,
   visibleSchoolsTotal,
   recentlyCreatedOrganisation,
+  creationEvaluation,
   canSubmitCreation,
   schoolCountByOrganisation,
   ouvrirCreationModal,

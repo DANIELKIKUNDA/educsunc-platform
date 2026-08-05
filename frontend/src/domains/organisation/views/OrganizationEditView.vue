@@ -63,12 +63,14 @@
             <label class="org-edit__field org-edit__field--wide">
               <span>Nom de l organisation *</span>
               <input
+                id="organization-edit-name"
                 v-model="form.nom"
                 type="text"
                 placeholder="Nom de l organisation"
                 :aria-invalid="nomError ? 'true' : 'false'"
+                :aria-describedby="nomError ? 'organization-edit-name-error' : undefined"
               />
-              <small v-if="nomError" class="org-edit__error">{{ nomError }}</small>
+              <small v-if="nomError" id="organization-edit-name-error" class="org-edit__error" role="alert">{{ nomError }}</small>
             </label>
 
             <label class="org-edit__field">
@@ -112,12 +114,14 @@
             <label class="org-edit__field">
               <span>Adresse email</span>
               <input
+                id="organization-edit-owner-email"
                 v-model="form.responsableEmail"
                 type="email"
                 placeholder="responsable@organisation.cd"
                 :aria-invalid="responsableEmailError ? 'true' : 'false'"
+                :aria-describedby="responsableEmailError ? 'organization-edit-owner-email-error' : undefined"
               />
-              <small v-if="responsableEmailError" class="org-edit__error">{{ responsableEmailError }}</small>
+              <small v-if="responsableEmailError" id="organization-edit-owner-email-error" class="org-edit__error" role="alert">{{ responsableEmailError }}</small>
             </label>
 
             <label class="org-edit__field">

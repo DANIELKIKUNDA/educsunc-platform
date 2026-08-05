@@ -14,6 +14,7 @@
         <span class="auth-field__control">
           <Mail aria-hidden="true" />
           <input
+            id="login-email"
             v-model="viewModel.form.email"
             type="email"
             name="email"
@@ -23,8 +24,17 @@
             spellcheck="false"
             placeholder="nom@exemple.com"
             required
+            :aria-invalid="viewModel.fieldErrors.value.email ? 'true' : 'false'"
+            :aria-describedby="viewModel.fieldErrors.value.email ? 'login-email-error' : undefined"
+            @blur="viewModel.touch('email')"
           />
         </span>
+        <small
+          v-if="viewModel.fieldErrors.value.email"
+          id="login-email-error"
+          class="auth-field__error"
+          role="alert"
+        >{{ viewModel.fieldErrors.value.email }}</small>
       </label>
 
       <label class="auth-field">
@@ -32,14 +42,18 @@
         <span class="auth-field__control">
           <LockKeyhole aria-hidden="true" />
           <input
+            id="login-password"
             v-model="viewModel.form.password"
             :type="viewModel.showPassword.value ? 'text' : 'password'"
             name="password"
             autocomplete="current-password"
             placeholder="Saisissez votre mot de passe"
             required
+            :aria-invalid="viewModel.fieldErrors.value.password ? 'true' : 'false'"
+            :aria-describedby="viewModel.fieldErrors.value.password ? 'login-password-error' : undefined"
             @keydown="viewModel.updateCapsLock"
             @keyup="viewModel.updateCapsLock"
+            @blur="viewModel.touch('password')"
           />
           <button
             class="auth-field__reveal"
@@ -52,6 +66,12 @@
             <Eye v-else aria-hidden="true" />
           </button>
         </span>
+        <small
+          v-if="viewModel.fieldErrors.value.password"
+          id="login-password-error"
+          class="auth-field__error"
+          role="alert"
+        >{{ viewModel.fieldErrors.value.password }}</small>
         <small v-if="viewModel.capsLock.value" class="auth-field__hint">La touche Verr. Maj est activée.</small>
       </label>
 

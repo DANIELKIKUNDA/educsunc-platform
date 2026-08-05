@@ -10,8 +10,9 @@
       </div>
     </template>
 
+    <form id="school-creation-form" novalidate @submit.prevent="$emit('submit')">
     <section class="school-admin-modal__section">
-      <div v-if="errorMessage" class="school-admin-modal__alert">
+      <div v-if="errorMessage" class="school-admin-modal__alert" role="alert" aria-live="assertive">
         <strong>Action impossible</strong>
         <p>{{ errorMessage }}</p>
       </div>
@@ -24,22 +25,25 @@
       <div class="school-admin-modal__grid">
         <label class="school-admin-modal__field">
           <span>Organisation *</span>
-          <select :value="form.idOrganisation" :disabled="organizationLocked" @change="updateField('idOrganisation', ($event.target as HTMLSelectElement).value)">
+          <select id="school-organization" :value="form.idOrganisation" :disabled="organizationLocked" :aria-invalid="fieldErrors.idOrganisation ? 'true' : 'false'" :aria-describedby="fieldErrors.idOrganisation ? 'school-organization-error' : undefined" @change="updateField('idOrganisation', ($event.target as HTMLSelectElement).value)">
             <option value="">Selectionner une organisation</option>
             <option v-for="organization in organizations" :key="organization.id" :value="organization.id">
               {{ organization.code }} - {{ organization.nom }}
             </option>
           </select>
+          <small v-if="fieldErrors.idOrganisation" id="school-organization-error" class="school-admin-modal__field-error" role="alert">{{ fieldErrors.idOrganisation }}</small>
         </label>
 
         <label class="school-admin-modal__field">
           <span>Code *</span>
-          <input :value="form.code" type="text" placeholder="ECOLE-001" @input="updateField('code', ($event.target as HTMLInputElement).value)" />
+          <input id="school-code" :value="form.code" type="text" placeholder="ECOLE-001" :aria-invalid="fieldErrors.code ? 'true' : 'false'" :aria-describedby="fieldErrors.code ? 'school-code-error' : undefined" @input="updateField('code', ($event.target as HTMLInputElement).value)" />
+          <small v-if="fieldErrors.code" id="school-code-error" class="school-admin-modal__field-error" role="alert">{{ fieldErrors.code }}</small>
         </label>
 
         <label class="school-admin-modal__field">
           <span>Nom officiel *</span>
-          <input :value="form.nom" type="text" placeholder="College Saint Raphael" @input="updateField('nom', ($event.target as HTMLInputElement).value)" />
+          <input id="school-name" :value="form.nom" type="text" placeholder="College Saint Raphael" :aria-invalid="fieldErrors.nom ? 'true' : 'false'" :aria-describedby="fieldErrors.nom ? 'school-name-error' : undefined" @input="updateField('nom', ($event.target as HTMLInputElement).value)" />
+          <small v-if="fieldErrors.nom" id="school-name-error" class="school-admin-modal__field-error" role="alert">{{ fieldErrors.nom }}</small>
         </label>
 
         <label class="school-admin-modal__field">
@@ -64,7 +68,8 @@
 
         <label class="school-admin-modal__field">
           <span>Email</span>
-          <input :value="form.email" type="email" placeholder="contact@ecole.cd" @input="updateField('email', ($event.target as HTMLInputElement).value)" />
+          <input id="school-email" :value="form.email" type="email" placeholder="contact@ecole.cd" :aria-invalid="fieldErrors.email ? 'true' : 'false'" :aria-describedby="fieldErrors.email ? 'school-email-error' : undefined" @input="updateField('email', ($event.target as HTMLInputElement).value)" />
+          <small v-if="fieldErrors.email" id="school-email-error" class="school-admin-modal__field-error" role="alert">{{ fieldErrors.email }}</small>
         </label>
 
         <label class="school-admin-modal__field">
@@ -99,6 +104,7 @@
         <button class="school-admin-modal__danger" type="button" @click="discard">Abandonner</button>
       </div>
     </div>
+    </form>
 
     <template #footer>
       <div class="school-admin-modal__footer">
@@ -109,7 +115,7 @@
           <button class="school-admin-modal__ghost" type="button" :disabled="busy" @click="requestClose">
             Annuler
           </button>
-          <button class="school-admin-modal__primary" type="button" :disabled="!canSubmit || busy" @click="$emit('submit')">
+          <button class="school-admin-modal__primary" form="school-creation-form" type="submit" :disabled="!canSubmit || busy">
             {{ busy ? "Creation en cours..." : "Creer l'ecole" }}
           </button>
         </div>
@@ -121,6 +127,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import ModalShell from '../../../components/communs/ModalShell.vue';
+import type { FormFieldErrors } from '../../../shared/forms/form-validation';
 import type {
   CreateSchoolPayload,
   SchoolAdministrationOrganizationItem,
@@ -136,6 +143,7 @@ const props = defineProps<{
   canSubmit: boolean;
   busy: boolean;
   disableReason: string | null;
+  fieldErrors: FormFieldErrors<CreateSchoolPayload>;
   errorMessage: string | null;
 }>();
 
@@ -188,6 +196,7 @@ function updateField(field: keyof CreateSchoolPayload, value: string): void {
 .school-admin-modal__header h2{margin:0;color:#10243b}
 .school-admin-modal__header p{margin:0;color:#587083;line-height:1.6}
 .school-admin-modal__section{display:grid;gap:1rem;padding:1rem 1.05rem;border-radius:24px;border:1px solid rgba(17,40,63,.08);background:#fff}
+#school-creation-form{display:grid;gap:1rem}
 .school-admin-modal__section header{display:grid;gap:.25rem}
 .school-admin-modal__section header small{color:#61788a;line-height:1.5}
 .school-admin-modal__alert{padding:1rem 1.05rem;border-radius:18px;background:#fff3f3;border:1px solid rgba(185,28,28,.16);color:#8f1d1d}
@@ -197,6 +206,8 @@ function updateField(field: keyof CreateSchoolPayload, value: string): void {
 .school-admin-modal__field span{color:#4d6477;font-weight:700;font-size:.92rem}
 .school-admin-modal__field input,.school-admin-modal__field select{width:100%;min-height:52px;border-radius:18px;border:1px solid rgba(17,40,63,.14);background:#fbfdff;padding:.85rem .95rem;color:#10243b}
 .school-admin-modal__field small{color:#61788a;line-height:1.5}
+.school-admin-modal__field .school-admin-modal__field-error{color:#b42318;font-weight:700}
+.school-admin-modal__field input[aria-invalid="true"],.school-admin-modal__field select[aria-invalid="true"]{border-color:#d92d20;box-shadow:0 0 0 4px rgba(217,45,32,.1)}
 .school-admin-modal__field--wide{grid-column:1 / -1}
 .school-admin-modal__footer{display:flex;justify-content:space-between;gap:1rem;align-items:center}
 .school-admin-modal__discard{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1rem 1.05rem;border:1px solid rgba(180,83,9,.16);border-radius:20px;background:#fff9f2;color:#60381f}.school-admin-modal__discard p{margin:.25rem 0 0;color:#7b5a44}.school-admin-modal__discard-actions{display:flex;gap:.7rem;flex:none}

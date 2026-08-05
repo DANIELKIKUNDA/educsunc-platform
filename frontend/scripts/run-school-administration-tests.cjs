@@ -1,36 +1,8 @@
 const fs = require('fs');
 const path = require('path');
-const vm = require('vm');
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const ts = require('typescript');
-
-function loadTsModule(relativePath) {
-  const filePath = path.resolve(__dirname, '..', relativePath);
-  const source = fs.readFileSync(filePath, 'utf8');
-  const transpiled = ts.transpileModule(source, {
-    compilerOptions: {
-      module: ts.ModuleKind.CommonJS,
-      target: ts.ScriptTarget.ES2020,
-      esModuleInterop: true,
-    },
-    fileName: filePath,
-  });
-
-  const module = { exports: {} };
-  const context = vm.createContext({
-    module,
-    exports: module.exports,
-    require,
-    __dirname: path.dirname(filePath),
-    __filename: filePath,
-    console,
-    process,
-  });
-
-  new vm.Script(transpiled.outputText, { filename: filePath }).runInContext(context);
-  return module.exports;
-}
+const { loadTsModule } = require('./load-typescript-module.cjs');
 
 const logic = loadTsModule('src/domains/administration-ecole/viewmodels/school-administration.logic.ts');
 

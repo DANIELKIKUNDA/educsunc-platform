@@ -15,8 +15,23 @@
           <span>{{ field.label }}</span>
           <span class="auth-field__control">
             <UserRound aria-hidden="true" />
-            <input v-model="viewModel.form[field.key]" type="text" :autocomplete="field.autocomplete" required />
+            <input
+              :id="`initialization-${field.key}`"
+              v-model="viewModel.form[field.key]"
+              type="text"
+              :autocomplete="field.autocomplete"
+              required
+              :aria-invalid="viewModel.fieldErrors.value[field.key] ? 'true' : 'false'"
+              :aria-describedby="viewModel.fieldErrors.value[field.key] ? `initialization-${field.key}-error` : undefined"
+              @blur="viewModel.touch(field.key)"
+            />
           </span>
+          <small
+            v-if="viewModel.fieldErrors.value[field.key]"
+            :id="`initialization-${field.key}-error`"
+            class="auth-field__error"
+            role="alert"
+          >{{ viewModel.fieldErrors.value[field.key] }}</small>
         </label>
       </div>
 
@@ -24,8 +39,24 @@
         <span>Adresse e-mail</span>
         <span class="auth-field__control">
           <Mail aria-hidden="true" />
-          <input v-model="viewModel.form.email" type="email" autocomplete="email" inputmode="email" required />
+          <input
+            id="initialization-email"
+            v-model="viewModel.form.email"
+            type="email"
+            autocomplete="email"
+            inputmode="email"
+            required
+            :aria-invalid="viewModel.fieldErrors.value.email ? 'true' : 'false'"
+            :aria-describedby="viewModel.fieldErrors.value.email ? 'initialization-email-error' : undefined"
+            @blur="viewModel.touch('email')"
+          />
         </span>
+        <small
+          v-if="viewModel.fieldErrors.value.email"
+          id="initialization-email-error"
+          class="auth-field__error"
+          role="alert"
+        >{{ viewModel.fieldErrors.value.email }}</small>
       </label>
 
       <div class="auth-form__grid">
@@ -33,15 +64,45 @@
           <span>Mot de passe</span>
           <span class="auth-field__control">
             <LockKeyhole aria-hidden="true" />
-            <input v-model="viewModel.form.password" :type="viewModel.showPassword.value ? 'text' : 'password'" autocomplete="new-password" required />
+            <input
+              id="initialization-password"
+              v-model="viewModel.form.password"
+              :type="viewModel.showPassword.value ? 'text' : 'password'"
+              autocomplete="new-password"
+              required
+              :aria-invalid="viewModel.fieldErrors.value.password ? 'true' : 'false'"
+              :aria-describedby="viewModel.fieldErrors.value.password ? 'initialization-password-error' : undefined"
+              @blur="viewModel.touch('password')"
+            />
           </span>
+          <small
+            v-if="viewModel.fieldErrors.value.password"
+            id="initialization-password-error"
+            class="auth-field__error"
+            role="alert"
+          >{{ viewModel.fieldErrors.value.password }}</small>
         </label>
         <label class="auth-field">
           <span>Confirmer le mot de passe</span>
           <span class="auth-field__control">
             <ShieldCheck aria-hidden="true" />
-            <input v-model="viewModel.form.confirmation" :type="viewModel.showPassword.value ? 'text' : 'password'" autocomplete="new-password" required />
+            <input
+              id="initialization-confirmation"
+              v-model="viewModel.form.confirmation"
+              :type="viewModel.showPassword.value ? 'text' : 'password'"
+              autocomplete="new-password"
+              required
+              :aria-invalid="viewModel.fieldErrors.value.confirmation ? 'true' : 'false'"
+              :aria-describedby="viewModel.fieldErrors.value.confirmation ? 'initialization-confirmation-error' : undefined"
+              @blur="viewModel.touch('confirmation')"
+            />
           </span>
+          <small
+            v-if="viewModel.fieldErrors.value.confirmation"
+            id="initialization-confirmation-error"
+            class="auth-field__error"
+            role="alert"
+          >{{ viewModel.fieldErrors.value.confirmation }}</small>
         </label>
       </div>
       <p class="auth-password-hint">{{ viewModel.passwordHint.value }}</p>

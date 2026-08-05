@@ -1,8 +1,10 @@
 import { computed, onMounted, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { notificationsService } from '../../../services/notifications.service';
+import { createFormSnapshot, hasFormChanged } from '../../../shared/forms/form-snapshot';
 import { organizationTypeOptions } from '../models/organization-governance.model';
 import { useOrganizationGovernanceStore } from '../stores/organization-governance.store';
+import { evaluateOrganizationEdit } from './organization-form.validation';
 
 interface OrganisationEditSnapshot {
   nom: string;
@@ -18,7 +20,7 @@ export function useOrganizationEditViewModel() {
   const route = useRoute();
   const router = useRouter();
   const store = useOrganizationGovernanceStore();
-  const initialSnapshot = ref<OrganisationEditSnapshot | null>(null);
+  const initialSnapshot = ref<string | null>(null);
   const confirmLeaveOpen = ref(false);
   const formReady = ref(false);
 
@@ -48,32 +50,17 @@ export function useOrganizationEditViewModel() {
 
   const typeOptions = organizationTypeOptions;
 
-  const nomError = computed(() =>
-    form.nom.trim().length === 0 ? "Le nom de l'organisation est obligatoire." : '',
-  );
-
-  const responsableEmailError = computed(() => {
-    const email = form.responsableEmail.trim();
-    if (email.length === 0) {
-      return '';
-    }
-
-    return email.includes('@') ? '' : "L'adresse email du responsable est invalide.";
-  });
-
-  const hasChanges = computed(() => {
-    const snapshot = initialSnapshot.value;
-    if (!snapshot) {
-      return false;
-    }
-
-    return JSON.stringify(snapshot) !== JSON.stringify(construireSnapshot());
-  });
+  const validationErrors = computed(() => evaluateOrganizationEdit({
+    nom: form.nom,
+    typeOrganisation: form.typeOrganisation,
+    responsableEmail: form.responsableEmail,
+  }));
+  const nomError = computed(() => validationErrors.value.nom ?? '');
+  const responsableEmailError = computed(() => validationErrors.value.responsableEmail ?? '');
+  const hasChanges = computed(() => hasFormChanged(initialSnapshot.value, construireSnapshot()));
 
   const canSubmit = computed(() =>
-    form.nom.trim().length > 0
-    && form.typeOrganisation.trim().length > 0
-    && responsableEmailError.value.length === 0
+    Object.keys(validationErrors.value).length === 0
     && hasChanges.value
     && !isSaving.value,
   );
@@ -101,7 +88,7 @@ export function useOrganizationEditViewModel() {
     form.responsableTelephone = source.promoteurPrincipal?.telephone ?? '';
     form.responsableEmail = source.promoteurPrincipal?.email ?? '';
     form.responsableIdentifiant = source.promoteurPrincipal?.identifiant ?? '';
-    initialSnapshot.value = construireSnapshot();
+    initialSnapshot.value = createFormSnapshot(construireSnapshot());
     formReady.value = true;
   }
 
