@@ -1,5 +1,5 @@
 const CACHE_PREFIX = 'edusync-shell-';
-const CACHE_NAME = `${CACHE_PREFIX}v1`;
+const CACHE_NAME = `${CACHE_PREFIX}v2`;
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -33,7 +33,12 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET') return;
 
   const url = new URL(request.url);
-  if (url.origin !== self.location.origin || url.pathname.startsWith('/api/')) return;
+  if (
+    url.origin !== self.location.origin
+    || url.pathname.startsWith('/api/')
+    || url.pathname === '/health'
+    || url.pathname.startsWith('/health/')
+  ) return;
 
   if (request.mode === 'navigate') {
     event.respondWith(

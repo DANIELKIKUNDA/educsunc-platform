@@ -14,10 +14,12 @@ const {
   EduSyncLocalDatabase,
   OFFLINE_DATABASE_SCHEMA_V1,
   OFFLINE_DATABASE_VERSION,
+  purgeOfflineDatabase,
 } = loadTsModule('src/offline/database/index.ts');
 const { OfflineQueueService } = loadTsModule('src/offline/queue/queue.service.ts');
 const { OfflineSyncService } = loadTsModule('src/offline/sync/sync.service.ts');
 const { ApiError } = loadTsModule('src/shared/http/api.client.ts');
+const { NetworkStateMachine } = loadTsModule('src/offline/network/network-state.machine.ts');
 const { decryptOfflinePayload } = loadTsModule('src/offline/security/local-crypto.service.ts');
 const { buildOfflinePartitionKey } = loadTsModule('src/offline/context/offline-context.ts');
 const {
@@ -153,6 +155,7 @@ test('D1.7 rejoue uniquement les contrats idempotents de cotation prouves', () =
 test('D1.7 ne met jamais en cache les appels API dans le service worker', () => {
   const source = fs.readFileSync(path.resolve(__dirname, '../public/sw.js'), 'utf8');
   assert.match(source, /url\.pathname\.startsWith\('\/api\/'\)/);
+  assert.match(source, /url\.pathname\.startsWith\('\/health\/'\)/);
   assert.match(source, /request\.method !== 'GET'/);
   assert.doesNotMatch(source, /caches\.put\([^\n]*api/i);
 });
@@ -209,4 +212,101 @@ test('D1.7 conserve et qualifie un conflit metier sans perte du payload', async 
     assert.equal(conflict.operationId, operation.id);
     assert.equal(conflict.status, 'OPEN');
   });
+});
+
+test('D1.7.1 tolere une coupure breve avant de declarer le mode hors connexion', () => {
+  const machine = new NetworkStateMachine(undefined, 1_000);
+  assert.equal(machine.recordFailure(1_000), 'DEGRADED');
+  assert.equal(machine.recordFailure(5_000), 'DEGRADED');
+  assert.equal(machine.recordFailure(10_000), 'DEGRADED');
+  assert.equal(machine.recordFailure(13_000), 'OFFLINE');
+});
+
+test('D1.7.1 confirme deux fois le retour du reseau avant le replay', () => {
+  const machine = new NetworkStateMachine(undefined, 1_000);
+  machine.recordFailure(1_000);
+  machine.recordFailure(7_000);
+  machine.recordFailure(13_000);
+  assert.equal(machine.state.status, 'OFFLINE');
+  assert.equal(machine.recordSuccess(14_000), 'RECOVERING');
+  assert.equal(machine.recordSuccess(15_000), 'ONLINE');
+});
+
+test('D1.7.1 ne rejette jamais une operation uniquement pour des coupures reseau repetees', async () => {
+  await withDatabase(async (database) => {
+    const context = createContext('retry');
+    const queue = new OfflineQueueService(database, async () => context);
+    const operationId = await queue.enqueue({
+      operationType: 'ENCODER_COTE',
+      payload: gradePayload(),
+      idempotencyKey: 'network-retry',
+    });
+    const sync = new OfflineSyncService(
+      database,
+      queue,
+      async () => {
+        throw new ApiError('Connexion au serveur perdue.', 0, 'NETWORK_ERROR');
+      },
+      async () => context,
+      () => true,
+      () => undefined,
+    );
+
+    for (let attempt = 0; attempt < 10; attempt += 1) {
+      await database.operations.update(operationId, { nextAttemptAt: new Date(0).toISOString() });
+      await sync.synchronize();
+    }
+    const operation = await database.operations.get(operationId);
+    assert.equal(operation.status, 'RETRY');
+    assert.equal(operation.attempts, 10);
+  });
+});
+
+test('D1.7.1 refuse proprement une ecriture quand la capacite locale est insuffisante', async () => {
+  await withDatabase(async (database) => {
+    const queue = new OfflineQueueService(
+      database,
+      async () => createContext('quota'),
+      async () => {
+        throw new Error("L'espace hors ligne de cet appareil est presque plein.");
+      },
+    );
+    await assert.rejects(
+      queue.enqueue({ operationType: 'ENCODER_COTE', payload: gradePayload() }),
+      /presque plein/i,
+    );
+    assert.equal(await database.operations.count(), 0);
+  });
+});
+
+test('D1.7.1 purge toutes les donnees locales au changement d identite', async () => {
+  const database = new EduSyncLocalDatabase(`educsyn-purge-${crypto.randomUUID()}`);
+  await database.open();
+  await database.metadata.add({ key: 'proof', value: 'sensitive', updatedAt: new Date().toISOString() });
+  await purgeOfflineDatabase(database);
+  try {
+    assert.equal(await database.metadata.count(), 0);
+  } finally {
+    database.close();
+    await database.delete();
+  }
+});
+
+test('D1.7.1 conserve une projection hors ligne sans persister de jeton', () => {
+  const bootstrap = fs.readFileSync(path.resolve(__dirname, '../src/shared/auth/session.bootstrap.ts'), 'utf8');
+  const snapshotContract = bootstrap.match(/interface PersistedAuthSnapshot \{[\s\S]*?\n\}/)?.[0] ?? '';
+  assert.match(snapshotContract, /effectiveProfile/);
+  assert.doesNotMatch(snapshotContract, /accessToken|refreshToken/);
+  assert.match(bootstrap, /restoreOfflineSnapshot/);
+  assert.match(bootstrap, /isTemporaryConnectivityFailure/);
+});
+
+test('D1.7.1 expose un centre de connectivite commun au shell desktop et mobile', () => {
+  const topbar = fs.readFileSync(path.resolve(__dirname, '../src/shell/components/AppTopbar.vue'), 'utf8');
+  const center = fs.readFileSync(path.resolve(__dirname, '../src/shell/components/ConnectivityCenter.vue'), 'utf8');
+  assert.match(topbar, /<ConnectivityCenter v-if="mobile"/);
+  assert.match(topbar, /<ConnectivityCenter \/>/);
+  assert.match(center, /Connexion instable/);
+  assert.match(center, /session reste ouverte/);
+  assert.match(center, /Opérations à vérifier/);
 });

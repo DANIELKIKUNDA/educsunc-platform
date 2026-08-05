@@ -27,9 +27,12 @@ export class EduSyncLocalDatabase extends Dexie {
 
 export const offlineDatabase = new EduSyncLocalDatabase();
 
-export async function purgeOfflineDatabase(): Promise<void> {
-  offlineDatabase.close();
-  await Dexie.delete(offlineDatabase.name);
+export async function purgeOfflineDatabase(database: EduSyncLocalDatabase = offlineDatabase): Promise<void> {
+  database.close();
+  await Dexie.delete(database.name);
+  // Dexie désactive l'ouverture automatique après close(); la base vide doit
+  // rester réutilisable si un autre utilisateur se connecte dans le même onglet.
+  await database.open();
 }
 
 export {

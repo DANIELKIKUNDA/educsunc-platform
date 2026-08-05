@@ -27,7 +27,8 @@ export interface FrontendSessionState {
   sessionId: string | null;
   accessToken: string | null;
   email: string;
-  authMode: 'none' | 'dev' | 'backend';
+  authMode: 'none' | 'dev' | 'backend' | 'offline';
+  isOfflineSession: boolean;
   initialized: boolean;
   initializing: boolean;
   initializationRequired: boolean;
@@ -55,6 +56,7 @@ const state = reactive<FrontendSessionState>({
   sessionId: null,
   accessToken: null,
   authMode: 'none',
+  isOfflineSession: false,
   initialized: false,
   initializing: false,
   initializationRequired: false,
@@ -97,7 +99,7 @@ export const sessionStore = {
   beginInitialization(): void {
     state.initializing = true;
   },
-  completeInitialization(mode: 'dev' | 'backend' | 'none'): void {
+  completeInitialization(mode: 'dev' | 'backend' | 'offline' | 'none'): void {
     state.initializing = false;
     state.initialized = true;
     state.authMode = mode;
@@ -138,7 +140,30 @@ export const sessionStore = {
     state.effectiveProfile = createEmptyEffectiveProfile();
     state.isAuthenticated = true;
     state.authMode = params.developer ? 'dev' : 'backend';
+    state.isOfflineSession = false;
     state.lastTerminationReason = 'none';
+  },
+  applyOfflineSession(params: {
+    sessionId: string;
+    userId: string;
+    actorCode: FrontendActorCode;
+    displayName: string;
+    email: string;
+    effectiveProfile: EffectiveProfilePayloadV1;
+  }): void {
+    const profile = findProfile(params.actorCode);
+    state.actorCode = params.actorCode;
+    state.actorLabel = profile?.label ?? params.actorCode;
+    state.accessToken = null;
+    state.sessionId = params.sessionId;
+    state.userId = params.userId;
+    state.displayName = params.displayName;
+    state.email = params.email;
+    state.isAuthenticated = true;
+    state.authMode = 'offline';
+    state.isOfflineSession = true;
+    state.lastTerminationReason = 'none';
+    this.applyEffectiveProfile(params.effectiveProfile);
   },
   applyEffectiveProfile(payload: EffectiveProfilePayloadV1): void {
     const normalized = normalizeEffectiveProfile(payload, {
@@ -174,6 +199,7 @@ export const sessionStore = {
     state.displayName = '';
     state.email = '';
     state.authMode = 'none';
+    state.isOfflineSession = false;
     state.isAuthenticated = false;
     state.lastTerminationReason = reason;
     state.permissions = [];

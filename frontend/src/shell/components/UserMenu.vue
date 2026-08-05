@@ -102,7 +102,12 @@ const initials = computed(() =>
     .join(''),
 );
 
-const authModeLabel = computed(() => (session.authMode === 'backend' ? 'Session backend' : 'Mode dev'));
+const authModeLabel = computed(() => {
+  if (session.authMode === 'backend') return 'Session sécurisée';
+  if (session.authMode === 'offline') return 'Session hors connexion';
+  if (session.authMode === 'dev') return 'Mode dev';
+  return 'Session inactive';
+});
 const governanceLabel = computed(() => {
   if (context.governanceLevel === 'PLATEFORME') return 'Plateforme';
   if (context.governanceLevel === 'ORGANISATION') return 'Organisation';

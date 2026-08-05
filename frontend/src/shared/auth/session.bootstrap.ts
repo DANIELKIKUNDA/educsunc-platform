@@ -11,6 +11,8 @@ import {
   type FrontendGovernanceLevel,
 } from './session.store';
 import { activeContextStore } from '../session/active-context.store';
+import { ApiError } from '../http/api.client';
+import type { EffectiveProfilePayloadV1 } from '../permissions/effective-profile.types';
 
 const PERSISTENT_STORAGE_KEY = 'educsync.auth.session';
 const TRANSIENT_STORAGE_KEY = 'educsync.auth.session-current-tab';
@@ -26,6 +28,8 @@ interface PersistedAuthSnapshot {
   rememberMe: boolean;
   organisationActiveId?: string;
   ecoleActiveId?: string;
+  /** Projection d'affichage uniquement; elle ne contient aucun secret ni jeton. */
+  effectiveProfile?: EffectiveProfilePayloadV1;
 }
 
 let refreshInFlight: Promise<boolean> | null = null;
@@ -122,7 +126,41 @@ function snapshotFromState(rememberMe: boolean): PersistedAuthSnapshot {
     rememberMe,
     organisationActiveId: activeContextStore.state.organizationId || undefined,
     ecoleActiveId: activeContextStore.state.schoolId || undefined,
+    effectiveProfile: JSON.parse(
+      JSON.stringify(sessionStore.state.effectiveProfile),
+    ) as EffectiveProfilePayloadV1,
   };
+}
+
+function isTemporaryConnectivityFailure(error: unknown): boolean {
+  return error instanceof ApiError
+    && (
+      error.status === 0
+      || error.status === 429
+      || error.status >= 500
+      || error.code === 'NETWORK_ERROR'
+      || error.code === 'REQUEST_CANCELLED'
+    );
+}
+
+function restoreOfflineSnapshot(snapshot: PersistedAuthSnapshot | null): boolean {
+  if (!snapshot?.effectiveProfile || !isKnownActor(snapshot.actorCode)) return false;
+  sessionStore.applyOfflineSession({
+    sessionId: snapshot.sessionId,
+    userId: snapshot.userId,
+    actorCode: snapshot.actorCode,
+    displayName: snapshot.displayName,
+    email: snapshot.email,
+    effectiveProfile: snapshot.effectiveProfile,
+  });
+  const context = snapshot.effectiveProfile.contexte;
+  applyGovernanceContext(
+    snapshot.actorCode,
+    context?.organisationId ?? context?.idOrganisation ?? snapshot.organisationActiveId,
+    context?.ecoleId ?? context?.idEcole ?? snapshot.ecoleActiveId,
+    context?.governanceLevel ?? context?.niveauGouvernance ?? context?.niveau,
+  );
+  return true;
 }
 
 function applyEffectiveProjection(profile: BackendEffectiveProfileApiData): FrontendActorCode {
@@ -213,11 +251,7 @@ async function validateRestoredSession(
         ?? session.ecoleActiveId,
     },
   });
-  writeSnapshot({
-    ...snapshot,
-    actorCode: profile.acteurCodeActif as FrontendActorCode,
-    sessionId: session.sessionId,
-  });
+  writeSnapshot(snapshotFromState(snapshot.rememberMe));
 }
 
 async function refreshSession(): Promise<boolean> {
@@ -232,7 +266,10 @@ async function refreshSession(): Promise<boolean> {
       });
       await validateRestoredSession(refreshed.accessToken, snapshot);
       return true;
-    } catch {
+    } catch (error) {
+      if (isTemporaryConnectivityFailure(error) && restoreOfflineSnapshot(snapshot)) {
+        return false;
+      }
       clearSnapshot();
       sessionStore.clearBackendSession('revoked');
       authChannel?.postMessage({ type: 'terminated' });
@@ -315,6 +352,11 @@ async function performFrontendSessionInitialization(): Promise<void> {
       return;
     }
 
+    if (sessionStore.state.isOfflineSession) {
+      sessionStore.completeInitialization('offline');
+      return;
+    }
+
     if (authEntryMode === 'developer') {
       await openDeveloperSessionForCurrentActor();
       sessionStore.completeInitialization('dev');
@@ -323,7 +365,11 @@ async function performFrontendSessionInitialization(): Promise<void> {
 
     sessionStore.clearBackendSession();
     sessionStore.completeInitialization('none');
-  } catch {
+  } catch (error) {
+    if (isTemporaryConnectivityFailure(error) && restoreOfflineSnapshot(readSnapshot())) {
+      sessionStore.completeInitialization('offline');
+      return;
+    }
     sessionStore.clearBackendSession();
     sessionStore.completeInitialization('none');
   }
@@ -372,6 +418,15 @@ export async function deconnecterUtilisateur(): Promise<void> {
   authChannel?.postMessage({ type: 'terminated' });
 }
 
+export async function reprendreSessionEnLigne(): Promise<boolean> {
+  if (!sessionStore.state.isOfflineSession) {
+    return sessionStore.state.isAuthenticated;
+  }
+  const restored = await refreshSession();
+  if (restored) sessionStore.completeInitialization(sessionStore.state.authMode);
+  return restored;
+}
+
 export async function ouvrirSessionDeveloppeurActeurSelectionne(
   actorCode?: FrontendActorCode,
 ): Promise<void> {
@@ -404,6 +459,8 @@ async function rechargerProjectionApresChangementContexte(
       ecoleId: context.ecoleActiveId,
     },
   });
+  const snapshot = readSnapshot();
+  if (snapshot) writeSnapshot(snapshotFromState(snapshot.rememberMe));
 }
 
 export async function rechargerProfilEffectifFrontend(): Promise<void> {
@@ -416,6 +473,8 @@ export async function rechargerProfilEffectifFrontend(): Promise<void> {
     sessionId: sessionStore.state.sessionId,
   });
   applyEffectiveProjection(profile);
+  const snapshot = readSnapshot();
+  if (snapshot) writeSnapshot(snapshotFromState(snapshot.rememberMe));
 }
 
 export async function notifierChangementCapacitesFrontend(): Promise<void> {
@@ -439,11 +498,7 @@ export async function activerContextePlateformeFrontend(): Promise<void> {
   }
   const snapshot = readSnapshot();
   if (snapshot) {
-    writeSnapshot({
-      ...snapshot,
-      organisationActiveId: undefined,
-      ecoleActiveId: undefined,
-    });
+    writeSnapshot(snapshotFromState(snapshot.rememberMe));
   }
 }
 
@@ -465,7 +520,7 @@ export async function changerOrganisationActiveFrontend(organizationId: string):
     throw error;
   }
   const snapshot = readSnapshot();
-  if (snapshot) writeSnapshot({ ...snapshot, organisationActiveId: organizationId, ecoleActiveId: undefined });
+  if (snapshot) writeSnapshot(snapshotFromState(snapshot.rememberMe));
 }
 
 export async function changerEcoleActiveFrontend(schoolId: string): Promise<void> {
@@ -488,5 +543,5 @@ export async function changerEcoleActiveFrontend(schoolId: string): Promise<void
     throw error;
   }
   const snapshot = readSnapshot();
-  if (snapshot) writeSnapshot({ ...snapshot, ecoleActiveId: schoolId });
+  if (snapshot) writeSnapshot(snapshotFromState(snapshot.rememberMe));
 }

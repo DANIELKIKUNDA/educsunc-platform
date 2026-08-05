@@ -39,13 +39,47 @@ Ce chiffrement protege le stockage au repos et l'inspection occasionnelle du pro
 - Une cle idempotente unique accompagne l'essai en ligne et son eventuel rejeu.
 - Les operations sont rejouees dans l'ordre, par lots de 20 et uniquement pour la partition active.
 - Une operation n'est supprimee qu'apres le succes HTTP reel de la route metier.
-- Les pannes reseau, reponses 429 et erreurs serveur utilisent une reprise exponentielle, plafonnee a huit essais.
-- Les erreurs 400, 401, 403, 404 et 422 sont conservees comme refus a traiter.
+- Les pannes reseau, reponses 429 et erreurs serveur utilisent une reprise exponentielle sans abandon automatique; le delai entre essais reste plafonne a quinze minutes.
+- Une erreur 401 attend la restauration de la session avant reprise. Une revocation reelle purge ensuite les donnees de l'identite concernee.
+- Les erreurs metier 400, 403, 404 et 422 sont conservees comme refus a traiter.
 - Une reponse 409 cree un conflit explicite sans perdre le payload chiffre.
 - Une operation restee en cours plus de cinq minutes est replacee en reprise.
 - Les refus de plus de trente jours peuvent etre purges; une operation active n'est jamais supprimee par anciennete.
 
 Le frontend ne rejoue pas les mutations via `/api/sync/replay` : dans l'architecture actuelle, cette route journalise une operation generique mais ne prouve pas l'application de la mutation metier. Le rejeu D1.7 appelle donc les routes de cotation reelles avec la cle idempotente d'origine et `x-sync-origin: OFFLINE`.
+
+## D1.7.1 - Robustesse pour les reseaux instables
+
+EduSync ne deduit jamais une coupure du seul indicateur `navigator.onLine`. Un controle public leger verifie la sante reelle du service. La machine de connexion applique quatre etats :
+
+| Etat | Comportement |
+|---|---|
+| En ligne | Requetes et synchronisation autorisees. |
+| Connexion instable | Plusieurs controles sont effectues; aucun basculement brutal hors ligne. |
+| Hors connexion | Les capacites locales prouvees restent utilisables et les operations sont chiffrees dans la file. |
+| Reconnexion | Deux controles positifs consecutifs sont requis avant tout rejeu. |
+
+Le passage hors connexion exige au minimum trois echecs et une fenetre de degradation de douze secondes. Une coupure breve, un changement d'antenne ou une latence ponctuelle ne ferme donc pas immediatement l'application.
+
+### Session conservee sans secret
+
+Apres une premiere connexion en ligne reussie, une projection locale minimale peut conserver l'identite, le contexte et les autorisations d'affichage deja resolues. Aucun jeton d'acces ni jeton de renouvellement n'est persiste dans cette projection.
+
+Cette projection est non autoritative :
+
+- elle maintient le Shell et les ecrans locaux disponibles;
+- elle ne peut pas autoriser une requete serveur sans jeton valide;
+- la session est restauree en ligne avant synchronisation;
+- chaque mutation rejouee est recontrolee par le backend avec permission et perimetre;
+- une revocation, une suspension ou une deconnexion prouvee purge la projection et la base locale.
+
+Une ancienne installation qui ne possede pas encore cette projection doit effectuer une connexion en ligne reussie une fois avant de beneficier de la conservation de session hors ligne.
+
+### Capacite locale et intervention humaine
+
+Le navigateur est interroge avec l'API Storage pour estimer l'espace disponible et demander, lorsque possible, un stockage persistant. EduSync avertit avant la saturation et refuse proprement une nouvelle mise en file si la marge de securite n'est plus suffisante.
+
+Le centre de connectivite du Shell affiche sur desktop et mobile : etat de connexion, session conservee, operations en attente, conflits, refus, derniere reprise et pression de stockage. Les conflits ne sont jamais supprimes silencieusement; l'abandon exige une confirmation explicite.
 
 ## Service worker
 
@@ -83,15 +117,15 @@ La certification cible couvre schema, chiffrement, refus des secrets, isolation 
 | Controle | Resultat |
 |---|---|
 | Typecheck frontend | OK |
-| Build Vite de production | OK, 2 333 modules transformes |
+| Build Vite de production | OK, 2 339 modules transformes |
 | Tests formulaires | 39/39 |
 | Tests acces, donnees et cycle de vie | 33/33 |
 | Tests design system | 6/6 |
-| Tests D1.7 IndexedDB et synchronisation | 9/9 |
-| Certification Chrome hors ligne | 1/1 |
+| Tests D1.7/D1.7.1 IndexedDB, reseau, session et synchronisation | 16/16 |
+| Certification Chrome hors ligne | 2/2, dont conservation de session sans backend |
 | Lint frontend | OK, aucun avertissement |
 | Audit npm production | 0 vulnerabilite |
 
 Le test navigateur utilise Chrome installe localement sous Windows et Chromium Playwright en CI. La pipeline installe le navigateur puis execute explicitement `test:e2e:offline`.
 
-Verdict : **D1.7 - VALIDE** pour le socle et les mutations de cotation idempotentes prouvees. Les autres domaines ne sont pas annonces comme hors ligne tant que leurs contrats backend ne sont pas industrialises.
+Verdict : **D1.7.1 - VALIDE** pour le socle, la resilience aux reseaux instables et les mutations de cotation idempotentes prouvees. Les autres domaines ne sont pas annonces comme hors ligne tant que leurs contrats backend ne sont pas industrialises.

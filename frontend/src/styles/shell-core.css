@@ -247,7 +247,7 @@
 }
 
 .erp-topbar--mobile {
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
   padding: 0.9rem 1rem;
 }
 
@@ -458,6 +458,11 @@
 .erp-shell-badge--backend {
   background: rgba(15, 118, 110, 0.12);
   color: #0f766e;
+}
+
+.erp-shell-badge--offline {
+  background: rgba(217, 119, 6, 0.12);
+  color: #9a5b05;
 }
 
 .erp-shell-badge--level {

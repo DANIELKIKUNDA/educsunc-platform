@@ -40,7 +40,10 @@
 
     <ContextSwitcher v-if="!mobile" class="erp-topbar__context" />
 
+    <ConnectivityCenter v-if="mobile" />
+
     <div v-if="!mobile" class="erp-topbar__signals">
+      <ConnectivityCenter />
       <span class="erp-shell-badge erp-shell-badge--level">
         {{ activeLevelLabel }}
       </span>
@@ -80,6 +83,7 @@ import { sessionStore } from '../../shared/auth/session.store';
 import { activeContextStore } from '../../shared/session/active-context.store';
 import type { NavigationEntry } from '../../shared/navigation/navigation.types';
 import ContextSwitcher from './ContextSwitcher.vue';
+import ConnectivityCenter from './ConnectivityCenter.vue';
 import UserMenu from './UserMenu.vue';
 
 const props = defineProps<{

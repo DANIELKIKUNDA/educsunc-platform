@@ -39,7 +39,17 @@ function userSafeErrorMessage(error: unknown): string {
 
 function isPermanentRejection(error: unknown): boolean {
   return error instanceof ApiError
-    && [400, 401, 403, 404, 422].includes(error.status);
+    && [400, 403, 404, 422].includes(error.status);
+}
+
+function isTemporaryTransportFailure(error: unknown): boolean {
+  return error instanceof ApiError
+    && (error.status === 0 || error.status === 401 || error.status === 429 || error.status >= 500);
+}
+
+function shouldDegradeNetwork(error: unknown): boolean {
+  return error instanceof ApiError
+    && (error.status === 0 || error.status === 429 || error.status >= 500);
 }
 
 export class OfflineSyncService {
@@ -50,6 +60,8 @@ export class OfflineSyncService {
     private readonly queue: OfflineQueueService,
     private readonly transport: OfflineTransport = (request) => clientApi.envoyer(request),
     private readonly contextProvider: ContextProvider = readActiveOfflineContext,
+    private readonly networkStable: () => boolean = () => networkService.online,
+    private readonly reportTransportFailure: () => void = () => networkService.reportTransportFailure(),
   ) {}
 
   public synchronize(): Promise<void> {
@@ -61,7 +73,7 @@ export class OfflineSyncService {
   }
 
   private async run(): Promise<void> {
-    if (!networkService.online) return;
+    if (!this.networkStable()) return;
     const context = await this.contextProvider();
     if (!context) return;
 
@@ -79,7 +91,7 @@ export class OfflineSyncService {
         .sortBy('createdAt');
 
       for (const operation of operations.slice(0, MAX_OPERATIONS_PER_CYCLE)) {
-        if (!networkService.online) break;
+        if (!this.networkStable()) break;
         await this.replay(operation, context);
       }
       syncQueueStore.markSynchronized();
@@ -152,10 +164,12 @@ export class OfflineSyncService {
       return;
     }
 
-    if (isPermanentRejection(error) || attempts >= MAX_RETRIES) {
+    if (isPermanentRejection(error) || (!isTemporaryTransportFailure(error) && attempts >= MAX_RETRIES)) {
       await this.database.operations.update(operation.id, { ...common, status: 'REJECTED' });
       return;
     }
+
+    if (shouldDegradeNetwork(error)) this.reportTransportFailure();
 
     await this.database.operations.update(operation.id, {
       ...common,

@@ -1,10 +1,12 @@
 import { watch, type WatchStopHandle } from 'vue';
 import { sessionStore } from '../../shared/auth/session.store';
+import { reprendreSessionEnLigne } from '../../shared/auth/session.bootstrap';
 import { activeContextStore } from '../../shared/session/active-context.store';
 import { purgeOfflineDatabase } from '../database';
 import { networkService } from '../network/network.service';
 import { queueService } from '../queue/queue.service';
 import { syncService } from '../sync/sync.service';
+import { storageCapacityService } from '../storage/storage-capacity.service';
 
 interface OfflineRuntimeSnapshot {
   authenticated: boolean;
@@ -37,9 +39,15 @@ export function initializeOfflineRuntime(): () => void {
   if (stopRuntime) return stopRuntime;
 
   networkService.start();
+  void storageCapacityService.initialize();
   let previous = readSnapshot();
   const unsubscribeNetwork = networkService.subscribe((online) => {
-    if (online) void syncService.synchronize();
+    if (online) {
+      void reprendreSessionEnLigne().then((restored) => {
+        if (restored) return syncService.synchronize();
+        return undefined;
+      });
+    }
   });
 
   const stopWatch: WatchStopHandle = watch(
@@ -63,7 +71,10 @@ export function initializeOfflineRuntime(): () => void {
 
   const handleVisibility = () => {
     if (document.visibilityState === 'visible' && networkService.online) {
-      void syncService.synchronize();
+      void reprendreSessionEnLigne().then((restored) => {
+        if (restored) return syncService.synchronize();
+        return undefined;
+      });
     }
   };
   document.addEventListener('visibilitychange', handleVisibility);

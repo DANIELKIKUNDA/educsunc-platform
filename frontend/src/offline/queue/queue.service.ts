@@ -8,6 +8,11 @@ import {
 import { encryptOfflinePayload } from '../security/local-crypto.service';
 import { assertOfflineOperationPayload } from '../sync/offline-operation.contracts';
 import { syncQueueStore } from './sync-queue.store';
+import {
+  isQuotaExceededError,
+  OfflineStorageCapacityError,
+  storageCapacityService,
+} from '../storage/storage-capacity.service';
 
 const MAX_QUEUED_OPERATIONS = 500;
 const OPERATION_RETENTION_MS = 30 * 24 * 60 * 60 * 1_000;
@@ -19,12 +24,28 @@ export interface EnqueueOfflineOperationInput {
   schoolYearId?: string;
 }
 
+export interface OfflineQueueIssue {
+  id: string;
+  status: 'CONFLICT' | 'REJECTED';
+  operationLabel: string;
+  message: string;
+  attempts: number;
+  createdAt: string;
+}
+
+const OPERATION_LABELS: Record<OfflineOperationType, string> = {
+  ENCODER_COTE: 'Encodage de cote',
+  MODIFIER_COTE: 'Modification de cote',
+};
+
 type ContextProvider = (schoolYearId?: string) => Promise<OfflineTenantContext | null>;
+type CapacityGuard = (additionalBytes: number) => Promise<void>;
 
 export class OfflineQueueService {
   public constructor(
     private readonly database: EduSyncLocalDatabase,
     private readonly contextProvider: ContextProvider = readActiveOfflineContext,
+    private readonly capacityGuard: CapacityGuard = (bytes) => storageCapacityService.assertCanStore(bytes),
   ) {}
 
   public async enqueue(input: EnqueueOfflineOperationInput): Promise<string> {
@@ -60,6 +81,8 @@ export class OfflineQueueService {
       .first();
     if (duplicate) return duplicate.id;
 
+    await this.capacityGuard(new TextEncoder().encode(JSON.stringify(input.payload)).byteLength);
+
     const encrypted = await encryptOfflinePayload(
       this.database,
       context.partitionKey,
@@ -67,18 +90,23 @@ export class OfflineQueueService {
     );
     const now = new Date().toISOString();
     const id = crypto.randomUUID();
-    await this.database.operations.add({
-      id,
-      idempotencyKey,
-      partitionKey: context.partitionKey,
-      operationType: input.operationType,
-      ...encrypted,
-      status: 'PENDING',
-      attempts: 0,
-      createdAt: now,
-      updatedAt: now,
-      nextAttemptAt: now,
-    });
+    try {
+      await this.database.operations.add({
+        id,
+        idempotencyKey,
+        partitionKey: context.partitionKey,
+        operationType: input.operationType,
+        ...encrypted,
+        status: 'PENDING',
+        attempts: 0,
+        createdAt: now,
+        updatedAt: now,
+        nextAttemptAt: now,
+      });
+    } catch (error) {
+      if (isQuotaExceededError(error)) throw new OfflineStorageCapacityError();
+      throw error;
+    }
     await this.refreshCounters(context.partitionKey);
     return id;
   }
@@ -112,6 +140,41 @@ export class OfflineQueueService {
       conflicts: operations.filter((operation) => operation.status === 'CONFLICT').length,
       rejected: operations.filter((operation) => operation.status === 'REJECTED').length,
     });
+  }
+
+  public async listIssues(): Promise<OfflineQueueIssue[]> {
+    const context = await this.contextProvider();
+    if (!context) return [];
+    const operations = await this.database.operations
+      .where('partitionKey')
+      .equals(context.partitionKey)
+      .filter((operation) => operation.status === 'CONFLICT' || operation.status === 'REJECTED')
+      .toArray();
+    return operations
+      .sort((left, right) => right.createdAt.localeCompare(left.createdAt))
+      .map((operation) => ({
+        id: operation.id,
+        status: operation.status as 'CONFLICT' | 'REJECTED',
+        operationLabel: OPERATION_LABELS[operation.operationType],
+        message: operation.lastErrorMessage ?? 'Cette operation necessite votre attention.',
+        attempts: operation.attempts,
+        createdAt: operation.createdAt,
+      }));
+  }
+
+  public async retryRejected(operationId: string): Promise<void> {
+    const operation = await this.database.operations.get(operationId);
+    if (!operation || operation.status !== 'REJECTED') return;
+    const now = new Date().toISOString();
+    await this.database.operations.update(operationId, {
+      status: 'RETRY',
+      attempts: 0,
+      updatedAt: now,
+      nextAttemptAt: now,
+      lastErrorCode: undefined,
+      lastErrorMessage: undefined,
+    });
+    await this.refreshCounters(operation.partitionKey);
   }
 }
 
