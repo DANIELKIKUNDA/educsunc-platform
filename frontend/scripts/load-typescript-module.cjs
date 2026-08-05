@@ -18,7 +18,9 @@ function loadFile(filePath) {
   const absolutePath = path.resolve(filePath);
   if (moduleCache.has(absolutePath)) return moduleCache.get(absolutePath).exports;
 
-  const source = fs.readFileSync(absolutePath, 'utf8');
+  const source = fs
+    .readFileSync(absolutePath, 'utf8')
+    .replaceAll('import.meta.env', '({})');
   const transpiled = ts.transpileModule(source, {
     compilerOptions: {
       module: ts.ModuleKind.CommonJS,
@@ -46,6 +48,19 @@ function loadFile(filePath) {
     __filename: absolutePath,
     console,
     process,
+    crypto: globalThis.crypto,
+    TextEncoder: globalThis.TextEncoder,
+    TextDecoder: globalThis.TextDecoder,
+    btoa: globalThis.btoa,
+    atob: globalThis.atob,
+    AbortController: globalThis.AbortController,
+    URLSearchParams: globalThis.URLSearchParams,
+    fetch: globalThis.fetch,
+    Headers: globalThis.Headers,
+    Response: globalThis.Response,
+    Blob: globalThis.Blob,
+    setTimeout,
+    clearTimeout,
   });
   new vm.Script(transpiled.outputText, { filename: absolutePath }).runInContext(context);
   return module.exports;

@@ -359,6 +359,9 @@ jobs:
       - name: Certifier les parcours sensibles
         run: npm run verify:e2e
 
+      - name: Certifier le socle hors ligne
+        run: npm --prefix frontend run test:e2e:offline
+
       - name: Conserver les preuves
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -367,6 +370,7 @@ jobs:
           path: |
             artifacts/security-production-certification
             artifacts/quality/e2e
+            frontend/artifacts/offline-playwright-results
           if-no-files-found: warn
 
   performance-light:

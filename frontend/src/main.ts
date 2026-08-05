@@ -30,11 +30,13 @@ async function demarrerFrontend(): Promise<void> {
 
   application.use(routeur);
   application.mount('#app');
+  registerServiceWorker();
 
   await initialisationSession;
   await useTheme().initTheme();
 
-  registerServiceWorker();
+  const { initializeOfflineRuntime } = await import('./offline/runtime/offline-runtime');
+  initializeOfflineRuntime();
 }
 
 void demarrerFrontend();

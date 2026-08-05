@@ -17,13 +17,16 @@
     "certify:platform-governance-navigation": "node scripts/certify-platform-governance-navigation.cjs",
     "test:e2e:g1": "playwright test --config e2e/g1/playwright.g1.config.ts",
     "test:e2e:g1:list": "playwright test --config e2e/g1/playwright.g1.config.ts --list",
+    "test:e2e:offline": "npm run build && playwright test --config e2e/offline/playwright.offline.config.ts",
     "test:access": "node --test scripts/run-effective-access-tests.cjs scripts/run-frontend-lifecycle-tests.cjs scripts/run-frontend-data-tests.cjs",
     "test:data": "node --test scripts/run-frontend-data-tests.cjs",
     "test:forms": "node --test scripts/run-frontend-form-tests.cjs scripts/run-configuration-form-tests.cjs scripts/run-school-administration-tests.cjs",
     "test:design-system": "node --test scripts/run-design-system-tests.cjs",
-    "test": "vue-tsc --noEmit && npm run test:forms && npm run test:access && npm run test:design-system"
+    "test:offline": "node --test scripts/run-offline-first-tests.cjs",
+    "test": "vue-tsc --noEmit && npm run test:forms && npm run test:access && npm run test:design-system && npm run test:offline"
   },
   "dependencies": {
+    "dexie": "4.4.4",
     "lucide-vue-next": "^1.0.0",
     "vue": "^3.5.13",
     "vue-router": "^4.5.1"
@@ -31,6 +34,8 @@
   "devDependencies": {
     "@playwright/test": "^1.61.1",
     "@vitejs/plugin-vue": "^5.2.4",
+    "fake-indexeddb": "6.2.5",
+    "postcss": "8.5.25",
     "typescript": "5.9.3",
     "vite": "^6.3.5",
     "vue-tsc": "^3.3.8"
