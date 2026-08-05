@@ -1,5 +1,3 @@
-const fs = require('fs');
-const path = require('path');
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { loadTsModule } = require('./load-typescript-module.cjs');
