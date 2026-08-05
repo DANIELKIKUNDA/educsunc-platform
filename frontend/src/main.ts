@@ -9,6 +9,7 @@ import { useTheme } from './composables/useTheme';
 import { registerServiceWorker } from './shared/pwa/register-sw';
 import './styles/variables.css';
 import './styles/base.css';
+import './styles/design-system.css';
 import './styles/layout.css';
 import './styles/composants.css';
 import './styles/referentiel.css';

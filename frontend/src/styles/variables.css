@@ -26,6 +26,43 @@
   --transition-moyenne: 280ms ease;
   --transition-lente: 420ms ease;
   --animation-pulse: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+
+  /* Design system EduSync : aliases semantiques stables pour tous les modules. */
+  --ui-primary: #0b5d7a;
+  --ui-primary-hover: #084b64;
+  --ui-primary-soft: #e8f5f8;
+  --ui-primary-contrast: #ffffff;
+  --ui-text-strong: #10243b;
+  --ui-text: #29445a;
+  --ui-text-muted: #60798c;
+  --ui-surface: #ffffff;
+  --ui-surface-subtle: #f7faff;
+  --ui-surface-muted: #edf4f8;
+  --ui-border: rgba(17, 40, 63, 0.1);
+  --ui-border-strong: rgba(17, 40, 63, 0.18);
+  --ui-focus: #1487a8;
+  --ui-success: #18794e;
+  --ui-success-soft: #edf9f2;
+  --ui-warning: #9a6408;
+  --ui-warning-soft: #fff7e8;
+  --ui-danger: #c93636;
+  --ui-danger-soft: #fff1f1;
+  --ui-info: #245eb5;
+  --ui-info-soft: #eff5ff;
+  --ui-radius-sm: 0.75rem;
+  --ui-radius-md: 1rem;
+  --ui-radius-lg: 1.5rem;
+  --ui-radius-xl: 1.875rem;
+  --ui-control-height: 2.75rem;
+  --ui-control-height-mobile: 3rem;
+  --ui-shadow-sm: 0 10px 24px rgba(15, 23, 42, 0.06);
+  --ui-shadow-md: 0 18px 42px rgba(15, 23, 42, 0.09);
+  --ui-shadow-lg: 0 28px 64px rgba(15, 23, 42, 0.16);
+  --ui-overlay: rgba(7, 19, 31, 0.56);
+  --ui-motion-fast: 160ms ease;
+  --ui-motion-standard: 220ms ease;
+  --ui-z-modal: 2300;
+  --ui-z-toast: 3000;
 }
 
 /* Mode sombre */
@@ -45,6 +82,31 @@
   --couleur-danger: #f87171;
   --ombre-carte: 0 8px 22px rgba(0, 0, 0, 0.3);
   --ombre-flottante: 0 12px 28px rgba(0, 0, 0, 0.4);
+  --ui-primary: #55b8d1;
+  --ui-primary-hover: #79c9dc;
+  --ui-primary-soft: rgba(85, 184, 209, 0.12);
+  --ui-primary-contrast: #07131f;
+  --ui-text-strong: #edf5fb;
+  --ui-text: #d5e2ec;
+  --ui-text-muted: #9eb1c2;
+  --ui-surface: #142336;
+  --ui-surface-subtle: #101d2d;
+  --ui-surface-muted: #1a2c42;
+  --ui-border: rgba(177, 204, 224, 0.15);
+  --ui-border-strong: rgba(177, 204, 224, 0.24);
+  --ui-focus: #79c9dc;
+  --ui-success: #82e2bc;
+  --ui-success-soft: rgba(52, 211, 153, 0.12);
+  --ui-warning: #f4c96b;
+  --ui-warning-soft: rgba(251, 191, 36, 0.12);
+  --ui-danger: #fca5a5;
+  --ui-danger-soft: rgba(248, 113, 113, 0.12);
+  --ui-info: #9bc4ff;
+  --ui-info-soft: rgba(96, 165, 250, 0.12);
+  --ui-shadow-sm: 0 10px 24px rgba(0, 0, 0, 0.2);
+  --ui-shadow-md: 0 18px 42px rgba(0, 0, 0, 0.3);
+  --ui-shadow-lg: 0 28px 64px rgba(0, 0, 0, 0.42);
+  --ui-overlay: rgba(1, 7, 15, 0.76);
 }
 
 @keyframes pulse {

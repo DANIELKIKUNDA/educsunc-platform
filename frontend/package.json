@@ -20,7 +20,8 @@
     "test:access": "node --test scripts/run-effective-access-tests.cjs scripts/run-frontend-lifecycle-tests.cjs scripts/run-frontend-data-tests.cjs",
     "test:data": "node --test scripts/run-frontend-data-tests.cjs",
     "test:forms": "node --test scripts/run-frontend-form-tests.cjs scripts/run-configuration-form-tests.cjs scripts/run-school-administration-tests.cjs",
-    "test": "vue-tsc --noEmit && npm run test:forms && npm run test:access"
+    "test:design-system": "node --test scripts/run-design-system-tests.cjs",
+    "test": "vue-tsc --noEmit && npm run test:forms && npm run test:access && npm run test:design-system"
   },
   "dependencies": {
     "lucide-vue-next": "^1.0.0",
