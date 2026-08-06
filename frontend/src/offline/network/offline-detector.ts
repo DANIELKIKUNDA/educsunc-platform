@@ -1,4 +1,13 @@
-// Detecte les transitions entre etat en ligne et hors ligne.
+import { networkService } from './network.service';
+
 export const offlineDetector = {
-  actif: true,
+  start(): void {
+    networkService.start();
+  },
+  stop(): void {
+    networkService.stop();
+  },
+  get isOffline(): boolean {
+    return !networkService.online;
+  },
 };

@@ -1,5 +1,5 @@
 export type ConduiteManagementActorCode =
-  | 'TITULAIRE'
+  | 'ENSEIGNANT'
   | 'DIRECTEUR_DISCIPLINE';
 
 export interface ConduiteClasseApiBlock {
@@ -63,6 +63,6 @@ export interface ConduiteClasseViewModel {
 }
 
 export const authorizedConduiteManagementActors: ConduiteManagementActorCode[] = [
-  'TITULAIRE',
+  'ENSEIGNANT',
   'DIRECTEUR_DISCIPLINE',
 ];

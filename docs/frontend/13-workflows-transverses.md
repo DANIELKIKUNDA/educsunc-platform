@@ -155,7 +155,7 @@ On ne doit donc jamais confondre :
 
 ### Nom
 
-Consulter l'audit plateforme filtre sur l'ecole active
+Consulter l'audit plateforme global
 
 ### Categorie
 
@@ -167,7 +167,7 @@ Consulter l'audit plateforme filtre sur l'ecole active
 
 ### Objectif metier
 
-Permettre a un acteur systeme de consulter les traces d'audit techniques exposees par `shared/audit`, bornees par l'ecole active du contexte securise.
+Permettre a un acteur systeme de consulter les traces d'audit techniques exposees par `shared/audit` au niveau global de la plateforme.
 
 ### Acteur principal
 
@@ -183,8 +183,9 @@ Permettre a un acteur systeme de consulter les traces d'audit techniques exposee
 - session AUTH valide
 - contexte SECURITY actif coherent
 - permissions `audit.*` attestees pour l'acteur
-- ecole active compatible avec le scope controle par la route
-- lecture comprise comme une lecture plateforme filtree sur une ecole, et non comme un audit ecole metier
+- scope `PLATEFORME` compatible avec l'acteur
+- aucune organisation ni ecole active exigee
+- lecture comprise comme une lecture plateforme, et non comme un audit ecole metier
 
 ### Permissions effectives requises
 
@@ -194,7 +195,7 @@ Permettre a un acteur systeme de consulter les traces d'audit techniques exposee
 
 ### Cas d'utilisation utilises
 
-- consulter la liste d'audit technique exposee pour l'ecole active
+- consulter la liste d'audit technique globale
 - consulter un audit technique par identifiant
 - consulter la timeline d'audit technique
 - consulter l'historique d'audit technique
@@ -202,7 +203,7 @@ Permettre a un acteur systeme de consulter les traces d'audit techniques exposee
 ### Deroulement principal
 
 1. L'acteur systeme appelle `GET /api/v1/audit`.
-2. Le backend verifie la permission `audit.read` et le scope `ECOLE` dans le contexte actif.
+2. Le backend verifie la permission `audit.read` et le scope `PLATEFORME` dans le contexte actif.
 3. Le backend retourne la liste d'audit bornee au contexte autorise.
 4. Le frontend peut ensuite appeler `GET /api/v1/audit/timeline` ou `GET /api/v1/audit/history` selon l'analyse souhaitee.
 
@@ -220,7 +221,8 @@ Les donnees d'audit exposees correspondent uniquement au contexte autorise et au
 
 - le workflow reste ferme aux acteurs ecole sans permissions `audit.*`
 - la route applique bien la doctrine `permission + perimetre`
-- le perimetre concret actuellement porte par le backend est le scope `ECOLE` du contexte SECURITY
+- le perimetre concret porte par le backend est le scope `PLATEFORME` du contexte SECURITY
+- la route ne depend pas d'une ecole active
 - les acteurs positifs actuellement prouves restent des acteurs plateforme
 - ce workflow ne doit pas etre relu comme un audit metier ecole
 - le branchement global passe par les routes globales `app/routes`
@@ -249,7 +251,7 @@ Les donnees d'audit exposees correspondent uniquement au contexte autorise et au
 
 ### Notes de lecture frontend
 
-- ce workflow ouvre une lecture plateforme de l'audit, filtree sur une ecole active
+- ce workflow ouvre une lecture plateforme globale de l'audit
 - il ne doit plus etre relu comme une preuve inachevee des autres familles
 - `SUPPORT_SYSTEME` est positif sur la lecture, mais ne devient pas automatiquement acteur des futures mutations d'administration audit
 
@@ -259,7 +261,7 @@ Les donnees d'audit exposees correspondent uniquement au contexte autorise et au
 
 ## Verdict
 
-`SHD-AUD-01` est maintenant expose, securise, teste et fige comme workflow d'audit plateforme filtre sur l'ecole active.
+`SHD-AUD-01` est fige comme workflow d'audit plateforme global, sans dependance artificielle a une organisation ou une ecole active.
 
 ## Verdict de correspondance
 
@@ -302,6 +304,7 @@ Permettre aux acteurs organisationnels de superviser les signaux d'audit consoli
 - session AUTH valide
 - contexte SECURITY actif coherent
 - organisation active compatible avec le scope controle par la route
+- aucune ecole active requise
 - permissions organisationnelles `audit.monitoring.read`, `audit.analytics.read` ou `audit.security.read` selon la lecture demandee
 
 ### Permissions effectives requises
@@ -336,6 +339,7 @@ Les donnees exposees restent bornees a l'organisation active et ne transforment 
 ### Contraintes backend
 
 - les routes actuellement prouvees pour `AUD-01` sont bornees a `ORGANISATION`
+- une ecole eventuellement choisie sert uniquement de filtre descendant autorise ; elle n'est pas une precondition d'ouverture
 - `ADMINISTRATEUR_ECOLE` reste refuse sur ce workflow
 - `AUD-01` ne vaut pas encore preuve pour les autres familles d'audit
 
@@ -1748,7 +1752,10 @@ Aucun acteur humain direct, controle runtime transverse
 - la garde est actuellement appliquee a `PAIEMENTS_FACTURATION`
 - la garde est actuellement appliquee a `BULLETINS_EVALUATIONS`
 - un module inactif renvoie `403 MODULE_INACTIF`
-- l'absence de configuration modulaire explicite laisse provisoirement le module actif pour ne pas casser l'existant
+- l'absence ou l'invalidite de `modules.allowed` ferme le module
+- l'absence de `modules.enabled` ne produit aucune activation implicite pour une ecole
+- la portee `modules.enabled` ne constitue pas seule une preuve de rattachement : le backend verifie aussi que l'ecole appartient reellement a l'organisation dans le referentiel academique
+- un couple organisation-ecole incoherent est refuse avant toute lecture ou mutation des modules
 
 ### Statut de figement
 

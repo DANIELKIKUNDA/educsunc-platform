@@ -180,6 +180,7 @@ import EmptyState from '../../../shared/ui/EmptyState.vue';
 import { activeContextStore } from '../../../shared/session/active-context.store';
 import { sessionStore } from '../../../shared/auth/session.store';
 import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
+import { hasTitulariatEffectif } from '../access/titulariat-experience';
 import { useAnticipatedFundsStore } from '../stores/anticipated-funds.store';
 
 const context = activeContextStore.state;
@@ -209,12 +210,14 @@ const uiState = computed<'loading' | 'idle' | 'technical-error'>(() => {
 });
 
 const perimeterMessage = computed(() => {
+  if (hasTitulariatEffectif()) {
+    return 'Lecture bornee a la classe titulaire effective si la delegation ecole est active.';
+  }
+
   switch (session.actorCode) {
     case 'GESTIONNAIRE_ORGANISATION':
     case 'PROMOTEUR_ORGANISATION':
       return `Lecture bornee a l organisation active: ${context.organizationName}.`;
-    case 'TITULAIRE':
-      return 'Lecture bornee a la classe titulaire effective si la delegation ecole est active.';
     case 'PREFET_ETUDES':
     case 'DIRECTEUR_ETUDES':
     case 'DIRECTEUR_PRIMAIRE':

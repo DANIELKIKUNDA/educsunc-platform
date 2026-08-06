@@ -1,7 +1,7 @@
 import type { DetailResponse } from '../../finances/models/payment-history.model';
 
 export type ClassRankingActorCode =
-  | 'TITULAIRE'
+  | 'ENSEIGNANT'
   | 'PREFET_ETUDES'
   | 'DIRECTEUR_ETUDES';
 
@@ -57,7 +57,7 @@ export interface ClassRankingViewModel {
 export type ClassRankingResponse = DetailResponse<ClassRankingApiData>;
 
 export const authorizedClassRankingActors: ClassRankingActorCode[] = [
-  'TITULAIRE',
+  'ENSEIGNANT',
   'PREFET_ETUDES',
   'DIRECTEUR_ETUDES',
 ];

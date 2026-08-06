@@ -134,6 +134,7 @@ Les acteurs suivants sont attestes a la fois :
 - origine : acteur metier derive
 - role support : `ENSEIGNANT`
 - niveau : `Pedagogique`
+- ne doit jamais apparaitre comme role selectionnable autonome
 
 ## Acteurs Officiels Presents
 
@@ -229,6 +230,21 @@ Le frontend peut raisonner en termes de `TITULAIRE` pour :
 
 Le frontend ne doit pas en faire un role brut autonome.
 
+### Projection G1 De L'Acteur Actif
+
+La session peut exposer plusieurs acteurs disponibles, mais un seul acteur est actif pour une projection donnee.
+
+Le frontend consomme :
+
+- les `actorCodes` reellement disponibles
+- l'acteur actif confirme par le backend
+- les permissions, restrictions et scopes de cet acteur actif
+- les capacites derivees applicables dans le contexte courant
+
+Il est interdit de fusionner les permissions de plusieurs roles disponibles pour fabriquer un acteur plus puissant.
+
+`TITULAIRE` ne figure jamais dans le selecteur comme role autonome. Il apparait uniquement comme capacite d'experience d'un `ENSEIGNANT` lorsque la projection authentifiee confirme le titulariat effectif sur la classe et l'annee scolaire concernees.
+
 ## Rapport Entre Role et Acteur
 
 Le backend montre clairement que :
@@ -274,7 +290,9 @@ Le frontend doit consommer :
 
 - les permissions effectives
 - les capacites effectives
-- et, si le contrat backend les expose, les indicateurs de titulariat effectif
+- les indicateurs de titulariat effectif exposes par le contrat backend
+
+Une simple affectation `ENSEIGNANT`, une section ou une convention locale ne suffit pas a activer cette capacite.
 
 ## Consequences Pour les Phases Futures
 

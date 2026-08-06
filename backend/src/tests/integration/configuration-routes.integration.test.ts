@@ -4,6 +4,7 @@ import Fastify from 'fastify';
 import { requestContextPlugin } from '../../app/plugins/request-context.plugin';
 import { tenancyPlugin } from '../../app/plugins/tenancy.plugin';
 import {
+  configurationInitialisationService,
   moduleActivationConfigurationService,
   routeConfiguration,
 } from '../../app/routes/configuration.routes';
@@ -12,6 +13,30 @@ import { TYPES_MODULE_CONFIGURATION } from '../../shared/configuration';
 import { ROLE_FIXTURES, TENANT_FIXTURES } from '../../shared/tests/fixtures/GlobalFixtures';
 import { injecterCommeActeur } from '../../shared/tests/helpers/GlobalTestHelpers';
 import { GlobalTestBootstrap } from '../../shared/tests/setup/GlobalTestBootstrap';
+
+test('la garde modulaire reste fermee quand la configuration organisation manque', async () => {
+  assert.equal(
+    await moduleActivationConfigurationService.moduleActif({
+      organisationId: 'organisation-sans-configuration-g1',
+      module: 'MONITORING',
+    }),
+    false,
+  );
+  assert.equal(
+    await moduleActivationConfigurationService.moduleActif({
+      organisationId: 'organisation-sans-configuration-g1',
+      ecoleId: 'ecole-sans-configuration-g1',
+      module: 'MONITORING',
+    }),
+    false,
+  );
+  assert.equal(
+    await moduleActivationConfigurationService.moduleActif({
+      module: 'MONITORING',
+    }),
+    true,
+  );
+});
 
 test('les routes configuration exposent la gouvernance modulaire organisation et ecole', async () => {
   const bootstrap = new GlobalTestBootstrap();
@@ -22,6 +47,10 @@ test('les routes configuration exposent la gouvernance modulaire organisation et
   });
   const adminSystemeEcole = await bootstrap.creerActeur({
     ...ROLE_FIXTURES.ADMIN_SYSTEME_ECOLE,
+    organisationId: TENANT_FIXTURES.organisationA,
+    ecoleId: TENANT_FIXTURES.ecoleA1,
+  });
+  await configurationInitialisationService.amorcerEcole({
     organisationId: TENANT_FIXTURES.organisationA,
     ecoleId: TENANT_FIXTURES.ecoleA1,
   });
@@ -150,6 +179,10 @@ test("la lecture modulaire n'active jamais implicitement tous les modules d'une 
     organisationId: TENANT_FIXTURES.organisationB,
     ecoleId: TENANT_FIXTURES.ecoleB1,
   });
+  await configurationInitialisationService.amorcerEcole({
+    organisationId: TENANT_FIXTURES.organisationB,
+    ecoleId: TENANT_FIXTURES.ecoleB1,
+  });
 
   const serveur = Fastify();
   await serveur.register(async (instance) => {
@@ -166,7 +199,7 @@ test("la lecture modulaire n'active jamais implicitement tous les modules d'une 
   });
 
   assert.equal(lectureEffective.statusCode, 200, lectureEffective.body);
-  assert.deepEqual(lectureEffective.json().donnees.modulesAutorisesOrganisation, TYPES_MODULE_CONFIGURATION);
+  assert.deepEqual(lectureEffective.json().donnees.modulesAutorisesOrganisation, []);
   assert.deepEqual(lectureEffective.json().donnees.modulesActivesEcole, []);
   assert.deepEqual(lectureEffective.json().donnees.modulesEffectifs, []);
 
@@ -182,6 +215,10 @@ test('la garde modulaire bloque un workflow transverse desactive pour l ecole', 
   });
   const adminSystemeEcole = await bootstrap.creerActeur({
     ...ROLE_FIXTURES.ADMIN_SYSTEME_ECOLE,
+    organisationId: TENANT_FIXTURES.organisationB,
+    ecoleId: TENANT_FIXTURES.ecoleB1,
+  });
+  await configurationInitialisationService.amorcerEcole({
     organisationId: TENANT_FIXTURES.organisationB,
     ecoleId: TENANT_FIXTURES.ecoleB1,
   });
@@ -255,6 +292,48 @@ test('la garde modulaire bloque un workflow transverse desactive pour l ecole', 
   });
   assert.equal(apres.statusCode, 403, apres.body);
   assert.equal(apres.json().code, 'MODULE_INACTIF');
+
+  await serveur.close();
+});
+
+test("les routes modules refusent un couple organisation ecole incoherent meme pour la plateforme", async () => {
+  const bootstrap = new GlobalTestBootstrap();
+  const manager = await bootstrap.creerActeur({
+    ...ROLE_FIXTURES.MANAGER_SYSTEME,
+    organisationId: TENANT_FIXTURES.organisationA,
+    ecoleId: TENANT_FIXTURES.ecoleA1,
+  });
+  await configurationInitialisationService.amorcerEcole({
+    organisationId: TENANT_FIXTURES.organisationA,
+    ecoleId: TENANT_FIXTURES.ecoleA1,
+  });
+
+  const serveur = Fastify();
+  await serveur.register(async (instance) => {
+    await requestContextPlugin(instance, {});
+    await bootstrap.creerAuthenticationPlugin()(instance, {});
+    await bootstrap.creerSecurityPlugin()(instance, {});
+    await tenancyPlugin(instance, {});
+    await instance.register(routeConfiguration);
+  });
+
+  const lecture = await injecterCommeActeur(serveur, manager, {
+    method: 'GET',
+    url: `/api/v1/configuration/modules/effective?organisationId=${TENANT_FIXTURES.organisationB}&ecoleId=${TENANT_FIXTURES.ecoleA1}`,
+  });
+  assert.equal(lecture.statusCode, 409, lecture.body);
+  assert.equal(lecture.json().code, 'CONFIGURATION_MODULES_RATTACHEMENT_INVALIDE');
+
+  const ecriture = await injecterCommeActeur(serveur, manager, {
+    method: 'PUT',
+    url: `/api/v1/configuration/modules/ecoles/${TENANT_FIXTURES.ecoleA1}`,
+    payload: {
+      organisationId: TENANT_FIXTURES.organisationB,
+      modules: ['MONITORING'],
+    },
+  });
+  assert.equal(ecriture.statusCode, 409, ecriture.body);
+  assert.equal(ecriture.json().code, 'CONFIGURATION_MODULES_RATTACHEMENT_INVALIDE');
 
   await serveur.close();
 });

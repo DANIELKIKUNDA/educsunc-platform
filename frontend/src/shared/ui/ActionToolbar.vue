@@ -32,10 +32,10 @@ defineProps<{
   display:grid;
   gap:1rem;
   padding:1.1rem 1.15rem 1.2rem;
-  border-radius:24px;
-  border:1px solid rgba(17,40,63,.08);
-  background:linear-gradient(180deg,rgba(255,255,255,.98),rgba(247,250,255,.95));
-  box-shadow:0 18px 40px rgba(17,40,63,.06);
+  border-radius:var(--ui-radius-lg);
+  border:1px solid var(--ui-border);
+  background:linear-gradient(180deg,var(--ui-surface),var(--ui-surface-subtle));
+  box-shadow:var(--ui-shadow-md);
 }
 
 .action-toolbar__header{
@@ -47,13 +47,13 @@ defineProps<{
 
 .action-toolbar__header h3{
   margin:0;
-  color:#10243b;
+  color:var(--ui-text-strong);
   font-size:1rem;
 }
 
 .action-toolbar__header p{
   margin:.3rem 0 0;
-  color:#5d7486;
+  color:var(--ui-text-muted);
   line-height:1.55;
 }
 

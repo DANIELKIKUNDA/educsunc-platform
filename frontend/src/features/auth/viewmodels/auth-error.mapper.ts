@@ -1,4 +1,4 @@
-import { ApiError } from '../../../services/api';
+import { ApiError } from '../../../shared/http/api.client';
 
 export interface AuthUserError {
   title: string;

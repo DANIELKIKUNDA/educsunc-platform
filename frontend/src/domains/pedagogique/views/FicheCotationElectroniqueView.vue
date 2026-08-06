@@ -256,6 +256,7 @@ import EmptyState from '../../../shared/ui/EmptyState.vue';
 import { activeContextStore } from '../../../shared/session/active-context.store';
 import { sessionStore } from '../../../shared/auth/session.store';
 import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
+import { hasTitulariatEffectif } from '../access/titulariat-experience';
 import type { GradeSheetFilters } from '../models/grade-sheet.model';
 import { useGradeSheetStore } from '../stores/grade-sheet.store';
 
@@ -292,7 +293,7 @@ const uiState = computed<'loading' | 'idle' | 'technical-error'>(() => {
   return 'idle';
 });
 const perimeterMessage = computed(() =>
-  session.actorCode === 'TITULAIRE'
+  hasTitulariatEffectif()
     ? 'Encodage borne a la classe titulaire, via les capacites effectives d enseignant.'
     : 'Encodage borne au cours et a la classe reellement affectes a l enseignant.',
 );

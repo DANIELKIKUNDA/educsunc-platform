@@ -4,11 +4,21 @@ import type {
   SchoolInstitutionalInfoPayload,
   SchoolModeValue,
 } from '../models/school-administration.model';
+import {
+  requiredText,
+  validEmail,
+  validateForm,
+  type FormFieldErrors,
+} from '../../../shared/forms/form-validation';
 
 export interface FormEvaluation {
   readonly canSubmit: boolean;
   readonly isDirty: boolean;
   readonly disableReason: string | null;
+}
+
+export interface CreateSchoolFormEvaluation extends FormEvaluation {
+  readonly fieldErrors: FormFieldErrors<CreateSchoolPayload>;
 }
 
 function normalize(value: string | undefined | null): string {
@@ -22,36 +32,29 @@ function sameValue(left: string | undefined | null, right: string | undefined | 
 export function evaluateCreateSchoolForm(
   form: CreateSchoolPayload,
   isSubmitting: boolean,
-): FormEvaluation {
+): CreateSchoolFormEvaluation {
+  const validation = validateForm(form, {
+    idOrganisation: [requiredText("Selectionnez d'abord une organisation.")],
+    code: [requiredText("Renseignez le code de l'ecole.")],
+    nom: [requiredText("Renseignez le nom de l'ecole.")],
+    email: [validEmail("Saisissez une adresse e-mail valide.", true)],
+  });
+
   if (isSubmitting) {
     return {
       canSubmit: false,
       isDirty: true,
       disableReason: "L'enregistrement est deja en cours.",
+      fieldErrors: validation.errors,
     };
   }
 
-  if (!normalize(form.idOrganisation)) {
+  if (!validation.valid) {
     return {
       canSubmit: false,
-      isDirty: false,
-      disableReason: "Selectionnez d'abord une organisation.",
-    };
-  }
-
-  if (!normalize(form.code)) {
-    return {
-      canSubmit: false,
-      isDirty: true,
-      disableReason: "Renseignez le code de l'ecole.",
-    };
-  }
-
-  if (!normalize(form.nom)) {
-    return {
-      canSubmit: false,
-      isDirty: true,
-      disableReason: "Renseignez le nom de l'ecole.",
+      isDirty: Boolean(normalize(form.code) || normalize(form.nom) || normalize(form.email)),
+      disableReason: validation.firstError,
+      fieldErrors: validation.errors,
     };
   }
 
@@ -59,6 +62,7 @@ export function evaluateCreateSchoolForm(
     canSubmit: true,
     isDirty: true,
     disableReason: null,
+    fieldErrors: {},
   };
 }
 

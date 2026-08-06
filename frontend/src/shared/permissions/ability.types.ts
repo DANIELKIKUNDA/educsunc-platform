@@ -1,10 +1,4 @@
-export type FrontendCapability =
-  | 'module.finances.access'
-  | 'module.pedagogique.access'
-  | 'module.scolarite.access'
-  | 'module.academique.access'
-  | 'module.monitoring.access'
-  | 'module.audit.access'
-  | 'module.configuration.access'
-  | 'module.notifications.access'
-  | 'module.security.access';
+import type { FrontendModuleCode } from '../doctrine/doctrine.types';
+
+// Une capacité frontend désigne désormais un module UI, jamais une pseudo-permission.
+export type FrontendCapability = FrontendModuleCode;

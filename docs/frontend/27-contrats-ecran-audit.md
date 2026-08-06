@@ -42,7 +42,7 @@ Le backend reste la source ultime de verite.
 
 ## Regles De Lecture
 
-1. Le module `Audit` reste transverse, mais ses ecrans ne sont jamais globaux par defaut.
+1. Le module `Audit` reste transverse ; seul l'ecran Plateforme est global, les autres ecrans restent bornes a leur perimetre explicite.
 2. Chaque ecran d'audit doit rester borne a une famille d'audit precise.
 3. `AUD-05` ne doit pas etre projete comme ecran distinct.
 4. `AUD-06` reste absorbe par `SHD-AUD-01`.
@@ -52,6 +52,8 @@ Le backend reste la source ultime de verite.
    - organisation
    - ecole
    - pedagogique borne a l'objet metier
+7. Une entree ou action interdite est absente ; une indisponibilite metier temporaire peut seule rester visible et expliquee.
+8. Menus, routes, onglets, actions et appels Audit consomment la meme projection de capacites effectives.
 
 ## Ecran `SCR-AUD-001`
 
@@ -73,7 +75,7 @@ Le backend reste la source ultime de verite.
 
 ### Objectif metier
 
-Permettre aux acteurs plateforme de consulter les traces d'audit techniques exposees au niveau global, filtrees par l'ecole active du contexte securise.
+Permettre aux acteurs plateforme de consulter les traces d'audit techniques exposees au niveau global.
 
 ### Acteur principal
 
@@ -89,7 +91,8 @@ Permettre aux acteurs plateforme de consulter les traces d'audit techniques expo
 - session AUTH valide
 - module audit actif
 - permissions `audit.read`, `audit.timeline.read` ou `audit.history.read`
-- contexte ecole actif disponible
+- contexte plateforme actif
+- aucune organisation ni ecole active requise
 
 ### Donnees attendues
 
@@ -125,7 +128,8 @@ Permettre aux acteurs plateforme de consulter les traces d'audit techniques expo
 ### Contraintes de perimetre
 
 - plateforme
-- filtres bornees au contexte `ECOLE` actif
+- scope `PLATEFORME`
+- aucun filtre ne doit injecter artificiellement une ecole dans cette lecture globale
 
 ### Composants majeurs attendus
 
@@ -178,6 +182,7 @@ Permettre la supervision organisationnelle des signaux d'audit consolides sur le
 - module audit actif
 - contexte organisation actif
 - permission de lecture organisationnelle d'audit selon la vue demandee
+- aucune ecole active requise
 
 ### Donnees attendues
 
@@ -212,6 +217,7 @@ Permettre la supervision organisationnelle des signaux d'audit consolides sur le
 ### Contraintes de perimetre
 
 - organisation uniquement
+- les filtres d'ecole restent bornes aux ecoles de l'organisation active
 
 ### Composants majeurs attendus
 
@@ -263,6 +269,7 @@ Permettre la lecture locale de l'audit administratif et financier borne a l'ecol
 - module audit actif
 - permission `audit.finance.read`
 - contexte ecole actif
+- acteur `CAISSIER` accepte lorsque sa projection effective porte cette permission, le module Audit et un scope compatible avec l'ecole active
 
 ### Donnees attendues
 
@@ -423,7 +430,7 @@ Permettre aux acteurs pedagogiques autorises de relire les traces d'audit des co
 
 ### Acteur principal
 
-- `TITULAIRE`
+- `ENSEIGNANT` avec capacite derivee de titulariat effectif
 
 ### Acteurs secondaires
 
@@ -442,6 +449,7 @@ Permettre aux acteurs pedagogiques autorises de relire les traces d'audit des co
 - route ouverte depuis un objet pedagogique reel
 - permission pedagogique requise
 - perimetre resolvable depuis l'objet demande
+- pour un enseignant, titulariat effectif confirme sur la classe et l'annee scolaire de l'objet
 
 ### Donnees attendues
 
@@ -467,7 +475,7 @@ Permettre aux acteurs pedagogiques autorises de relire les traces d'audit des co
 ### Actions masquees ou interdites
 
 - pas d'ecran pedagogique global hors objet
-- pas d'ouverture implicite pour un `ENSEIGNANT` simple non titulaire
+- pas d'ouverture implicite pour un `ENSEIGNANT` sans titulariat effectif sur l'objet
 - pas de lecture disciplinaire globale hors voie conduite
 
 ### Etats obligatoires

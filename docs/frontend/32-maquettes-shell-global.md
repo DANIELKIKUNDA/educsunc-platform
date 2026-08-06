@@ -97,8 +97,10 @@ Le shell global est maintenant materialise dans le frontend autour de :
 
 Le principe effectivement retenu en code est :
 
-acteur
--> niveau de gouvernance actif
+session authentifiee
+-> projection des capacites effectives
+-> acteur et niveau de gouvernance actifs
+-> permissions, scopes, restrictions et modules effectifs
 -> pages accessibles par doctrine
 -> modules visibles
 -> sous-menus visibles
@@ -140,8 +142,10 @@ Le shell doit etre compose par niveau de gouvernance.
 
 Le shell doit se recomposer quand changent :
 
+- l'utilisateur ou la session
 - l'acteur courant
 - le contexte actif
+- l'organisation, l'ecole ou l'annee scolaire
 - les modules actifs
 - les permissions effectives
 
@@ -484,6 +488,7 @@ Quand le contexte change, le shell doit savoir recomposer :
 
 - les modules visibles
 - les sections visibles
+- les routes et actions autorisees
 - les favoris
 - le fil d'Ariane
 - les raccourcis
@@ -494,6 +499,17 @@ Sans :
 - recharger mentalement toute l'application
 - laisser des menus morts
 - conserver des liens vers un ancien perimetre
+- afficher les donnees de l'ancien tenant
+
+Le changement n'est valide visuellement qu'apres confirmation du backend et relecture de la projection effective. Le shell doit :
+
+1. bloquer les changements concurrents
+2. invalider les stores lies a l'ancien contexte
+3. annuler les requetes encore en cours
+4. ignorer toute reponse portant une ancienne version de contexte
+5. recomposer la navigation et rediriger si necessaire
+
+Les organisations, ecoles et annees scolaires proposees proviennent exclusivement des contextes autorises par la session. Le shell ne contient aucune option de demonstration implicite en production.
 
 ## Raccourcis Prioritaires Recommandes
 
@@ -502,7 +518,7 @@ Les raccourcis du shell doivent etre choisis par famille d'acteurs.
 Exemples :
 
 - `CAISSIER` : enregistrer paiement, caisse du jour, recus, dette eleve
-- `TITULAIRE` : bulletins, proclamation, classement, conduite
+- `ENSEIGNANT` avec titulariat effectif : bulletins, proclamation, classement, conduite dans sa classe et son annee
 - `PREFET_ETUDES` : resultats, analyses, conduite, suspension scolaire
 - `ADMINISTRATEUR_ECOLE` : supervision financiere, audit financier, notifications ecole
 - `MANAGER_SYSTEME` : monitoring, security, audit, configuration runtime

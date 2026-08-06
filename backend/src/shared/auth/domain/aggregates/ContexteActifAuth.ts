@@ -52,8 +52,9 @@ export class ContexteActifAuth extends RacineAgregat<string> {
 
   // Cette methode change l'organisation active portee par le contexte.
   public changerOrganisationActive(organisationActiveId?: string): void {
+    const organisationPrecedente = this.organisationActiveId;
     this.organisationActiveId = ContexteActifAuth.nettoyerOptionnel(organisationActiveId);
-    if (!this.organisationActiveId) {
+    if (organisationPrecedente !== this.organisationActiveId) {
       this.ecoleActiveId = undefined;
     }
     this.marquerChangement();

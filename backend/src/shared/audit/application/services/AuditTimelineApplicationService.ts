@@ -13,7 +13,15 @@ export class AuditTimelineApplicationService {
       acteur: { idUtilisateur: query.acteurId, typeActeur: 'UTILISATEUR' },
       ressource: query.ressourceId ? { typeRessource: 'RESSOURCE', idRessource: query.ressourceId } : undefined,
       contexte: { sourceAudit: 'TIMELINE', modeOffline: false, correlationId: query.correlationId },
-      tenant: { scope: 'ECOLE' },
+      tenant: {
+        organisationId: query.organisationId,
+        ecoleId: query.ecoleId,
+        scope: query.ecoleId
+          ? 'ECOLE'
+          : query.organisationId
+            ? 'ORGANISATION'
+            : 'PLATEFORME',
+      },
       metadata: { workflowId: query.workflowId },
     });
   }

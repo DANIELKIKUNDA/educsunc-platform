@@ -1,7 +1,7 @@
 import { computed, reactive } from 'vue';
 import { sessionStore } from '../../../shared/auth/session.store';
 import { notificationsService } from '../../../services/notifications.service';
-import { ApiError } from '../../../services/api';
+import { ApiError } from '../../../shared/http/api.client';
 import type {
   AjouterLigneVersionReferentielRequest,
   ClasseAcademiqueItem,
@@ -812,6 +812,30 @@ const differencesComparaison = computed<LigneDiffMigrationItem[]>(
   () => state.comparisonReport?.differences ?? [],
 );
 
+function reinitialiser(): void {
+  state.bootStatus = 'idle';
+  state.bootErrorMessage = null;
+  state.actionStatus = 'idle';
+  state.actionErrorMessage = null;
+  state.activeTab = 'socle';
+  state.activeFamily = 'sections';
+  state.sections = [];
+  state.classesAcademiques = [];
+  state.optionsEtudes = [];
+  state.cours = [];
+  state.referentiels = [];
+  state.detailReferentiel = null;
+  state.selectedReferentielId = null;
+  state.selectedVersionId = null;
+  state.comparisonReport = null;
+  state.migrations = [];
+  state.migrationReport = null;
+  state.importResult = null;
+  state.publishedVersion = null;
+  state.activatedVersion = null;
+  state.coherenceReport = null;
+}
+
 export function usePlatformReferenceCenterStore() {
   return {
     state,
@@ -844,5 +868,6 @@ export function usePlatformReferenceCenterStore() {
     definirOnglet,
     definirFamille,
     selectionnerVersion,
+    reinitialiser,
   };
 }

@@ -13,15 +13,16 @@ export class PostgresSessionUtilisateurRepository implements DepotSessionUtilisa
       `INSERT INTO auth_sessions_utilisateurs (
          id_session_utilisateur, id_utilisateur, refresh_token_id, adresse_ip,
          user_agent, device_id, est_offline, revoquee_le,
-         raison_revocation, dernier_refresh_le, organisation_active_id,
-         ecole_active_id, cree_le, version
-       ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+         raison_revocation, dernier_refresh_le, role_actif,
+         organisation_active_id, ecole_active_id, cree_le, version
+       ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
        ON CONFLICT (id_session_utilisateur) DO UPDATE SET
          refresh_token_id = EXCLUDED.refresh_token_id,
          est_offline = EXCLUDED.est_offline,
          revoquee_le = EXCLUDED.revoquee_le,
          raison_revocation = EXCLUDED.raison_revocation,
          dernier_refresh_le = EXCLUDED.dernier_refresh_le,
+         role_actif = EXCLUDED.role_actif,
          organisation_active_id = EXCLUDED.organisation_active_id,
          ecole_active_id = EXCLUDED.ecole_active_id,
          version = EXCLUDED.version
@@ -29,7 +30,8 @@ export class PostgresSessionUtilisateurRepository implements DepotSessionUtilisa
       [record.id_session_utilisateur, record.id_utilisateur, record.refresh_token_id,
         record.adresse_ip, record.user_agent, record.device_id, record.est_offline,
         record.revoquee_le, record.raison_revocation,
-        record.dernier_refresh_le, record.organisation_active_id, record.ecole_active_id,
+        record.dernier_refresh_le, record.role_actif,
+        record.organisation_active_id, record.ecole_active_id,
         record.cree_le, record.version],
     );
     if (resultat.nombreLignesAffectees === 0) {

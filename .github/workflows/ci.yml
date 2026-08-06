@@ -1,4 +1,4 @@
-name: CI
+name: Pipeline EduSync
 
 on:
   push:
@@ -9,17 +9,32 @@ on:
     branches:
       - main
       - develop
+  schedule:
+    - cron: "17 1 * * *"
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.ref }}
+  group: pipeline-edusync-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  NODE_VERSION: "24"
+  NPM_VERSION: "10.8.2"
+  APP_ENV: test
+  DB_HOST: localhost
+  DB_PORT: "5432"
+  DB_USER: educsyn
+  DB_PASSWORD: educsyn
+  DB_NAME: educsyn
+  DATABASE_URL: postgres://educsyn:educsyn@localhost:5432/educsyn
+  EDUCSYN_JWT_SECRET: ci-only-secret-longer-than-thirty-two-characters
+
 jobs:
-  backend:
-    name: Backend
+  quality-backend:
+    name: Qualite backend
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -34,150 +49,387 @@ jobs:
           --health-cmd "pg_isready -U educsyn -d educsyn"
           --health-interval 5s
           --health-timeout 5s
-          --health-retries 10
-    env:
-      APP_ENV: test
-      DB_HOST: localhost
-      DB_PORT: 5432
-      DB_USER: educsyn
-      DB_PASSWORD: educsyn
-      DB_NAME: educsyn
-      DATABASE_URL: postgres://educsyn:educsyn@localhost:5432/educsyn
-      EDUCSYN_JWT_SECRET: ci-only-secret-longer-than-thirty-two-characters
-    defaults:
-      run:
-        working-directory: backend
-
+          --health-retries 12
     steps:
       - name: Recuperer le code
-        uses: actions/checkout@v5
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
 
       - name: Installer Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
-          node-version: 24
-          cache: npm
-          cache-dependency-path: backend/package-lock.json
-
-      - name: Installer les dependances
-        run: npm ci
-
-      - name: Verifier TypeScript strict
-        run: npm run typecheck:strict
-
-      - name: Construire le backend
-        run: npm run build
-
-      - name: Executer les tests globaux backend
-        run: npm run test:global
-
-      - name: Executer les tests du moteur de securite
-        run: npm run test:security
-
-      - name: Initialiser le schema des organisations et des ecoles
-        run: npm run db:migrate:referentiel
-
-      - name: Certifier la persistance PostgreSQL de la securite
-        run: npm run security:certify:postgres
-
-      - name: Certifier la gouvernance et l isolation multi-tenant
-        run: npm run security:certify:governance
-
-      - name: Executer les tests backend
-        run: npm run test:ci
-
-  frontend:
-    name: Frontend
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
-
-    steps:
-      - name: Recuperer le code
-        uses: actions/checkout@v5
-
-      - name: Installer Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
-
-      - name: Installer les dependances
-        run: npm ci
-
-      - name: Construire le frontend
-        run: npm run build
-
-      - name: Executer les tests frontend
-        run: npm test
-
-  security-certification:
-    name: Certification Centre Securite
-    timeout-minutes: 25
-    needs:
-      - backend
-      - frontend
-    runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_USER: educsyn
-          POSTGRES_PASSWORD: educsyn
-          POSTGRES_DB: educsyn
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U educsyn -d educsyn"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 10
-    env:
-      APP_ENV: test
-      DB_HOST: localhost
-      DB_PORT: 5432
-      DB_USER: educsyn
-      DB_PASSWORD: educsyn
-      DB_NAME: educsyn
-      DATABASE_URL: postgres://educsyn:educsyn@localhost:5432/educsyn
-      EDUCSYN_JWT_SECRET: ci-only-secret-longer-than-thirty-two-characters
-      SECURITY_CERT_SKIP_STATIC: "1"
-
-    steps:
-      - name: Recuperer le code
-        uses: actions/checkout@v5
-
-      - name: Installer Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: 24
+          node-version: ${{ env.NODE_VERSION }}
           cache: npm
           cache-dependency-path: |
+            package-lock.json
+            backend/package-lock.json
+
+      - name: Aligner npm officiel
+        run: npm install -g npm@${{ env.NPM_VERSION }}
+
+      - name: Installer les dependances
+        run: |
+          npm ci
+          npm --prefix backend ci
+
+      - name: Linter le backend
+        run: npm run lint:backend
+
+      - name: Verifier TypeScript strict
+        run: npm --prefix backend run typecheck:strict
+
+      - name: Executer les tests backend
+        run: |
+          npm --prefix backend run test:http
+          npm --prefix backend run test:global
+          npm --prefix backend run test:security
+          npm --prefix backend run test:audit
+          npm --prefix backend run test:ci
+
+      - name: Verifier la couverture de l observabilite
+        run: npm --prefix backend run test:coverage
+
+      - name: Conserver la couverture backend
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: couverture-observabilite-backend
+          path: backend/coverage/observability/lcov.info
+          if-no-files-found: error
+
+      - name: Construire le backend
+        run: npm --prefix backend run build
+
+  quality-frontend:
+    name: Qualite frontend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Recuperer le code
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+
+      - name: Installer Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            frontend/package-lock.json
+
+      - name: Aligner npm officiel
+        run: npm install -g npm@${{ env.NPM_VERSION }}
+
+      - name: Installer les dependances
+        run: |
+          npm ci
+          npm --prefix frontend ci
+
+      - name: Linter le frontend
+        run: npm run lint:frontend
+
+      - name: Executer les tests frontend
+        run: npm --prefix frontend test
+
+      - name: Construire le frontend
+        run: npm --prefix frontend run build
+
+  tests-backend-postgres:
+    name: PostgreSQL, migrations et multi-tenant
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: educsyn
+          POSTGRES_PASSWORD: educsyn
+          POSTGRES_DB: educsyn
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U educsyn -d educsyn"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    steps:
+      - name: Recuperer le code
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+
+      - name: Installer Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            backend/package-lock.json
+
+      - name: Aligner npm officiel
+        run: npm install -g npm@${{ env.NPM_VERSION }}
+
+      - name: Installer les dependances
+        run: |
+          npm ci
+          npm --prefix backend ci
+
+      - name: Verifier PostgreSQL dans un schema isole
+        run: npm run verify:postgres
+
+      - name: Conserver le rapport PostgreSQL
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: rapport-postgresql
+          path: artifacts/quality/postgres
+          if-no-files-found: warn
+
+  security-dependencies:
+    name: Securite des dependances
+    runs-on: ubuntu-latest
+    steps:
+      - name: Recuperer le code
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+
+      - name: Installer Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Aligner npm officiel
+        run: npm install -g npm@${{ env.NPM_VERSION }}
+
+      - name: Auditer les dependances
+        run: npm run verify:security:dependencies
+
+      - name: Conserver les rapports
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: securite-dependances
+          path: artifacts/quality/security
+          if-no-files-found: warn
+
+  security-semgrep:
+    name: Securite Semgrep
+    runs-on: ubuntu-latest
+    steps:
+      - name: Recuperer le code
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+
+      - name: Installer Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Aligner npm officiel
+        run: npm install -g npm@${{ env.NPM_VERSION }}
+
+      - name: Installer Semgrep 1.164.0
+        run: |
+          python3 -m venv .tmp/semgrep
+          .tmp/semgrep/bin/pip install --disable-pip-version-check semgrep==1.164.0
+          echo "$PWD/.tmp/semgrep/bin" >> "$GITHUB_PATH"
+
+      - name: Analyser le code
+        run: npm run verify:security:semgrep
+
+      - name: Conserver les rapports
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: securite-semgrep
+          path: artifacts/quality/security
+          if-no-files-found: warn
+
+  security-gitleaks:
+    name: Securite Gitleaks historique
+    runs-on: ubuntu-latest
+    steps:
+      - name: Recuperer tout l historique Git
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+
+      - name: Installer Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Aligner npm officiel
+        run: npm install -g npm@${{ env.NPM_VERSION }}
+
+      - name: Installer Gitleaks 8.30.1 et verifier son integrite
+        run: |
+          mkdir -p .tmp/gitleaks
+          curl -fsSLo .tmp/gitleaks.tar.gz https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz
+          echo "551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb  .tmp/gitleaks.tar.gz" | sha256sum -c -
+          tar -xzf .tmp/gitleaks.tar.gz -C .tmp/gitleaks gitleaks
+          echo "$PWD/.tmp/gitleaks" >> "$GITHUB_PATH"
+
+      - name: Analyser le depot et son historique
+        run: npm run verify:security:gitleaks
+
+      - name: Conserver les rapports
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: securite-gitleaks
+          path: artifacts/quality/security
+          if-no-files-found: warn
+
+  security-trivy:
+    name: Securite Trivy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Recuperer le code
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+
+      - name: Installer Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Installer Trivy 0.70.0 et verifier son integrite
+        run: |
+          mkdir -p .tmp/trivy
+          curl -fsSLo .tmp/trivy.tar.gz https://github.com/aquasecurity/trivy/releases/download/v0.70.0/trivy_0.70.0_Linux-64bit.tar.gz
+          echo "8b4376d5d6befe5c24d503f10ff136d9e0c49f9127a4279fd110b727929a5aa9  .tmp/trivy.tar.gz" | sha256sum -c -
+          tar -xzf .tmp/trivy.tar.gz -C .tmp/trivy trivy
+          echo "$PWD/.tmp/trivy" >> "$GITHUB_PATH"
+
+      - name: Analyser les fichiers et la configuration
+        run: npm run verify:security:trivy
+
+      - name: Conserver les rapports
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: securite-trivy
+          path: artifacts/quality/security
+          if-no-files-found: warn
+
+  e2e:
+    name: Certification E2E
+    timeout-minutes: 25
+    needs:
+      - quality-backend
+      - quality-frontend
+      - tests-backend-postgres
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: educsyn
+          POSTGRES_PASSWORD: educsyn
+          POSTGRES_DB: educsyn
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U educsyn -d educsyn"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      SECURITY_CERT_SKIP_STATIC: "1"
+    steps:
+      - name: Recuperer le code
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+
+      - name: Installer Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
             backend/package-lock.json
             frontend/package-lock.json
 
-      - name: Installer les dependances backend
-        working-directory: backend
-        run: npm ci
+      - name: Aligner npm officiel
+        run: npm install -g npm@${{ env.NPM_VERSION }}
 
-      - name: Installer les dependances frontend
-        working-directory: frontend
-        run: npm ci
+      - name: Installer les dependances
+        run: |
+          npm ci
+          npm --prefix backend ci
+          npm --prefix frontend ci
 
       - name: Installer Chromium
-        working-directory: frontend
-        run: npx playwright install --with-deps chromium
+        run: npm --prefix frontend exec -- playwright install --with-deps chromium
 
-      - name: Certifier le Centre Securite
-        working-directory: backend
-        run: npm run certification:security
+      - name: Certifier les parcours sensibles
+        run: npm run verify:e2e
 
-      - name: Conserver les preuves de certification
+      - name: Certifier le socle hors ligne
+        run: npm --prefix frontend run test:e2e:offline
+
+      - name: Conserver les preuves
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: certification-centre-securite
-          path: artifacts/security-production-certification
+          name: certification-e2e
+          path: |
+            artifacts/security-production-certification
+            artifacts/quality/e2e
+            frontend/artifacts/offline-playwright-results
+          if-no-files-found: warn
+
+  performance-light:
+    name: Performance k6 legere
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    timeout-minutes: 20
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: educsyn
+          POSTGRES_PASSWORD: educsyn
+          POSTGRES_DB: educsyn
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U educsyn -d educsyn"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    steps:
+      - name: Recuperer le code
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+
+      - name: Installer Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            backend/package-lock.json
+            frontend/package-lock.json
+
+      - name: Aligner npm officiel
+        run: npm install -g npm@${{ env.NPM_VERSION }}
+
+      - name: Installer les dependances
+        run: |
+          npm ci
+          npm --prefix backend ci
+          npm --prefix frontend ci
+
+      - name: Installer k6 2.0.0 et verifier son integrite
+        run: |
+          mkdir -p .tmp/k6
+          curl -fsSLo .tmp/k6.tar.gz https://github.com/grafana/k6/releases/download/v2.0.0/k6-v2.0.0-linux-amd64.tar.gz
+          echo "2ae87d976f6cdba17185bdd980d8819a3a98e9092c6f0638cd58272ecefc8b90  .tmp/k6.tar.gz" | sha256sum -c -
+          tar -xzf .tmp/k6.tar.gz -C .tmp/k6 --strip-components=1
+          echo "$PWD/.tmp/k6" >> "$GITHUB_PATH"
+
+      - name: Mesurer la baseline
+        run: npm run verify:performance
+
+      - name: Conserver la baseline
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: performance-k6
+          path: artifacts/quality/performance
           if-no-files-found: warn

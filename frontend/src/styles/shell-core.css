@@ -40,6 +40,50 @@
   padding: 1.5rem;
 }
 
+.erp-route-progress {
+  position: fixed;
+  z-index: 1200;
+  top: 0;
+  right: 0;
+  left: var(--sidebar-width);
+  height: 3px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.erp-shell--compact .erp-route-progress {
+  left: var(--sidebar-width-compact);
+}
+
+.erp-route-progress span {
+  display: block;
+  width: 42%;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #2f75e8, #39b7a4, #f0b94a);
+  box-shadow: 0 0 14px rgba(47, 117, 232, 0.55);
+  animation: erp-route-progress-motion 1.1s ease-in-out infinite;
+}
+
+.route-progress-enter-active,
+.route-progress-leave-active {
+  transition: opacity 120ms ease;
+}
+
+.route-progress-enter-from,
+.route-progress-leave-to {
+  opacity: 0;
+}
+
+@keyframes erp-route-progress-motion {
+  from { transform: translateX(-105%); }
+  to { transform: translateX(245%); }
+}
+
+.erp-shell--mobile .erp-route-progress {
+  left: 0;
+}
+
 .erp-sidebar {
   position: relative;
   height: 100vh;
@@ -247,7 +291,7 @@
 }
 
 .erp-topbar--mobile {
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
   padding: 0.9rem 1rem;
 }
 
@@ -416,6 +460,20 @@
   font: inherit;
 }
 
+.context-strip__field select:disabled,
+.erp-user-menu__switch select:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.context-strip__feedback {
+  flex-basis: 100%;
+  margin: 0;
+  color: #9a5a08;
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
 .erp-topbar__signals {
   display: flex;
   align-items: center;
@@ -444,6 +502,11 @@
 .erp-shell-badge--backend {
   background: rgba(15, 118, 110, 0.12);
   color: #0f766e;
+}
+
+.erp-shell-badge--offline {
+  background: rgba(217, 119, 6, 0.12);
+  color: #9a5b05;
 }
 
 .erp-shell-badge--level {

@@ -54,11 +54,18 @@ async function retirer(idClassePedagogique: string, idAnneeScolaire: string): Pr
   }, 'Le retrait de responsabilite a echoue.');
 }
 
+function reinitialiser(): void {
+  state.status = 'idle';
+  state.errorMessage = null;
+  state.responsabilite = null;
+}
+
 export function useResponsabilitesClasseStore() {
   return {
     state,
     attribuer,
     consulter,
     retirer,
+    reinitialiser,
   };
 }

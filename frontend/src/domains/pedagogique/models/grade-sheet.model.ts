@@ -1,8 +1,6 @@
 import type { DetailResponse } from '../../finances/models/payment-history.model';
 
-export type GradeSheetActorCode =
-  | 'ENSEIGNANT'
-  | 'TITULAIRE';
+export type GradeSheetActorCode = 'ENSEIGNANT';
 
 export interface GradeSheetApiColumn {
   codeColonne: string;
@@ -102,7 +100,6 @@ export interface GradeSheetResponse extends DetailResponse<GradeSheetApiRow[]> {
 
 export const authorizedGradeSheetActors: GradeSheetActorCode[] = [
   'ENSEIGNANT',
-  'TITULAIRE',
 ];
 
 export const semestrialGradeSheetOrder = [

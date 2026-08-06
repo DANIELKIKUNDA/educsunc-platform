@@ -258,7 +258,7 @@ function createViewModel() {
       .slice()
       .sort((left, right) =>
         new Date(right.datePublication).getTime() - new Date(left.datePublication).getTime())
-      [0] ?? null,
+      .at(0) ?? null,
   );
 
   const pendingMigrationsCount = computed(() =>

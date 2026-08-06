@@ -1,7 +1,7 @@
 import type { DetailResponse } from '../../finances/models/payment-history.model';
 
 export type ClassStatisticsActorCode =
-  | 'TITULAIRE'
+  | 'ENSEIGNANT'
   | 'PREFET_ETUDES'
   | 'DIRECTEUR_ETUDES'
   | 'DIRECTEUR_DISCIPLINE';
@@ -65,7 +65,7 @@ export interface ClassStatisticsViewModel {
 export type ClassStatisticsResponse = DetailResponse<ClassStatisticsApiData>;
 
 export const authorizedClassStatisticsActors: ClassStatisticsActorCode[] = [
-  'TITULAIRE',
+  'ENSEIGNANT',
   'PREFET_ETUDES',
   'DIRECTEUR_ETUDES',
   'DIRECTEUR_DISCIPLINE',

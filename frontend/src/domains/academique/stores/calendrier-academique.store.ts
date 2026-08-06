@@ -94,6 +94,12 @@ async function verrouiller(idCalendrierAcademique: string, verrouillePar: string
   }, 'Le verrouillage du calendrier a echoue.');
 }
 
+function reinitialiser(): void {
+  state.status = 'idle';
+  state.errorMessage = null;
+  state.calendrier = null;
+}
+
 export function useCalendrierAcademiqueStore() {
   return {
     state,
@@ -102,5 +108,6 @@ export function useCalendrierAcademiqueStore() {
     modifierPeriode,
     valider,
     verrouiller,
+    reinitialiser,
   };
 }

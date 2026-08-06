@@ -1,4 +1,4 @@
-export type ProclamationGenerationActorCode = 'TITULAIRE';
+export type ProclamationGenerationActorCode = 'ENSEIGNANT';
 
 export interface ProclamationGenerationRequest {
   idClassePedagogique: string;
@@ -20,5 +20,5 @@ export interface ProclamationGenerationViewModel {
 }
 
 export const authorizedProclamationGenerationActors: ProclamationGenerationActorCode[] = [
-  'TITULAIRE',
+  'ENSEIGNANT',
 ];

@@ -17,8 +17,9 @@
       </div>
     </template>
 
+    <form id="organization-creation-form" novalidate @submit.prevent="$emit('submit')">
     <section class="org-modal-section">
-      <div v-if="errorMessage" class="org-form-alert">
+      <div v-if="errorMessage" class="org-form-alert" role="alert" aria-live="assertive">
         <strong>Action impossible</strong>
         <p>{{ errorMessage }}</p>
       </div>
@@ -31,25 +32,25 @@
       <div v-if="mode === 'rename'" class="org-form-grid">
         <label class="org-form-field org-form-field--wide">
           <span>Nom *</span>
-          <input :value="organisationForm.nom" type="text" placeholder="Nom de l organisation" @input="mettreAJourOrganisation('nom', ($event.target as HTMLInputElement).value)" />
-          <small v-if="organisationErrors.nom" class="org-field-error">{{ organisationErrors.nom }}</small>
+          <input id="organization-name" :value="organisationForm.nom" type="text" placeholder="Nom de l organisation" :aria-invalid="organisationErrors.nom ? 'true' : 'false'" :aria-describedby="organisationErrors.nom ? 'organization-name-error' : undefined" @input="mettreAJourOrganisation('nom', ($event.target as HTMLInputElement).value)" />
+          <small v-if="organisationErrors.nom" id="organization-name-error" class="org-field-error" role="alert">{{ organisationErrors.nom }}</small>
         </label>
       </div>
 
       <div v-else class="org-form-grid">
         <label class="org-form-field">
           <span>Code *</span>
-          <input :value="organisationForm.code" type="text" placeholder="ORG-001" @input="mettreAJourOrganisation('code', ($event.target as HTMLInputElement).value)" />
-          <small v-if="organisationErrors.code" class="org-field-error">{{ organisationErrors.code }}</small>
+          <input id="organization-code" :value="organisationForm.code" type="text" placeholder="ORG-001" :aria-invalid="organisationErrors.code ? 'true' : 'false'" :aria-describedby="organisationErrors.code ? 'organization-code-error' : undefined" @input="mettreAJourOrganisation('code', ($event.target as HTMLInputElement).value)" />
+          <small v-if="organisationErrors.code" id="organization-code-error" class="org-field-error" role="alert">{{ organisationErrors.code }}</small>
         </label>
         <label class="org-form-field">
           <span>Nom *</span>
-          <input :value="organisationForm.nom" type="text" placeholder="Organisation educative" @input="mettreAJourOrganisation('nom', ($event.target as HTMLInputElement).value)" />
-          <small v-if="organisationErrors.nom" class="org-field-error">{{ organisationErrors.nom }}</small>
+          <input id="organization-name" :value="organisationForm.nom" type="text" placeholder="Organisation educative" :aria-invalid="organisationErrors.nom ? 'true' : 'false'" :aria-describedby="organisationErrors.nom ? 'organization-name-error' : undefined" @input="mettreAJourOrganisation('nom', ($event.target as HTMLInputElement).value)" />
+          <small v-if="organisationErrors.nom" id="organization-name-error" class="org-field-error" role="alert">{{ organisationErrors.nom }}</small>
         </label>
         <label class="org-form-field">
           <span>Type *</span>
-          <select :value="organisationForm.typeOrganisation" @change="mettreAJourOrganisation('typeOrganisation', ($event.target as HTMLSelectElement).value)">
+          <select id="organization-type" :value="organisationForm.typeOrganisation" :aria-invalid="organisationErrors.typeOrganisation ? 'true' : 'false'" :aria-describedby="organisationErrors.typeOrganisation ? 'organization-type-error' : undefined" @change="mettreAJourOrganisation('typeOrganisation', ($event.target as HTMLSelectElement).value)">
             <option value="">Selectionner</option>
             <option value="PROMOTEUR">PROMOTEUR</option>
             <option value="COORDINATION">COORDINATION</option>
@@ -57,7 +58,7 @@
             <option value="ECOLE_SEULE">ECOLE_SEULE</option>
             <option value="AUTRE">AUTRE</option>
           </select>
-          <small v-if="organisationErrors.typeOrganisation" class="org-field-error">{{ organisationErrors.typeOrganisation }}</small>
+          <small v-if="organisationErrors.typeOrganisation" id="organization-type-error" class="org-field-error" role="alert">{{ organisationErrors.typeOrganisation }}</small>
         </label>
         <label class="org-form-field org-form-field--wide">
           <span>Description</span>
@@ -74,7 +75,8 @@
       <div class="org-form-grid">
         <label class="org-form-field">
           <span>Nom complet</span>
-          <input :value="promoteurForm.nomComplet" type="text" placeholder="Jean Mukendi" @input="mettreAJourPromoteur('nomComplet', ($event.target as HTMLInputElement).value)" />
+          <input id="organization-owner-name" :value="promoteurForm.nomComplet" type="text" placeholder="Jean Mukendi" :aria-invalid="promoteurErrors.nomComplet ? 'true' : 'false'" :aria-describedby="promoteurErrors.nomComplet ? 'organization-owner-name-error' : undefined" @input="mettreAJourPromoteur('nomComplet', ($event.target as HTMLInputElement).value)" />
+          <small v-if="promoteurErrors.nomComplet" id="organization-owner-name-error" class="org-field-error" role="alert">{{ promoteurErrors.nomComplet }}</small>
         </label>
         <label class="org-form-field">
           <span>Telephone</span>
@@ -82,8 +84,8 @@
         </label>
         <label class="org-form-field">
           <span>Email</span>
-          <input :value="promoteurForm.email" type="email" placeholder="promoteur@organisation.cd" @input="mettreAJourPromoteur('email', ($event.target as HTMLInputElement).value)" />
-          <small v-if="promoteurErrors.email" class="org-field-error">{{ promoteurErrors.email }}</small>
+          <input id="organization-owner-email" :value="promoteurForm.email" type="email" placeholder="promoteur@organisation.cd" :aria-invalid="promoteurErrors.email ? 'true' : 'false'" :aria-describedby="promoteurErrors.email ? 'organization-owner-email-error' : undefined" @input="mettreAJourPromoteur('email', ($event.target as HTMLInputElement).value)" />
+          <small v-if="promoteurErrors.email" id="organization-owner-email-error" class="org-field-error" role="alert">{{ promoteurErrors.email }}</small>
         </label>
         <label class="org-form-field">
           <span>Identifiant</span>
@@ -91,7 +93,8 @@
         </label>
         <label class="org-form-field org-form-field--wide">
           <span>Mot de passe initial</span>
-          <input :value="promoteurForm.motDePasseInitial" type="password" placeholder="********" @input="mettreAJourPromoteur('motDePasseInitial', ($event.target as HTMLInputElement).value)" />
+          <input id="organization-owner-password" :value="promoteurForm.motDePasseInitial" type="password" autocomplete="new-password" placeholder="********" :aria-invalid="promoteurErrors.motDePasseInitial ? 'true' : 'false'" :aria-describedby="promoteurErrors.motDePasseInitial ? 'organization-owner-password-error' : undefined" @input="mettreAJourPromoteur('motDePasseInitial', ($event.target as HTMLInputElement).value)" />
+          <small v-if="promoteurErrors.motDePasseInitial" id="organization-owner-password-error" class="org-field-error" role="alert">{{ promoteurErrors.motDePasseInitial }}</small>
         </label>
       </div>
     </section>
@@ -106,11 +109,12 @@
         <button class="org-danger-button" type="button" @click="discard">Abandonner</button>
       </div>
     </div>
+    </form>
 
     <template #footer>
       <div class="org-modal__footer">
         <button class="org-ghost-button" type="button" :disabled="busy" @click="requestClose">Annuler</button>
-        <button class="org-primary-button" type="button" :disabled="!canSubmit || busy" @click="$emit('submit')">
+        <button class="org-primary-button" form="organization-creation-form" type="submit" :disabled="!canSubmit || busy">
           <Save :size="16" />
           <span>{{ busy ? (mode === 'rename' ? 'Modification en cours...' : 'Creation en cours...') : (mode === 'rename' ? 'Enregistrer' : 'Creer l organisation') }}</span>
         </button>
@@ -123,26 +127,18 @@
 import { computed, ref, watch } from 'vue';
 import { Save, X } from 'lucide-vue-next';
 import ModalShell from '../../../components/communs/ModalShell.vue';
-
-interface OrganisationForm {
-  code: string;
-  nom: string;
-  typeOrganisation: string;
-  description: string;
-}
-
-interface PromoteurForm {
-  nomComplet: string;
-  telephone: string;
-  email: string;
-  identifiant: string;
-  motDePasseInitial: string;
-}
+import type { FormFieldErrors } from '../../../shared/forms/form-validation';
+import type {
+  OrganizationFormDraft as OrganisationForm,
+  OrganizationOwnerDraft as PromoteurForm,
+} from '../viewmodels/organization-form.validation';
 
 const props = withDefaults(defineProps<{
   open: boolean;
   organisationForm: OrganisationForm;
   promoteurForm: PromoteurForm;
+  organisationErrors: FormFieldErrors<OrganisationForm>;
+  promoteurErrors: FormFieldErrors<PromoteurForm>;
   canSubmit: boolean;
   busy: boolean;
   errorMessage?: string;
@@ -158,16 +154,6 @@ const emit = defineEmits<{
   (event: 'update:organisationForm', value: OrganisationForm): void;
   (event: 'update:promoteurForm', value: PromoteurForm): void;
 }>();
-
-const organisationErrors = computed(() => ({
-  code: props.mode === 'create' && props.organisationForm.code.trim().length === 0 ? 'Le code est obligatoire.' : '',
-  nom: props.organisationForm.nom.trim().length === 0 ? 'Le nom est obligatoire.' : '',
-  typeOrganisation: props.mode === 'create' && props.organisationForm.typeOrganisation.trim().length === 0 ? 'Le type est obligatoire.' : '',
-}));
-
-const promoteurErrors = computed(() => ({
-  email: props.promoteurForm.email.trim().length > 0 && !props.promoteurForm.email.includes('@') ? 'Le format de l email est invalide.' : '',
-}));
 
 const showDiscardWarning = ref(false);
 const isDirty = computed(() => Object.values(props.organisationForm).some((value) => value.trim().length > 0)
@@ -213,6 +199,7 @@ function mettreAJourPromoteur(cle: keyof PromoteurForm, valeur: string): void {
 .org-modal__header p{margin:0;color:#587083;line-height:1.55}
 .org-icon-button{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:14px;border:1px solid rgba(17,40,63,.12);background:#fff;color:#17324a}
 .org-modal-section{background:#fff;border:1px solid rgba(17,40,63,.08);border-radius:24px;padding:1.1rem}
+#organization-creation-form{display:grid;gap:1.1rem}
 .org-form-alert{margin:0 0 1rem;padding:1rem 1.05rem;border-radius:18px;background:#fff3f3;border:1px solid rgba(185,28,28,.16);color:#8f1d1d}
 .org-form-alert p{margin:.25rem 0 0;line-height:1.55}
 .org-modal-section header{display:grid;gap:.25rem;margin-bottom:1rem}

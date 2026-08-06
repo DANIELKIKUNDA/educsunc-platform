@@ -1,4 +1,5 @@
 import { reactive } from 'vue';
+import { registerScopedLifecycleStore } from '../../../shared/lifecycle/frontend-lifecycle.runtime';
 import type {
   ConfigurationModuleCatalogItem,
   ConfigurationModulesResolution,
@@ -101,11 +102,23 @@ export function useConfigurationModulesStore() {
     }, 'Le catalogue des modules ne peut pas etre charge pour le moment.');
   }
 
+  function reinitialiser(): void {
+    state.status = 'idle';
+    state.errorMessage = null;
+    state.catalog = [];
+    state.organizationConfiguration = null;
+    state.schoolConfiguration = null;
+    state.effective = null;
+  }
+
+  registerScopedLifecycleStore('configuration-modules', 'context', reinitialiser);
+
   return {
     state,
     configurerOrganisation,
     configurerEcole,
     resoudre,
     chargerCatalogue,
+    reinitialiser,
   };
 }

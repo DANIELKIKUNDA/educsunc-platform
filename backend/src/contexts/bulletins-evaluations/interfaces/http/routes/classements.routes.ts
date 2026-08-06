@@ -11,7 +11,7 @@ export const creerClassementsRoutes = (
       requete,
       reponse,
       () => dependances.classementsController.consulter(
-        Object.assign({}, requete.params as object, requete.query as object),
+        { ...(requete.params as object), ...(requete.query as object) },
         requete.headers,
       ),
       dependances.contexteTenant,

@@ -7,6 +7,7 @@ import { notificationsService } from '../../../services/notifications.service';
 import { organizationGovernanceApi } from '../services/organization-governance.api';
 import { useOrganizationGovernanceStore } from '../stores/organization-governance.store';
 import type { OrganisationItem } from '../models/organization-governance.model';
+import { evaluateOrganizationCreation } from './organization-form.validation';
 type PendingAction =
   | 'initial-loading'
   | 'refresh'
@@ -49,19 +50,10 @@ export function useOrganizationRegistryViewModel() {
     motDePasseInitial: '',
   });
 
-  const isPromoteurFormStarted = computed(() =>
-    promoteurForm.nomComplet.trim().length > 0
-    || promoteurForm.telephone.trim().length > 0
-    || promoteurForm.email.trim().length > 0
-    || promoteurForm.identifiant.trim().length > 0
-    || promoteurForm.motDePasseInitial.trim().length > 0,
-  );
-
-  const isPromoteurFormComplete = computed(() =>
-    promoteurForm.nomComplet.trim().length > 0
-    && promoteurForm.email.trim().length > 0
-    && promoteurForm.motDePasseInitial.trim().length > 0,
-  );
+  const creationEvaluation = computed(() => evaluateOrganizationCreation(
+    organisationForm,
+    promoteurForm,
+  ));
 
   const canMutateOrganisation = computed(() => canUseAction('organization.write', 'ORG-001'));
   const isBusy = computed(() =>
@@ -123,10 +115,8 @@ export function useOrganizationRegistryViewModel() {
   );
   const canSubmitCreation = computed(() =>
     canMutateOrganisation.value
-    && organisationForm.code.trim().length > 0
-    && organisationForm.nom.trim().length > 0
-    && organisationForm.typeOrganisation.trim().length > 0
-    && (!isPromoteurFormStarted.value || isPromoteurFormComplete.value),
+    && creationEvaluation.value.valid
+    && !isBusy.value,
   );
 
   watch([searchTerm, typeFilter, statusFilter, rowsPerPage], () => {
@@ -233,7 +223,6 @@ export function useOrganizationRegistryViewModel() {
   async function activerOrganisationDansContexte(idOrganisation: string): Promise<void> {
     selectedOrganisationId.value = idOrganisation;
     await changerOrganisationActiveFrontend(idOrganisation);
-    activeContextStore.setGovernanceLevel('ORGANISATION');
   }
 
   async function ouvrirAdministrationEcolesPourOrganisation(idOrganisation: string): Promise<void> {
@@ -485,6 +474,7 @@ export function useOrganizationRegistryViewModel() {
     inactiveCount,
     visibleSchoolsTotal,
     recentlyCreatedOrganisation,
+    creationEvaluation,
     canSubmitCreation,
     schoolCountByOrganisation,
     ouvrirCreationModal,

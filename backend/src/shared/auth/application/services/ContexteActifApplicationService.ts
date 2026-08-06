@@ -28,6 +28,14 @@ export class ContexteActifApplicationService {
     return ContexteActifMapper.depuisDomaine(contexte);
   }
 
+  // Cette methode revient au pilotage plateforme sans conserver un ancien tenant.
+  public async viderContexteActif(idUtilisateur: string): Promise<ContexteActifOutput> {
+    const contexte = await this.obtenirOuCreerContexte(idUtilisateur);
+    contexte.viderContexte();
+    await this.depotContexteActifAuth.sauvegarder(contexte);
+    return ContexteActifMapper.depuisDomaine(contexte);
+  }
+
   // Cette methode change l'organisation active apres verification de la portee.
   public async changerOrganisationActive(idUtilisateur: string, organisationActiveId: string): Promise<ContexteActifOutput> {
     const contexte = await this.obtenirOuCreerContexte(idUtilisateur);

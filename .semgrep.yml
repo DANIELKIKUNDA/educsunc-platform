@@ -1,0 +1,115 @@
+rules:
+  - id: edusync-postgresql-tls-verification-disabled
+    languages:
+      - typescript
+      - javascript
+    severity: ERROR
+    message: >-
+      La verification du certificat TLS PostgreSQL est desactivee. Verifier la
+      chaine de confiance et refuser les certificats non valides hors environnement
+      local explicitement controle.
+    metadata:
+      category: security
+      technology:
+        - postgresql
+        - nodejs
+      confidence: HIGH
+      impact: HIGH
+      likelihood: MEDIUM
+    paths:
+      include:
+        - /backend/src/**/*.ts
+    pattern: "{ ..., rejectUnauthorized: false, ... }"
+
+  - id: edusync-cors-dynamic-allow-origin
+    languages:
+      - typescript
+      - javascript
+    severity: WARNING
+    message: >-
+      Une origine CORS dynamique est renvoyee au client. Prouver que la valeur
+      provient d'une liste autorisee stricte et qu'aucune origine non approuvee
+      n'est refletee, en particulier avec les credentials actifs.
+    metadata:
+      category: security
+      technology:
+        - cors
+        - fastify
+      confidence: MEDIUM
+      impact: HIGH
+      likelihood: LOW
+    paths:
+      include:
+        - /backend/src/**/*.ts
+    patterns:
+      - pattern: $RESPONSE.header("Access-Control-Allow-Origin", $ORIGIN)
+      - pattern-not: $RESPONSE.header("Access-Control-Allow-Origin", "...")
+
+  - id: edusync-http-input-object-assign
+    languages:
+      - typescript
+      - javascript
+    severity: WARNING
+    message: >-
+      Des donnees d'entree HTTP sont fusionnees avec Object.assign. Verifier la
+      validation, la liste des proprietes autorisees, les collisions entre params,
+      query et body, ainsi que la resistance a la pollution de prototype.
+    metadata:
+      category: security
+      technology:
+        - http
+        - nodejs
+      confidence: MEDIUM
+      impact: MEDIUM
+      likelihood: MEDIUM
+    paths:
+      include:
+        - /backend/src/**/*.ts
+    pattern-regex: 'Object\.assign\s*\([^;\n]*(?:requete|request|req)\.(?:params|query|body)'
+
+  - id: edusync-dynamic-document-write
+    languages:
+      - generic
+    severity: WARNING
+    message: >-
+      Du contenu dynamique est ecrit avec document.write. Prouver que chaque
+      valeur inseree est echappee ou produite par un generateur HTML sur, afin
+      d'eviter une injection de contenu ou de script.
+    metadata:
+      category: security
+      technology:
+        - browser
+        - vue
+      confidence: HIGH
+      impact: HIGH
+      likelihood: MEDIUM
+    paths:
+      include:
+        - /frontend/src/**/*.ts
+        - /frontend/src/**/*.vue
+    pattern-regex: '(?:document|[A-Za-z_$][A-Za-z0-9_$]*\.document)\.write\s*\('
+
+  - id: edusync-dynamic-regular-expression
+    languages:
+      - typescript
+      - javascript
+    severity: WARNING
+    message: >-
+      Une expression reguliere est construite dynamiquement. Verifier que les
+      fragments variables sont echappes, bornes et issus d'une source de confiance
+      afin d'eviter une injection d'expression ou un traitement excessif.
+    metadata:
+      category: security
+      technology:
+        - javascript
+        - typescript
+      confidence: MEDIUM
+      impact: MEDIUM
+      likelihood: LOW
+    paths:
+      include:
+        - /backend/src/**/*.ts
+        - /frontend/src/**/*.ts
+    pattern-either:
+      - pattern: new RegExp($PATTERN)
+      - pattern: new RegExp($PATTERN, $FLAGS)

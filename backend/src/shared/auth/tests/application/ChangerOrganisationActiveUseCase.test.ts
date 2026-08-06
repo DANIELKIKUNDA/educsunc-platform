@@ -28,13 +28,27 @@ test('changement organisation active valide met a jour le contexte actif', async
     new TenantContextPortMemoire(true),
     new MoteurContexteActif(),
   );
+  const sessionService = new SessionApplicationService(
+    repositories.depotSessionUtilisateur,
+    repositories.depotRefreshToken,
+    new SessionCachePortMemoire(),
+  );
   const useCase = new ChangerOrganisationActiveUseCase(
-    new SessionApplicationService(repositories.depotSessionUtilisateur, repositories.depotRefreshToken, new SessionCachePortMemoire()),
-    new ChangerContexteActifSaga(new TransactionManagerMemoire(), contexteService),
+    sessionService,
+    new ChangerContexteActifSaga(
+      new TransactionManagerMemoire(),
+      contexteService,
+      sessionService,
+    ),
   );
 
   const resultat = await useCase.executer({ sessionId: session.obtenirId(), organisationActiveId: 'org-1' });
   assert.equal(resultat.organisationActiveId, 'org-1');
+  const sessionRelue = await repositories.depotSessionUtilisateur.trouverSessionActive(
+    session.obtenirId(),
+  );
+  assert.equal(sessionRelue?.obtenirOrganisationActiveId(), 'org-1');
+  assert.equal(sessionRelue?.obtenirEcoleActiveId(), undefined);
 });
 
 test('organisation interdite rejetee', async () => {
@@ -48,9 +62,18 @@ test('organisation interdite rejetee', async () => {
     new TenantContextPortMemoire(true),
     new MoteurContexteActif(),
   );
+  const sessionService = new SessionApplicationService(
+    repositories.depotSessionUtilisateur,
+    repositories.depotRefreshToken,
+    new SessionCachePortMemoire(),
+  );
   const useCase = new ChangerOrganisationActiveUseCase(
-    new SessionApplicationService(repositories.depotSessionUtilisateur, repositories.depotRefreshToken, new SessionCachePortMemoire()),
-    new ChangerContexteActifSaga(new TransactionManagerMemoire(), contexteService),
+    sessionService,
+    new ChangerContexteActifSaga(
+      new TransactionManagerMemoire(),
+      contexteService,
+      sessionService,
+    ),
   );
 
   await assert.rejects(() => useCase.executer({ sessionId: session.obtenirId(), organisationActiveId: 'org-1' }));

@@ -114,6 +114,7 @@
         :can-submit="createEvaluation.canSubmit"
         :busy="store.state.mutationStatus === 'loading'"
         :disable-reason="createEvaluation.disableReason"
+        :field-errors="createEvaluation.fieldErrors"
         :error-message="store.state.errorMessage"
         @close="closeCreationModal"
         @submit="createSchool"

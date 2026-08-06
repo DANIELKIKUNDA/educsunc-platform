@@ -109,11 +109,6 @@ const sentinelRef = ref<HTMLDivElement | null>(null);
 let observer: IntersectionObserver | null = null;
 let autoLoadLocked = false;
 
-function onRowsPerPageChange(event: Event): void {
-  const target = event.target as HTMLSelectElement | null;
-  emit('update:rows-per-page', Number(target?.value ?? props.rowsPerPage));
-}
-
 function installerObserver(): void {
   observer?.disconnect();
   observer = null;
@@ -178,7 +173,7 @@ watch(
   align-items: baseline;
   flex-wrap: wrap;
   gap: 0.45rem;
-  color: #244158;
+  color: var(--ui-text);
   font-weight: 700;
   line-height: 1.5;
 }
@@ -186,16 +181,16 @@ watch(
 .data-pagination__summary-value {
   font-size: 1.05rem;
   font-weight: 800;
-  color: #0b5d7a;
+  color: var(--ui-primary);
 }
 
 .data-pagination__summary-separator {
-  color: #7c92a5;
+  color: var(--ui-text-muted);
 }
 
 .data-pagination__hint {
   margin: 0;
-  color: #6a8092;
+  color: var(--ui-text-muted);
   font-size: 0.9rem;
   line-height: 1.45;
 }
@@ -216,11 +211,11 @@ watch(
 .data-pagination__sizes {
   border-radius: 999px;
   padding: 0.28rem;
-  background: linear-gradient(180deg, rgba(245, 249, 252, 0.98), rgba(237, 244, 249, 0.98));
-  border: 1px solid rgba(17, 40, 63, 0.08);
+  background: linear-gradient(180deg, var(--ui-surface-subtle), var(--ui-surface-muted));
+  border: 1px solid var(--ui-border);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.85),
-    0 10px 24px rgba(15, 23, 42, 0.05);
+    inset 0 1px 0 color-mix(in srgb, var(--ui-surface) 85%, transparent),
+    var(--ui-shadow-sm);
 }
 
 .data-pagination__size-chip {
@@ -230,7 +225,7 @@ watch(
   border-radius: 999px;
   padding: 0.65rem 0.95rem;
   background: transparent;
-  color: #4d6578;
+  color: var(--ui-text-muted);
   font: inherit;
   font-weight: 700;
   transition:
@@ -243,16 +238,16 @@ watch(
 
 .data-pagination__size-chip:hover {
   transform: translateY(-1px);
-  color: #0d5f7a;
-  border-color: rgba(11, 93, 122, 0.14);
-  background: rgba(255, 255, 255, 0.8);
+  color: var(--ui-primary);
+  border-color: color-mix(in srgb, var(--ui-primary) 22%, transparent);
+  background: color-mix(in srgb, var(--ui-surface) 80%, transparent);
 }
 
 .data-pagination__size-chip--active {
-  color: #ffffff;
-  border-color: rgba(9, 95, 118, 0.2);
-  background: linear-gradient(135deg, #0b5d7a 0%, #1180a3 52%, #1ca6bf 100%);
-  box-shadow: 0 12px 26px rgba(14, 110, 138, 0.2);
+  color: var(--ui-primary-contrast);
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--ui-primary), color-mix(in srgb, var(--ui-primary) 68%, #2eb7c9));
+  box-shadow: var(--ui-shadow-sm);
 }
 
 .data-pagination__button {
@@ -262,9 +257,9 @@ watch(
   gap: 0.55rem;
   min-height: 44px;
   border-radius: 14px;
-  border: 1px solid rgba(17, 40, 63, 0.12);
-  background: #fff;
-  color: #17324a;
+  border: 1px solid var(--ui-border-strong);
+  background: var(--ui-surface);
+  color: var(--ui-text-strong);
   padding: 0.78rem 0.95rem;
   transition:
     transform 0.18s ease,
@@ -274,8 +269,8 @@ watch(
 
 .data-pagination__button:hover {
   transform: translateY(-1px);
-  background: #f6f9fc;
-  box-shadow: 0 12px 22px rgba(15, 23, 42, 0.08);
+  background: var(--ui-surface-subtle);
+  box-shadow: var(--ui-shadow-sm);
 }
 
 .data-pagination__button:disabled {
@@ -286,10 +281,10 @@ watch(
 }
 
 .data-pagination__button--primary {
-  background: linear-gradient(135deg, #0b5d7a 0%, #1180a3 52%, #1ca6bf 100%);
-  color: #fff;
-  border-color: rgba(9, 95, 118, 0.2);
-  box-shadow: 0 16px 28px rgba(14, 110, 138, 0.22);
+  background: linear-gradient(135deg, var(--ui-primary), color-mix(in srgb, var(--ui-primary) 68%, #2eb7c9));
+  color: var(--ui-primary-contrast);
+  border-color: transparent;
+  box-shadow: var(--ui-shadow-md);
 }
 
 .data-pagination__sentinel {

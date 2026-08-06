@@ -1,37 +1,9 @@
-const fs = require('fs');
-const path = require('path');
-const vm = require('vm');
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const ts = require('typescript');
+const { loadTsModule } = require('./load-typescript-module.cjs');
 
-function createTsModuleLoader() {
-  const cache = new Map();
-  function loadModule(filePath) {
-    const absoluteFilePath = path.resolve(filePath);
-    if (cache.has(absoluteFilePath)) return cache.get(absoluteFilePath).exports;
-    const source = fs.readFileSync(absoluteFilePath, 'utf8');
-    const transpiled = ts.transpileModule(source, {
-      compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020, esModuleInterop: true },
-      fileName: absoluteFilePath,
-    });
-    const module = { exports: {} };
-    cache.set(absoluteFilePath, module);
-    function localRequire(request) {
-      if (!request.startsWith('.')) return require(request);
-      const candidate = path.resolve(path.dirname(absoluteFilePath), request);
-      return loadModule(path.extname(candidate) ? candidate : `${candidate}.ts`);
-    }
-    const context = vm.createContext({ module, exports: module.exports, require: localRequire, __dirname: path.dirname(absoluteFilePath), __filename: absoluteFilePath, console, process });
-    new vm.Script(transpiled.outputText, { filename: absoluteFilePath }).runInContext(context);
-    return module.exports;
-  }
-  return { load: (relativePath) => loadModule(path.resolve(__dirname, '..', relativePath)) };
-}
-
-const loader = createTsModuleLoader();
-const logic = loader.load('src/domains/configuration/viewmodels/configuration-form.logic.ts');
-const registry = loader.load('src/domains/configuration/forms/configuration-field-registry.ts');
+const logic = loadTsModule('src/domains/configuration/viewmodels/configuration-form.logic.ts');
+const registry = loadTsModule('src/domains/configuration/forms/configuration-field-registry.ts');
 
 const OFFICIAL_KEYS = [
   'runtime.retry.maxAttempts', 'runtime.replay.enabled', 'runtime.cache.ttlSeconds',

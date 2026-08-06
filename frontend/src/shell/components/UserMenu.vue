@@ -42,12 +42,15 @@
 
       <label v-if="isDeveloperMode" class="erp-user-menu__switch">
         <span>Acteur courant</span>
-        <select :value="session.actorCode" @change="onActorChange">
+        <select :value="session.actorCode" :disabled="actorSwitching" @change="onActorChange">
           <option v-for="profile in sessionStore.actorProfiles" :key="profile.code" :value="profile.code">
             {{ profile.label }}
           </option>
         </select>
       </label>
+      <p v-if="actorSwitchError" class="erp-user-menu__feedback" role="alert">
+        {{ actorSwitchError }}
+      </p>
 
       <div class="erp-user-menu__context-copy">
         <span>Utilisateur</span>
@@ -70,11 +73,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watchEffect } from 'vue';
+import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { deconnecterUtilisateur, ouvrirSessionDeveloppeurActeurSelectionne } from '../../shared/auth/session.bootstrap';
 import { authEntryMode } from '../../shared/auth/auth-entry-mode';
-import { sessionStore } from '../../shared/auth/session.store';
+import {
+  sessionStore,
+  type FrontendActorCode,
+} from '../../shared/auth/session.store';
 import { getFirstAccessibleRoute } from '../../shared/doctrine/doctrine.resolver';
 import { activeContextStore } from '../../shared/session/active-context.store';
 import ThemeToggle from '../../shared/ui/ThemeToggle.vue';
@@ -83,6 +89,8 @@ const session = sessionStore.state;
 const context = activeContextStore.state;
 const router = useRouter();
 const menuOpen = ref(false);
+const actorSwitching = ref(false);
+const actorSwitchError = ref('');
 const isDeveloperMode = authEntryMode === 'developer';
 
 const initials = computed(() =>
@@ -94,7 +102,12 @@ const initials = computed(() =>
     .join(''),
 );
 
-const authModeLabel = computed(() => (session.authMode === 'backend' ? 'Session backend' : 'Mode dev'));
+const authModeLabel = computed(() => {
+  if (session.authMode === 'backend') return 'Session sécurisée';
+  if (session.authMode === 'offline') return 'Session hors connexion';
+  if (session.authMode === 'dev') return 'Mode dev';
+  return 'Session inactive';
+});
 const governanceLabel = computed(() => {
   if (context.governanceLevel === 'PLATEFORME') return 'Plateforme';
   if (context.governanceLevel === 'ORGANISATION') return 'Organisation';
@@ -121,27 +134,28 @@ const shortSessionId = computed(() => {
     : session.sessionId;
 });
 
-watchEffect(() => {
-  activeContextStore.ensureAllowedLevel(sessionStore.activeProfile.value.governanceLevels);
-});
-
 function onToggle(event: Event): void {
   menuOpen.value = (event.currentTarget as HTMLDetailsElement).open;
 }
 
 async function onActorChange(event: Event): Promise<void> {
   const target = event.target as HTMLSelectElement;
-  sessionStore.setActor(target.value);
-  activeContextStore.ensureAllowedLevel(sessionStore.activeProfile.value.governanceLevels);
+  const actorCode = target.value as FrontendActorCode;
+  actorSwitching.value = true;
+  actorSwitchError.value = '';
   try {
-    await ouvrirSessionDeveloppeurActeurSelectionne();
+    await ouvrirSessionDeveloppeurActeurSelectionne(actorCode);
+    activeContextStore.ensureAllowedLevel(sessionStore.effectiveGovernanceLevels.value);
+    const governanceLevel = activeContextStore.state.governanceLevel;
+    const routeCible = getFirstAccessibleRoute(sessionStore.state.actorCode, governanceLevel);
+    await router.replace(routeCible);
+    menuOpen.value = false;
   } catch {
-    sessionStore.clearBackendSession();
+    actorSwitchError.value = "Le changement de profil n'a pas pu être confirmé. Votre session actuelle est conservée.";
+    target.value = session.actorCode;
+  } finally {
+    actorSwitching.value = false;
   }
-  const governanceLevel = activeContextStore.state.governanceLevel;
-  const routeCible = getFirstAccessibleRoute(sessionStore.state.actorCode, governanceLevel);
-  void router.push(routeCible);
-  menuOpen.value = false;
 }
 
 async function onLogout(): Promise<void> {

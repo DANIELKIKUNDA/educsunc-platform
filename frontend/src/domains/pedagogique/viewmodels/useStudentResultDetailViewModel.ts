@@ -3,6 +3,11 @@ import { useRoute, useRouter } from 'vue-router';
 import { activeContextStore } from '../../../shared/session/active-context.store';
 import { sessionStore } from '../../../shared/auth/session.store';
 import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
+import { isOwnedStudentTargetAllowed } from '../../../shared/permissions/parent-ownership';
+import {
+  hasTitulariatEffectif,
+  isTitulariatTargetAllowed,
+} from '../access/titulariat-experience';
 import type { PedagogicalAnalysisFilters } from '../models/pedagogical-analysis.model';
 import { useStudentResultDetailStore } from '../stores/student-result-detail.store';
 
@@ -47,16 +52,24 @@ export function useStudentResultDetailViewModel() {
   const isAuthorized = computed(() => doctrineAccess.canAccessPage('PED-DET-001'));
   const detail = computed(() => detailStore.state.detail);
   const canLoad = computed(() =>
-    context.schoolYearId.trim().length > 0 && idEleveInput.value.trim().length > 0,
+    context.schoolYearId.trim().length > 0
+    && idEleveInput.value.trim().length > 0
+    && isOwnedStudentTargetAllowed(idEleveInput.value)
+    && isTitulariatTargetAllowed(
+      idClassePedagogiqueInput.value,
+      context.schoolYearId,
+    ),
   );
   const activeColumnLabel = computed(() => columnLabels[codeColonneInput.value] ?? codeColonneInput.value);
   const actorScopeMessage = computed(() => {
     if (detail.value) {
       return `Lecture analytiquement bornee a ${detail.value.classeLabel} / ${detail.value.sectionLabel}.`;
     }
+    if (hasTitulariatEffectif()) {
+      return 'Lecture analytiquement bornee a la classe titulaire et a l annee scolaire active.';
+    }
+
     switch (session.actorCode) {
-      case 'TITULAIRE':
-        return 'Lecture analytiquement bornee a la classe titulaire et a l annee scolaire active.';
       case 'PREFET_ETUDES':
       case 'DIRECTEUR_ETUDES':
         return 'Lecture analytiquement bornee a la section secondaire autorisee de l ecole active.';
@@ -121,7 +134,16 @@ export function useStudentResultDetailViewModel() {
     }
 
     const filtres = construireFiltres();
-    if (filtres.idAnneeScolaire.length === 0 || !filtres.idEleve || filtres.idEleve.length === 0) {
+    if (
+      filtres.idAnneeScolaire.length === 0
+      || !filtres.idEleve
+      || filtres.idEleve.length === 0
+      || !isOwnedStudentTargetAllowed(filtres.idEleve)
+      || !isTitulariatTargetAllowed(
+        filtres.idClassePedagogique,
+        filtres.idAnneeScolaire,
+      )
+    ) {
       detailStore.reinitialiser();
       return;
     }

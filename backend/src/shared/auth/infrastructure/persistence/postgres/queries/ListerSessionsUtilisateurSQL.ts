@@ -10,11 +10,12 @@ export class ListerSessionsUtilisateurSQL implements ListerSessionsUtilisateurQu
     const resultat = await this.clientSql.executer<{
       id_session_utilisateur: string;
       id_utilisateur: string;
+      role_actif?: string;
       organisation_active_id?: string;
       ecole_active_id?: string;
       est_offline: boolean;
     }>(
-      `SELECT id_session_utilisateur, id_utilisateur, organisation_active_id,
+      `SELECT id_session_utilisateur, id_utilisateur, role_actif, organisation_active_id,
               ecole_active_id, est_offline
        FROM auth_sessions_utilisateurs
        WHERE id_utilisateur = $1
@@ -24,6 +25,7 @@ export class ListerSessionsUtilisateurSQL implements ListerSessionsUtilisateurQu
     return resultat.lignes.map((record) => ({
         sessionId: record.id_session_utilisateur,
         utilisateurId: record.id_utilisateur,
+        roleActif: record.role_actif,
         organisationActiveId: record.organisation_active_id,
         ecoleActiveId: record.ecole_active_id,
         estOffline: record.est_offline,

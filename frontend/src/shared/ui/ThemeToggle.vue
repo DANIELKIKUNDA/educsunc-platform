@@ -60,11 +60,11 @@ const { isDark, synchronizing, synchronizationError, toggleTheme } = useTheme();
 }
 
 .theme-icon--sun {
-  color: #fbbf24;
+  color: var(--ui-warning);
 }
 
 .theme-icon--moon {
-  color: #6366f1;
+  color: var(--ui-info);
 }
 
 .theme-toggle:hover .theme-icon {

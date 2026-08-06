@@ -16,6 +16,7 @@ export const creerSecurityRoutes = (dependances: DependancesRoutesAudit): Fastif
         query: requete.query as never,
         headers: requete.headers,
         context: requete.context,
+        authorizedScope: 'ORGANISATION',
       });
     }));
 
@@ -31,6 +32,7 @@ export const creerSecurityRoutes = (dependances: DependancesRoutesAudit): Fastif
         query: requete.query as never,
         headers: requete.headers,
         context: requete.context,
+        authorizedScope: 'ORGANISATION',
       });
     }));
 
@@ -46,6 +48,7 @@ export const creerSecurityRoutes = (dependances: DependancesRoutesAudit): Fastif
         query: requete.query as never,
         headers: requete.headers,
         context: requete.context,
+        authorizedScope: 'ORGANISATION',
       });
     }));
 };

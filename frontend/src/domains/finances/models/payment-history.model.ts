@@ -3,7 +3,7 @@ export type PaymentHistoryActorCode =
   | 'ADMINISTRATEUR_ECOLE'
   | 'GESTIONNAIRE_ORGANISATION'
   | 'PROMOTEUR_ORGANISATION'
-  | 'TITULAIRE'
+  | 'ENSEIGNANT'
   | 'PARENT'
   | 'PREFET_ETUDES'
   | 'DIRECTEUR_ETUDES'
@@ -81,7 +81,7 @@ export const authorizedPaymentHistoryActors: PaymentHistoryActorCode[] = [
   'ADMINISTRATEUR_ECOLE',
   'GESTIONNAIRE_ORGANISATION',
   'PROMOTEUR_ORGANISATION',
-  'TITULAIRE',
+  'ENSEIGNANT',
   'PARENT',
   'PREFET_ETUDES',
   'DIRECTEUR_ETUDES',

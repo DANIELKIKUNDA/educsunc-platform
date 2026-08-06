@@ -117,6 +117,8 @@ export function creerConfigurationScope(overrides: Partial<{
 
 export async function attendrePropagationAsync(tours = 3): Promise<void> {
   for (let index = 0; index < tours; index += 1) {
-    await new Promise<void>((resolve) => setTimeout(resolve, 0));
+    await new Promise<void>((resolve) => {
+      setTimeout(resolve, 0);
+    });
   }
 }

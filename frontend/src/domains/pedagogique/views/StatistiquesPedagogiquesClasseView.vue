@@ -221,6 +221,10 @@ import EmptyState from '../../../shared/ui/EmptyState.vue';
 import { sessionStore } from '../../../shared/auth/session.store';
 import { activeContextStore } from '../../../shared/session/active-context.store';
 import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
+import {
+  hasTitulariatEffectif,
+  isTitulariatTargetAllowed,
+} from '../access/titulariat-experience';
 import { type ClassStatisticsFilters } from '../models/class-statistics.model';
 import { useClassStatisticsStore } from '../stores/class-statistics.store';
 
@@ -265,6 +269,16 @@ const missingFields = computed(() => {
   if (!codeColonneInput.value.trim()) {
     manquants.push('colonne');
   }
+  if (
+    idClassePedagogiqueInput.value.trim()
+    && context.schoolYearId.trim()
+    && !isTitulariatTargetAllowed(
+      idClassePedagogiqueInput.value,
+      context.schoolYearId,
+    )
+  ) {
+    manquants.push('classe hors de votre perimetre');
+  }
 
   return manquants;
 });
@@ -279,9 +293,11 @@ const scopeLabel = computed(() =>
 );
 
 const perimeterMessage = computed(() => {
+  if (hasTitulariatEffectif()) {
+    return 'Lecture bornee a la classe titulaire et a la bonne annee scolaire.';
+  }
+
   switch (session.actorCode) {
-    case 'TITULAIRE':
-      return 'Lecture bornee a la classe titulaire et a la bonne annee scolaire.';
     case 'PREFET_ETUDES':
     case 'DIRECTEUR_ETUDES':
     case 'DIRECTEUR_DISCIPLINE':
@@ -316,7 +332,7 @@ function buildFilters(): ClassStatisticsFilters {
 }
 
 async function chargerStatistiques(): Promise<void> {
-  if (!isAuthorized.value) {
+  if (!isAuthorized.value || !canLoad.value) {
     statisticsStore.reinitialiser();
     return;
   }
@@ -387,7 +403,7 @@ function imprimerPage(): void {
 }
 
 synchroniserDepuisRoute();
-if (context.schoolYearId && idClassePedagogiqueInput.value && isAuthorized.value) {
+if (context.schoolYearId && idClassePedagogiqueInput.value && isAuthorized.value && canLoad.value) {
   void chargerStatistiques();
 }
 </script>

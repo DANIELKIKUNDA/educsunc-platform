@@ -8,6 +8,7 @@ export class SessionMapper {
     return {
       sessionId: session.obtenirId(),
       utilisateurId: session.obtenirIdUtilisateur(),
+      roleActif: session.obtenirRoleActif(),
       organisationActiveId: session.obtenirOrganisationActiveId(),
       ecoleActiveId: session.obtenirEcoleActiveId(),
       estOffline: session.obtenirEstOffline(),
@@ -18,6 +19,7 @@ export class SessionMapper {
     return {
       sessionId: session.sessionId,
       utilisateurId: session.utilisateurId,
+      roleActif: session.roleActif,
       organisationActiveId: session.organisationActiveId,
       ecoleActiveId: session.ecoleActiveId,
       estOffline: session.estOffline,

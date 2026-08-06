@@ -263,6 +263,20 @@ function reinitialiserMessages(): void {
   state.statusMessage = null;
 }
 
+function reinitialiser(): void {
+  state.status = 'idle';
+  state.errorMessage = null;
+  state.statusMessage = null;
+  state.mutationStatus = 'idle';
+  state.organisations = [];
+  state.organisationsPagination = null;
+  state.ecoles = [];
+  state.ecolesPagination = null;
+  state.selectedOrganisation = null;
+  state.selectedEcole = null;
+  state.lastMutationMessage = null;
+}
+
 export function useOrganizationGovernanceStore() {
   return {
     state,
@@ -282,5 +296,6 @@ export function useOrganizationGovernanceStore() {
     activerEcole,
     desactiverEcole,
     reinitialiserMessages,
+    reinitialiser,
   };
 }

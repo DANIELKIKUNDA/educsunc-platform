@@ -422,6 +422,7 @@ Acteurs positifs :
 - `GESTIONNAIRE_ORGANISATION`
 - `ADMINISTRATEUR_ECOLE`
 - `ADMIN_SYSTEME_ECOLE`
+- `CAISSIER` pour l'audit financier de son ecole lorsque `audit.finance.read` est effectif
 - acteurs pedagogiques selon `AUD-04`
 
 Workflows rattaches :
@@ -451,6 +452,9 @@ Exclusions :
 
 - `AUD-05` ne doit pas etre projete comme workflow distinct
 - `AUD-06` reste absorbe par `SHD-AUD-01`
+- l'audit Plateforme n'exige ni organisation ni ecole active
+- l'audit Organisation exige l'organisation active mais jamais une ecole active
+- les audits Ecole restent bornes a l'ecole active et a leur famille
 
 Sources :
 

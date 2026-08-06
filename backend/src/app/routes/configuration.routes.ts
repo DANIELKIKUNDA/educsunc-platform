@@ -64,6 +64,7 @@ import { configurationApplication } from '../../config/app.config';
 import { ConfigurationInitialisationOfficielleService } from '../services/ConfigurationInitialisationOfficielleService';
 import { ConfigurationPreferencesUtilisateurService } from '../services/ConfigurationPreferencesUtilisateurService';
 import { ConfigurationRuntimeSynchronisationService } from '../services/ConfigurationRuntimeSynchronisationService';
+import { VerificationRattachementEcoleOrganisationService } from '../services/VerificationRattachementEcoleOrganisationService';
 import type { PortSuppressionConfiguration } from '../../shared/configuration/application/ports';
 import { ConfigurationSnapshotMapper } from '../../shared/configuration/application/mappers/ConfigurationSnapshotMapper';
 import { ConfigurationApplicationMapper } from '../../shared/configuration/application/mappers/ConfigurationApplicationMapper';
@@ -266,7 +267,13 @@ interface ResolutionModulesEcole {
   readonly modulesEffectifs: readonly TypeModuleConfiguration[];
 }
 
-class ServiceActivationModulesConfiguration {
+export interface ResolutionModulesContexte {
+  readonly niveau: 'PLATEFORME' | 'ORGANISATION' | 'ECOLE';
+  readonly modulesDisponibles: readonly TypeModuleConfiguration[];
+  readonly modulesEffectifs: readonly TypeModuleConfiguration[];
+}
+
+export class ServiceActivationModulesConfiguration {
   constructor(
     private readonly readModel: ConfigurationReadModelAvecListage,
     private readonly createUseCase: CreateConfigurationUseCase,
@@ -332,36 +339,21 @@ class ServiceActivationModulesConfiguration {
     };
     const configuration = await this.trouverParCleEtScope(CLE_MODULES_ENABLED, scope);
 
-    if (configuration) {
-      await this.updateUseCase.executer({
-        configurationId: configuration.details().identifiant,
-        value: modules,
-        actorId: params.actorId,
-        requestId: params.requestId,
-        correlationId: params.correlationId,
-        metadata: { type: 'SCHOOL_MODULES_ENABLED' },
-      });
-      return { configurationId: configuration.details().identifiant, modules };
+    if (!configuration) {
+      throw new Error(
+        "L'ecole ne correspond pas a l'organisation indiquee ou son initialisation est incomplete.",
+      );
     }
 
-    const creee = await this.createUseCase.executer({
-      configurationId: randomUUID(),
-      key: CLE_MODULES_ENABLED,
+    await this.updateUseCase.executer({
+      configurationId: configuration.details().identifiant,
       value: modules,
-      scope,
       actorId: params.actorId,
       requestId: params.requestId,
       correlationId: params.correlationId,
-      gouvernance: {
-        proprietaireNiveau: 'SCHOOL',
-        heritable: true,
-        overridable: false,
-        visiblePour: ['SYSTEM', 'ORGANIZATION', 'SCHOOL'],
-        auditRequis: true,
-        restartRequis: false,
-      },
+      metadata: { type: 'SCHOOL_MODULES_ENABLED' },
     });
-    return { configurationId: creee.identifiant, modules };
+    return { configurationId: configuration.details().identifiant, modules };
   }
 
   public async resoudreModulesEffectifs(params: {
@@ -393,13 +385,59 @@ class ServiceActivationModulesConfiguration {
     };
   }
 
+  public async resoudreModulesPourContexte(params: {
+    organisationId?: string;
+    ecoleId?: string;
+  }): Promise<ResolutionModulesContexte> {
+    if (!params.organisationId) {
+      return {
+        niveau: 'PLATEFORME',
+        modulesDisponibles: [...MODULES_CONFIGURATION],
+        modulesEffectifs: [...MODULES_CONFIGURATION],
+      };
+    }
+
+    const allowedConfig = await this.trouverParCleEtScope(CLE_MODULES_ALLOWED, {
+      niveau: 'ORGANIZATION',
+      organisationId: params.organisationId,
+    });
+    const modulesDisponibles = this.extraireModulesAutorises(allowedConfig?.details().valeur);
+    if (!params.ecoleId) {
+      return {
+        niveau: 'ORGANISATION',
+        modulesDisponibles,
+        modulesEffectifs: modulesDisponibles,
+      };
+    }
+
+    const resolution = await this.resoudreModulesEffectifs({
+      organisationId: params.organisationId,
+      ecoleId: params.ecoleId,
+    });
+    return {
+      niveau: 'ECOLE',
+      modulesDisponibles: resolution.modulesAutorisesOrganisation,
+      modulesEffectifs: resolution.modulesEffectifs,
+    };
+  }
+
   public async moduleActif(params: {
     organisationId?: string;
     ecoleId?: string;
     module: TypeModuleConfiguration;
   }): Promise<boolean> {
-    if (!params.organisationId || !params.ecoleId) {
+    if (!params.organisationId) {
       return true;
+    }
+
+    if (!params.ecoleId) {
+      const allowedConfig = await this.trouverParCleEtScope(CLE_MODULES_ALLOWED, {
+        niveau: 'ORGANIZATION',
+        organisationId: params.organisationId,
+      });
+      return this.extraireModulesAutorises(
+        allowedConfig?.details().valeur,
+      ).includes(params.module);
     }
 
     const resolution = await this.resoudreModulesEffectifs({
@@ -411,7 +449,7 @@ class ServiceActivationModulesConfiguration {
 
   private extraireModulesAutorises(value: ValeurConfiguration | undefined): readonly TypeModuleConfiguration[] {
     if (!Array.isArray(value)) {
-      return MODULES_CONFIGURATION;
+      return [];
     }
     return this.normaliserModules(value as readonly string[]);
   }
@@ -510,11 +548,14 @@ const updateConfigurationUseCase = new UpdateConfigurationUseCase(
   undefined,
   uniteTravailConfiguration,
 );
+const verificationRattachementEcoleOrganisation =
+  new VerificationRattachementEcoleOrganisationService(clientSqlConfiguration ?? undefined);
 export const configurationInitialisationService = new ConfigurationInitialisationOfficielleService(
   createConfigurationUseCase,
   () => readModelConfiguration.listerConfigurations(),
   undefined,
   clientSqlConfiguration ? new ConfigurationBootstrapJournalStorePostgres(clientSqlConfiguration) : undefined,
+  verificationRattachementEcoleOrganisation,
 );
 const configurationPreferencesUtilisateurService = new ConfigurationPreferencesUtilisateurService(
   configurationInitialisationService,
@@ -1087,6 +1128,27 @@ async function verifierPorteeModules(
   return false;
 }
 
+async function verifierRattachementEcoleOrganisation(
+  reponse: FastifyReply,
+  organisationId: string,
+  ecoleId: string,
+): Promise<boolean> {
+  if (
+    await verificationRattachementEcoleOrganisation.verifierRattachement({
+      organisationId,
+      ecoleId,
+    })
+  ) {
+    return true;
+  }
+
+  reponse.code(409).send({
+    code: 'CONFIGURATION_MODULES_RATTACHEMENT_INVALIDE',
+    message: "L'ecole ne correspond pas a l'organisation indiquee.",
+  });
+  return false;
+}
+
 export const routeConfiguration: PluginRoutesConfiguration = Object.assign(
   async (serveur: Parameters<FastifyPluginAsync>[0]) => {
     if (migrateurPostgresConfiguration) {
@@ -1204,6 +1266,16 @@ export const routeConfiguration: PluginRoutesConfiguration = Object.assign(
         return;
       }
 
+      if (
+        !(await verifierRattachementEcoleOrganisation(
+          reponse,
+          query.organisationId,
+          query.ecoleId,
+        ))
+      ) {
+        return;
+      }
+
       const resolution = await configurationModulesService.resoudreModulesEffectifs({
         organisationId: query.organisationId,
         ecoleId: query.ecoleId,
@@ -1299,6 +1371,16 @@ export const routeConfiguration: PluginRoutesConfiguration = Object.assign(
           ecoleId: params.ecoleId,
           autoriserEcole: true,
         }))
+      ) {
+        return;
+      }
+
+      if (
+        !(await verifierRattachementEcoleOrganisation(
+          reponse,
+          body.organisationId,
+          params.ecoleId,
+        ))
       ) {
         return;
       }

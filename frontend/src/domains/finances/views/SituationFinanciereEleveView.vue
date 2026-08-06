@@ -66,6 +66,13 @@
         />
       </template>
 
+      <template v-else-if="uiState === 'ownership-denied'">
+        <ErrorState
+          title="Situation non accessible"
+          message="Cet eleve ne fait pas partie des enfants autorises pour votre compte."
+        />
+      </template>
+
       <template v-else-if="uiState === 'technical-error'">
         <ErrorState
           title="Lecture technique indisponible"
@@ -190,7 +197,7 @@
                 </div>
                 <ul>
                   <li>La situation financiere reprend exactement la doctrine d'acteurs de PF-05.</li>
-                  <li>`TITULAIRE` reste borne a sa classe titulaire effective et a la bonne annee scolaire.</li>
+                  <li>L enseignant titulaire effectif reste borne a sa classe et a la bonne annee scolaire.</li>
                   <li>`PARENT` ne peut voir que les enfants autorises relies a son compte.</li>
                 </ul>
               </div>
@@ -316,6 +323,8 @@ import EmptyState from '../../../shared/ui/EmptyState.vue';
 import { activeContextStore } from '../../../shared/session/active-context.store';
 import { sessionStore } from '../../../shared/auth/session.store';
 import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
+import { isOwnedStudentTargetAllowed } from '../../../shared/permissions/parent-ownership';
+import { hasTitulariatEffectif } from '../access/titulariat-experience';
 import { useStudentFinancialSituationStore } from '../stores/student-financial-situation.store';
 
 const route = useRoute();
@@ -341,11 +350,17 @@ const historiqueLink = computed(() => {
   return idEleve ? `/app/finances/historiques/${idEleve}` : '/app/finances/historiques';
 });
 
-const uiState = computed<'loading' | 'idle' | 'missing-student' | 'technical-error'>(() => {
+const uiState = computed<
+  'loading' | 'idle' | 'missing-student' | 'ownership-denied' | 'technical-error'
+>(() => {
   const idEleve = lireIdEleveRoute();
 
   if (!idEleve) {
     return 'missing-student';
+  }
+
+  if (!isOwnedStudentTargetAllowed(idEleve)) {
+    return 'ownership-denied';
   }
 
   if (studentFinancialSituationStore.state.status === 'loading') {
@@ -360,9 +375,11 @@ const uiState = computed<'loading' | 'idle' | 'missing-student' | 'technical-err
 });
 
 const perimeterMessage = computed(() => {
+  if (hasTitulariatEffectif()) {
+    return 'Lecture financiere bornee a la classe titulaire effective et a la bonne annee scolaire.';
+  }
+
   switch (session.actorCode) {
-    case 'TITULAIRE':
-      return 'Lecture financiere bornee a la classe titulaire effective et a la bonne annee scolaire.';
     case 'PARENT':
       return 'Lecture financiere bornee aux enfants autorises rattaches a ce parent.';
     case 'PREFET_ETUDES':
@@ -454,7 +471,11 @@ watch(
     selectedSegment.value = '';
     selectedObligationId.value = '';
 
-    if (!idEleve || !isAuthorized.value) {
+    if (
+      !idEleve
+      || !isAuthorized.value
+      || !isOwnedStudentTargetAllowed(idEleve)
+    ) {
       studentFinancialSituationStore.reinitialiser();
       return;
     }

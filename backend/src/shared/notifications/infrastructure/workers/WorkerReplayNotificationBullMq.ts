@@ -54,7 +54,7 @@ export class WorkerReplayNotificationBullMq {
     const entree = this.stockageReplayNotification.ouvrir(job.identifiantNotification, job.metadata);
 
     try {
-      if (Boolean(job.metadata.rebatirChronologie)) {
+      if (job.metadata.rebatirChronologie) {
         await this.stockageChronologieNotification.lireProjection(job.identifiantNotification);
       }
 

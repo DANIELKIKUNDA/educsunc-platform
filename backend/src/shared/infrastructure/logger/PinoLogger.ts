@@ -1,7 +1,95 @@
-import pino, { type Logger as InstancePino } from 'pino';
+import pino, { type Logger as InstancePino, type LoggerOptions } from 'pino';
 
 import { configurationApplication } from '../../../config/app.config';
 import type { Journaliseur } from './Logger';
+
+const nomChampSensible = /(authorization|cookie|motdepasse|password|secret|token)/iu;
+
+function masquerValeursSensibles(
+  valeur: unknown,
+  profondeur = 0,
+  referencesVisitees = new WeakSet<object>(),
+): unknown {
+  if (valeur === null || typeof valeur !== 'object') {
+    return valeur;
+  }
+  if (valeur instanceof Date) {
+    return valeur.toISOString();
+  }
+  if (valeur instanceof Error) {
+    return {
+      nom: valeur.name,
+      message: valeur.message,
+      stack: valeur.stack,
+    };
+  }
+  if (referencesVisitees.has(valeur)) {
+    return '[REFERENCE_CIRCULAIRE]';
+  }
+  if (profondeur >= 8) {
+    return '[PROFONDEUR_LIMITEE]';
+  }
+
+  referencesVisitees.add(valeur);
+  if (Array.isArray(valeur)) {
+    return valeur.map((element) =>
+      masquerValeursSensibles(element, profondeur + 1, referencesVisitees));
+  }
+
+  const resultat: Record<string, unknown> = {};
+  for (const [nom, contenu] of Object.entries(valeur)) {
+    resultat[nom] = nomChampSensible.test(nom)
+      ? '[MASQUE]'
+      : masquerValeursSensibles(contenu, profondeur + 1, referencesVisitees);
+  }
+
+  return resultat;
+}
+
+export function creerConfigurationPino(): LoggerOptions {
+  return {
+    level: configurationApplication.niveauJournalisation,
+    base: {
+      service: configurationApplication.nomApplication,
+      environnement: configurationApplication.environnement,
+    },
+    messageKey: 'message',
+    redact: {
+      censor: '[MASQUE]',
+      paths: [
+        'req.headers.authorization',
+        'req.headers.cookie',
+        'headers.authorization',
+        'headers.cookie',
+        'authorization',
+        'cookie',
+        'password',
+        'motDePasse',
+        'token',
+        'accessToken',
+        'refreshToken',
+        'contexte.authorization',
+        'contexte.cookie',
+        'contexte.password',
+        'contexte.motDePasse',
+        'contexte.token',
+        'contexte.accessToken',
+        'contexte.refreshToken',
+        'contexte.headers.authorization',
+        'contexte.headers.cookie',
+      ],
+    },
+    formatters: {
+      level(niveau) {
+        return { niveau };
+      },
+      bindings(bindings) {
+        return bindings;
+      },
+    },
+    timestamp: () => `,"timestamp":"${new Date().toISOString()}"`,
+  };
+}
 
 // Cette classe fournit une implementation technique du logger basee sur Pino.
 // Elle peut etre remplacee plus tard par une autre solution sans impacter les autres couches.
@@ -11,24 +99,7 @@ export class JournaliseurPino implements Journaliseur {
 
   // Le constructeur initialise l'instance interne de Pino ou reutilise une instance fournie.
   constructor(instance?: InstancePino) {
-    this.instance =
-      instance ??
-      pino({
-        level: configurationApplication.environnement === 'production' ? 'info' : 'debug',
-        base: null,
-        messageKey: 'message',
-        formatters: {
-          // Ce formateur remplace le niveau natif par une cle metier plus explicite.
-          level(niveau) {
-            return { niveau };
-          },
-          // Ce formateur evite l'ajout automatique de champs techniques non souhaites.
-          bindings() {
-            return {};
-          },
-        },
-        timestamp: () => `,"timestamp":"${new Date().toISOString()}"`,
-      });
+    this.instance = instance ?? pino(creerConfigurationPino());
 
     this.ajouterContexteGlobal({
       service: configurationApplication.nomApplication,
@@ -43,15 +114,15 @@ export class JournaliseurPino implements Journaliseur {
     }
 
     if (contexte instanceof Error) {
-      return {
+      return masquerValeursSensibles({
         nom: contexte.name,
         message: contexte.message,
         stack: contexte.stack,
-      };
+      }) as Record<string, unknown>;
     }
 
     if (typeof contexte === 'object' && !Array.isArray(contexte)) {
-      return contexte as Record<string, unknown>;
+      return masquerValeursSensibles(contexte) as Record<string, unknown>;
     }
 
     return {

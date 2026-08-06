@@ -42,6 +42,7 @@ export function creerRefreshToken(idUtilisateur: string, tokenHash = 'hash-refre
 export function creerSessionUtilisateur(params: Partial<{
   idUtilisateur: string;
   refreshTokenId: string;
+  roleActif: string;
   organisationActiveId: string;
   ecoleActiveId: string;
   deviceId: string;
@@ -52,6 +53,7 @@ export function creerSessionUtilisateur(params: Partial<{
   return SessionUtilisateur.ouvrir({
     idUtilisateur: params.idUtilisateur ?? 'utilisateur-1',
     refreshTokenId: params.refreshTokenId ?? 'refresh-1',
+    roleActif: params.roleActif,
     organisationActiveId: params.organisationActiveId,
     ecoleActiveId: params.ecoleActiveId,
     deviceId: params.deviceId ?? 'device-1',

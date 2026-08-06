@@ -23,7 +23,7 @@ Toutes les routes des familles suivantes appartiennent a la categorie C : authen
 
 | Famille | Surface principale | Classification | Protection complementaire |
 |---|---|---|---|
-| Auth privee | `/api/auth/logout`, `/api/auth/session`, `/api/auth/contexte/**`, `/api/auth/revoquer-toutes-sessions`, `/api/auth/offline/synchroniser` | C | coherence session, tenant et mode hors ligne |
+| Auth privee | `/api/auth/logout`, `/api/auth/session`, `/api/auth/profil`, `/api/auth/contexte/**`, `/api/auth/revoquer-toutes-sessions`, `/api/auth/offline/synchroniser` | C | coherence session, projection des capacites, tenant et mode hors ligne |
 | Configuration | `/api/v1/configuration/**` | C | permissions Configuration et niveau proprietaire |
 | Securite | `/api/v1/security/**` | C | permissions, roles, affectations et scopes |
 | Audit et forensic | `/api/v1/audit/**`, `/api/v1/forensic/**`, `/api/v1/exports/**` | C/F | politiques Audit et gouvernance |
@@ -52,9 +52,13 @@ Pour chaque route privee, le backend verifie dans cet ordre :
 8. coherence de `x-user-id`, `x-organisation-id` et `x-tenant-id` avec l'identite et le contexte actifs ;
 9. enrichissement du `RequestContext` a partir des donnees verifiees ;
 10. calcul des permissions, restrictions, scopes et titulariats par `shared/security` ;
+
+La projection renvoyee au frontend reste informative pour l'interface. Elle n'est jamais acceptee en retour comme preuve d'autorisation. Chaque route metier recalcule ou verifie la permission, le scope, le contexte et les restrictions depuis la session authentifiee.
 11. controle du perimetre organisation, ecole, section, classe ou autre selon le workflow.
 
 Les en-tetes clients ne creent jamais une identite. `x-user-id` est verifie puis remplace par le `sub` authentifie. Les en-tetes de contexte ne peuvent pas selectionner silencieusement une organisation ou une ecole differente de la session active.
+
+Une route Plateforme globale, notamment l'audit Plateforme, n'injecte pas d'ecole artificielle. Une route Organisation exige l'organisation active mais pas une ecole ; une route Ecole exige l'organisation et l'ecole coherentes avec la session. Les parametres clients peuvent reduire le perimetre autorise, jamais l'elargir.
 
 ## Contrat d'erreur
 

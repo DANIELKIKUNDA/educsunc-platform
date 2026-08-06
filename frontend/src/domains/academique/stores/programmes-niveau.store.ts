@@ -86,6 +86,14 @@ async function archiver(idProgrammeNiveau: string, archivePar: string): Promise<
   }, 'L archivage du programme niveau a echoue.');
 }
 
+function reinitialiser(): void {
+  state.status = 'idle';
+  state.errorMessage = null;
+  state.entries = [];
+  state.programme = null;
+  state.etatProgramme = null;
+}
+
 export function useProgrammesNiveauStore() {
   return {
     state,
@@ -95,5 +103,6 @@ export function useProgrammesNiveauStore() {
     etatLocal,
     valider,
     archiver,
+    reinitialiser,
   };
 }

@@ -28,13 +28,27 @@ test('changement ecole active valide avec coherence tenant', async () => {
     new TenantContextPortMemoire(true),
     new MoteurContexteActif(),
   );
+  const sessionService = new SessionApplicationService(
+    repositories.depotSessionUtilisateur,
+    repositories.depotRefreshToken,
+    new SessionCachePortMemoire(),
+  );
   const useCase = new ChangerEcoleActiveUseCase(
-    new SessionApplicationService(repositories.depotSessionUtilisateur, repositories.depotRefreshToken, new SessionCachePortMemoire()),
-    new ChangerContexteActifSaga(new TransactionManagerMemoire(), contexteService),
+    sessionService,
+    new ChangerContexteActifSaga(
+      new TransactionManagerMemoire(),
+      contexteService,
+      sessionService,
+    ),
   );
 
   const resultat = await useCase.executer({ sessionId: session.obtenirId(), ecoleActiveId: 'ecole-1' });
   assert.equal(resultat.ecoleActiveId, 'ecole-1');
+  const sessionRelue = await repositories.depotSessionUtilisateur.trouverSessionActive(
+    session.obtenirId(),
+  );
+  assert.equal(sessionRelue?.obtenirOrganisationActiveId(), 'org-1');
+  assert.equal(sessionRelue?.obtenirEcoleActiveId(), 'ecole-1');
 });
 
 test('ecole interdite ou incoherente rejetee', async () => {
@@ -44,8 +58,13 @@ test('ecole interdite ou incoherente rejetee', async () => {
   await repositories.depotSessionUtilisateur.sauvegarder(session);
   await repositories.depotContexteActifAuth.sauvegarder(contexte);
 
+  const sessionService = new SessionApplicationService(
+    repositories.depotSessionUtilisateur,
+    repositories.depotRefreshToken,
+    new SessionCachePortMemoire(),
+  );
   const interdit = new ChangerEcoleActiveUseCase(
-    new SessionApplicationService(repositories.depotSessionUtilisateur, repositories.depotRefreshToken, new SessionCachePortMemoire()),
+    sessionService,
     new ChangerContexteActifSaga(
       new TransactionManagerMemoire(),
       new ContexteActifApplicationService(
@@ -54,6 +73,7 @@ test('ecole interdite ou incoherente rejetee', async () => {
         new TenantContextPortMemoire(true),
         new MoteurContexteActif(),
       ),
+      sessionService,
     ),
   );
   await assert.rejects(() => interdit.executer({ sessionId: session.obtenirId(), ecoleActiveId: 'ecole-1' }));

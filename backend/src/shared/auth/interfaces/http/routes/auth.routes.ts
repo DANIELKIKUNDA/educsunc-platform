@@ -5,6 +5,7 @@ import { RefreshTokenCookie } from '../cookies/RefreshTokenCookie';
 import type { DependancesRoutesAuth } from './DependancesRoutesAuth';
 import { chargerConfigurationAuth } from '../../../../../config/auth.config';
 import { configurationApplication } from '../../../../../config/app.config';
+import { RefreshRateLimitPolicy } from '../middlewares/RefreshRateLimitPolicy';
 
 interface FastifyRequestAuthEnrichie extends FastifyRequest {
   authUtilisateur?: Record<string, unknown> | null;
@@ -67,6 +68,9 @@ function masquerRefreshToken(donnee: Record<string, unknown>): Record<string, un
 
 // Ce fichier enregistre toutes les routes HTTP exposees par AUTH.
 export const creerRoutesAuth = (dependances: DependancesRoutesAuth): FastifyPluginAsync => async (serveur) => {
+  const refreshRateLimitPolicy = new RefreshRateLimitPolicy(
+    dependances.rateLimitMiddleware,
+  );
   const executer = async (
     reponse: FastifyReply,
     operation: () => Promise<{ donnee: unknown }>,
@@ -116,7 +120,11 @@ export const creerRoutesAuth = (dependances: DependancesRoutesAuth): FastifyPlug
 
   serveur.post('/auth/refresh', (requete, reponse) =>
     executer(reponse, async () => {
-      dependances.rateLimitMiddleware.verifier(`refresh:${requete.ip}`, 10, 60_000);
+      refreshRateLimitPolicy.verifier({
+        adresseIp: requete.ip,
+        corps: requete.body,
+        headers: requete.headers,
+      });
       const resultat = await dependances.refreshTokenController.rafraichir(
         requete.body,
         (requete as FastifyRequest & { cookies?: unknown }).cookies,

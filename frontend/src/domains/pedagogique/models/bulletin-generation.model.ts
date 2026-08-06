@@ -1,4 +1,4 @@
-export type BulletinGenerationActorCode = 'TITULAIRE';
+export type BulletinGenerationActorCode = 'ENSEIGNANT';
 
 export interface BulletinGenerationRequest {
   idEleve: string;
@@ -23,5 +23,5 @@ export interface BulletinGenerationViewModel {
 }
 
 export const authorizedBulletinGenerationActors: BulletinGenerationActorCode[] = [
-  'TITULAIRE',
+  'ENSEIGNANT',
 ];

@@ -17,6 +17,8 @@ import type {
   SecurityAdministratorPayload,
 } from '../models/security.model';
 import { securityApi } from '../services/security.api';
+import { sessionStore } from '../../../shared/auth/session.store';
+import { notifierChangementCapacitesFrontend } from '../../../shared/auth/session.bootstrap';
 
 type LoadState = 'idle' | 'loading' | 'ready' | 'error';
 type Raw = Record<string, unknown>;
@@ -189,6 +191,15 @@ async function loadAll(): Promise<void> {
 
 async function mutate(operation: () => Promise<unknown>): Promise<void> {
   await operation();
+  await notifierChangementCapacitesFrontend().catch(() => undefined);
+  const conserveAccesSecurite = sessionStore.state.effectiveProfile.resolved
+    && sessionStore.state.permissions.some((permission) =>
+      permission.startsWith('security.'),
+    );
+  if (!conserveAccesSecurite) {
+    reinitialiser();
+    return;
+  }
   await loadAll();
 }
 
@@ -212,8 +223,25 @@ function mapRoleDetail(raw: unknown): SecurityRoleDetail {
   };
 }
 
+function reinitialiser(): void {
+  state.status = 'idle';
+  state.errorMessage = null;
+  state.overview = { ...emptyOverview };
+  state.accounts = [];
+  state.organizationAdministrators = [];
+  state.schoolAdministrators = [];
+  state.assignments = [];
+  state.sessions = [];
+  state.attempts = [];
+  state.auditEntries = [];
+  state.roles = [];
+  state.permissionCatalog = [];
+  state.administrationScopes = [];
+  state.nextAccountsCursor = undefined;
+}
+
 export const securityCenterStore = {
-  state: readonly(state), loadAll, loadMoreAccounts,
+  state: readonly(state), loadAll, loadMoreAccounts, reinitialiser,
   createPlatformAccount: (payload: SecurityCreateAccountPayload) => mutate(() => securityApi.creerComptePlateforme(payload)),
   changeAccountState: (id: string, action: 'suspend'|'reactivate'|'deactivate', motif?: string) => mutate(() => securityApi.changerEtatCompte(id, action, motif)),
   unlockAccount: (id: string, motif: string) => mutate(() => securityApi.deverrouillerCompte(id, motif)),

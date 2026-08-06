@@ -1,8 +1,7 @@
-import { clientApi } from '../../../services/api';
+import { clientApi } from '../../../shared/http/api.client';
 import {
   construireEntetesContexteActif,
   lireContexteApiActif,
-  lireEntetesAuthentificationActive,
 } from '../../../shared/session/api-context';
 import type {
   DetailResponse,
@@ -94,10 +93,6 @@ function construireEntetesContexte(contexte: FinanceApiContext): Record<string, 
   return construireEntetesContexteActif(contexte);
 }
 
-function construireUrlApi(chemin: string): string {
-  return `${clientApi.baseUrl}${chemin}`;
-}
-
 function construireQueryString(
   query: Record<string, string | boolean | undefined>,
 ): string {
@@ -123,7 +118,7 @@ function extraireNomFichier(contentDisposition: string | null, fallback: string)
     return fallback;
   }
 
-  const match = contentDisposition.match(/filename="([^\"]+)"/i);
+  const match = contentDisposition.match(/filename="([^"]+)"/i);
   return match?.[1] ?? fallback;
 }
 
@@ -273,23 +268,18 @@ export const financesApi = {
     blob: Blob;
     nomFichier: string;
   }> {
-    const reponse = await fetch(construireUrlApi(`/api/recus/${idRecu}/pdf`), {
-      method: 'GET',
-      headers: {
+    const reponse = await clientApi.telecharger({
+      chemin: `/api/recus/${idRecu}/pdf`,
+      entetes: {
         Accept: 'application/pdf',
-        ...lireEntetesAuthentificationActive(),
         ...construireEntetesContexte(contexte),
       },
     });
 
-    if (!reponse.ok) {
-      throw new Error('Le PDF du recu n a pas pu etre charge.');
-    }
-
     return {
-      blob: await reponse.blob(),
+      blob: reponse.blob,
       nomFichier: extraireNomFichier(
-        reponse.headers.get('content-disposition'),
+        reponse.entetes.get('content-disposition'),
         `recu-${idRecu}.pdf`,
       ),
     };

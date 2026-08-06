@@ -1,4 +1,5 @@
-import { clientApi } from '../../../services/api';
+import { ApiError, clientApi } from '../../../shared/http/api.client';
+import { queueService } from '../../../offline/queue/queue.service';
 import {
   construireEntetesContexteActif,
   lireContexteApiActif,
@@ -129,29 +130,61 @@ export const pedagogiqueApi = {
   async encoderCote(
     demande: { idFicheCotationEleveCours: string; codeColonne: string; cote: number; versionAttendue: number },
     contexte: PedagogicalApiContext,
+    offlineSchoolYearId?: string,
   ) {
-    return clientApi.envoyer<DetailResponse<GradeSheetApiRow>>({
-      chemin: '/api/cotes',
-      methode: 'POST',
-      corps: demande,
-      entetes: construireEntetesContexte(contexte),
-    });
+    const idempotencyKey = crypto.randomUUID();
+    try {
+      return await clientApi.envoyer<DetailResponse<GradeSheetApiRow>>({
+        chemin: '/api/cotes',
+        methode: 'POST',
+        corps: demande,
+        entetes: {
+          ...construireEntetesContexte(contexte),
+          'x-idempotency-key': idempotencyKey,
+        },
+      });
+    } catch (error) {
+      if (!(error instanceof ApiError) || error.code !== 'NETWORK_ERROR') throw error;
+      await queueService.enqueue({
+        operationType: 'ENCODER_COTE',
+        payload: demande,
+        idempotencyKey,
+        schoolYearId: offlineSchoolYearId,
+      });
+      return { queuedOffline: true as const };
+    }
   },
 
   async modifierCote(
     demande: { idFicheCotationEleveCours: string; codeColonne: string; nouvelleCote: number; versionAttendue: number },
     contexte: PedagogicalApiContext,
+    offlineSchoolYearId?: string,
   ) {
-    return clientApi.envoyer<DetailResponse<GradeSheetApiRow>>({
-      chemin: `/api/cotes/${demande.idFicheCotationEleveCours}`,
-      methode: 'PUT',
-      corps: {
-        codeColonne: demande.codeColonne,
-        nouvelleCote: demande.nouvelleCote,
-        versionAttendue: demande.versionAttendue,
-      },
-      entetes: construireEntetesContexte(contexte),
-    });
+    const idempotencyKey = crypto.randomUUID();
+    try {
+      return await clientApi.envoyer<DetailResponse<GradeSheetApiRow>>({
+        chemin: `/api/cotes/${demande.idFicheCotationEleveCours}`,
+        methode: 'PUT',
+        corps: {
+          codeColonne: demande.codeColonne,
+          nouvelleCote: demande.nouvelleCote,
+          versionAttendue: demande.versionAttendue,
+        },
+        entetes: {
+          ...construireEntetesContexte(contexte),
+          'x-idempotency-key': idempotencyKey,
+        },
+      });
+    } catch (error) {
+      if (!(error instanceof ApiError) || error.code !== 'NETWORK_ERROR') throw error;
+      await queueService.enqueue({
+        operationType: 'MODIFIER_COTE',
+        payload: demande,
+        idempotencyKey,
+        schoolYearId: offlineSchoolYearId,
+      });
+      return { queuedOffline: true as const };
+    }
   },
 
   async viderCote(

@@ -5,4 +5,6 @@ export interface AuditTimelineQuery {
   readonly acteurId?: string;
   readonly ressourceId?: string;
   readonly workflowId?: string;
+  readonly organisationId?: string;
+  readonly ecoleId?: string;
 }

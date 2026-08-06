@@ -7,4 +7,10 @@ export interface ResponsabiliteClassePedagogiquePort {
     idClassePedagogique: string;
     idAnneeScolaire: string;
   }): Promise<ResponsabiliteClassePedagogiqueReadModel | null>;
+
+  listerActivesParUtilisateur?(params: {
+    idOrganisation?: string;
+    idEcole: string;
+    idUtilisateur: string;
+  }): Promise<readonly ResponsabiliteClassePedagogiqueReadModel[]>;
 }

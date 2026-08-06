@@ -1,0 +1,60 @@
+# Suite E2E G1
+
+Cette suite certifie la gouvernance frontend avec les vraies routes, les vraies
+sessions développeur et les projections effectives du backend. Elle
+n'intercepte aucune réponse métier. Son précontrôle crée ou relit son
+organisation et son école de certification par les routes officielles, puis
+active les modules par les workflows Configuration existants.
+
+## Couverture
+
+- `MANAGER_SYSTEME` : audit Plateforme sans organisation ni école injectée ;
+- `SUPPORT_SYSTEME` : menus et actions de mutation absents, URL Organisation refusée ;
+- `CAISSIER` : audit financier limité à son organisation et son école ;
+- matrice des onze acteurs G1 avec acteur actif et niveau de gouvernance confirmés ;
+- refus d'une URL Plateforme avec absence d'appel API et de flash interdit ;
+- changement réel de contexte Plateforme vers Organisation puis retour Plateforme.
+- déconnexion avec purge immédiate du shell.
+
+## Prérequis réels
+
+- PostgreSQL initialisé avec le premier Manager système ;
+- Redis disponible si le démarrage backend courant l'exige ;
+- environnement backend `development`, afin d'exposer la vraie session développeur ;
+- le catalogue officiel des rôles système utilisé par les sessions développeur.
+
+Le précontrôle échoue avec un code explicite si une fixture manque :
+
+- `G1_BASE_NON_INITIALISEE` ;
+- `G1_ORGANISATION_REELLE_ABSENTE` ;
+- `G1_ECOLE_REELLE_ABSENTE` ;
+- `G1_MODULES_ORGANISATION_INDISPONIBLES` ;
+- `G1_MODULES_ECOLE_INDISPONIBLES`.
+
+Ces erreurs sont des blocages de certification. La suite ne les remplace jamais
+par un mock ou un identifiant de démonstration.
+
+## Exécution
+
+Depuis `frontend` :
+
+```powershell
+npx playwright install chromium
+npx playwright test --config e2e/g1/playwright.g1.config.ts
+```
+
+La configuration démarre toujours des services frais et isolés pour éviter
+qu'un backend ou un frontend ancien ne fausse la certification. Elle démarre
+le backend sur `3000` et Vite sur `4174`. Pour des ports différents :
+
+```powershell
+$env:EDUCSYN_BACKEND_URL='http://127.0.0.1:3000'
+$env:EDUCSYN_FRONTEND_URL='http://127.0.0.1:4174'
+npx playwright test --config e2e/g1/playwright.g1.config.ts
+```
+
+Pour vérifier la découverte des scénarios sans lancer les services :
+
+```powershell
+npx playwright test --config e2e/g1/playwright.g1.config.ts --list
+```

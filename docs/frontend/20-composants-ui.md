@@ -319,7 +319,7 @@ Un composant peut recevoir :
 - une capacite visible
 - un mode lecture seule
 - une action desactivee
-- un message d'interdiction contextualise
+- une condition metier temporaire expliquant une action desactivee
 
 Mais un composant ne doit pas recalculer seul toute la doctrine d'autorisation.
 
@@ -327,6 +327,18 @@ La regle officielle reste :
 
 - la permission est resolue au niveau page/vue
 - le composant ne fait que projeter l'etat autorise
+
+`AccessBoundary` et les helpers equivalents consomment la projection centrale des capacites effectives. Ils appliquent la politique d'action documentee, le module, le scope, le contexte, les restrictions et les capacites derivees sans inventer une permission locale.
+
+La projection officielle des etats est :
+
+- interdit : composant ou action absent
+- module inactif : composant ou action absent
+- autorise en lecture seule : lecture visible, mutation absente
+- autorise mais condition metier temporaire non satisfaite : action visible et desactivee avec explication
+- autorise : action visible et active
+
+Le composant ne monte pas son contenu protege avant resolution de la capacite et ne declenche pas l'appel API associe lorsqu'il est interdit.
 
 ## Composants Et Analyse
 
@@ -368,6 +380,8 @@ Les composants ne doivent pas :
 - remplacer les workflows
 - reconstruire la navigation
 - recalculer la securite transverse
+- afficher puis masquer une action apres un refus backend previsible
+- utiliser un role visible comme autorisation suffisante
 - masquer le contexte actif
 - lier de force plusieurs modules sans justification
 - imposer un design system qui ecrase le sens metier

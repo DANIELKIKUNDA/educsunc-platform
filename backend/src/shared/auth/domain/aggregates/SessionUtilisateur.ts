@@ -19,6 +19,7 @@ export interface ProprietesSessionUtilisateur {
   revoqueeLe?: Date;
   raisonRevocation?: string;
   dernierRefreshLe?: Date;
+  roleActif?: string;
   organisationActiveId?: string;
   ecoleActiveId?: string;
   creeLe: Date;
@@ -36,6 +37,7 @@ export class SessionUtilisateur extends RacineAgregat<string> {
   private revoqueeLe?: Date;
   private raisonRevocation?: string;
   private dernierRefreshLe?: Date;
+  private roleActif?: string;
   private organisationActiveId?: string;
   private ecoleActiveId?: string;
   private creeLe: Date;
@@ -52,6 +54,7 @@ export class SessionUtilisateur extends RacineAgregat<string> {
     this.revoqueeLe = SessionUtilisateur.clonerDateOptionnelle(proprietes.revoqueeLe);
     this.raisonRevocation = SessionUtilisateur.nettoyerOptionnel(proprietes.raisonRevocation);
     this.dernierRefreshLe = SessionUtilisateur.clonerDateOptionnelle(proprietes.dernierRefreshLe);
+    this.roleActif = SessionUtilisateur.nettoyerOptionnel(proprietes.roleActif);
     this.organisationActiveId = SessionUtilisateur.nettoyerOptionnel(proprietes.organisationActiveId);
     this.ecoleActiveId = SessionUtilisateur.nettoyerOptionnel(proprietes.ecoleActiveId);
     this.creeLe = SessionUtilisateur.validerDate(proprietes.creeLe, 'creeLe');
@@ -70,6 +73,7 @@ export class SessionUtilisateur extends RacineAgregat<string> {
     userAgent?: string;
     deviceId?: string;
     estOffline?: boolean;
+    roleActif?: string;
     organisationActiveId?: string;
     ecoleActiveId?: string;
   }): SessionUtilisateur {
@@ -81,6 +85,7 @@ export class SessionUtilisateur extends RacineAgregat<string> {
       userAgent: params.userAgent,
       deviceId: params.deviceId,
       estOffline: params.estOffline ?? false,
+      roleActif: params.roleActif,
       organisationActiveId: params.organisationActiveId,
       ecoleActiveId: params.ecoleActiveId,
       creeLe: new Date(),
@@ -99,6 +104,7 @@ export class SessionUtilisateur extends RacineAgregat<string> {
   public obtenirRevoqueeLe(): Date | undefined { return SessionUtilisateur.clonerDateOptionnelle(this.revoqueeLe); }
   public obtenirRaisonRevocation(): string | undefined { return this.raisonRevocation; }
   public obtenirDernierRefreshLe(): Date | undefined { return SessionUtilisateur.clonerDateOptionnelle(this.dernierRefreshLe); }
+  public obtenirRoleActif(): string | undefined { return this.roleActif; }
   public obtenirOrganisationActiveId(): string | undefined { return this.organisationActiveId; }
   public obtenirEcoleActiveId(): string | undefined { return this.ecoleActiveId; }
   public obtenirCreeLe(): Date { return new Date(this.creeLe.getTime()); }
@@ -118,8 +124,9 @@ export class SessionUtilisateur extends RacineAgregat<string> {
 
   // Cette methode change l'organisation active de la session.
   public changerOrganisationActive(organisationActiveId?: string): void {
+    const organisationPrecedente = this.organisationActiveId;
     this.organisationActiveId = SessionUtilisateur.nettoyerOptionnel(organisationActiveId);
-    if (!this.organisationActiveId) {
+    if (organisationPrecedente !== this.organisationActiveId) {
       this.ecoleActiveId = undefined;
     }
     PolicyContexteActif.verifier({
@@ -151,6 +158,15 @@ export class SessionUtilisateur extends RacineAgregat<string> {
   public remplacerRefreshToken(idRefreshToken: string, dateRefresh = new Date()): void {
     this.refreshTokenId = SessionUtilisateur.validerTexte(idRefreshToken, 'refreshTokenId');
     this.marquerRefresh(dateRefresh);
+  }
+
+  public definirRoleActif(roleActif?: string): void {
+    const roleNormalise = SessionUtilisateur.nettoyerOptionnel(roleActif);
+    if (this.roleActif === roleNormalise) {
+      return;
+    }
+    this.roleActif = roleNormalise;
+    this.version += 1;
   }
 
   // Cette methode active le mode offline pour la session.

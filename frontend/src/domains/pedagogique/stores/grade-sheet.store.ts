@@ -55,20 +55,24 @@ async function enregistrerCellule(demande: {
   try {
     const contexte = lireContexteApiPedagogique();
 
-    if (demande.hadExistingValue) {
-      await pedagogiqueApi.modifierCote({
+    const result = demande.hadExistingValue
+      ? await pedagogiqueApi.modifierCote({
         idFicheCotationEleveCours: demande.idFicheCotationEleveCours,
         codeColonne: demande.codeColonne,
         nouvelleCote: demande.value,
         versionAttendue: demande.version,
-      }, contexte);
-    } else {
-      await pedagogiqueApi.encoderCote({
+      }, contexte, filters.idAnneeScolaire)
+      : await pedagogiqueApi.encoderCote({
         idFicheCotationEleveCours: demande.idFicheCotationEleveCours,
         codeColonne: demande.codeColonne,
         cote: demande.value,
         versionAttendue: demande.version,
-      }, contexte);
+      }, contexte, filters.idAnneeScolaire);
+
+    if ('queuedOffline' in result) {
+      state.savingStatus = 'saved';
+      state.saveMessage = 'Cote conservee sur cet appareil. Elle sera synchronisee au retour de la connexion.';
+      return;
     }
 
     await charger(filters);

@@ -178,21 +178,26 @@ export class GlobalTestBootstrap {
       new TenantContextPortMemoire(true),
       new MoteurContexteActif(),
     );
+    const sessionApplicationService = new SessionApplicationService(
+      this.authRepositories.depotSessionUtilisateur,
+      this.authRepositories.depotRefreshToken,
+      this.sessionCache,
+    );
     this.changerOrganisationActiveUseCase = new ChangerOrganisationActiveUseCase(
-      new SessionApplicationService(
-        this.authRepositories.depotSessionUtilisateur,
-        this.authRepositories.depotRefreshToken,
-        this.sessionCache,
+      sessionApplicationService,
+      new ChangerContexteActifSaga(
+        this.transactionManager,
+        contexteService,
+        sessionApplicationService,
       ),
-      new ChangerContexteActifSaga(this.transactionManager, contexteService),
     );
     this.changerEcoleActiveUseCase = new ChangerEcoleActiveUseCase(
-      new SessionApplicationService(
-        this.authRepositories.depotSessionUtilisateur,
-        this.authRepositories.depotRefreshToken,
-        this.sessionCache,
+      sessionApplicationService,
+      new ChangerContexteActifSaga(
+        this.transactionManager,
+        contexteService,
+        sessionApplicationService,
       ),
-      new ChangerContexteActifSaga(this.transactionManager, contexteService),
     );
   }
 
@@ -469,6 +474,7 @@ export class GlobalTestBootstrap {
       affectationTitulariatRepository: this.securityRepositories.titulariatRepository,
       auditSecurityPort: null,
       responsabiliteClassePedagogiquePort: null,
+      ownershipParentPort: null,
     });
   }
 

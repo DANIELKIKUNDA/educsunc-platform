@@ -2,6 +2,7 @@ export * from './AuthenticatedUserPort';
 export * from './AuditSecurityPort';
 export * from './ClockPort';
 export * from './PermissionCachePort';
+export * from './OwnershipParentPort';
 export * from './ResponsabiliteClassePedagogiquePort';
 export * from './SecurityNotificationPort';
 export * from './SessionContextPort';

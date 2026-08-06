@@ -76,6 +76,29 @@ export class ValidationHttpAudit {
     return valeur;
   }
 
+  public static lireEntierQueryDansBornes(
+    objet: Record<string, unknown>,
+    cle: string,
+    min: number,
+    max: number,
+  ): number | undefined {
+    const valeurBrute = objet[cle];
+    if (valeurBrute == null) {
+      return undefined;
+    }
+
+    const valeur = typeof valeurBrute === 'string' && /^-?\d+$/.test(valeurBrute.trim())
+      ? Number(valeurBrute)
+      : valeurBrute;
+    if (typeof valeur !== 'number' || !Number.isSafeInteger(valeur)) {
+      throw new Error(`${cle} doit être un entier.`);
+    }
+    if (valeur < min || valeur > max) {
+      throw new Error(`${cle} doit être compris entre ${min} et ${max}.`);
+    }
+    return valeur;
+  }
+
   public static lireEntierRequis(objet: Record<string, unknown>, cle: string): number {
     const valeur = this.lireEntierOptionnel(objet, cle);
     if (valeur == null) {
@@ -151,8 +174,8 @@ export class ValidationHttpAudit {
   }
 
   public static validerPagination(objet: Record<string, unknown>): void {
-    this.lireEntierDansBornes(objet, 'page', 1, 10_000);
-    this.lireEntierDansBornes(objet, 'taillePage', 1, 500);
+    this.lireEntierQueryDansBornes(objet, 'page', 1, 10_000);
+    this.lireEntierQueryDansBornes(objet, 'taillePage', 1, 500);
   }
 
   public static validerTenant(objet: Record<string, unknown>): void {

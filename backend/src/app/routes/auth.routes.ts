@@ -75,10 +75,11 @@ import { configurationApplication } from '../../config/app.config';
 import { chargerConfigurationAuth } from '../../config/auth.config';
 import { UtilisateurAuth } from '../../shared/auth/domain/aggregates/UtilisateurAuth';
 import { AffectationUtilisateur, Role, obtenirDefinitionRoleSysteme } from '../../shared/security/domain';
+import { moduleActivationConfigurationService } from './configuration.routes';
 
 const MOT_DE_PASSE_SESSION_DEV = 'EducSyn.dev.session.2026';
-const ORGANISATION_DEV_PAR_DEFAUT = 'org-edusync-dev';
-const ECOLE_DEV_PAR_DEFAUT = 'ecole-edusync-dev';
+const ORGANISATION_DEV_PAR_DEFAUT = '00000000-0000-5000-a000-000000000001';
+const ECOLE_DEV_PAR_DEFAUT = '00000000-0000-5000-a000-000000000002';
 
 export function sessionDeveloppeurDisponible(environnement: string): boolean {
   return environnement === 'development';
@@ -96,7 +97,6 @@ type CodeActeurDeveloppement =
   | 'CAISSIER'
   | 'SECRETAIRE'
   | 'ENSEIGNANT'
-  | 'TITULAIRE'
   | 'PREFET_ETUDES'
   | 'DIRECTEUR_ETUDES'
   | 'DIRECTEUR_DISCIPLINE'
@@ -147,7 +147,6 @@ const profilsSessionDeveloppeur: Record<CodeActeurDeveloppement, ProfilSessionDe
   CAISSIER: { nomComplet: 'Daniel Kikunda', niveauAcces: 'ECOLE' },
   SECRETAIRE: { nomComplet: 'Rachel Kalonji', niveauAcces: 'ECOLE' },
   ENSEIGNANT: { nomComplet: 'Michel Kabeya', niveauAcces: 'ECOLE' },
-  TITULAIRE: { nomComplet: 'Junior Mbuyi', niveauAcces: 'ECOLE' },
   PREFET_ETUDES: { nomComplet: 'Ruth Mukendi', niveauAcces: 'ECOLE' },
   DIRECTEUR_ETUDES: { nomComplet: 'Jean Kanku', niveauAcces: 'ECOLE' },
   DIRECTEUR_DISCIPLINE: { nomComplet: 'Didier Banza', niveauAcces: 'ECOLE' },
@@ -198,6 +197,13 @@ class TenantContextAuthAdapter {
 interface CompositionRoutesAuth {
   dependancesRoutes: Parameters<typeof creerRoutesAuth>[0];
   loginUseCase: LoginUseCase;
+  activerContextePlateforme: (
+    sessionId: string,
+    utilisateurId: string,
+  ) => Promise<{
+    organisationActiveId?: string;
+    ecoleActiveId?: string;
+  }>;
 }
 
 function verifierMotDePasseSynchrone(motDePasseClair: string, motDePasseHash: string): boolean {
@@ -375,19 +381,31 @@ function composerRoutesAuth(): CompositionRoutesAuth {
     },
     resoudreRoleActif: async (utilisateurId) => {
       const affectations = await affectationUtilisateurRepository.listerActivesParUtilisateur(utilisateurId);
+      const rolesActifs = new Set<string>();
       for (const affectation of affectations) {
         const role = await roleRepository.trouverParId(affectation.obtenirIdRole());
         if (role?.obtenirEstActif()) {
-          return role.obtenirCodeRole().obtenirValeur();
+          rolesActifs.add(role.obtenirCodeRole().obtenirValeur());
         }
       }
-      return undefined;
+      return rolesActifs.size === 1 ? [...rolesActifs][0] : undefined;
     },
     resoudrePermissionsEffectives: async (utilisateurId) => {
       const affectations = await affectationUtilisateurRepository.listerActivesParUtilisateur(utilisateurId);
-      const permissions = new Set<string>();
+      const rolesActifs: Role[] = [];
+      const codesRoles = new Set<string>();
       for (const affectation of affectations) {
         const role = await roleRepository.trouverParId(affectation.obtenirIdRole());
+        if (role?.obtenirEstActif()) {
+          rolesActifs.push(role);
+          codesRoles.add(role.obtenirCodeRole().obtenirValeur());
+        }
+      }
+      if (codesRoles.size !== 1) {
+        return [];
+      }
+      const permissions = new Set<string>();
+      for (const role of rolesActifs) {
         role?.obtenirPermissions().forEach((permission) => {
           permissions.add(permission.obtenirPermission().obtenirValeur());
         });
@@ -465,6 +483,7 @@ function composerRoutesAuth(): CompositionRoutesAuth {
   const changerContexteActifSaga = new ChangerContexteActifSaga(
     transactionManager,
     contexteActifApplicationService,
+    sessionApplicationService,
     auditAuthApplicationService,
   );
 
@@ -493,6 +512,8 @@ function composerRoutesAuth(): CompositionRoutesAuth {
 
   return {
     loginUseCase,
+    activerContextePlateforme: (sessionId, utilisateurId) =>
+      changerContexteActifSaga.activerPlateforme(sessionId, utilisateurId),
     dependancesRoutes: {
       loginController: new LoginController(loginUseCase),
       logoutController: new LogoutController(logoutUseCase),
@@ -564,7 +585,7 @@ async function assurerRoleDeveloppeur(
   roleRepository: PostgresRoleRepository,
   actorCode: CodeActeurDeveloppement,
 ): Promise<Role> {
-  const codeRole = actorCode === 'TITULAIRE' ? 'ENSEIGNANT' : actorCode;
+  const codeRole = actorCode;
   const roleExistant = await roleRepository.trouverParCode(codeRole);
   if (roleExistant !== null) {
     return roleExistant;
@@ -689,6 +710,7 @@ export const routeAuth: PluginRoutesAuth = Object.assign(
   async (serveur: Parameters<FastifyPluginAsync>[0]) => {
     const composition = composerRoutesAuth();
     const depotUtilisateurAuth = new PostgresUtilisateurAuthRepository();
+    const depotSessionUtilisateur = new PostgresSessionUtilisateurRepository();
     const affectationUtilisateurRepository = new PostgresAffectationUtilisateurRepository();
     const roleRepository = new PostgresRoleRepository();
 
@@ -782,33 +804,121 @@ export const routeAuth: PluginRoutesAuth = Object.assign(
     });
 
     serveur.get('/api/auth/profil', async (requete, reponse) => {
-      const utilisateurId = typeof requete.headers['x-user-id'] === 'string'
-        ? requete.headers['x-user-id']
-        : undefined;
-      if (!utilisateurId) {
+      const contexte = requete.context;
+      const utilisateurId = contexte?.utilisateurId;
+      const sessionId = contexte?.sessionId;
+      if (!utilisateurId || !sessionId) {
         return reponse.code(401).send({
           code: 'AUTHENTICATION_REQUIRED',
           message: 'Une authentification est requise.',
         });
       }
 
-      const affectations = await affectationUtilisateurRepository.listerActivesParUtilisateur(utilisateurId);
-      for (const affectation of affectations) {
-        const role = await roleRepository.trouverParId(affectation.obtenirIdRole());
-        if (!role?.obtenirEstActif()) {
-          continue;
-        }
-        return reponse.code(200).send({
-          acteurCode: role.obtenirCodeRole().obtenirValeur(),
-          permissions: role.obtenirPermissions().map((permission) =>
-            permission.obtenirPermission().obtenirValeur()),
+      const [utilisateur, session, modules] = await Promise.all([
+        depotUtilisateurAuth.trouverParId(utilisateurId),
+        depotSessionUtilisateur.trouverSessionActive(sessionId),
+        moduleActivationConfigurationService.resoudreModulesPourContexte({
+          organisationId: contexte.organisationActiveId,
+          ecoleId: contexte.ecoleActiveId,
+        }),
+      ]);
+      if (!utilisateur || !session) {
+        return reponse.code(401).send({
+          code: 'AUTHENTICATION_REQUIRED',
+          message: 'La session authentifiee n est plus active.',
         });
       }
 
-      return reponse.code(403).send({
-        code: 'ACTIVE_PROFILE_UNAVAILABLE',
-        message: "Aucun profil de travail actif n'est disponible pour ce compte.",
+      const acteurCodeActif = contexte.roleActif;
+      const actorCodes = contexte.actorCodes ?? [];
+      if (!acteurCodeActif || !actorCodes.includes(acteurCodeActif)) {
+        return reponse.code(403).send({
+          code: 'ACTIVE_PROFILE_UNAVAILABLE',
+          message: "Aucun profil de travail actif n'est disponible pour ce compte.",
+        });
+      }
+
+      const scopes = contexte.scopes.map((scope) => ({
+        typeScope: scope.obtenirTypeScope().obtenirValeur(),
+        valeurScope: scope.obtenirValeurScope(),
+        estLectureSeule: scope.obtenirEstLectureSeule(),
+      }));
+      const titulariatsActifs = contexte.titulariats.map((titulariat) => ({
+        idAffectationTitulariat: titulariat.obtenirId(),
+        idUtilisateur: titulariat.obtenirIdUtilisateur(),
+        idOrganisation: titulariat.obtenirIdOrganisation(),
+        idEcole: titulariat.obtenirIdEcole(),
+        idClasse: titulariat.obtenirIdClasse(),
+        idAnneeScolaire: titulariat.obtenirIdAnneeScolaire(),
+        estActif: titulariat.obtenirEstActif(),
+      }));
+      const etatCompte = utilisateur.obtenirEtatCompte();
+
+      return reponse.code(200).send({
+        versionContrat: 1,
+        session: {
+          id: session.obtenirId(),
+          etat: 'ACTIVE',
+          modeOffline: session.obtenirEstOffline(),
+        },
+        compte: {
+          idUtilisateur: utilisateur.obtenirId(),
+          nomComplet: utilisateur.obtenirNomComplet(),
+          email: utilisateur.obtenirEmail().obtenirValeur(),
+          etat: etatCompte,
+          actif: etatCompte === 'ACTIVE',
+        },
+        contexte: {
+          governanceLevel: modules.niveau,
+          organisationId: contexte.organisationActiveId ?? null,
+          ecoleId: contexte.ecoleActiveId ?? null,
+          anneeScolaireId: null,
+        },
+        actorCodes,
+        acteurCodeActif,
+        permissionsEffectives: [...contexte.permissions],
+        scopes,
+        restrictions: [...contexte.restrictions],
+        modulesDisponibles: [...modules.modulesDisponibles],
+        modulesEffectifs: [...modules.modulesEffectifs],
+        titulariatsActifs,
+        titulariatsEffectifs: (contexte.titulariatsEffectifs ?? []).map((titulariat) => ({
+          ...titulariat,
+        })),
+        estTitulaireEffectif: contexte.estTitulaireEffectif === true,
+        sourceTitulariatEffectif: contexte.sourceTitulariatEffectif ?? 'AUCUNE',
+        ownership: {
+          elevesAutorises: [...(contexte.elevesAutorises ?? [])],
+        },
+        // Compatibilite du client existant pendant l'adoption du contrat versionne.
+        acteurCode: acteurCodeActif,
+        permissions: [...contexte.permissions],
       });
+    });
+
+    serveur.put('/api/auth/contexte/plateforme-active', async (requete, reponse) => {
+      const contexte = requete.context;
+      if (!contexte?.utilisateurId || !contexte.sessionId) {
+        return reponse.code(401).send({
+          code: 'AUTHENTICATION_REQUIRED',
+          message: 'Une authentification est requise.',
+        });
+      }
+      const portePlateforme = contexte.scopes.some(
+        (scope) => scope.obtenirTypeScope().obtenirValeur() === 'PLATEFORME',
+      );
+      if (!portePlateforme) {
+        return reponse.code(403).send({
+          code: 'SCOPE_DENIED',
+          message: "Ce compte ne dispose pas d'un périmètre plateforme.",
+        });
+      }
+
+      const resultat = await composition.activerContextePlateforme(
+        contexte.sessionId,
+        contexte.utilisateurId,
+      );
+      return reponse.code(200).send(resultat);
     });
 
     if (sessionDeveloppeurDisponible(configurationApplication.environnement)) {

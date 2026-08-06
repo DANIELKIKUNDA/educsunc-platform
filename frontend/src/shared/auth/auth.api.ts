@@ -1,4 +1,5 @@
-import { clientApi } from '../../services/api';
+import { clientApi } from '../http/api.client';
+import type { EffectiveProfilePayloadV1 } from '../permissions/effective-profile.types';
 
 export interface BackendSessionApiData {
   sessionId: string;
@@ -37,6 +38,13 @@ export interface BackendDeveloperSessionApiData extends BackendLoginApiData {
   refreshToken?: string;
 }
 
+export interface BackendEffectiveProfileApiData extends EffectiveProfilePayloadV1 {
+  versionContrat: 1;
+  acteurCodeActif: string;
+  actorCodes: readonly string[];
+  permissionsEffectives: readonly string[];
+}
+
 function construireEntetesAuth(params: {
   accessToken: string;
   sessionId: string;
@@ -51,6 +59,16 @@ function construireEntetesAuth(params: {
     ...(params.organisationActiveId ? { 'x-organisation-id': params.organisationActiveId } : {}),
     ...(params.ecoleActiveId ? { 'x-tenant-id': params.ecoleActiveId } : {}),
   };
+}
+
+function construireEntetesSession(params: {
+  accessToken: string;
+  sessionId: string;
+}): Record<string, string> {
+  return construireEntetesAuth({
+    accessToken: params.accessToken,
+    sessionId: params.sessionId,
+  });
 }
 
 export const authApi = {
@@ -138,10 +156,10 @@ export const authApi = {
     });
   },
 
-  async obtenirProfil(params: { accessToken: string; sessionId: string }): Promise<{
-    acteurCode: string;
-    permissions: readonly string[];
-  }> {
+  async obtenirProfil(params: {
+    accessToken: string;
+    sessionId: string;
+  }): Promise<BackendEffectiveProfileApiData> {
     return clientApi.envoyer({
       chemin: '/api/auth/profil',
       entetes: construireEntetesAuth(params),
@@ -172,6 +190,17 @@ export const authApi = {
       chemin: '/api/auth/contexte/organisation-active',
       methode: 'PUT',
       corps: { organisationActiveId: params.organisationActiveId },
+      entetes: construireEntetesSession(params),
+    });
+  },
+
+  async activerContextePlateforme(params: {
+    accessToken: string;
+    sessionId: string;
+  }): Promise<BackendContexteActifApiData> {
+    return clientApi.envoyer({
+      chemin: '/api/auth/contexte/plateforme-active',
+      methode: 'PUT',
       entetes: construireEntetesAuth(params),
     });
   },
@@ -185,7 +214,7 @@ export const authApi = {
       chemin: '/api/auth/contexte/ecole-active',
       methode: 'PUT',
       corps: { ecoleActiveId: params.ecoleActiveId },
-      entetes: construireEntetesAuth(params),
+      entetes: construireEntetesSession(params),
     });
   },
 };

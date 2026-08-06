@@ -255,3 +255,16 @@ Avant de figer un centre `Plateforme`, verifier :
 ## Statut De Figement
 
 `STANDARDS UI PLATEFORME FIGES`
+
+## Socle Technique D1.6
+
+Les centres actuels et futurs reutilisent une seule pile UI :
+
+- CSS EduSync et jetons semantiques `--ui-*`
+- Lucide Vue pour les icones
+- `notificationsService` et `ToastStack` pour les notifications temporaires
+- `ModalShell` pour les dialogues et confirmations metier
+
+PrimeVue, Tailwind, Sonner, SweetAlert2 et les dialogues natifs du navigateur ne sont pas introduits. Une nouvelle bibliotheque exige une decision d'architecture prouvant que le socle commun ne couvre pas le besoin.
+
+Les composants futurs doivent suivre `docs/quality/d1-6-design-system-premium.md` et passer la certification `npm run test:design-system`.

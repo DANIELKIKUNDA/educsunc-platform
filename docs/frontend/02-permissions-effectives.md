@@ -70,6 +70,9 @@ La permission brute ne suffit pas, a elle seule, a determiner ce que l'acteur pe
 
 Une permission effective est une permission reellement mobilisable apres prise en compte de :
 
+- l'identite et l'etat du compte
+- l'etat de la session
+- l'acteur actif
 - l'affectation active
 - le contexte actif
 - le scope autorise
@@ -78,11 +81,14 @@ Une permission effective est une permission reellement mobilisable apres prise e
 - les restrictions metier
 - les policies specialisees
 - les acteurs derives eventuels
+- les modules effectivement disponibles
 
 Autrement dit :
 
 permission effective =
 permission brute
++ compte et session valides
++ acteur actif
 + contexte actif valide
 + scope valide
 + perimetre metier valide
@@ -90,6 +96,7 @@ permission brute
 + restrictions respectees
 + policies metier respectees
 + logique d'acteur derive appliquee
++ module effectivement disponible
 
 ## Role de `shared/security`
 
@@ -113,6 +120,26 @@ Le frontend doit raisonner en mode :
 - acteur reel
 - contexte courant
 - permission effective
+
+## Contrat De Projection Des Capacites Effectives
+
+Le frontend relit une projection serveur unique apres l'ouverture ou la restauration d'une session et apres chaque changement de contexte.
+
+Cette projection est la seule source frontend pour :
+
+- les acteurs disponibles et l'acteur actif
+- les permissions effectives
+- les scopes
+- les restrictions
+- le niveau de gouvernance
+- l'organisation et l'ecole actives
+- l'annee scolaire active
+- les modules effectivement disponibles
+- les capacites derivees et titulariats effectifs
+
+Le resolver frontend ne copie pas le catalogue des permissions backend dans chaque module. Il relie les codes d'action documentes aux permissions backend existantes dans une politique centralisee, puis applique permission, scope, module, restriction, contexte et capacite derivee.
+
+Une projection absente, invalide ou devenue obsolete produit un refus par defaut. Le frontend n'utilise ni profil fictif, ni wildcard de scope, ni union des permissions de plusieurs roles pour maintenir artificiellement l'interface ouverte.
 
 ## Matrice Officielle Attestee
 
@@ -875,7 +902,7 @@ Lecture doctrinale importante :
 
 Le premier workflow reel de `shared/audit` maintenant fige est :
 
-- consultation de l'audit plateforme filtre sur l'ecole active
+- consultation de l'audit plateforme global
 
 Permissions effectives attestees :
 
@@ -896,8 +923,8 @@ Acteurs reels actuellement attestes :
 Perimetre reel :
 
 - la permission seule reste insuffisante
-- les routes imposent aussi un scope `ECOLE`
-- la lecture se fait donc dans l'ecole active du contexte securise
+- les routes imposent un scope `PLATEFORME`
+- aucune organisation ni ecole active n'est exigee pour cette lecture globale
 - les acteurs positifs prouves restent des acteurs plateforme
 - ce workflow ne constitue donc pas encore un audit metier ecole
 - `ADMINISTRATEUR_ECOLE` n'herite pas implicitement de ce workflow et reste refuse sans permissions `audit.*`
@@ -907,7 +934,7 @@ Lecture doctrinale importante :
 - `SHD-AUD-01` respecte bien la doctrine officielle `permission + perimetre`
 - ici le perimetre concret porte par le backend est :
   - permission `audit.*`
-  - plus ecole active compatible dans le contexte SECURITY
+  - plus scope `PLATEFORME` compatible dans le contexte SECURITY
 - le BC `shared/audit` doit etre relu comme une famille de workflows distincts :
   - audit organisationnel
   - audit administratif et financier ecole
@@ -915,7 +942,7 @@ Lecture doctrinale importante :
   - audit pedagogique
   - audit disciplinaire
   - audit plateforme
-- `SHD-AUD-01` ne prouve aujourd'hui que la famille audit plateforme, filtree par une ecole active
+- `SHD-AUD-01` prouve la famille audit plateforme globale, sans dependance artificielle a une ecole
 
 Correspondance officielle :
 
@@ -998,6 +1025,7 @@ Perimetre reel :
 - la permission seule reste insuffisante
 - les routes imposees par `AUD-01` sont bornees a un scope `ORGANISATION`
 - la lecture est donc limitee aux ecoles de l'organisation active dans le contexte securise
+- aucune ecole active n'est exigee pour ouvrir cette synthese organisationnelle
 - `ADMINISTRATEUR_ECOLE` reste refuse en l'etat sur ces routes organisationnelles
 
 Lecture doctrinale importante :
@@ -1032,6 +1060,7 @@ Perimetre reel :
 - la permission seule reste insuffisante
 - les routes imposees par `AUD-02` sont bornees a un scope `ECOLE`
 - le backend force en plus la famille `categorieAudit=FINANCIER`
+- le frontend affiche l'entree au `CAISSIER` lorsque `audit.finance.read`, le scope de son ecole, le module Audit et les restrictions effectives sont satisfaits
 - `DIRECTEUR_ETUDES` reste refuse en l'etat
 
 Lecture doctrinale importante :
@@ -1145,6 +1174,8 @@ Perimetre reel :
 - la permission seule reste insuffisante
 - `modules.allowed` est maintenant borne a `ORGANISATION`
 - `modules.enabled` est maintenant borne a `ECOLE`
+- toute lecture ou mutation des modules d'une ecole verifie le rattachement officiel `ecole -> organisation` dans le referentiel academique
+- un acteur Plateforme ne peut pas contourner cette coherence en transmettant un autre couple organisation-ecole
 - la resolution effective recalcule `organisation autorisee + ecole active`
 - le blocage runtime reapplique ensuite cette resolution sur les routes globales des modules actives
 
@@ -1162,7 +1193,9 @@ Lecture doctrinale importante :
   - `USER` pour un acteur sur sa propre configuration ou via sa hierarchie autorisee
 - une ecole peut surcharger une configuration heritee vers sa propre portee, mais ne peut pas muter directement une configuration `SYSTEM`
 - `NOTIFICATIONS`, `AUDIT` et `MONITORING` font partie des modules activables au meme titre que les BC metier
-- l'absence de configuration modulaire explicite laisse provisoirement les modules actifs, afin de ne pas casser l'existant
+- l'absence ou l'invalidite de `modules.allowed` n'autorise aucun module implicitement
+- la creation d'une organisation initialise explicitement son catalogue autorise afin de conserver un parcours d'onboarding utilisable sans introduire de comportement fail-open
+- l'absence de `modules.enabled` n'active jamais automatiquement les modules d'une ecole
 - les routes brutes `shared/security` exposees sous `/api/v1/security/*` sont maintenant bornees a `PLATEFORME / SYSTEME`
 - le contexte actif officiel continue de rester porte par `AUTH`
 - les BC metier ecole et organisation consomment `shared/security` indirectement via leurs propres adaptateurs locaux, pas via la raw API plateforme
@@ -1177,6 +1210,9 @@ Le frontend devra toujours raisonner en termes de :
 - contexte actif
 - actor derivation deja decidee par le backend
 - transport explicite du contexte de securite attendu
+- modules effectivement disponibles
+- acteur actif sans union des permissions de ses autres roles
+- role actif persiste par session et stable pendant la rotation des jetons
 
 Et jamais en termes de :
 
@@ -1184,6 +1220,7 @@ Et jamais en termes de :
 - simple permission brute
 - simple deduction locale de titulariat
 - contexte HTTP suppose ou reconstruit localement
+- permission frontend inventee ou profil de demonstration utilise comme autorisation
 
 ## Conclusion
 

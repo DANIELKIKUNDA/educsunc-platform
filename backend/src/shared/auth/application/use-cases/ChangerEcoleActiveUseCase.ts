@@ -13,6 +13,10 @@ export class ChangerEcoleActiveUseCase implements UseCase<ChangerEcoleActiveInpu
 
   public async executer(entree: ChangerEcoleActiveInput): Promise<ContexteActifOutput> {
     const session = await this.sessionApplicationService.obtenirSessionActive(entree.sessionId);
-    return this.changerContexteActifSaga.changerEcoleActive(session.utilisateurId, entree.ecoleActiveId);
+    return this.changerContexteActifSaga.changerEcoleActive(
+      session.sessionId,
+      session.utilisateurId,
+      entree.ecoleActiveId,
+    );
   }
 }

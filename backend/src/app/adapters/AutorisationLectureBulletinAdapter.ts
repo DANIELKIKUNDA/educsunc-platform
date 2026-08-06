@@ -16,11 +16,23 @@ import {
   MoteurRestrictionsMetier,
   MoteurScope,
 } from '../../shared/security/domain';
+import type {
+  AffectationTitulariatRepositoryPort,
+  AffectationUtilisateurRepositoryPort,
+  AuditSecurityPort,
+  ResponsabiliteClassePedagogiquePort,
+  RoleRepositoryPort,
+} from '../../shared/security/application/ports';
 import { ScolariteElevesAdapter } from '../../contexts/paiements-facturation/infrastructure/adapters/ScolariteElevesAdapter';
 import { ResponsabiliteClassePedagogiqueAdapter } from './ResponsabiliteClassePedagogiqueAdapter';
 import { SectionClassePedagogiqueAdapter } from './SectionClassePedagogiqueAdapter';
 
 interface DependancesAutorisationLectureBulletinAdapter {
+  roleRepository?: RoleRepositoryPort;
+  affectationRepository?: AffectationUtilisateurRepositoryPort;
+  titulariatRepository?: AffectationTitulariatRepositoryPort;
+  auditSecurityPort?: AuditSecurityPort;
+  responsabiliteClassePedagogiquePort?: ResponsabiliteClassePedagogiquePort;
   consulterFamilleEleve?: (idEleve: string) => Promise<{
     idFamille: string;
     idEcole: string;
@@ -67,9 +79,9 @@ interface DependancesAutorisationLectureBulletinAdapter {
 // Cet adaptateur reapplique la doctrine permission + perimetre pour la lecture d'un bulletin.
 export class AutorisationLectureBulletinAdapter implements AutorisationLectureBulletinPort {
   private readonly infrastructureScolarite = creerInfrastructurePostgresScolariteEleves();
-  private readonly roleRepository = new PostgresRoleRepository();
-  private readonly affectationRepository = new PostgresAffectationUtilisateurRepository();
-  private readonly titulariatRepository = new PostgresAffectationTitulariatRepository();
+  private readonly roleRepository: RoleRepositoryPort;
+  private readonly affectationRepository: AffectationUtilisateurRepositoryPort;
+  private readonly titulariatRepository: AffectationTitulariatRepositoryPort;
   private readonly scolariteElevesAdapter = new ScolariteElevesAdapter(
     this.infrastructureScolarite.clientLecture,
   );
@@ -81,12 +93,18 @@ export class AutorisationLectureBulletinAdapter implements AutorisationLectureBu
   constructor(
     private readonly dependances?: DependancesAutorisationLectureBulletinAdapter,
   ) {
-    const responsabiliteClassePort = this.dependances?.consulterResponsabiliteClassePedagogique
+    this.roleRepository = dependances?.roleRepository ?? new PostgresRoleRepository();
+    this.affectationRepository =
+      dependances?.affectationRepository ?? new PostgresAffectationUtilisateurRepository();
+    this.titulariatRepository =
+      dependances?.titulariatRepository ?? new PostgresAffectationTitulariatRepository();
+    const responsabiliteClassePort = this.dependances?.responsabiliteClassePedagogiquePort
+      ?? (this.dependances?.consulterResponsabiliteClassePedagogique
       ? {
         consulterActiveParClasseEtAnnee:
           this.dependances.consulterResponsabiliteClassePedagogique,
       }
-      : this.responsabiliteClassePedagogiqueAdapter;
+      : this.responsabiliteClassePedagogiqueAdapter);
 
     this.securityFacade = new SecurityFacade(
       this.roleRepository,
@@ -97,7 +115,7 @@ export class AutorisationLectureBulletinAdapter implements AutorisationLectureBu
       new MoteurScope(),
       new MoteurRestrictionsMetier(),
       new MoteurCapacitesEffectives(),
-      new SecurityAuditInfrastructureService(),
+      dependances?.auditSecurityPort ?? new SecurityAuditInfrastructureService(),
       responsabiliteClassePort,
     );
 

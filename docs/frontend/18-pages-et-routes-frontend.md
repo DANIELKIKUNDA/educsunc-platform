@@ -127,6 +127,10 @@ Les routes frontend doivent rester filtrees par :
 - permission effective
 - perimetre actif
 - role ou acteur d'experience
+- restrictions effectives
+- capacites derivees eventuelles
+
+Le garde-route utilise la meme projection de capacites que les menus et les actions. Il ne maintient pas un second catalogue d'autorisation.
 
 ### Regle 5
 
@@ -451,7 +455,9 @@ Le contexte actif de haut niveau doit etre porte en priorite par le shell applic
 
 ## Regles Sur Les Pages Interdites
 
-Le frontend devra savoir produire des pages ou etats explicites pour :
+Une page interdite n'est pas proposee dans la navigation. Une tentative par URL directe, favori, historique navigateur ou ancien lien est refusee avant le montage de la vue et avant tout appel API metier.
+
+Le frontend doit savoir produire une redirection ou un etat explicite pour :
 
 - non autorise
 - module desactive
@@ -460,6 +466,10 @@ Le frontend devra savoir produire des pages ou etats explicites pour :
 - perimetre invalide
 
 Ces etats font partie de la responsabilite de la page, pas encore de la vue finale.
+
+Le router redirige vers la premiere route reellement autorisee, ou vers une page d'acces refuse si aucune route metier n'est ouvrable. Il ne doit produire ni boucle de redirection, ni flash de contenu interdit.
+
+Apres un changement de contexte ou le retrait d'une permission, la route courante est reevaluee avec la nouvelle projection avant le rechargement des donnees.
 
 ## Modele De Cartographie A Utiliser Ensuite
 

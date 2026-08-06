@@ -37,6 +37,7 @@ export type PaymentDelegatedPerceptionRoleCode =
   | 'DIRECTEUR_PRIMAIRE'
   | 'DIRECTEUR_MATERNELLE';
 export type PaymentDelegatedHistoryRoleCode =
+  // Code de politique metier backend, distinct du role de session ENSEIGNANT.
   | 'TITULAIRE'
   | 'PREFET_ETUDES'
   | 'DIRECTEUR_ETUDES'

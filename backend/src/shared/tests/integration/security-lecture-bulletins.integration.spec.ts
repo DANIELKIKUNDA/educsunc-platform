@@ -13,6 +13,10 @@ test('SECURITY autorise un parent uniquement sur le bulletin de son enfant relie
   });
 
   const adaptateur = new AutorisationLectureBulletinAdapter({
+    roleRepository: bootstrap.securityRepositories.roleRepository,
+    affectationRepository: bootstrap.securityRepositories.affectationRepository,
+    titulariatRepository: bootstrap.securityRepositories.titulariatRepository,
+    auditSecurityPort: { journaliser: async () => undefined },
     async consulterFamilleEleve(idEleve) {
       if (idEleve === WORKFLOW_FIXTURES.eleveA) {
         return {
@@ -88,24 +92,39 @@ test('SECURITY limite la lecture de bulletin au titulaire reel et au superviseur
     ecoleId: TENANT_FIXTURES.ecoleA1,
   });
 
-  const adaptateur = new AutorisationLectureBulletinAdapter({
-    async consulterResponsabiliteClassePedagogique({ idClassePedagogique, idAnneeScolaire }) {
-      if (idClassePedagogique !== WORKFLOW_FIXTURES.classeA || idAnneeScolaire !== WORKFLOW_FIXTURES.anneeScolaireId) {
-        return null;
-      }
+  const responsabiliteTitulaire = {
+    idOrganisation: TENANT_FIXTURES.organisationA,
+    idEcole: TENANT_FIXTURES.ecoleA1,
+    idClassePedagogique: WORKFLOW_FIXTURES.classeA,
+    idClasseAcademique: 'classe-acad-a',
+    idSectionScolaire: WORKFLOW_FIXTURES.sectionSecondaire,
+    sectionCode: 'SECONDAIRE',
+    sectionLibelle: 'Secondaire',
+    idAnneeScolaire: WORKFLOW_FIXTURES.anneeScolaireId,
+    idUtilisateurEnseignant: titulaire.utilisateurId,
+    active: true,
+  } as const;
 
-      return {
-        idOrganisation: TENANT_FIXTURES.organisationA,
-        idEcole: TENANT_FIXTURES.ecoleA1,
-        idClassePedagogique: WORKFLOW_FIXTURES.classeA,
-        idClasseAcademique: 'classe-acad-a',
-        idSectionScolaire: WORKFLOW_FIXTURES.sectionSecondaire,
-        sectionCode: 'SECONDAIRE',
-        sectionLibelle: 'Secondaire',
-        idAnneeScolaire: WORKFLOW_FIXTURES.anneeScolaireId,
-        idUtilisateurEnseignant: titulaire.utilisateurId,
-        active: true,
-      };
+  const adaptateur = new AutorisationLectureBulletinAdapter({
+    roleRepository: bootstrap.securityRepositories.roleRepository,
+    affectationRepository: bootstrap.securityRepositories.affectationRepository,
+    titulariatRepository: bootstrap.securityRepositories.titulariatRepository,
+    auditSecurityPort: { journaliser: async () => undefined },
+    responsabiliteClassePedagogiquePort: {
+      async consulterActiveParClasseEtAnnee({ idClassePedagogique, idAnneeScolaire }) {
+        if (
+          idClassePedagogique !== WORKFLOW_FIXTURES.classeA
+          || idAnneeScolaire !== WORKFLOW_FIXTURES.anneeScolaireId
+        ) {
+          return null;
+        }
+        return responsabiliteTitulaire;
+      },
+      async listerActivesParUtilisateur({ idUtilisateur }) {
+        return idUtilisateur === titulaire.utilisateurId
+          ? [responsabiliteTitulaire]
+          : [];
+      },
     },
     async resoudreSectionClasse({ idClassePedagogique, idAnneeScolaire }) {
       if (idClassePedagogique !== WORKFLOW_FIXTURES.classeA || idAnneeScolaire !== WORKFLOW_FIXTURES.anneeScolaireId) {

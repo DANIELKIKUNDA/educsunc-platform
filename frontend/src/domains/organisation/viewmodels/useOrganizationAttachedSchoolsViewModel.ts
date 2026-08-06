@@ -2,7 +2,6 @@ import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { changerEcoleActiveFrontend, changerOrganisationActiveFrontend } from '../../../shared/auth/session.bootstrap';
 import { useDoctrineAccess } from '../../../shared/doctrine/use-doctrine-access';
-import { activeContextStore } from '../../../shared/session/active-context.store';
 import { notificationsService } from '../../../services/notifications.service';
 import type { EcoleItem } from '../models/organization-governance.model';
 import { useOrganizationGovernanceStore } from '../stores/organization-governance.store';
@@ -189,14 +188,12 @@ export function useOrganizationAttachedSchoolsViewModel() {
   async function configurerEcole(ecole: EcoleItem): Promise<void> {
     await changerOrganisationActiveFrontend(ecole.idOrganisation);
     await changerEcoleActiveFrontend(ecole.id);
-    activeContextStore.setGovernanceLevel('ECOLE');
     await router.push('/app/configuration/ecole/modules');
   }
 
   async function ouvrirEcole(ecole: EcoleItem): Promise<void> {
     await changerOrganisationActiveFrontend(ecole.idOrganisation);
     await changerEcoleActiveFrontend(ecole.id);
-    activeContextStore.setGovernanceLevel('ECOLE');
     await router.push({
       name: 'school-administration-detail',
       params: { idEcole: ecole.id },

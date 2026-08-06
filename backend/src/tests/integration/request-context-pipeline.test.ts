@@ -33,13 +33,14 @@ test('pipeline RequestContext -> AUTH -> SECURITY -> TENANCY enrichit la requete
   const session = creerSessionUtilisateur({
     idUtilisateur: utilisateur.obtenirId(),
     refreshTokenId: refreshToken.obtenirId(),
+    roleActif: 'ENSEIGNANT',
     organisationActiveId: 'org-1',
     ecoleActiveId: 'ecole-1',
   });
   const contexteActif = creerContexteActifAuth(
     utilisateur.obtenirId(),
-    'org-1',
-    'ecole-1',
+    'org-autre-session',
+    'ecole-autre-session',
   );
 
   await authRepositories.depotUtilisateurAuth.sauvegarder(utilisateur);
@@ -76,6 +77,7 @@ test('pipeline RequestContext -> AUTH -> SECURITY -> TENANCY enrichit la requete
     tokenVersion: utilisateur.obtenirTokenVersion().obtenirValeur(),
     organisationActiveId: 'org-1',
     ecoleActiveId: 'ecole-1',
+    roleActif: 'ENSEIGNANT',
   });
 
   const serveur = Fastify();
@@ -96,7 +98,22 @@ test('pipeline RequestContext -> AUTH -> SECURITY -> TENANCY enrichit la requete
       affectationUtilisateurRepository: securityRepositories.affectationRepository,
       affectationTitulariatRepository: securityRepositories.titulariatRepository,
       auditSecurityPort: null,
-      responsabiliteClassePedagogiquePort: null,
+      ownershipParentPort: null,
+      responsabiliteClassePedagogiquePort: {
+        consulterActiveParClasseEtAnnee: async () => null,
+        listerActivesParUtilisateur: async () => [{
+          idOrganisation: 'org-1',
+          idEcole: 'ecole-1',
+          idClassePedagogique: 'classe-1',
+          idClasseAcademique: 'classe-academique-1',
+          idSectionScolaire: 'section-primaire',
+          sectionCode: 'PRIMAIRE',
+          sectionLibelle: 'Primaire',
+          idAnneeScolaire: 'annee-1',
+          idUtilisateurEnseignant: utilisateur.obtenirId(),
+          active: true,
+        }],
+      },
     })(instance, {});
     await tenancyPlugin(instance, {});
 
@@ -117,6 +134,8 @@ test('pipeline RequestContext -> AUTH -> SECURITY -> TENANCY enrichit la requete
         idUtilisateur: titulariat.obtenirIdUtilisateur(),
         idClasse: titulariat.obtenirIdClasse(),
       })),
+      titulariatsEffectifs: requete.context.titulariatsEffectifs,
+      estTitulaireEffectif: requete.context.estTitulaireEffectif,
       deviceId: requete.context.deviceId,
       tenantHeader: requete.headers['x-tenant-id'],
       organisationHeader: requete.headers['x-organisation-id'],
@@ -145,6 +164,8 @@ test('pipeline RequestContext -> AUTH -> SECURITY -> TENANCY enrichit la requete
     restrictions: string[];
     scopes: Array<{ typeScope: string; valeurScope: string }>;
     titulariats: Array<{ idUtilisateur: string; idClasse: string }>;
+    titulariatsEffectifs: Array<{ idClasse: string; idAnneeScolaire: string }>;
+    estTitulaireEffectif: boolean;
     deviceId: string;
     tenantHeader: string;
     organisationHeader: string;
@@ -161,9 +182,17 @@ test('pipeline RequestContext -> AUTH -> SECURITY -> TENANCY enrichit la requete
   assert.deepEqual(corps.scopes, [
     { typeScope: 'ECOLE', valeurScope: 'ecole-1' },
     { typeScope: 'ORGANISATION', valeurScope: 'org-1' },
-    { typeScope: 'ECOLE', valeurScope: 'ecole-1' },
   ]);
   assert.equal(corps.titulariats[0]?.idUtilisateur, utilisateur.obtenirId());
+  assert.equal(corps.estTitulaireEffectif, true);
+  assert.deepEqual(corps.titulariatsEffectifs, [{
+    idOrganisation: 'org-1',
+    idEcole: 'ecole-1',
+    idClasse: 'classe-1',
+    idAnneeScolaire: 'annee-1',
+    idSectionScolaire: 'section-primaire',
+    source: 'RESPONSABILITE_CLASSE',
+  }]);
   assert.equal(corps.tenantHeader, 'ecole-1');
   assert.equal(corps.organisationHeader, 'org-1');
 
@@ -179,6 +208,26 @@ test('pipeline RequestContext -> AUTH -> SECURITY -> TENANCY enrichit la requete
   assert.equal(usurpationIdentite.statusCode, 403, usurpationIdentite.body);
   assert.equal(usurpationIdentite.json().code, 'IDENTITY_CONTEXT_MISMATCH');
 
+  const jetonAutreRole = await jwt.genererJwt({
+    sub: utilisateur.obtenirId(),
+    sid: session.obtenirId(),
+    email: utilisateur.obtenirEmail().obtenirValeur(),
+    tokenVersion: utilisateur.obtenirTokenVersion().obtenirValeur(),
+    organisationActiveId: 'org-1',
+    ecoleActiveId: 'ecole-1',
+    roleActif: 'CAISSIER',
+  });
+  const roleIncoherent = await serveur.inject({
+    method: 'GET',
+    url: '/probe',
+    headers: {
+      authorization: `Bearer ${jetonAutreRole}`,
+      'x-session-id': session.obtenirId(),
+    },
+  });
+  assert.equal(roleIncoherent.statusCode, 401, roleIncoherent.body);
+  assert.equal(roleIncoherent.json().code, 'ACTIVE_ROLE_MISMATCH');
+
   await serveur.close();
 });
 
@@ -193,6 +242,7 @@ test('tenancy refuse une ecole etrangere quand le contexte actif est deja etabli
   const session = creerSessionUtilisateur({
     idUtilisateur: utilisateur.obtenirId(),
     refreshTokenId: refreshToken.obtenirId(),
+    roleActif: 'CAISSIER',
     organisationActiveId: 'org-1',
     ecoleActiveId: 'ecole-1',
   });
@@ -226,6 +276,7 @@ test('tenancy refuse une ecole etrangere quand le contexte actif est deja etabli
     tokenVersion: utilisateur.obtenirTokenVersion().obtenirValeur(),
     organisationActiveId: 'org-1',
     ecoleActiveId: 'ecole-1',
+    roleActif: 'CAISSIER',
   });
 
   const serveur = Fastify();
@@ -246,6 +297,7 @@ test('tenancy refuse une ecole etrangere quand le contexte actif est deja etabli
       affectationUtilisateurRepository: securityRepositories.affectationRepository,
       affectationTitulariatRepository: securityRepositories.titulariatRepository,
       auditSecurityPort: null,
+      ownershipParentPort: null,
       responsabiliteClassePedagogiquePort: null,
     })(instance, {});
     await tenancyPlugin(instance, {});

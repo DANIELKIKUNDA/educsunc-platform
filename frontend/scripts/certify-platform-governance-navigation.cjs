@@ -46,8 +46,6 @@ async function executer() {
   const browser = await chromium.launch({ channel: 'chrome', headless: true });
   const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
   const erreursContexte = [];
-  let modulesRestaures = false;
-
   await page.addInitScript(() => {
     window.localStorage.setItem(
       'educsync.frontend.dev-session',
@@ -152,7 +150,7 @@ async function executer() {
     if (!reponseRestauration.ok()) {
       throw new Error(`La restauration des modules a echoue avec HTTP ${reponseRestauration.status()}.`);
     }
-    modulesRestaures = true;
+    const modulesRestaures = true;
 
     await ouvrirRouteSpa(page, '/app/administration-ecole/ecoles');
     await verifierPage(page, 'Registre Administration ecole');

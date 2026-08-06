@@ -1,5 +1,5 @@
 import { reactive } from 'vue';
-import { ApiError } from '../../../services/api';
+import { ApiError } from '../../../shared/http/api.client';
 import { notificationsService } from '../../../services/notifications.service';
 import { activeContextStore } from '../../../shared/session/active-context.store';
 import type {
@@ -238,6 +238,20 @@ function resetFeedback(): void {
   state.statusMessage = null;
 }
 
+function reinitialiser(): void {
+  state.status = 'idle';
+  state.mutationStatus = 'idle';
+  state.errorMessage = null;
+  state.statusMessage = null;
+  state.organisations = [];
+  state.organisationsPagination = null;
+  state.ecoles = [];
+  state.ecolesPagination = null;
+  state.selectedEcole = null;
+  state.selectedOrganisationId = null;
+  state.lastMutationMessage = null;
+}
+
 export function useSchoolAdministrationStore() {
   return {
     state,
@@ -251,5 +265,6 @@ export function useSchoolAdministrationStore() {
     activateSchool,
     deactivateSchool,
     resetFeedback,
+    reinitialiser,
   };
 }

@@ -38,6 +38,7 @@
 <script setup lang="ts">
 import { nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import { X } from 'lucide-vue-next';
+import { acquireBodyScrollLock } from '../../../shared/ui/modal-stack';
 
 const props = defineProps<{
   open: boolean;
@@ -55,22 +56,11 @@ const emit = defineEmits<{
 
 const dialogRef = ref<HTMLElement | null>(null);
 let previouslyFocused: HTMLElement | null = null;
-let ownsScrollLock = false;
+let releaseScrollLock: (() => void) | null = null;
 
-function updateBodyScrollLock(lock: boolean): void {
-  if (lock && !ownsScrollLock) {
-    const count = Number(document.body.dataset.configurationModalLocks ?? '0') + 1;
-    document.body.dataset.configurationModalLocks = String(count);
-    document.body.style.overflow = 'hidden';
-    ownsScrollLock = true;
-    return;
-  }
-  if (!lock && ownsScrollLock) {
-    const count = Math.max(Number(document.body.dataset.configurationModalLocks ?? '1') - 1, 0);
-    document.body.dataset.configurationModalLocks = String(count);
-    if (count === 0) document.body.style.removeProperty('overflow');
-    ownsScrollLock = false;
-  }
+function releaseBodyScrollLock(): void {
+  releaseScrollLock?.();
+  releaseScrollLock = null;
 }
 
 function getFocusableElements(): HTMLElement[] {
@@ -115,7 +105,7 @@ function handleKeydown(event: KeyboardEvent): void {
 watch(() => props.open, async (open) => {
   if (open) {
     previouslyFocused = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    updateBodyScrollLock(true);
+    releaseScrollLock = acquireBodyScrollLock();
     await nextTick();
     dialogRef.value?.querySelector<HTMLElement>('[data-autofocus]')?.focus();
     if (!dialogRef.value?.contains(document.activeElement)) dialogRef.value?.focus();
@@ -124,14 +114,14 @@ watch(() => props.open, async (open) => {
   }
 
   window.removeEventListener('keydown', handleKeydown);
-  updateBodyScrollLock(false);
+  releaseBodyScrollLock();
   previouslyFocused?.focus();
   previouslyFocused = null;
 }, { immediate: true });
 
 onBeforeUnmount(() => {
   window.removeEventListener('keydown', handleKeydown);
-  updateBodyScrollLock(false);
+  releaseBodyScrollLock();
 });
 </script>
 
