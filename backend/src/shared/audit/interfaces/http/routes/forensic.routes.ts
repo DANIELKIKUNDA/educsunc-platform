@@ -16,6 +16,7 @@ export const creerForensicRoutes = (dependances: DependancesRoutesAudit): Fastif
         query: requete.query as never,
         headers: requete.headers,
         context: requete.context,
+        authorizedScope: 'ECOLE',
       });
     }));
 
@@ -32,6 +33,7 @@ export const creerForensicRoutes = (dependances: DependancesRoutesAudit): Fastif
         query: requete.query as never,
         headers: requete.headers,
         context: requete.context,
+        authorizedScope: 'ECOLE',
       });
     }));
 
@@ -48,6 +50,7 @@ export const creerForensicRoutes = (dependances: DependancesRoutesAudit): Fastif
         query: requete.query as never,
         headers: requete.headers,
         context: requete.context,
+        authorizedScope: 'ECOLE',
       });
     }));
 
@@ -64,6 +67,7 @@ export const creerForensicRoutes = (dependances: DependancesRoutesAudit): Fastif
         query: requete.query as never,
         headers: requete.headers,
         context: requete.context,
+        authorizedScope: 'ECOLE',
       });
     }));
 
@@ -80,6 +84,7 @@ export const creerForensicRoutes = (dependances: DependancesRoutesAudit): Fastif
         query: requete.query as never,
         headers: requete.headers,
         context: requete.context,
+        authorizedScope: 'ECOLE',
       });
     }));
 
@@ -96,6 +101,7 @@ export const creerForensicRoutes = (dependances: DependancesRoutesAudit): Fastif
         query: requete.query as never,
         headers: requete.headers,
         context: requete.context,
+        authorizedScope: 'ECOLE',
       });
     }));
 };

@@ -27,6 +27,11 @@ test('les routes Audit ouvrent la lecture de base aux acteurs systeme reels et r
     organisationId: TENANT_FIXTURES.organisationA,
     ecoleId: TENANT_FIXTURES.ecoleA1,
   });
+  const promoteur = await bootstrap.creerActeur({
+    ...ROLE_FIXTURES.PROMOTEUR_ORGANISATION,
+    organisationId: TENANT_FIXTURES.organisationA,
+    ecoleId: TENANT_FIXTURES.ecoleA1,
+  });
 
   const serveur = Fastify();
   await serveur.register(async (instance) => {
@@ -56,6 +61,16 @@ test('les routes Audit ouvrent la lecture de base aux acteurs systeme reels et r
     url: '/api/v1/audit',
   });
   assert.equal(listeAdminEcole.statusCode, 403, listeAdminEcole.body);
+
+  const listePromoteurSansPermissionPlateforme = await injecterCommeActeur(serveur, promoteur, {
+    method: 'GET',
+    url: '/api/v1/audit?organisationId=org-b',
+  });
+  assert.equal(
+    listePromoteurSansPermissionPlateforme.statusCode,
+    403,
+    listePromoteurSansPermissionPlateforme.body,
+  );
 
   await serveur.close();
 });

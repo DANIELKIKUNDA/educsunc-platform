@@ -1,5 +1,5 @@
 import type { AuditExportQuery } from 'shared/audit/application';
-import { executerDependance, envelopperReponse, extraireContexteRuntime } from './AuditControllerSupport';
+import { enrichirTenant, executerDependance, envelopperReponse, extraireContexteRuntime } from './AuditControllerSupport';
 import type { AuditExecutable, AuditHttpControllerResponse, AuditHttpRequest } from './HttpAuditControllerTypes';
 import {
   AuditExportDownloadValidator,
@@ -14,8 +14,14 @@ export class AuditExportsController {
     private readonly exporterForensic: AuditExecutable<AuditExportQuery, unknown>,
     private readonly exporterAnalytics: AuditExecutable<AuditExportQuery, unknown>,
     private readonly exporterSecurite: AuditExecutable<AuditExportQuery, unknown>,
-    private readonly obtenirStatutExport: ((exportId: string) => Promise<unknown>) | undefined = undefined,
-    private readonly telechargerExport: ((exportId: string) => Promise<unknown>) | undefined = undefined,
+    private readonly obtenirStatutExport: ((
+      exportId: string,
+      contexte: ReturnType<typeof extraireContexteRuntime>,
+    ) => Promise<unknown>) | undefined = undefined,
+    private readonly telechargerExport: ((
+      exportId: string,
+      contexte: ReturnType<typeof extraireContexteRuntime>,
+    ) => Promise<unknown>) | undefined = undefined,
   ) {}
 
   public async exporterAudit(
@@ -49,7 +55,7 @@ export class AuditExportsController {
     const contexte = extraireContexteRuntime(requete);
     const identifiant = AuditExportStatusValidator.valider(requete.params);
     const sortie = this.obtenirStatutExport
-      ? await this.obtenirStatutExport(identifiant.exportId)
+      ? await this.obtenirStatutExport(identifiant.exportId, contexte)
       : { exportId: identifiant.exportId, statut: 'INCONNU' };
     return envelopperReponse(
       AuditExportPresenter.presenterStatut(identifiant.exportId, String((sortie as { statut?: string }).statut ?? 'INCONNU')),
@@ -65,7 +71,7 @@ export class AuditExportsController {
     const contexte = extraireContexteRuntime(requete);
     const identifiant = AuditExportDownloadValidator.valider(requete.params);
     const sortie = this.telechargerExport
-      ? await this.telechargerExport(identifiant.exportId)
+      ? await this.telechargerExport(identifiant.exportId, contexte)
       : { exportId: identifiant.exportId, telechargement: 'INDISPONIBLE' };
     return envelopperReponse(
       AuditExportPresenter.presenterTelechargement(
@@ -84,13 +90,12 @@ export class AuditExportsController {
   ): Promise<AuditHttpControllerResponse<unknown>> {
     const startedAt = Date.now();
     const contexte = extraireContexteRuntime(requete);
+    const filtresTenant = enrichirTenant(body.filtres ?? {}, contexte);
     const sortie = await executerDependance(dependance, {
       ...body,
       filtres: {
-        ...(body.filtres ?? {}),
+        ...filtresTenant,
         correlationId: contexte.correlationId,
-        organisationId: contexte.organisationId,
-        ecoleId: contexte.ecoleId,
         modeOffline: contexte.modeOffline,
         deviceId: contexte.deviceId,
       },

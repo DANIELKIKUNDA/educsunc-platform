@@ -27,6 +27,7 @@ export const creerEcoleAuditRoutes = (
         query: { ...(requete.query as Record<string, unknown>), ...FILTRE_AUDIT_ECOLE } as never,
         headers: requete.headers,
         context: requete.context,
+        authorizedScope: 'ECOLE',
       });
     }));
 
@@ -40,6 +41,7 @@ export const creerEcoleAuditRoutes = (
         query: { ...(requete.query as Record<string, unknown>), ...FILTRE_AUDIT_ECOLE } as never,
         headers: requete.headers,
         context: requete.context,
+        authorizedScope: 'ECOLE',
       });
     }));
 
@@ -53,6 +55,7 @@ export const creerEcoleAuditRoutes = (
         query: { ...(requete.query as Record<string, unknown>), ...FILTRE_AUDIT_ECOLE } as never,
         headers: requete.headers,
         context: requete.context,
+        authorizedScope: 'ECOLE',
       });
     }));
 

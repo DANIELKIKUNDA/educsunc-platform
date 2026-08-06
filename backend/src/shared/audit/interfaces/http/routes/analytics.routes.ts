@@ -14,6 +14,7 @@ export const creerAnalyticsRoutes = (dependances: DependancesRoutesAudit): Fasti
         query: requete.query as never,
         headers: requete.headers,
         context: requete.context,
+        authorizedScope: 'ORGANISATION',
       });
     }));
 
@@ -29,6 +30,7 @@ export const creerAnalyticsRoutes = (dependances: DependancesRoutesAudit): Fasti
         query: requete.query as never,
         headers: requete.headers,
         context: requete.context,
+        authorizedScope: 'ORGANISATION',
       });
     }));
 
@@ -44,6 +46,7 @@ export const creerAnalyticsRoutes = (dependances: DependancesRoutesAudit): Fasti
         query: requete.query as never,
         headers: requete.headers,
         context: requete.context,
+        authorizedScope: 'ORGANISATION',
       });
     }));
 
@@ -58,6 +61,7 @@ export const creerAnalyticsRoutes = (dependances: DependancesRoutesAudit): Fasti
         query: requete.query as never,
         headers: requete.headers,
         context: requete.context,
+        authorizedScope: 'ORGANISATION',
       });
     }));
 };

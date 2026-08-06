@@ -5,6 +5,7 @@ import type {
   AuditHttpHeaders,
   AuditHttpRequest,
 } from './HttpAuditControllerTypes';
+import { AuditTenantScopePolicy } from './AuditTenantScopePolicy';
 
 function lireHeader(headers: AuditHttpHeaders | undefined, key: string): string | undefined {
   const value = headers?.[key];
@@ -21,23 +22,32 @@ function lireHeader(headers: AuditHttpHeaders | undefined, key: string): string 
 export function extraireContexteRuntime(
   requete: AuditHttpRequest<unknown, unknown, unknown>,
 ): AuditControllerRuntimeContext {
+  const contexteAuthentifie = requete.context;
+  const organisationId = contexteAuthentifie
+    ? contexteAuthentifie.organisationActiveId
+    : lireHeader(requete.headers, 'x-organisation-id');
+  const ecoleId = contexteAuthentifie
+    ? contexteAuthentifie.ecoleActiveId
+    : lireHeader(requete.headers, 'x-ecole-id');
+  const authorizedScope = AuditTenantScopePolicy.inferer(
+    requete.authorizedScope,
+    organisationId,
+    ecoleId,
+  );
+
   return {
-    requestId: requete.context?.requestId ?? lireHeader(requete.headers, 'x-request-id'),
+    requestId: contexteAuthentifie?.requestId ?? lireHeader(requete.headers, 'x-request-id'),
     correlationId:
-      requete.context?.correlationId ?? lireHeader(requete.headers, 'x-correlation-id'),
-    organisationId: requete.context?.organisationActiveId ?? lireHeader(requete.headers, 'x-organisation-id'),
-    ecoleId: requete.context?.ecoleActiveId ?? lireHeader(requete.headers, 'x-ecole-id'),
-    scope:
-      requete.context?.ecoleActiveId != null
-        ? 'ECOLE'
-        : requete.context?.organisationActiveId != null
-          ? 'ORGANISATION'
-          : undefined,
-    modeOffline: requete.context?.modeOffline ?? lireHeader(requete.headers, 'x-offline-mode') === 'true',
-    deviceId: requete.context?.deviceId ?? lireHeader(requete.headers, 'x-device-id'),
-    utilisateurId: requete.context?.utilisateurId,
-    sessionId: requete.context?.sessionId,
-    roleActif: requete.context?.roleActif,
+      contexteAuthentifie?.correlationId ?? lireHeader(requete.headers, 'x-correlation-id'),
+    organisationId,
+    ecoleId,
+    scope: authorizedScope,
+    authorizedScope,
+    modeOffline: contexteAuthentifie?.modeOffline ?? lireHeader(requete.headers, 'x-offline-mode') === 'true',
+    deviceId: contexteAuthentifie?.deviceId ?? lireHeader(requete.headers, 'x-device-id'),
+    utilisateurId: contexteAuthentifie?.utilisateurId,
+    sessionId: contexteAuthentifie?.sessionId,
+    roleActif: contexteAuthentifie?.roleActif,
   };
 }
 
@@ -45,10 +55,9 @@ export function enrichirTenant<T extends object>(
   input: T,
   contexte: AuditControllerRuntimeContext,
 ): T {
+  const inputAvecTenant = input as T & { organisationId?: string; ecoleId?: string };
   return {
-    ...input,
-    organisationId: (input as { organisationId?: string }).organisationId ?? contexte.organisationId,
-    ecoleId: (input as { ecoleId?: string }).ecoleId ?? contexte.ecoleId,
+    ...AuditTenantScopePolicy.appliquer(inputAvecTenant, contexte),
     correlationId: (input as { correlationId?: string }).correlationId ?? contexte.correlationId,
   };
 }

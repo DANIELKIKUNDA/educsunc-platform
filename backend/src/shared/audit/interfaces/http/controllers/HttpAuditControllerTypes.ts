@@ -1,5 +1,7 @@
 import type { RequestContext } from 'shared/context';
 
+export type AuditAuthorizedScope = 'PLATEFORME' | 'ORGANISATION' | 'ECOLE';
+
 export interface AuditHttpHeaders {
   readonly [key: string]: string | string[] | undefined;
 }
@@ -14,6 +16,7 @@ export interface AuditHttpRequest<
   readonly query?: TQuery;
   readonly headers?: AuditHttpHeaders;
   readonly context?: RequestContext;
+  readonly authorizedScope?: AuditAuthorizedScope;
 }
 
 export interface AuditHttpRuntimeMetadata {
@@ -42,6 +45,7 @@ export interface AuditControllerRuntimeContext {
   readonly utilisateurId?: string;
   readonly sessionId?: string;
   readonly roleActif?: string;
+  readonly authorizedScope: AuditAuthorizedScope;
 }
 
 export interface AuditExecutable<TInput, TOutput> {

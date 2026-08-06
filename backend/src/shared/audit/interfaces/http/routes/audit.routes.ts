@@ -13,6 +13,7 @@ export const creerAuditRoutes = (dependances: DependancesRoutesAudit): FastifyPl
         query: requete.query as never,
         headers: requete.headers,
         context: requete.context,
+        authorizedScope: 'PLATEFORME',
       });
     }));
 
@@ -27,6 +28,7 @@ export const creerAuditRoutes = (dependances: DependancesRoutesAudit): FastifyPl
         query: requete.query as never,
         headers: requete.headers,
         context: requete.context,
+        authorizedScope: 'PLATEFORME',
       });
     }));
 
@@ -40,6 +42,7 @@ export const creerAuditRoutes = (dependances: DependancesRoutesAudit): FastifyPl
         query: requete.query as never,
         headers: requete.headers,
         context: requete.context,
+        authorizedScope: 'PLATEFORME',
       });
     }));
 
@@ -53,6 +56,7 @@ export const creerAuditRoutes = (dependances: DependancesRoutesAudit): FastifyPl
         query: requete.query as never,
         headers: requete.headers,
         context: requete.context,
+        authorizedScope: 'PLATEFORME',
       });
     }));
 };

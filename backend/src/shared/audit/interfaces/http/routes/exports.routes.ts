@@ -15,6 +15,7 @@ export const creerExportsRoutes = (dependances: DependancesRoutesAudit): Fastify
         body: requete.body as never,
         headers: requete.headers,
         context: requete.context,
+        authorizedScope: 'ECOLE',
       });
     }, 202));
 
@@ -31,6 +32,7 @@ export const creerExportsRoutes = (dependances: DependancesRoutesAudit): Fastify
         body: requete.body as never,
         headers: requete.headers,
         context: requete.context,
+        authorizedScope: 'ECOLE',
       });
     }, 202));
 
@@ -47,6 +49,7 @@ export const creerExportsRoutes = (dependances: DependancesRoutesAudit): Fastify
         body: requete.body as never,
         headers: requete.headers,
         context: requete.context,
+        authorizedScope: 'ORGANISATION',
       });
     }, 202));
 
@@ -61,6 +64,7 @@ export const creerExportsRoutes = (dependances: DependancesRoutesAudit): Fastify
         params: requete.params as never,
         headers: requete.headers,
         context: requete.context,
+        authorizedScope: 'ECOLE',
       });
     }));
 
@@ -76,6 +80,7 @@ export const creerExportsRoutes = (dependances: DependancesRoutesAudit): Fastify
         params: requete.params as never,
         headers: requete.headers,
         context: requete.context,
+        authorizedScope: 'ECOLE',
       });
     }));
 
