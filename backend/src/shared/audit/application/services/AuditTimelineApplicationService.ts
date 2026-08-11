@@ -1,41 +1,57 @@
 import type { AuditTimelineQuery } from '../dto/queries/AuditTimelineQuery';
 import type { AuditTimelineOutput } from '../dto/outputs/AuditTimelineOutput';
-import { AuditEntryMapper } from '../mappers/AuditEntryMapper';
-import { AuditTimelineMapper } from '../mappers/AuditTimelineMapper';
+import type { AuditReadFilters, AuditReadRepositoryPort } from '../ports/outbound/AuditReadRepositoryPort';
+import { AuditReadCursorCodec } from './AuditReadCursorCodec';
 
-// Ce service applicatif orchestre une famille de workflows Audit.
 export class AuditTimelineApplicationService {
-  private construireEvenement(query: AuditTimelineQuery, action: string) {
-    return AuditEntryMapper.depuisCreateAuditEntryInput({
-      action,
-      typePrincipal: 'TIMELINE',
-      resultat: 'SUCCES',
-      acteur: { idUtilisateur: query.acteurId, typeActeur: 'UTILISATEUR' },
-      ressource: query.ressourceId ? { typeRessource: 'RESSOURCE', idRessource: query.ressourceId } : undefined,
-      contexte: { sourceAudit: 'TIMELINE', modeOffline: false, correlationId: query.correlationId },
-      tenant: {
-        organisationId: query.organisationId,
-        ecoleId: query.ecoleId,
-        scope: query.ecoleId
-          ? 'ECOLE'
-          : query.organisationId
-            ? 'ORGANISATION'
-            : 'PLATEFORME',
-      },
-      metadata: { workflowId: query.workflowId },
-    });
-  }
+  public constructor(
+    private readonly lectures: AuditReadRepositoryPort,
+    private readonly curseurs = new AuditReadCursorCodec(),
+  ) {}
 
   public async obtenirTimelineAudit(payload: AuditTimelineQuery): Promise<AuditTimelineOutput> {
-    return AuditTimelineMapper.versTimelineOutput(payload, [this.construireEvenement(payload, 'TIMELINE_AUDIT')]);
+    return this.obtenir(payload);
   }
+
   public async obtenirTimelineRessource(payload: AuditTimelineQuery): Promise<AuditTimelineOutput> {
-    return AuditTimelineMapper.versTimelineOutput(payload, [this.construireEvenement(payload, 'TIMELINE_RESSOURCE')]);
+    return this.obtenir(payload);
   }
+
   public async obtenirTimelineActeur(payload: AuditTimelineQuery): Promise<AuditTimelineOutput> {
-    return AuditTimelineMapper.versTimelineOutput(payload, [this.construireEvenement(payload, 'TIMELINE_ACTEUR')]);
+    return this.obtenir(payload);
   }
+
   public async obtenirTimelineWorkflow(payload: AuditTimelineQuery): Promise<AuditTimelineOutput> {
-    return AuditTimelineMapper.versTimelineOutput(payload, [this.construireEvenement(payload, 'TIMELINE_WORKFLOW')]);
+    return this.obtenir(payload);
+  }
+
+  private async obtenir(query: AuditTimelineQuery): Promise<AuditTimelineOutput> {
+    const filtres: AuditReadFilters = {
+      organisationId: query.organisationId,
+      ecoleId: query.ecoleId,
+      scope: query.ecoleId ? 'ECOLE' : query.organisationId ? 'ORGANISATION' : 'PLATEFORME',
+      correlationId: query.correlationId ?? query.workflowId,
+      categorieAudit: query.categorieAudit,
+      acteurId: query.acteurId,
+      ressourceId: query.ressourceId,
+      dateDebut: query.dateDebut,
+      dateFin: query.dateFin,
+    };
+    const limite = Math.min(query.taillePage ?? 25, 100);
+    const empreinte = this.curseurs.empreinte(filtres);
+    const position = this.curseurs.decoder(query.cursor, empreinte);
+    const resultat = await this.lectures.rechercher(filtres, { limite, position });
+    const dernier = resultat.items.at(-1);
+    return {
+      correlationId: query.correlationId,
+      acteur: query.acteurId,
+      ressource: query.ressourceId,
+      timeline: resultat.items,
+      items: resultat.items,
+      hasNextPage: resultat.hasNextPage,
+      nextCursor: resultat.hasNextPage && dernier
+        ? this.curseurs.encoder({ dateAction: dernier.dateAction, idAuditEntry: dernier.idAuditEntry }, empreinte)
+        : undefined,
+    };
   }
 }

@@ -154,7 +154,7 @@ test('les recherches et identifiants modifies restent bornes au tenant autorise'
     ],
   );
   assert.equal(captures[0]?.acteurId, 'utilisateur-devine');
-  assert.equal(captures[1]?.ressourceId, 'audit-devine');
+  assert.equal(captures[1]?.idAuditEntry, 'audit-devine');
 });
 
 test('les filtres d export sont remplaces par le perimetre ecole authentifie', async () => {

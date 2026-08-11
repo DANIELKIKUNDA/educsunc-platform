@@ -6,11 +6,15 @@ export interface AuditSearchResultOutput {
   readonly page: number;
   readonly taillePage: number;
   readonly totalPages: number;
+  readonly nextCursor?: string;
+  readonly hasNextPage: boolean;
   readonly items: readonly AuditEntryOutput[];
   readonly pagination: {
     readonly page: number;
     readonly taille: number;
     readonly total: number;
     readonly totalPages: number;
+    readonly nextCursor?: string;
+    readonly hasNextPage: boolean;
   };
 }

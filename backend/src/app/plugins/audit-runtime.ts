@@ -54,6 +54,7 @@ import {
 import { DeferredOfflineAuditSynchronizationService } from 'shared/audit/infrastructure/offline';
 import {
   PostgresAuditCanonicalStorage,
+  PostgresAuditReadRepository,
   PostgresAuditOutboxRepository,
   PostgresAuditProjectionRepository,
 } from 'shared/audit/infrastructure/persistence/postgres/repositories';
@@ -88,12 +89,13 @@ class AuditExecutableAdapter<TInput, TOutput> implements AuditExecutable<TInput,
 class AuditRuntimeFacade {
   public readonly configuration = new AuditConfigurationFacade();
   public readonly creation = new AuditCreationApplicationService();
-  public readonly search = new AuditSearchApplicationService();
-  public readonly timeline = new AuditTimelineApplicationService();
-  public readonly forensic = new AuditForensicApplicationService();
-  public readonly investigation = new AuditInvestigationApplicationService();
+  public readonly lectures = new PostgresAuditReadRepository();
+  public readonly search = new AuditSearchApplicationService(this.lectures);
+  public readonly timeline = new AuditTimelineApplicationService(this.lectures);
+  public readonly forensic = new AuditForensicApplicationService(this.lectures);
+  public readonly investigation = new AuditInvestigationApplicationService(this.lectures);
   public readonly exports = new AuditExportApplicationService();
-  public readonly analytics = new AuditAnalyticsApplicationService();
+  public readonly analytics = new AuditAnalyticsApplicationService(this.lectures);
   public readonly offline = new AuditOfflineApplicationService();
   public readonly replay = new AuditReplayApplicationService();
   public readonly retention = new AuditRetentionApplicationService();

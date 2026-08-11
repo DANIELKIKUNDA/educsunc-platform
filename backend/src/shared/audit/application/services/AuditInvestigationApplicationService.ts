@@ -1,16 +1,24 @@
 import type { AuditForensicQuery } from '../dto/queries/AuditForensicQuery';
 import type { AuditForensicOutput } from '../dto/outputs/AuditForensicOutput';
-import { AuditForensicMapper } from '../mappers/AuditForensicMapper';
+import type { AuditReadRepositoryPort } from '../ports/outbound/AuditReadRepositoryPort';
+import { AuditForensicApplicationService } from './AuditForensicApplicationService';
 
-// Ce service applicatif orchestre une famille de workflows Audit.
 export class AuditInvestigationApplicationService {
+  private readonly forensic: AuditForensicApplicationService;
+
+  public constructor(lectures: AuditReadRepositoryPort) {
+    this.forensic = new AuditForensicApplicationService(lectures);
+  }
+
   public async investiguerExportMassif(payload: AuditForensicQuery): Promise<AuditForensicOutput> {
-    return { ...AuditForensicMapper.depuisForensicQuery(payload), resume: 'Investigation export massif terminee' };
+    return this.forensic.lancerInvestigation(payload);
   }
+
   public async investiguerWorkflow(payload: AuditForensicQuery): Promise<AuditForensicOutput> {
-    return { ...AuditForensicMapper.depuisForensicQuery(payload), resume: 'Investigation workflow terminee' };
+    return this.forensic.reconstruireWorkflow(payload);
   }
+
   public async investiguerIncident(payload: AuditForensicQuery): Promise<AuditForensicOutput> {
-    return { ...AuditForensicMapper.depuisForensicQuery(payload), resume: 'Investigation incident terminee' };
+    return this.forensic.lancerInvestigation(payload);
   }
 }

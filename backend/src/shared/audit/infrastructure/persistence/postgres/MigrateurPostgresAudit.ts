@@ -195,6 +195,28 @@ export class MigrateurPostgresAudit {
         `);
         await client.query("INSERT INTO audit_schema_migrations(version,nom) VALUES (4,'protect_audit_outbox_event_link')");
       }
+      const readSideMigration = await client.query('SELECT 1 FROM audit_schema_migrations WHERE version=5');
+      if (!readSideMigration.rowCount) {
+        await client.query(`
+          CREATE INDEX IF NOT EXISTS audit_entries_keyset_idx
+          ON audit_entries (date_action DESC,id_audit_entry DESC)
+        `);
+        await client.query(`
+          CREATE INDEX IF NOT EXISTS audit_entries_organisation_keyset_idx
+          ON audit_entries (organisation_id,date_action DESC,id_audit_entry DESC)
+          WHERE organisation_id IS NOT NULL
+        `);
+        await client.query(`
+          CREATE INDEX IF NOT EXISTS audit_entries_ecole_keyset_idx
+          ON audit_entries (organisation_id,ecole_id,date_action DESC,id_audit_entry DESC)
+          WHERE organisation_id IS NOT NULL AND ecole_id IS NOT NULL
+        `);
+        await client.query(`
+          CREATE INDEX IF NOT EXISTS audit_categories_lookup_idx
+          ON audit_categories (categorie,audit_entry_id)
+        `);
+        await client.query("INSERT INTO audit_schema_migrations(version,nom) VALUES (5,'industrialize_audit_read_keyset_indexes')");
+      }
       await client.query('COMMIT');
     } catch (erreur) {
       await client.query('ROLLBACK');

@@ -176,6 +176,9 @@ jobs:
       - name: Certifier la durabilite de l outbox Audit
         run: npm --prefix backend run test:audit:l2:postgres
 
+      - name: Certifier les lectures PostgreSQL Audit
+        run: npm --prefix backend run test:audit:l3:postgres
+
       - name: Conserver le rapport PostgreSQL
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

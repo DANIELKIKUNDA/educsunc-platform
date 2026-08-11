@@ -7,10 +7,16 @@ export class AuditListValidator {
     ValidationHttpAudit.validerPagination(donnees);
     ValidationHttpAudit.validerTenant(donnees);
     ValidationHttpAudit.validerCorrelation(donnees);
+    const dateDebut = ValidationHttpAudit.lireDateIsoOptionnelle(donnees, 'dateDebut');
+    const dateFin = ValidationHttpAudit.lireDateIsoOptionnelle(donnees, 'dateFin');
+    if (dateDebut && dateFin && Date.parse(dateDebut) > Date.parse(dateFin)) {
+      throw new Error('dateDebut doit preceder dateFin.');
+    }
 
     return {
       page: ValidationHttpAudit.lireEntierQueryDansBornes(donnees, 'page', 1, 10_000),
-      taillePage: ValidationHttpAudit.lireEntierQueryDansBornes(donnees, 'taillePage', 1, 500),
+      taillePage: ValidationHttpAudit.lireEntierQueryDansBornes(donnees, 'taillePage', 1, 100),
+      cursor: ValidationHttpAudit.lireChaineOptionnelle(donnees, 'cursor'),
       action: ValidationHttpAudit.lireChaineOptionnelle(donnees, 'action'),
       typeAuditPrincipal: ValidationHttpAudit.lireChaineOptionnelle(donnees, 'typeAuditPrincipal'),
       categorieAudit: ValidationHttpAudit.lireChaineOptionnelle(donnees, 'categorieAudit'),
@@ -18,7 +24,12 @@ export class AuditListValidator {
       resultat: ValidationHttpAudit.lireChaineOptionnelle(donnees, 'resultat'),
       acteurId: ValidationHttpAudit.lireChaineOptionnelle(donnees, 'acteurId'),
       ressourceId: ValidationHttpAudit.lireChaineOptionnelle(donnees, 'ressourceId'),
+      typeRessource: ValidationHttpAudit.lireChaineOptionnelle(donnees, 'typeRessource'),
       correlationId: ValidationHttpAudit.lireChaineOptionnelle(donnees, 'correlationId'),
+      requestId: ValidationHttpAudit.lireChaineOptionnelle(donnees, 'requestId'),
+      sourceAudit: ValidationHttpAudit.lireChaineOptionnelle(donnees, 'sourceAudit'),
+      dateDebut,
+      dateFin,
       organisationId: ValidationHttpAudit.lireChaineOptionnelle(donnees, 'organisationId'),
       ecoleId: ValidationHttpAudit.lireChaineOptionnelle(donnees, 'ecoleId'),
     };
@@ -31,7 +42,7 @@ export class AuditDetailValidator {
     const base = AuditListValidator.valider(query);
     return {
       ...base,
-      ressourceId: ValidationHttpAudit.lireChaineRequise(path, 'id'),
+      idAuditEntry: ValidationHttpAudit.lireChaineRequise(path, 'id'),
     };
   }
 }
@@ -41,13 +52,20 @@ export class AuditTimelineValidator {
     const donnees = ValidationHttpAudit.obtenirObjet(query ?? {}, 'query');
     ValidationHttpAudit.validerTenant(donnees);
     ValidationHttpAudit.validerCorrelation(donnees);
+    ValidationHttpAudit.validerPagination(donnees);
 
     return {
+      taillePage: ValidationHttpAudit.lireEntierQueryDansBornes(donnees, 'taillePage', 1, 100),
+      cursor: ValidationHttpAudit.lireChaineOptionnelle(donnees, 'cursor'),
       correlationId: ValidationHttpAudit.lireChaineOptionnelle(donnees, 'correlationId'),
       categorieAudit: ValidationHttpAudit.lireChaineOptionnelle(donnees, 'categorieAudit'),
       acteurId: ValidationHttpAudit.lireChaineOptionnelle(donnees, 'acteurId'),
       ressourceId: ValidationHttpAudit.lireChaineOptionnelle(donnees, 'ressourceId'),
       workflowId: ValidationHttpAudit.lireChaineOptionnelle(donnees, 'workflowId'),
+      dateDebut: ValidationHttpAudit.lireDateIsoOptionnelle(donnees, 'dateDebut'),
+      dateFin: ValidationHttpAudit.lireDateIsoOptionnelle(donnees, 'dateFin'),
+      organisationId: ValidationHttpAudit.lireChaineOptionnelle(donnees, 'organisationId'),
+      ecoleId: ValidationHttpAudit.lireChaineOptionnelle(donnees, 'ecoleId'),
     };
   }
 }
