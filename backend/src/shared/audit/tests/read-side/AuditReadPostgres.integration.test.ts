@@ -52,7 +52,7 @@ test('PostgreSQL certifie recherches, keyset, filtres, index et isolation tenant
           organisationId,
           ecoleId,
           'ECOLE',
-          'CERTIFICATION_L3',
+          'SYSTEM',
           dateAction.toISOString(),
         ],
       );
@@ -87,7 +87,7 @@ test('PostgreSQL certifie recherches, keyset, filtres, index et isolation tenant
     `INSERT INTO audit_entries (
        id_audit_entry,action,type_principal,gravite,niveau,resultat,type_acteur,
        organisation_id,ecole_id,scope,source_audit,date_action,date_creation_audit
-     ) VALUES ($1,'CONSULTER_AUDIT','GOUVERNANCE','INFO','METIER','SUCCES','UTILISATEUR',$2,$3,'ECOLE','CERTIFICATION_L3',NOW(),NOW())`,
+     ) VALUES ($1,'CONSULTER_AUDIT','GOUVERNANCE','INFO','METIER','SUCCES','UTILISATEUR',$2,$3,'ECOLE','SYSTEM',NOW(),NOW())`,
     [evenementConcurrent, organisationA, ecoleA],
   );
   const suivante = await service.rechercherAudits({
