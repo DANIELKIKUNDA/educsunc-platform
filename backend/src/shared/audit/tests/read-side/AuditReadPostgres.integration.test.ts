@@ -38,16 +38,16 @@ test('PostgreSQL certifie recherches, keyset, filtres, index et isolation tenant
         [
           id,
           index % 2 === 0 ? 'CONSULTER_AUDIT' : 'EXPORTER_AUDIT',
-          'GOUVERNANCE',
-          index % 10 === 0 ? 'ELEVEE' : 'INFO',
-          'METIER',
-          index % 11 === 0 ? 'ECHEC' : 'SUCCES',
+          'SYSTEME',
+          index % 10 === 0 ? 'ELEVEE' : 'FAIBLE',
+          'INFORMATION',
+          index % 11 === 0 ? 'FAILED' : 'SUCCESS',
           `${prefixe}-request-${index}`,
           `${prefixe}-correlation-${index % 7}`,
           `${prefixe}-acteur-${index % 5}`,
           'UTILISATEUR',
           'MANAGER_SYSTEME',
-          'AUDIT_ENTRY',
+          'AUDIT',
           `${prefixe}-ressource-${index % 9}`,
           organisationId,
           ecoleId,
@@ -58,7 +58,7 @@ test('PostgreSQL certifie recherches, keyset, filtres, index et isolation tenant
       );
       await client.query(
         'INSERT INTO audit_categories(audit_entry_id,categorie) VALUES ($1,$2)',
-        [id, index % 2 === 0 ? 'CONSULTATION' : 'EXPORT'],
+        [id, index % 2 === 0 ? 'CONSULTATION_SENSIBLE' : 'EXPORT'],
       );
     }
     await client.query('COMMIT');
@@ -87,7 +87,7 @@ test('PostgreSQL certifie recherches, keyset, filtres, index et isolation tenant
     `INSERT INTO audit_entries (
        id_audit_entry,action,type_principal,gravite,niveau,resultat,type_acteur,
        organisation_id,ecole_id,scope,source_audit,date_action,date_creation_audit
-     ) VALUES ($1,'CONSULTER_AUDIT','GOUVERNANCE','INFO','METIER','SUCCES','UTILISATEUR',$2,$3,'ECOLE','SYSTEM',NOW(),NOW())`,
+     ) VALUES ($1,'CONSULTER_AUDIT','SYSTEME','FAIBLE','INFORMATION','SUCCESS','UTILISATEUR',$2,$3,'ECOLE','SYSTEM',NOW(),NOW())`,
     [evenementConcurrent, organisationA, ecoleA],
   );
   const suivante = await service.rechercherAudits({
@@ -104,11 +104,11 @@ test('PostgreSQL certifie recherches, keyset, filtres, index et isolation tenant
     organisationId: organisationA,
     ecoleId: ecoleA,
     categorieAudit: 'EXPORT',
-    resultat: 'SUCCES',
+    resultat: 'SUCCESS',
     taillePage: 100,
   });
   assert.ok(filtree.items.length > 0);
-  assert.ok(filtree.items.every((item) => item.categories.includes('EXPORT') && item.resultat === 'SUCCES'));
+  assert.ok(filtree.items.every((item) => item.categories.includes('EXPORT') && item.resultat === 'SUCCESS'));
 
   const idAccessible = premiere.items[0]?.idAuditEntry;
   assert.ok(idAccessible);
