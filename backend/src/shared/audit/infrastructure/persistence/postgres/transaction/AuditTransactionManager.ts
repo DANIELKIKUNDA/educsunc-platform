@@ -3,16 +3,18 @@ import type { SqlQueryClient } from '../../../../../infrastructure/persistence/S
 import { AuditPostCommitDispatcher } from './AuditPostCommitDispatcher';
 import { AUDIT_TRANSACTION_CONTEXTS, type AuditTransactionContext, type AuditTransactionMode } from './AuditTransactionContext';
 
-export interface ClientTransactionnelAudit extends SqlQueryClient {}
+export interface ClientTransactionnelAudit extends SqlQueryClient {
+  dansTransaction?<TResult>(operation: () => Promise<TResult>): Promise<TResult>;
+}
 
 // Ce gestionnaire protege les transactions courtes Audit et laisse les projections/exports au post-commit.
 export class AuditTransactionManager implements AuditTransactionPort {
-  constructor(private readonly clientSql?: ClientTransactionnelAudit) {
-    void this.clientSql;
-  }
+  constructor(private readonly clientSql?: ClientTransactionnelAudit) {}
 
   public async executerDansTransaction<TResult>(operation: () => Promise<TResult>): Promise<TResult> {
-    return operation();
+    return this.clientSql?.dansTransaction
+      ? this.clientSql.dansTransaction(operation)
+      : operation();
   }
 
   public async executerAvecContexte<TResult>(
@@ -38,4 +40,3 @@ export class AuditTransactionManager implements AuditTransactionPort {
     return resultat;
   }
 }
-

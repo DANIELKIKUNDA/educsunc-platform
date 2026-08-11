@@ -14,3 +14,5 @@ export * from './AuditMaskingApplicationService';
 export * from './AuditSynchronizationApplicationService';
 export * from './AuditContextApplicationService';
 export * from './AuditInvestigationApplicationService';
+export * from './AuditCanonicalWriteService';
+export * from './AuditOutboxDeliveryService';

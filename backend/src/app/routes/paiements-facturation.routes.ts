@@ -2,6 +2,7 @@ import type { FastifyPluginAsync } from 'fastify';
 import type { PaiementEnregistreOutput } from '../../contexts/paiements-facturation/application/dto/output/PaiementsSortieDTO';
 import { ServiceIdempotencePaiement } from '../../contexts/paiements-facturation/application/services/ServiceIdempotencePaiement';
 import { ServiceTransactionPaiement } from '../../contexts/paiements-facturation/application/services/ServiceTransactionPaiement';
+import { PaiementsAuditCanonicalWriteAdapter } from '../../contexts/paiements-facturation/infrastructure/adapters/PaiementsAuditCanonicalWriteAdapter';
 import { AssemblageRecuPaiementOfficielService } from '../../contexts/paiements-facturation/application/services/AssemblageRecuPaiementOfficielService';
 import { AnnulerPaiementUseCase, RestituerExcedentUseCase } from '../../contexts/paiements-facturation/application/use-cases/annulations';
 import {
@@ -317,7 +318,9 @@ function composerRoutesPaiementsFacturation(): CompositionRoutesPaiementsFactura
     infrastructureReferentiel,
     contexteTenant,
   );
-  const auditAdapter = new AuditAdapter();
+  const auditAdapter = new AuditAdapter(
+    new PaiementsAuditCanonicalWriteAdapter(infrastructurePaiements.uniteDeTravail),
+  );
   const depotUtilisateurAuth = new PostgresUtilisateurAuthRepository();
   const scolariteElevesAdapter = new ScolariteElevesAdapter(
     infrastructureScolarite.clientLecture,
