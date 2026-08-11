@@ -105,6 +105,96 @@ export class MigrateurPostgresAudit {
         await client.query('CREATE INDEX IF NOT EXISTS audit_runtime_documents_type_idx ON audit_runtime_documents (document_type, modifie_le DESC)');
         await client.query("INSERT INTO audit_schema_migrations(version,nom) VALUES (2,'create_audit_runtime_documents')");
       }
+      const outboxMigration = await client.query('SELECT 1 FROM audit_schema_migrations WHERE version=3');
+      if (!outboxMigration.rowCount) {
+        await client.query(`
+          CREATE TABLE IF NOT EXISTS audit_outbox (
+            id_outbox TEXT PRIMARY KEY,
+            event_id TEXT NOT NULL UNIQUE,
+            event_name TEXT NOT NULL,
+            schema_version INTEGER NOT NULL CHECK (schema_version > 0),
+            idempotency_key TEXT NOT NULL UNIQUE,
+            payload JSONB NOT NULL,
+            organisation_id TEXT,
+            ecole_id TEXT,
+            scope TEXT NOT NULL CHECK (scope IN ('PLATEFORME','ORGANISATION','ECOLE')),
+            request_id TEXT,
+            correlation_id TEXT,
+            status TEXT NOT NULL DEFAULT 'PENDING'
+              CHECK (status IN ('PENDING','PROCESSING','RETRY','PUBLISHED','DEAD')),
+            attempt_count INTEGER NOT NULL DEFAULT 0 CHECK (attempt_count >= 0),
+            next_attempt_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            locked_at TIMESTAMPTZ,
+            locked_by TEXT,
+            last_error TEXT,
+            created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            published_at TIMESTAMPTZ,
+            CONSTRAINT audit_outbox_tenant_check CHECK (
+              (scope='PLATEFORME' AND organisation_id IS NULL AND ecole_id IS NULL)
+              OR (scope='ORGANISATION' AND organisation_id IS NOT NULL AND ecole_id IS NULL)
+              OR (scope='ECOLE' AND organisation_id IS NOT NULL AND ecole_id IS NOT NULL)
+            )
+          )
+        `);
+        await client.query(`
+          CREATE INDEX IF NOT EXISTS audit_outbox_delivery_idx
+          ON audit_outbox (status,next_attempt_at,created_at)
+          WHERE status IN ('PENDING','RETRY','PROCESSING')
+        `);
+        await client.query(`
+          CREATE INDEX IF NOT EXISTS audit_outbox_tenant_idx
+          ON audit_outbox (organisation_id,ecole_id,created_at DESC)
+        `);
+        await client.query(`
+          CREATE OR REPLACE FUNCTION audit_outbox_protect_identity()
+          RETURNS trigger AS $$ BEGIN
+            IF NEW.event_id IS DISTINCT FROM OLD.event_id
+              OR NEW.event_name IS DISTINCT FROM OLD.event_name
+              OR NEW.schema_version IS DISTINCT FROM OLD.schema_version
+              OR NEW.idempotency_key IS DISTINCT FROM OLD.idempotency_key
+              OR NEW.payload IS DISTINCT FROM OLD.payload
+              OR NEW.organisation_id IS DISTINCT FROM OLD.organisation_id
+              OR NEW.ecole_id IS DISTINCT FROM OLD.ecole_id
+              OR NEW.scope IS DISTINCT FROM OLD.scope
+              OR NEW.request_id IS DISTINCT FROM OLD.request_id
+              OR NEW.correlation_id IS DISTINCT FROM OLD.correlation_id
+              OR NEW.created_at IS DISTINCT FROM OLD.created_at
+            THEN
+              RAISE EXCEPTION 'Immutable audit outbox identity violation';
+            END IF;
+            RETURN NEW;
+          END; $$ LANGUAGE plpgsql
+        `);
+        await client.query(`
+          DROP TRIGGER IF EXISTS audit_outbox_identity_guard ON audit_outbox;
+          CREATE TRIGGER audit_outbox_identity_guard
+          BEFORE UPDATE ON audit_outbox
+          FOR EACH ROW EXECUTE FUNCTION audit_outbox_protect_identity()
+        `);
+        await client.query(`
+          DROP TRIGGER IF EXISTS audit_outbox_delete_guard ON audit_outbox;
+          CREATE TRIGGER audit_outbox_delete_guard
+          BEFORE DELETE ON audit_outbox
+          FOR EACH ROW EXECUTE FUNCTION audit_reject_append_only_mutation()
+        `);
+        await client.query("INSERT INTO audit_schema_migrations(version,nom) VALUES (3,'create_audit_transactional_outbox')");
+      }
+      const outboxIntegrityMigration = await client.query('SELECT 1 FROM audit_schema_migrations WHERE version=4');
+      if (!outboxIntegrityMigration.rowCount) {
+        await client.query(`
+          DO $$ BEGIN
+            IF NOT EXISTS (
+              SELECT 1 FROM pg_constraint WHERE conname='audit_outbox_event_fk'
+            ) THEN
+              ALTER TABLE audit_outbox
+              ADD CONSTRAINT audit_outbox_event_fk
+              FOREIGN KEY (event_id) REFERENCES audit_entries(id_audit_entry)
+              DEFERRABLE INITIALLY DEFERRED;
+            END IF;
+          END $$
+        `);
+        await client.query("INSERT INTO audit_schema_migrations(version,nom) VALUES (4,'protect_audit_outbox_event_link')");
+      }
       await client.query('COMMIT');
     } catch (erreur) {
       await client.query('ROLLBACK');

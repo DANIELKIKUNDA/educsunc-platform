@@ -7,8 +7,23 @@ type PluginGlobal = FastifyPluginAsync & { nom: string };
 export const auditPlugin: PluginGlobal = Object.assign(
   async (serveur: Parameters<FastifyPluginAsync>[0]) => {
     if (!serveur.hasDecorator('audit')) {
-      serveur.decorate('audit', creerAuditRuntime());
+      serveur.decorate('audit', creerAuditRuntime({
+        info: (observation) => serveur.log.info(
+          { composant: 'audit_outbox', ...observation },
+          'Cycle de livraison Audit traite.',
+        ),
+        error: (erreur) => serveur.log.error(
+          {
+            composant: 'audit_outbox',
+            erreur: erreur instanceof Error ? erreur.message : 'audit_outbox_worker_failed',
+          },
+          'Echec controle du worker Audit.',
+        ),
+      }));
     }
+
+    serveur.audit.outboxWorker.start();
+    serveur.addHook('onClose', async () => serveur.audit.outboxWorker.stop());
 
     const configuration = serveur.audit.configuration.obtenirParDefaut();
     serveur.log.info(

@@ -11,6 +11,8 @@ import {
   AuditSearchApplicationService,
   AuditSecurityApplicationService,
   AuditTimelineApplicationService,
+  AuditCanonicalWriteService,
+  AuditOutboxDeliveryService,
 } from 'shared/audit/application';
 import {
   AuditConfigurationIntegrationOrchestrator,
@@ -50,7 +52,11 @@ import {
   AuditVolumetryMonitoringService,
 } from 'shared/audit/infrastructure/monitoring';
 import { DeferredOfflineAuditSynchronizationService } from 'shared/audit/infrastructure/offline';
-import { PostgresAuditProjectionRepository } from 'shared/audit/infrastructure/persistence/postgres/repositories';
+import {
+  PostgresAuditCanonicalStorage,
+  PostgresAuditOutboxRepository,
+  PostgresAuditProjectionRepository,
+} from 'shared/audit/infrastructure/persistence/postgres/repositories';
 import {
   PostgresAuditProjectionHandler,
   PostgresAuditProjectionProjector,
@@ -59,6 +65,17 @@ import { PostgresAuditEventBus } from 'shared/audit/infrastructure/event-bus';
 import { AuditWorkerOrchestrator } from 'shared/audit/infrastructure/workers';
 import { AuditConfigurationFacade } from 'shared/audit/infrastructure/configuration';
 import { AuditSynchronizationOrchestrator } from 'shared/audit/infrastructure/synchronization';
+import {
+  AuditCanonicalEventMapper,
+  AuditOutboxEventPublisher,
+  AuditOutboxWorker,
+} from 'shared/audit/infrastructure/outbox';
+import type { AuditOutboxObservation } from 'shared/audit/application/services/AuditOutboxDeliveryService';
+
+export interface AuditRuntimeLogger {
+  info(observation: AuditOutboxObservation): void;
+  error(error: unknown): void;
+}
 
 class AuditExecutableAdapter<TInput, TOutput> implements AuditExecutable<TInput, TOutput> {
   public constructor(private readonly delegate: (input: TInput) => Promise<TOutput>) {}
@@ -106,6 +123,13 @@ class AuditRuntimeFacade {
   );
 
   public readonly eventBus = new PostgresAuditEventBus(this.projectionHandler);
+  public readonly canonicalWrite = new AuditCanonicalWriteService(
+    new PostgresAuditCanonicalStorage(),
+    new AuditCanonicalEventMapper(),
+  );
+  public readonly outboxRepository = new PostgresAuditOutboxRepository();
+  public readonly outboxDelivery: AuditOutboxDeliveryService;
+  public readonly outboxWorker: AuditOutboxWorker;
   public readonly integrationEventBus = new AuditEventBusIntegrationOrchestrator(
     this.eventBus,
     this.creation,
@@ -122,7 +146,17 @@ class AuditRuntimeFacade {
   public readonly middlewares: AuditRouteMiddlewareSet;
   public readonly routesDependances: DependancesRoutesAudit;
 
-  public constructor() {
+  public constructor(logger?: AuditRuntimeLogger) {
+    this.outboxDelivery = new AuditOutboxDeliveryService(
+      this.outboxRepository,
+      new AuditOutboxEventPublisher(this.eventBus),
+      (observation) => logger?.info(observation),
+    );
+    this.outboxWorker = new AuditOutboxWorker(
+      this.outboxDelivery,
+      2_000,
+      (error) => logger?.error(error),
+    );
     this.synchronizationIntegration = new AuditSynchronizationIntegrationOrchestrator(
       this.integrationEventBus.publisher,
       new AuditSynchronizationOrchestrator(this.projectionHandler),
@@ -229,6 +263,6 @@ class AuditRuntimeFacade {
 
 export type AuditRuntime = AuditRuntimeFacade;
 
-export function creerAuditRuntime(): AuditRuntime {
-  return new AuditRuntimeFacade();
+export function creerAuditRuntime(logger?: AuditRuntimeLogger): AuditRuntime {
+  return new AuditRuntimeFacade(logger);
 }

@@ -10,3 +10,5 @@ export * from './PostgresAuditProjectionRepository';
 export * from './PostgresAuditIdempotencyRepository';
 export * from './PostgresAuditRetentionRepository';
 export * from './PostgresAuditSyncConflictRepository';
+export * from './PostgresAuditOutboxRepository';
+export * from './PostgresAuditCanonicalStorage';

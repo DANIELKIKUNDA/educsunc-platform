@@ -9,3 +9,4 @@ export * from './ExportStoragePort';
 export * from './ClockPort';
 export * from './DeviceContextPort';
 export * from './CorrelationContextPort';
+export * from './AuditCanonicalWritePort';

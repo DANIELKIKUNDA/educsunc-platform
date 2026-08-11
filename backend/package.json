@@ -36,6 +36,7 @@
     "test:coverage": "node scripts/run-observability-tests.cjs --coverage",
     "test": "tsx --test src/contexts/referentiel-academique/tests/depot-annee-scolaire-postgres.test.ts src/contexts/referentiel-academique/tests/execution-http-referentiel-academique.test.ts src/contexts/referentiel-academique/tests/migrations-postgres-referentiel-academique.test.ts src/contexts/referentiel-academique/tests/orchestration-annee-scolaire.test.ts src/contexts/referentiel-academique/tests/publier-version-referentiel.test.ts",
     "test:audit": "node --require ./scripts/load-optional-local-env.cjs scripts/run-shared-audit-tests.cjs",
+    "test:audit:l2:postgres": "node --require ./scripts/load-optional-local-env.cjs scripts/run-audit-outbox-postgres-test.cjs",
     "test:security": "node scripts/run-shared-security-tests.cjs",
     "test:global": "node scripts/run-shared-global-tests.cjs",
     "test:workflows": "node scripts/run-workflow-scenario-tests.cjs",

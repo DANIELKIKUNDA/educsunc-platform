@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { createHash } from 'node:crypto';
 import type { AuditFinancierInput, AuditPort } from '../../application/ports/AuditPort';
 import { AuditEntryPersistenceMapper } from '../../../../shared/audit/infrastructure/persistence/postgres/mappers/AuditEntryPersistenceMapper';
 import type {
@@ -6,8 +6,12 @@ import type {
   AuditEntryRow,
 } from '../../../../shared/audit/infrastructure/persistence/postgres/mappers/AuditPersistenceRecords';
 import { AuditJsonbMapper } from '../../../../shared/audit/infrastructure/persistence/postgres/mappers/AuditJsonbMapper';
-import type { AuditEntryRepository } from '../../../../shared/audit/domain/repositories';
-import { PostgresAuditEntryRepository } from '../../../../shared/audit/infrastructure/persistence/postgres/repositories';
+import type { AuditCanonicalWritePort } from '../../../../shared/audit/application/ports/outbound';
+import { AuditCanonicalWriteService } from '../../../../shared/audit/application/services';
+import {
+  PostgresAuditCanonicalStorage,
+} from '../../../../shared/audit/infrastructure/persistence/postgres/repositories';
+import { AuditCanonicalEventMapper } from '../../../../shared/audit/infrastructure/outbox';
 
 type ActionAuditFinancierSupportee =
   | 'PAIEMENT_CREE'
@@ -115,7 +119,12 @@ const DEFINITIONS_AUDIT_FINANCIER: Record<string, DefinitionAuditFinancier> = {
 
 // Ce fichier branche les actions financieres critiques vers le registre append-only shared/audit.
 export class AuditAdapter implements AuditPort {
-  public constructor(private readonly auditRepository: AuditEntryRepository = new PostgresAuditEntryRepository()) {}
+  public constructor(
+    private readonly auditWriter: AuditCanonicalWritePort = new AuditCanonicalWriteService(
+      new PostgresAuditCanonicalStorage(),
+      new AuditCanonicalEventMapper(),
+    ),
+  ) {}
 
   public async journaliserActionFinanciere(input: AuditFinancierInput): Promise<void> {
     const definition = DEFINITIONS_AUDIT_FINANCIER[input.action];
@@ -124,7 +133,8 @@ export class AuditAdapter implements AuditPort {
     }
 
     const maintenant = new Date().toISOString();
-    const idAudit = `audit-financier-${randomUUID()}`;
+    const idempotencyKey = this.buildIdempotencyKey(input, definition.actionAudit);
+    const idAudit = `audit-financier-${createHash('sha256').update(idempotencyKey).digest('hex').slice(0, 32)}`;
     const requestId = `req-${idAudit}`;
     const roleActif = input.roleActif?.trim() || undefined;
     const scopesActifs = [
@@ -196,6 +206,26 @@ export class AuditAdapter implements AuditPort {
     }));
 
     const entree = AuditEntryPersistenceMapper.depuisRows(row, categories);
-    await this.auditRepository.ajouterAudit(entree);
+    await this.auditWriter.ecrire(entree, idempotencyKey);
+  }
+
+  private buildIdempotencyKey(input: AuditFinancierInput, action: string): string {
+    const fallback = createHash('sha256')
+      .update(JSON.stringify({
+        ancienEtat: input.ancienEtat,
+        nouvelEtat: input.nouvelEtat,
+        details: input.details,
+        montant: input.montant,
+        devise: input.devise,
+      }))
+      .digest('hex')
+      .slice(0, 24);
+    return [
+      'PAIEMENTS',
+      action,
+      input.idOrganisation,
+      input.idEcole,
+      input.referenceMetier ?? fallback,
+    ].join(':');
   }
 }

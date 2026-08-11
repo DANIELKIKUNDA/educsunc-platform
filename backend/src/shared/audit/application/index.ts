@@ -9,3 +9,4 @@ export * from './handlers';
 export * from './listeners';
 export * from './sagas';
 export * from './exceptions';
+export * from './outbox';

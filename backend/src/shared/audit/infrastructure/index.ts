@@ -9,3 +9,4 @@ export * from './retention';
 export * from './workers';
 export * from './security';
 export * from './configuration';
+export * from './outbox';

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { AuditAdapter } from '../../../infrastructure/adapters/AuditAdapter';
 import type { AuditEntry } from '../../../../../shared/audit/domain/aggregates';
-import type { AuditEntryRepository } from '../../../../../shared/audit/domain/repositories';
+import type { AuditCanonicalWritePort } from '../../../../../shared/audit/application/ports/outbound';
 import { reinitialiserEtatAuditTests } from '../../../../../shared/audit/tests/support/AuditTestSupport';
 
 test.beforeEach(() => {
@@ -11,21 +11,20 @@ test.beforeEach(() => {
 
 function creerRepositoryTest() {
   const entrees: AuditEntry[] = [];
-  const repository: AuditEntryRepository = {
-    ajouterAudit: async (entree) => { entrees.push(entree); },
-    trouverParId: async (id) => entrees.find((entree) => entree.obtenirId() === id) ?? null,
-    trouverParCorrelationId: async () => [],
-    trouverParRequestId: async () => [],
-    trouverParTenant: async () => [],
-    listerSelonFiltres: async () => [...entrees],
-    existe: async (id) => entrees.some((entree) => entree.obtenirId() === id),
+  const idempotencyKeys: string[] = [];
+  const writer: AuditCanonicalWritePort = {
+    ecrire: async (entree, idempotencyKey) => {
+      entrees.push(entree);
+      idempotencyKeys.push(idempotencyKey);
+      return { eventId: entree.obtenirId(), idOutbox: `outbox-${entree.obtenirId()}`, duplicate: false };
+    },
   };
-  return { entrees, repository };
+  return { entrees, idempotencyKeys, writer };
 }
 
 test('AuditAdapter persiste un audit shared pour un paiement enregistre', async () => {
   const testRepository = creerRepositoryTest();
-  const adaptateur = new AuditAdapter(testRepository.repository);
+  const adaptateur = new AuditAdapter(testRepository.writer);
 
   await adaptateur.journaliserActionFinanciere({
     action: 'ENREGISTRER_PAIEMENT',
@@ -52,11 +51,15 @@ test('AuditAdapter persiste un audit shared pour un paiement enregistre', async 
     entree.obtenirRessourceAudit().obtenirIdentifiantRessource().obtenirValeur(),
     'PAIEMENT-001',
   );
+  assert.equal(
+    testRepository.idempotencyKeys[0],
+    'PAIEMENTS:PAIEMENT_CREE:ORG-001:ECOLE-001:PAIEMENT-001',
+  );
 });
 
 test('AuditAdapter persiste un audit shared pour l ouverture de caisse', async () => {
   const testRepository = creerRepositoryTest();
-  const adaptateur = new AuditAdapter(testRepository.repository);
+  const adaptateur = new AuditAdapter(testRepository.writer);
 
   await adaptateur.journaliserActionFinanciere({
     action: 'OUVRIR_CAISSE_JOUR',
