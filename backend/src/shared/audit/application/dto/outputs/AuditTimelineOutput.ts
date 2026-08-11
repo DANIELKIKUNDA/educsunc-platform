@@ -7,4 +7,6 @@ export interface AuditTimelineOutput {
   readonly acteur?: string;
   readonly timeline: readonly AuditEntryOutput[];
   readonly items: readonly AuditEntryOutput[];
+  readonly nextCursor?: string;
+  readonly hasNextPage: boolean;
 }

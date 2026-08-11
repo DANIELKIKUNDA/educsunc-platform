@@ -1,9 +1,15 @@
 import type { FastifyPluginAsync } from 'fastify';
 import type { DependancesRoutesAudit } from './DependancesRoutesAudit';
 import { appliquerPoliciesRouteAudit, executerRouteAudit } from './_route-helpers';
+import {
+  auditDetailOpenApi,
+  auditHistoryOpenApi,
+  auditListOpenApi,
+  auditTimelineOpenApi,
+} from './AuditReadOpenApi';
 
 export const creerAuditRoutes = (dependances: DependancesRoutesAudit): FastifyPluginAsync => async (serveur) => {
-  serveur.get('/api/v1/audit', (requete, reponse) =>
+  serveur.get('/api/v1/audit', { schema: auditListOpenApi }, (requete, reponse) =>
     executerRouteAudit(dependances, requete, reponse, async () => {
       await appliquerPoliciesRouteAudit(dependances, requete, reponse, {
         permission: 'audit.read',
@@ -17,7 +23,7 @@ export const creerAuditRoutes = (dependances: DependancesRoutesAudit): FastifyPl
       });
     }));
 
-  serveur.get('/api/v1/audit/:id', (requete, reponse) =>
+  serveur.get('/api/v1/audit/:id', { schema: auditDetailOpenApi }, (requete, reponse) =>
     executerRouteAudit(dependances, requete, reponse, async () => {
       await appliquerPoliciesRouteAudit(dependances, requete, reponse, {
         permission: 'audit.read',
@@ -32,7 +38,7 @@ export const creerAuditRoutes = (dependances: DependancesRoutesAudit): FastifyPl
       });
     }));
 
-  serveur.get('/api/v1/audit/timeline', (requete, reponse) =>
+  serveur.get('/api/v1/audit/timeline', { schema: auditTimelineOpenApi }, (requete, reponse) =>
     executerRouteAudit(dependances, requete, reponse, async () => {
       await appliquerPoliciesRouteAudit(dependances, requete, reponse, {
         permission: 'audit.timeline.read',
@@ -46,7 +52,7 @@ export const creerAuditRoutes = (dependances: DependancesRoutesAudit): FastifyPl
       });
     }));
 
-  serveur.get('/api/v1/audit/history', (requete, reponse) =>
+  serveur.get('/api/v1/audit/history', { schema: auditHistoryOpenApi }, (requete, reponse) =>
     executerRouteAudit(dependances, requete, reponse, async () => {
       await appliquerPoliciesRouteAudit(dependances, requete, reponse, {
         permission: 'audit.history.read',

@@ -175,7 +175,11 @@ export class ValidationHttpAudit {
 
   public static validerPagination(objet: Record<string, unknown>): void {
     this.lireEntierQueryDansBornes(objet, 'page', 1, 10_000);
-    this.lireEntierQueryDansBornes(objet, 'taillePage', 1, 500);
+    this.lireEntierQueryDansBornes(objet, 'taillePage', 1, 100);
+    const cursor = this.lireChaineOptionnelle(objet, 'cursor');
+    if (cursor && (cursor.length > 1_024 || !/^[A-Za-z0-9_-]+$/.test(cursor))) {
+      throw new Error('cursor est invalide.');
+    }
   }
 
   public static validerTenant(objet: Record<string, unknown>): void {

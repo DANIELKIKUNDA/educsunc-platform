@@ -24,6 +24,7 @@ export class AuditTimelineMapper {
       correlationId,
       timeline,
       items: timeline,
+      hasNextPage: false,
     };
   }
 
@@ -34,12 +35,14 @@ export class AuditTimelineMapper {
       page: 1,
       taillePage: tries.length,
       totalPages: tries.length > 0 ? 1 : 0,
+      hasNextPage: false,
       items: tries,
       pagination: {
         page: 1,
         taille: tries.length,
         total: tries.length,
         totalPages: tries.length > 0 ? 1 : 0,
+        hasNextPage: false,
       },
     };
   }

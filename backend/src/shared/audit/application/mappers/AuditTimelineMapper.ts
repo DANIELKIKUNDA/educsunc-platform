@@ -11,6 +11,7 @@ export class AuditTimelineMapper {
       ressource: query.ressourceId,
       timeline: items,
       items,
+      hasNextPage: false,
     };
   }
 }

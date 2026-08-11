@@ -4,4 +4,6 @@ export interface AuditForensicQuery {
   readonly incidentId?: string;
   readonly acteurId?: string;
   readonly adresseIp?: string;
+  readonly organisationId?: string;
+  readonly ecoleId?: string;
 }

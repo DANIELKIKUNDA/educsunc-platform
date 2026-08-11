@@ -1,5 +1,6 @@
 export * from './PostgresAuditEntryRepository';
 export * from './PostgresAuditSearchRepository';
+export * from './PostgresAuditReadRepository';
 export * from './PostgresAuditTimelineRepository';
 export * from './PostgresAuditExportRepository';
 export * from './PostgresAuditArchiveRepository';

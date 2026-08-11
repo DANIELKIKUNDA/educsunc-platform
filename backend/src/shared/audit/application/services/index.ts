@@ -1,5 +1,6 @@
 export * from './AuditCreationApplicationService';
 export * from './AuditSearchApplicationService';
+export * from './AuditReadCursorCodec';
 export * from './AuditTimelineApplicationService';
 export * from './AuditForensicApplicationService';
 export * from './AuditExportApplicationService';

@@ -11,6 +11,6 @@ export class AuditRetentionApplicationService {
     return { periode: undefined, valeurs: { archives: 0 }, compteurs: { ecoleId: payload.ecoleId ? 1 : 0 } };
   }
   public async consulterArchivesAudit(payload: SearchAuditQuery): Promise<AuditSearchResultOutput> {
-    return { total: 0, page: payload.page ?? 1, taillePage: payload.taillePage ?? 25, totalPages: 0, items: [], pagination: { page: payload.page ?? 1, taille: payload.taillePage ?? 25, total: 0, totalPages: 0 } };
+    return { total: 0, page: payload.page ?? 1, taillePage: payload.taillePage ?? 25, totalPages: 0, hasNextPage: false, items: [], pagination: { page: payload.page ?? 1, taille: payload.taillePage ?? 25, total: 0, totalPages: 0, hasNextPage: false } };
   }
 }

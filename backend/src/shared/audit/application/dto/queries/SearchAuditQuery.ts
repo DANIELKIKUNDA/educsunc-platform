@@ -2,6 +2,8 @@
 export interface SearchAuditQuery {
   readonly page?: number;
   readonly taillePage?: number;
+  readonly cursor?: string;
+  readonly idAuditEntry?: string;
   readonly action?: string;
   readonly typeAuditPrincipal?: string;
   readonly gravite?: string;
@@ -9,7 +11,12 @@ export interface SearchAuditQuery {
   readonly categorieAudit?: string;
   readonly acteurId?: string;
   readonly ressourceId?: string;
+  readonly typeRessource?: string;
   readonly correlationId?: string;
+  readonly requestId?: string;
+  readonly sourceAudit?: string;
+  readonly dateDebut?: string;
+  readonly dateFin?: string;
   readonly organisationId?: string;
   readonly ecoleId?: string;
 }
