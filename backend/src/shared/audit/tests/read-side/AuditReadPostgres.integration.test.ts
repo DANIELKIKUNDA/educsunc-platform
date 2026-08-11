@@ -24,6 +24,7 @@ test('PostgreSQL certifie recherches, keyset, filtres, index et isolation tenant
   try {
     await client.query('BEGIN');
     for (let index = 0; index < 240; index += 1) {
+      const estConsultation = index % 2 === 0;
       const organisationId = index < 200 ? organisationA : organisationB;
       const ecoleId = index < 180 ? ecoleA : ecoleB;
       const dateAction = new Date(dateBase.getTime() - Math.floor(index / 3) * 1_000);
@@ -33,14 +34,14 @@ test('PostgreSQL certifie recherches, keyset, filtres, index et isolation tenant
            id_audit_entry,action,type_principal,gravite,niveau,resultat,request_id,
            correlation_id,acteur_id,type_acteur,role_actif,type_ressource,id_ressource,
            organisation_id,ecole_id,scope,mode_offline,retry_count,est_replay,est_retry,
-           source_audit,date_action,date_creation_audit
-         ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,FALSE,0,FALSE,FALSE,$17,$18,$18)`,
+           source_audit,date_action,date_creation_audit,contexte_permissions
+         ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,FALSE,0,FALSE,FALSE,$17,$18,$18,$19::jsonb)`,
         [
           id,
-          index % 2 === 0 ? 'CONSULTER_AUDIT' : 'EXPORTER_AUDIT',
-          'SYSTEME',
-          index % 10 === 0 ? 'ELEVEE' : 'FAIBLE',
-          'INFORMATION',
+          estConsultation ? 'AUDIT_CONSULTE' : 'EXPORT_GENERE',
+          estConsultation ? 'CONSULTATION_SENSIBLE' : 'EXPORT',
+          'ELEVEE',
+          'CRITIQUE',
           index % 11 === 0 ? 'FAILED' : 'SUCCESS',
           `${prefixe}-request-${index}`,
           `${prefixe}-correlation-${index % 7}`,
@@ -54,11 +55,20 @@ test('PostgreSQL certifie recherches, keyset, filtres, index et isolation tenant
           'ECOLE',
           'SYSTEM',
           dateAction.toISOString(),
+          JSON.stringify({
+            rolesActifs: ['MANAGER_SYSTEME'],
+            permissionsActives: ['audit.read'],
+            scopesActifs: [`ORGANISATION:${organisationId}`, `ECOLE:${ecoleId}`],
+          }),
         ],
       );
       await client.query(
         'INSERT INTO audit_categories(audit_entry_id,categorie) VALUES ($1,$2)',
-        [id, index % 2 === 0 ? 'CONSULTATION_SENSIBLE' : 'EXPORT'],
+        [id, estConsultation ? 'CONSULTATION_SENSIBLE' : 'EXPORT'],
+      );
+      await client.query(
+        'INSERT INTO audit_categories(audit_entry_id,categorie) VALUES ($1,$2)',
+        [id, estConsultation ? 'SECURITE' : 'CONSULTATION_SENSIBLE'],
       );
     }
     await client.query('COMMIT');
@@ -87,8 +97,12 @@ test('PostgreSQL certifie recherches, keyset, filtres, index et isolation tenant
     `INSERT INTO audit_entries (
        id_audit_entry,action,type_principal,gravite,niveau,resultat,type_acteur,
        organisation_id,ecole_id,scope,source_audit,date_action,date_creation_audit
-     ) VALUES ($1,'CONSULTER_AUDIT','SYSTEME','FAIBLE','INFORMATION','SUCCESS','UTILISATEUR',$2,$3,'ECOLE','SYSTEM',NOW(),NOW())`,
+     ) VALUES ($1,'AUDIT_CONSULTE','CONSULTATION_SENSIBLE','ELEVEE','CRITIQUE','SUCCESS','UTILISATEUR',$2,$3,'ECOLE','SYSTEM',NOW(),NOW())`,
     [evenementConcurrent, organisationA, ecoleA],
+  );
+  await pool.query(
+    `INSERT INTO audit_categories(audit_entry_id,categorie) VALUES ($1,'CONSULTATION_SENSIBLE'),($1,'SECURITE')`,
+    [evenementConcurrent],
   );
   const suivante = await service.rechercherAudits({
     organisationId: organisationA,
