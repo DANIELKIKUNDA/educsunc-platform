@@ -181,16 +181,33 @@ test('ClientPoolPostgresConfiguration annule toute la transaction apres une erre
 });
 
 test('AuditConfigurationPostgresPort conserve les evenements dans la persistence durable', async () => {
-  const client = new ClientSqlEspion(() => ({ lignes: [], nombreLignesAffectees: 1 }));
+  const client = new ClientSqlEspion((sql, parametres) => {
+    if (sql.includes('FROM educsyn_configuration_entries')) {
+      return {
+        lignes: [{
+          cle: 'runtime.retry.max',
+          scope_niveau: 'SYSTEM',
+          organisation_id: null,
+          ecole_id: null,
+          utilisateur_id: null,
+        }],
+        nombreLignesAffectees: 1,
+      };
+    }
+    if (sql.includes('INSERT INTO audit_outbox')) {
+      return { lignes: [{ id_outbox: String(parametres[0]) }], nombreLignesAffectees: 1 };
+    }
+    return { lignes: [], nombreLignesAffectees: 1 };
+  });
   const audit = new AuditConfigurationPostgresPort(client);
 
   await audit.enregistrerEvenementsConfiguration('configuration-integrite-1', [
     { type: 'ConfigurationUpdated', actorId: 'manager-systeme', updatedAt: new Date() },
   ]);
 
-  assert.equal(client.appels.length, 1);
-  assert.match(client.appels[0]?.sql ?? '', /INSERT INTO educsyn_configuration_audit_events/);
-  assert.equal(client.appels[0]?.parametres[1], 'configuration-integrite-1');
+  assert.equal(client.appels.some((appel) => /educsyn_configuration_audit_events/.test(appel.sql)), false);
+  assert.equal(client.appels.some((appel) => /INSERT INTO audit_outbox/.test(appel.sql)), true);
+  assert.equal(client.appels.some((appel) => /INSERT INTO audit_entries/.test(appel.sql)), true);
 });
 
 test('MigrateurPostgresConfiguration verrouille, trace et ne rejoue pas les migrations appliquees', async () => {

@@ -48,16 +48,36 @@ async function certifier(): Promise<void> {
     await new SecurityAuditInfrastructureService().journaliser({
       action: actionAudit, succes: true, details: { niveauScope: 'PLATEFORME', secret: 'doit-etre-masque' },
     });
-    const auditRelu = await pool.query<{ metadata: Record<string, unknown> }>(
-      'SELECT metadata FROM audit_entries WHERE action=$1 ORDER BY date_action DESC LIMIT 1', [actionAudit],
+    const auditRelu = await pool.query<{
+      id_audit_entry: string;
+      action: string;
+      metadata: Record<string, unknown>;
+      nouvel_etat: Record<string, unknown> | null;
+    }>(
+      `SELECT id_audit_entry, action, metadata, nouvel_etat
+       FROM audit_entries
+       WHERE type_principal='SECURITE'
+         AND metadata->>'actionSource'=$1
+       ORDER BY date_action DESC
+       LIMIT 1`,
+      [actionAudit],
     );
-    if (!auditRelu.rows[0] || 'secret' in auditRelu.rows[0].metadata) {
+    const entreeAudit = auditRelu.rows[0];
+    if (
+      !entreeAudit
+      || entreeAudit.action !== 'GOUVERNANCE_SECURITE_MODIFIEE'
+      || 'secret' in entreeAudit.metadata
+      || (entreeAudit.nouvel_etat !== null && 'secret' in entreeAudit.nouvel_etat)
+    ) {
       throw new Error("La durabilite ou le masquage de l'audit Security a echoue.");
     }
 
     let appendOnlyCertifie = false;
     try {
-      await pool.query('UPDATE audit_entries SET action=action WHERE action=$1', [actionAudit]);
+      await pool.query(
+        'UPDATE audit_entries SET action=action WHERE id_audit_entry=$1',
+        [entreeAudit.id_audit_entry],
+      );
     } catch {
       appendOnlyCertifie = true;
     }

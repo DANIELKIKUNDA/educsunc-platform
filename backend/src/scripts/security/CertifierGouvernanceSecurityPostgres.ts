@@ -168,10 +168,12 @@ async function main():Promise<void>{
     expect(resetState.revoque && Boolean(resetState.revoque_le),'Le refresh token actif n’a pas été révoqué par la réinitialisation administrative.');
 
     const audit=await shared.executer<{total:number}>(`SELECT COUNT(*)::int AS total FROM audit_entries
-      WHERE correlation_id=$1 AND action IN ('COMPTE_CREE','COMPTE_SUSPENDU')`,[`security-cert-${suffix}`]);
+      WHERE correlation_id=$1
+        AND metadata->>'actionSource' IN ('COMPTE_CREE','COMPTE_SUSPENDU')`,[`security-cert-${suffix}`]);
     expect((audit.lignes[0]?.total ?? 0)>=5,'Les décisions de certification ne sont pas toutes auditées durablement.');
     const assignmentAudit=await shared.executer<{total:number}>(`SELECT COUNT(*)::int AS total FROM audit_entries
-      WHERE correlation_id=$1 AND action IN ('AFFECTATION_CREEE','AFFECTATION_DESACTIVEE','AFFECTATION_REACTIVEE')`,[`security-cert-${suffix}`]);
+      WHERE correlation_id=$1
+        AND metadata->>'actionSource' IN ('AFFECTATION_CREEE','AFFECTATION_DESACTIVEE','AFFECTATION_REACTIVEE')`,[`security-cert-${suffix}`]);
     expect((assignmentAudit.lignes[0]?.total ?? 0)===3,'Le cycle de vie de l’affectation n’est pas entièrement audité.');
     console.log(JSON.stringify({isolationMultiTenant:true,ecoleHorsOrganisationRefusee:true,dernierAdministrateurProtege:true,
       concurrencePostgresCertifiee:true,suspensionRevoqueAcces:true,reinitialisationRevoqueAccesSansSecret:true,

@@ -1,4 +1,6 @@
 import { Pool, type PoolConfig } from 'pg';
+import type { ResultatExecutionSql, SqlQueryClient } from 'shared/infrastructure/persistence/SqlQueryClient';
+import { BulletinTransactionContext } from './transaction/BulletinTransactionContext';
 
 // Ce fichier construit le pool PostgreSQL technique du BC Bulletins & Evaluations.
 export interface ConfigurationPoolPostgresBulletinsEvaluations extends PoolConfig {}
@@ -23,35 +25,55 @@ export function creerPoolPostgresBulletinsEvaluations(
 }
 
 // Ce client de lecture applique au besoin le contexte de session avant une requete.
-export class ClientPoolPostgresBulletinsEvaluations {
+export class ClientPoolPostgresBulletinsEvaluations implements SqlQueryClient {
   // Cette methode construit un client de lecture simplifie a partir du pool.
   public static depuisPool(
     pool: Pool,
     fournisseurParametresSession?: FournisseurParametresSessionPostgresBulletinsEvaluations,
+    contexteTransaction?: BulletinTransactionContext,
   ): ClientPoolPostgresBulletinsEvaluations {
-    return new ClientPoolPostgresBulletinsEvaluations(pool, fournisseurParametresSession);
+    return new ClientPoolPostgresBulletinsEvaluations(pool, fournisseurParametresSession, contexteTransaction);
   }
 
   // Ce constructeur memorise le pool et le fournisseur de session.
   constructor(
     private readonly pool: Pool,
     private readonly fournisseurParametresSession?: FournisseurParametresSessionPostgresBulletinsEvaluations,
+    private readonly contexteTransaction = new BulletinTransactionContext(),
   ) {}
+
+  public async executer<TLigne extends object = Record<string, unknown>>(
+    texte: string,
+    valeurs: readonly unknown[] = [],
+  ): Promise<ResultatExecutionSql<TLigne>> {
+    const clientTransactionnel = this.contexteTransaction.obtenirClient();
+    if (clientTransactionnel) {
+      const resultat = await clientTransactionnel.query(texte, [...valeurs]);
+      return {
+        lignes: resultat.rows as readonly TLigne[],
+        nombreLignesAffectees: resultat.rowCount ?? 0,
+      };
+    }
+    const client = await this.pool.connect();
+    try {
+      await this.appliquerParametresSession(client);
+      const resultat = await client.query(texte, [...valeurs]);
+      return {
+        lignes: resultat.rows as readonly TLigne[],
+        nombreLignesAffectees: resultat.rowCount ?? 0,
+      };
+    } finally {
+      client.release();
+    }
+  }
 
   // Cette methode execute une requete SQL simple et applique au prealable le contexte de session si besoin.
   public async requeter<TSortie = unknown>(
     texte: string,
     valeurs: readonly unknown[] = [],
   ): Promise<TSortie[]> {
-    const client = await this.pool.connect();
-
-    try {
-      await this.appliquerParametresSession(client);
-      const resultat = await client.query(texte, [...valeurs]);
-      return resultat.rows as TSortie[];
-    } finally {
-      client.release();
-    }
+    const resultat = await this.executer<TSortie & object>(texte, valeurs);
+    return resultat.lignes as TSortie[];
   }
 
   // Cette methode applique les parametres de session PostgreSQL au client courant.

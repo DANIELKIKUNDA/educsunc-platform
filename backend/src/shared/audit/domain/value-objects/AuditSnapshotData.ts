@@ -2,17 +2,7 @@ import { ObjetValeur } from '../../../domain/ValueObject';
 
 export type ValeurAuditSnapshot = Record<string, unknown> | null | undefined;
 
-const CLES_SENSIBLES_INTERDITES = [
-  'motDePasse',
-  'password',
-  'passwordHash',
-  'refreshToken',
-  'jwt',
-  'accessToken',
-  'secret',
-  'privateKey',
-  'mobileMoneyToken',
-] as const;
+const CLE_SENSIBLE_INTERDITE = /mot.?de.?passe|password|token|jwt|cookie|secret|private.?key|authorization/i;
 
 // Ce value object porte les anciens et nouveaux etats apres nettoyage des données sensibles.
 export class AuditSnapshotData extends ObjetValeur<{
@@ -42,11 +32,18 @@ export class AuditSnapshotData extends ObjetValeur<{
     const entree = valeur as Record<string, unknown>;
     const resultat: Record<string, unknown> = {};
     for (const [cle, contenu] of Object.entries(entree)) {
-      if (CLES_SENSIBLES_INTERDITES.includes(cle as (typeof CLES_SENSIBLES_INTERDITES)[number])) {
+      if (CLE_SENSIBLE_INTERDITE.test(cle)) {
         continue;
       }
 
-      if (contenu && typeof contenu === 'object' && !Array.isArray(contenu)) {
+      if (Array.isArray(contenu)) {
+        resultat[cle] = contenu.map((element) => {
+          if (element && typeof element === 'object' && !Array.isArray(element)) {
+            return AuditSnapshotData.nettoyerObjet(element as Record<string, unknown>);
+          }
+          return element;
+        });
+      } else if (contenu && typeof contenu === 'object') {
         resultat[cle] = AuditSnapshotData.nettoyerObjet(contenu as Record<string, unknown>);
       } else {
         resultat[cle] = contenu;

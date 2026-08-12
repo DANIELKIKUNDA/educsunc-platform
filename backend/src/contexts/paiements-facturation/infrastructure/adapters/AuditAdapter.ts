@@ -12,9 +12,12 @@ import {
   PostgresAuditCanonicalStorage,
 } from '../../../../shared/audit/infrastructure/persistence/postgres/repositories';
 import { AuditCanonicalEventMapper } from '../../../../shared/audit/infrastructure/outbox';
+import { AUDIT_ACTION_MATRIX } from '../../../../shared/audit/domain/invariants/AuditActionMatrix';
 
 type ActionAuditFinancierSupportee =
   | 'PAIEMENT_CREE'
+  | 'PAIEMENT_ANNULE'
+  | 'RECU_GENERE'
   | 'CAISSE_OUVERTE'
   | 'CAISSE_CLOTUREE'
   | 'PARAMETRES_PAIEMENT_CONFIGURES'
@@ -30,7 +33,7 @@ interface DefinitionAuditFinancier {
   gravite: string;
   niveau: string;
   resultat: string;
-  typeRessource: 'PAIEMENT' | 'CAISSE' | 'ECOLE' | 'ELEVE';
+  typeRessource: 'PAIEMENT' | 'RECU' | 'CAISSE' | 'ECOLE' | 'ELEVE';
   permissionsActives: readonly string[];
 }
 
@@ -43,6 +46,26 @@ const DEFINITIONS_AUDIT_FINANCIER: Record<string, DefinitionAuditFinancier> = {
     niveau: 'CRITIQUE',
     resultat: 'SUCCESS',
     typeRessource: 'PAIEMENT',
+    permissionsActives: ['paiements.write'],
+  },
+  ANNULER_PAIEMENT: {
+    actionAudit: 'PAIEMENT_ANNULE',
+    typePrincipal: 'FINANCIER',
+    categories: ['FINANCIER', 'METIER'],
+    gravite: 'CRITIQUE',
+    niveau: 'CRITIQUE',
+    resultat: 'CANCELLED',
+    typeRessource: 'PAIEMENT',
+    permissionsActives: ['paiements.write'],
+  },
+  GENERER_RECU_OFFICIEL: {
+    actionAudit: 'RECU_GENERE',
+    typePrincipal: 'FINANCIER',
+    categories: ['FINANCIER'],
+    gravite: 'MOYENNE',
+    niveau: 'INFORMATION',
+    resultat: 'SUCCESS',
+    typeRessource: 'RECU',
     permissionsActives: ['paiements.write'],
   },
   OUVRIR_CAISSE_JOUR: {
@@ -136,11 +159,13 @@ export class AuditAdapter implements AuditPort {
     const idempotencyKey = this.buildIdempotencyKey(input, definition.actionAudit);
     const idAudit = `audit-financier-${createHash('sha256').update(idempotencyKey).digest('hex').slice(0, 32)}`;
     const requestId = `req-${idAudit}`;
-    const roleActif = input.roleActif?.trim() || undefined;
+    const roleActif = input.roleActif?.trim()
+      || (input.idUtilisateur ? 'UTILISATEUR_AUTHENTIFIE' : undefined);
     const scopesActifs = [
       `ORGANISATION:${input.idOrganisation}`,
       `ECOLE:${input.idEcole}`,
     ];
+    const snapshotsAutorises = AUDIT_ACTION_MATRIX[definition.actionAudit].snapshotsAutorises;
 
     const row: AuditEntryRow = {
       id_audit_entry: idAudit,
@@ -177,8 +202,10 @@ export class AuditAdapter implements AuditPort {
       date_action: maintenant,
       date_creation_audit: maintenant,
       date_synchronisation: null,
-      ancien_etat: AuditJsonbMapper.serialiser(input.ancienEtat),
-      nouvel_etat: AuditJsonbMapper.serialiser(input.nouvelEtat ?? input.details),
+      ancien_etat: snapshotsAutorises ? AuditJsonbMapper.serialiser(input.ancienEtat) : null,
+      nouvel_etat: snapshotsAutorises
+        ? AuditJsonbMapper.serialiser(input.nouvelEtat ?? input.details)
+        : null,
       metadata: AuditJsonbMapper.serialiser({
         ...input.details,
         sourceAuditOriginal: 'PAIEMENTS',

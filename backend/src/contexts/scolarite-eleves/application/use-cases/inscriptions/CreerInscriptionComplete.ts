@@ -4,7 +4,7 @@ import { AffectationClasseSortieDTO } from '../../dto/output/AffectationClasseSo
 import { EleveDetailSortieDTO } from '../../dto/output/EleveDetailSortieDTO';
 import { InscriptionScolaireSortieDTO } from '../../dto/output/InscriptionScolaireSortieDTO';
 import { ErreurValidationDTO } from '../../exceptions/ErreurValidationDTO';
-import type { AutorisationInscriptionCompletePort } from '../../ports';
+import type { AuditPort, AutorisationInscriptionCompletePort } from '../../ports';
 import {
   ServiceTransactionApplication,
   ServiceTransactionApplicationSansEffet,
@@ -30,6 +30,7 @@ export class CreerInscriptionComplete implements UseCase<CreerInscriptionComplet
     private readonly affecterEleveAClasse?: AffecterEleveAClasse,
     private readonly autorisationInscriptionComplete?: AutorisationInscriptionCompletePort,
     private readonly serviceTransaction: ServiceTransactionApplication = new ServiceTransactionApplicationSansEffet(),
+    private readonly audit?: AuditPort,
   ) {}
 
   /** Execute l'inscription complete. */
@@ -56,6 +57,14 @@ export class CreerInscriptionComplete implements UseCase<CreerInscriptionComplet
       const affectation = entree.affectation && this.affecterEleveAClasse
         ? (await this.affecterEleveAClasse.executer(entree.affectation)).affectation
         : undefined;
+
+      await this.audit?.journaliserAction({
+        action: 'ELEVE_INSCRIT',
+        idOrganisation: entree.eleve.idOrganisation,
+        idEcole: entree.eleve.idEcole,
+        idUtilisateur: entree.eleve.idUtilisateur,
+        referenceMetier: inscription.idInscriptionScolaire,
+      });
 
       return { eleve, inscription, affectation };
     });

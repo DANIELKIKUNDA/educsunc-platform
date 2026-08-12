@@ -1,5 +1,6 @@
 import type { Pool, PoolClient } from 'pg';
 import type { FournisseurParametresSessionPostgresBulletinsEvaluations } from '../ClientPoolPostgresBulletinsEvaluations';
+import { BulletinTransactionContext } from './BulletinTransactionContext';
 
 // Ce fichier definit et implemente le gestionnaire transactionnel PostgreSQL du BC Bulletins.
 export interface TransactionManager {
@@ -12,6 +13,7 @@ export class BulletinTransactionManager implements TransactionManager {
   constructor(
     private readonly pool: Pool,
     private readonly fournisseurParametresSession?: FournisseurParametresSessionPostgresBulletinsEvaluations,
+    private readonly contexteTransaction = new BulletinTransactionContext(),
   ) {}
 
   // Cette methode encadre l'operation dans une transaction atomique classique.
@@ -21,7 +23,7 @@ export class BulletinTransactionManager implements TransactionManager {
     try {
       await client.query('BEGIN');
       await this.appliquerParametresSession(client);
-      const resultat = await operation();
+      const resultat = await this.contexteTransaction.executer(client, operation);
       await client.query('COMMIT');
       return resultat;
     } catch (erreur) {

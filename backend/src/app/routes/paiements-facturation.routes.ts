@@ -418,6 +418,8 @@ function composerRoutesPaiementsFacturation(): CompositionRoutesPaiementsFactura
       autorisationAnnulationPaiement,
       undefined,
       eventBus,
+      auditAdapter,
+      serviceTransactionPaiement,
     ),
   );
 

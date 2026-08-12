@@ -13,6 +13,7 @@ import {
   BulletinTransactionManager,
   type TransactionManager,
 } from './transaction/TransactionManager';
+import { BulletinTransactionContext } from './transaction/BulletinTransactionContext';
 
 // Cette interface regroupe les briques PostgreSQL pretes a etre injectees dans le BC.
 export interface InfrastructurePostgresBulletinsEvaluations {
@@ -42,8 +43,17 @@ export function creerInfrastructurePostgresBulletinsEvaluations(
         };
 
   const pool = creerPoolPostgresBulletinsEvaluations(configuration);
-  const clientLecture = ClientPoolPostgresBulletinsEvaluations.depuisPool(pool, fournisseurParametresSession);
-  const gestionnaireTransaction = new BulletinTransactionManager(pool, fournisseurParametresSession);
+  const contexteTransaction = new BulletinTransactionContext();
+  const clientLecture = ClientPoolPostgresBulletinsEvaluations.depuisPool(
+    pool,
+    fournisseurParametresSession,
+    contexteTransaction,
+  );
+  const gestionnaireTransaction = new BulletinTransactionManager(
+    pool,
+    fournisseurParametresSession,
+    contexteTransaction,
+  );
   const uniteDeTravail = new PostgresBulletinUnitOfWork(gestionnaireTransaction);
 
   return {

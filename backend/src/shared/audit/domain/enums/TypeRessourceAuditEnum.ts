@@ -18,6 +18,7 @@ export const TYPE_RESSOURCE_AUDIT_ENUM = [
   'ORGANISATION',
   'ECOLE',
   'NOTIFICATION',
+  'CONFIGURATION',
   'AUDIT',
 ] as const;
 
