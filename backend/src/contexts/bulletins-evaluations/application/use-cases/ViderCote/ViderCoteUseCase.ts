@@ -72,9 +72,11 @@ export class ViderCoteUseCase {
       await this.eventBusPort?.publier(fiche.recupererEvenements());
       await this.serviceAuditBulletin.journaliser({
         action: 'VIDER_COTE',
+        idOrganisation: input.idOrganisation,
         idEcole: fiche.obtenirIdEcole(),
         idUtilisateur: input.idUtilisateur,
         referenceMetier: fiche.obtenirId(),
+        operationId: `${input.codeColonne}:${input.versionAttendue}`,
         details: { codeColonne: input.codeColonne },
       });
       const sortie = this.serviceProjectionLecture.projeterFiche(fiche);

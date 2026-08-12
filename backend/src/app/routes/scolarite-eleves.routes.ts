@@ -86,6 +86,9 @@ import {
   creerInfrastructurePostgresScolariteEleves,
 } from '../../contexts/scolarite-eleves/infrastructure/persistence/postgres';
 import { ScolariteTenantContext } from '../../contexts/scolarite-eleves/infrastructure/tenancy/ScolariteTenantContext';
+import { AuditAdapter } from '../../contexts/scolarite-eleves/infrastructure/adapters/AuditAdapter';
+import { ScolariteAuditCanonicalWriteAdapter } from '../../contexts/scolarite-eleves/infrastructure/adapters/ScolariteAuditCanonicalWriteAdapter';
+import { CanonicalAuditProducer } from '../../shared/audit/infrastructure/producers';
 
 // Ce fichier compose le BC Scolarite des Eleves et l'enregistre dans Fastify.
 interface DepotsScolariteEleves {
@@ -135,6 +138,9 @@ function composerRoutesScolariteEleves(): CompositionRoutesScolariteEleves {
   const serviceTenant = new ServiceApplicationTenant();
   const serviceConcurrence = new ServiceApplicationConcurrence();
   const serviceTransaction = infrastructure.uniteDeTravail;
+  const auditScolarite = new AuditAdapter(new CanonicalAuditProducer(
+    new ScolariteAuditCanonicalWriteAdapter(infrastructure.uniteDeTravail),
+  ));
   const autorisationInscriptionComplete = new AutorisationInscriptionCompleteAdapter();
   const autorisationAffectationClasse = new AutorisationAffectationClasseAdapter();
   const autorisationEleve = new AutorisationEleveAdapter();
@@ -249,6 +255,7 @@ function composerRoutesScolariteEleves(): CompositionRoutesScolariteEleves {
         affecterEleveAClasse,
         autorisationInscriptionComplete,
         serviceTransaction,
+        auditScolarite,
       ),
       storeIdempotence,
     ),
@@ -296,6 +303,9 @@ function composerRoutesScolariteEleves(): CompositionRoutesScolariteEleves {
       autorisationCycleVieEleve,
       historisationParcours,
       eventBus,
+      undefined,
+      auditScolarite,
+      serviceTransaction,
     ),
     new TransfererEleve(
       depots.depotEleve,
@@ -303,6 +313,9 @@ function composerRoutesScolariteEleves(): CompositionRoutesScolariteEleves {
       autorisationCycleVieEleve,
       historisationParcours,
       eventBus,
+      undefined,
+      auditScolarite,
+      serviceTransaction,
     ),
     new ReintegrerEleve(
       depots.depotEleve,

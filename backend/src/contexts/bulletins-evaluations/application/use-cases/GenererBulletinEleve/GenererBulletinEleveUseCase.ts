@@ -155,9 +155,11 @@ export class GenererBulletinEleveUseCase {
       }
       await this.serviceAuditBulletin.journaliser({
         action: 'GENERER_BULLETIN',
+        idOrganisation: input.idOrganisation,
         idEcole: bulletin.obtenirIdEcole(),
         idUtilisateur: input.idUtilisateur,
         referenceMetier: bulletin.obtenirId(),
+        operationId: String(bulletin.obtenirVersionBulletin()),
         details: { typeGeneration: input.typeGeneration },
       });
       bulletin.viderEvenements();

@@ -83,9 +83,11 @@ export class EncoderCoteUseCase {
       await this.serviceIdempotence.enregistrer(cle, empreinte, sortie);
       await this.serviceAuditBulletin.journaliser({
         action: 'ENCODER_COTE',
+        idOrganisation: input.idOrganisation,
         idEcole: fiche.obtenirIdEcole(),
         idUtilisateur: input.idUtilisateur,
         referenceMetier: fiche.obtenirId(),
+        operationId: input.cleIdempotence ?? `${input.codeColonne}:${input.versionAttendue}`,
         details: { codeColonne: input.codeColonne, origineSynchronisation: input.origineSynchronisation ?? 'ONLINE' },
       });
       fiche.viderEvenements();

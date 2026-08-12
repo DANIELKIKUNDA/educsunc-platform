@@ -2,21 +2,56 @@ import type {
   AuditBulletinInput,
   AuditPort,
 } from 'contexts/bulletins-evaluations/application/ports/out/AuditPort';
-import type { Journaliseur } from 'shared/infrastructure/logger/Logger';
+import {
+  CanonicalAuditProducer,
+  type CanonicalAuditProducerInput,
+} from 'shared/audit/infrastructure/producers';
 
-// Ce fichier adapte le journaliseur shared au contrat d'audit applicatif du BC.
+const ACTIONS_BULLETIN: Record<string, {
+  action: CanonicalAuditProducerInput['action'];
+  typeRessource: CanonicalAuditProducerInput['ressource']['type'];
+}> = {
+  ENCODER_COTE: { action: 'COTE_ENCODEE', typeRessource: 'FICHE_COTATION' },
+  MODIFIER_COTE: { action: 'COTE_MODIFIEE', typeRessource: 'FICHE_COTATION' },
+  VIDER_COTE: { action: 'COTE_MODIFIEE', typeRessource: 'FICHE_COTATION' },
+  GENERER_BULLETIN: { action: 'BULLETIN_GENERE', typeRessource: 'BULLETIN' },
+  GENERER_PROCLAMATION: { action: 'PROCLAMATION_GENEREE', typeRessource: 'PROCLAMATION' },
+};
+
+// Cet adaptateur raccorde les operations pedagogiques documentees a l'outbox Audit.
 export class BulletinAuditAdapter implements AuditPort {
-  // Ce constructeur injecte le journaliseur transverse pour tracer les actions sensibles.
-  constructor(private readonly journaliseur: Journaliseur) {}
+  constructor(private readonly producteur = new CanonicalAuditProducer()) {}
 
-  // Cette methode ecrit une trace d'audit homogene dans les logs techniques.
   public async journaliser(input: AuditBulletinInput): Promise<void> {
-    this.journaliseur.info('Trace d audit du BC Bulletins & Evaluations.', {
-      action: input.action,
-      idEcole: input.idEcole,
-      idUtilisateur: input.idUtilisateur,
-      referenceMetier: input.referenceMetier,
-      details: input.details,
+    const mapping = ACTIONS_BULLETIN[input.action];
+    if (!mapping || !input.idOrganisation) return;
+
+    await this.producteur.produire({
+      action: mapping.action,
+      resultat: 'SUCCESS',
+      acteur: { id: input.idUtilisateur },
+      tenant: {
+        scope: 'ECOLE',
+        organisationId: input.idOrganisation,
+        ecoleId: input.idEcole,
+      },
+      ressource: {
+        type: mapping.typeRessource,
+        id: input.referenceMetier,
+        libelle: input.action,
+      },
+      contexte: {
+        correlationId: input.referenceMetier,
+        source: 'HTTP_API',
+      },
+      nouvelEtat: input.details,
+      metadata: { ...input.details, actionSource: input.action },
+      idempotencyKey: `BULLETINS:${mapping.action}:${input.referenceMetier}:${input.operationId ?? this.cleOperation(input)}`,
     });
+  }
+
+  private cleOperation(input: AuditBulletinInput): string {
+    const details = input.details ?? {};
+    return [details.codeColonne, details.typeGeneration, input.idUtilisateur].filter(Boolean).join(':') || 'OPERATION';
   }
 }

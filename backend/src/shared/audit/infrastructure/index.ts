@@ -7,6 +7,7 @@ export * from './exports';
 export * from './monitoring';
 export * from './retention';
 export * from './workers';
+export * from './producers';
 export * from './security';
 export * from './configuration';
 export * from './outbox';

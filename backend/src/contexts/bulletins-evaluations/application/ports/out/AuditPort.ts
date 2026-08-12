@@ -5,8 +5,10 @@ export interface AuditPort {
 
 export interface AuditBulletinInput {
   action: string;
+  idOrganisation?: string;
   idEcole: string;
   idUtilisateur?: string;
   referenceMetier: string;
+  operationId?: string;
   details?: Record<string, unknown>;
 }

@@ -15,6 +15,7 @@ import type { TransactionManagerPort } from '../../ports/out/TransactionManagerP
 import { ServiceProjectionProclamation } from '../../services/ServiceProjectionProclamation';
 import { ServiceStatistiques } from '../../services/ServiceStatistiques';
 import { StatutProclamationEleve } from '../../../domain/value-objects/StatutProclamationEleve';
+import type { AuditPort } from '../../ports/out/AuditPort';
 
 // Ce use case orchestre la generation applicative d'une proclamation de classe.
 export class GenererProclamationClasseUseCase {
@@ -27,6 +28,7 @@ export class GenererProclamationClasseUseCase {
     private readonly serviceProjectionProclamation = new ServiceProjectionProclamation(),
     private readonly serviceStatistiques = new ServiceStatistiques(),
     private readonly eventBusPort?: EventBusPort,
+    private readonly auditPort?: AuditPort,
   ) {}
 
   // Cette methode genere la proclamation puis renvoie sa projection.
@@ -141,6 +143,19 @@ export class GenererProclamationClasseUseCase {
       });
       this.serviceStatistiques.calculerProclamation(proclamation);
       await this.depotProclamation.sauvegarder(proclamation);
+      await this.auditPort?.journaliser({
+        action: 'GENERER_PROCLAMATION',
+        idOrganisation: input.idOrganisation,
+        idEcole: proclamation.obtenirIdEcole(),
+        idUtilisateur: input.idUtilisateur,
+        referenceMetier: proclamation.obtenirId(),
+        operationId: `${input.codeColonne}:${input.typeProclamation}`,
+        details: {
+          idClassePedagogique: proclamation.obtenirIdClassePedagogique(),
+          idAnneeScolaire: proclamation.obtenirIdAnneeScolaire(),
+          codeColonne: input.codeColonne,
+        },
+      });
       await this.eventBusPort?.publier(proclamation.recupererEvenements());
       const sortie = this.serviceProjectionProclamation.projeter(proclamation);
       proclamation.viderEvenements();

@@ -1,5 +1,9 @@
 import type { FastifyPluginAsync } from 'fastify';
 import { JournaliseurPino } from 'shared/infrastructure/logger/PinoLogger';
+import { AuditCanonicalWriteService } from 'shared/audit/application/services';
+import { AuditCanonicalEventMapper } from 'shared/audit/infrastructure/outbox';
+import { PostgresAuditCanonicalStorage } from 'shared/audit/infrastructure/persistence/postgres/repositories';
+import { CanonicalAuditProducer } from 'shared/audit/infrastructure/producers';
 import { ContexteTenant } from 'shared/tenancy/TenantContext';
 import {
   AppliquerMigrationBulletinUseCase,
@@ -222,7 +226,12 @@ function composerRoutesBulletinsEvaluations(): CompositionRoutesBulletinsEvaluat
   );
   const journaliseur = new JournaliseurPino();
   const eventBus = new BulletinEventBusAdapter(journaliseur);
-  const auditAdapter = new BulletinAuditAdapter(journaliseur);
+  const auditAdapter = new BulletinAuditAdapter(new CanonicalAuditProducer(
+    new AuditCanonicalWriteService(
+      new PostgresAuditCanonicalStorage(infrastructureBulletins.clientLecture),
+      new AuditCanonicalEventMapper(),
+    ),
+  ));
   const referentielAdapter = new ReferentielAcademiqueAdapter();
   const autorisationGenerationBulletinAdapter = new AutorisationGenerationBulletinAdapter();
   const autorisationAuditPedagogiqueAdapter = new AutorisationAuditPedagogiqueAdapter();
@@ -412,6 +421,7 @@ function composerRoutesBulletinsEvaluations(): CompositionRoutesBulletinsEvaluat
     undefined,
     undefined,
     eventBus,
+    serviceAudit,
   );
   const genererSyntheseResultatsEcoleUseCase = new GenererSyntheseResultatsEcoleUseCase(
     depotSynthese,

@@ -1,6 +1,11 @@
-import { randomUUID } from 'node:crypto';
-
 import { InfrastructureError } from '../../../../shared/exceptions/InfrastructureError';
+import { AuditCanonicalWriteService } from '../../../../shared/audit/application/services';
+import { AuditCanonicalEventMapper } from '../../../../shared/audit/infrastructure/outbox';
+import { PostgresAuditCanonicalStorage } from '../../../../shared/audit/infrastructure/persistence/postgres/repositories';
+import {
+  CanonicalAuditProducer,
+  type CanonicalAuditProducerInput,
+} from '../../../../shared/audit/infrastructure/producers';
 import {
   EntreeJournalAuditReferentielAcademique,
   ServiceJournalAuditReferentielAcademique,
@@ -20,7 +25,7 @@ interface EntreeJournalAuditReferentielAcademiqueNormalisee {
   creeLe: Date;
 }
 
-// Ce writer persiste les entrees d'audit du BC dans la table technique PostgreSQL.
+// Ce writer raccorde les nouvelles traces du BC au registre canonique et laisse audit_logs en historique.
 export class ServiceJournalAuditReferentielAcademiquePostgres
   implements ServiceJournalAuditReferentielAcademique
 {
@@ -39,7 +44,7 @@ export class ServiceJournalAuditReferentielAcademiquePostgres
     this.contexteExecutionTenant = contexteExecutionTenant;
   }
 
-  // Cette methode insere une entree d'audit exploitable et enrichie du contexte courant.
+  // Cette methode produit une entree canonique enrichie du contexte courant.
   public async journaliser(
     entree: EntreeJournalAuditReferentielAcademique,
   ): Promise<void> {
@@ -48,32 +53,40 @@ export class ServiceJournalAuditReferentielAcademiquePostgres
       ?? this.clientLecture;
 
     try {
-      await clientActif.executer(
-        [
-          'INSERT INTO "audit_logs" (',
-          '"id",',
-          '"action",',
-          '"acteur",',
-          '"type_ressource",',
-          '"id_ressource",',
-          '"id_ecole",',
-          '"id_organisation",',
-          '"details",',
-          '"cree_le"',
-          ') VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)',
-        ].join(' '),
-        [
-          this.genererIdentifiantAudit(),
+      const producteur = new CanonicalAuditProducer(new AuditCanonicalWriteService(
+        new PostgresAuditCanonicalStorage(clientActif),
+        new AuditCanonicalEventMapper(),
+      ));
+      const action = /PONDERATION/i.test(entreeNormalisee.action)
+        ? 'PONDERATION_MODIFIEE'
+        : 'REFERENTIEL_MODIFIE';
+      await producteur.produire({
+        action,
+        resultat: 'SUCCESS',
+        acteur: { id: entreeNormalisee.acteur },
+        tenant: this.mapperTenant(entreeNormalisee),
+        ressource: {
+          type: this.mapperTypeRessource(entreeNormalisee.typeRessource),
+          id: entreeNormalisee.idRessource,
+          libelle: entreeNormalisee.action,
+        },
+        contexte: {
+          requestId: this.texte(entreeNormalisee.details?.requestId),
+          correlationId: this.texte(entreeNormalisee.details?.correlationId)
+            ?? entreeNormalisee.idRessource,
+          source: /MIGRATION/i.test(entreeNormalisee.action) ? 'MIGRATION' : 'HTTP_API',
+        },
+        nouvelEtat: entreeNormalisee.details,
+        metadata: { ...entreeNormalisee.details, actionSource: entreeNormalisee.action },
+        idempotencyKey: [
+          'REFERENTIEL',
+          action,
           entreeNormalisee.action,
-          entreeNormalisee.acteur,
-          entreeNormalisee.typeRessource,
-          entreeNormalisee.idRessource,
-          entreeNormalisee.idEcole,
-          entreeNormalisee.idOrganisation,
-          entreeNormalisee.details,
-          entreeNormalisee.creeLe,
-        ],
-      );
+          entreeNormalisee.idRessource ?? 'SANS_ID',
+          entreeNormalisee.creeLe.toISOString(),
+        ].join(':'),
+        occurredAt: entreeNormalisee.creeLe,
+      });
     } catch (erreur) {
       throw new InfrastructureError(
         "La journalisation d'audit du referentiel academique a echoue.",
@@ -116,9 +129,29 @@ export class ServiceJournalAuditReferentielAcademiquePostgres
     };
   }
 
-  // Cette methode genere un identifiant technique compatible avec les colonnes PostgreSQL de type uuid.
-  private genererIdentifiantAudit(): string {
-    return randomUUID();
+  private mapperTenant(
+    entree: EntreeJournalAuditReferentielAcademiqueNormalisee,
+  ): CanonicalAuditProducerInput['tenant'] {
+    if (entree.idOrganisation && entree.idEcole) {
+      return { scope: 'ECOLE', organisationId: entree.idOrganisation, ecoleId: entree.idEcole };
+    }
+    if (entree.idOrganisation) return { scope: 'ORGANISATION', organisationId: entree.idOrganisation };
+    return { scope: 'PLATEFORME' };
+  }
+
+  private mapperTypeRessource(
+    typeRessource?: string,
+  ): CanonicalAuditProducerInput['ressource']['type'] {
+    const type = typeRessource?.toUpperCase();
+    if (type === 'ORGANISATION') return 'ORGANISATION';
+    if (type === 'ECOLE') return 'ECOLE';
+    if (type?.includes('CLASSE')) return 'CLASSE';
+    if (type?.includes('COURS')) return 'COURS';
+    return 'REFERENTIEL';
+  }
+
+  private texte(valeur: unknown): string | undefined {
+    return typeof valeur === 'string' && valeur.trim() ? valeur.trim() : undefined;
   }
 
   // Cette methode produit une description robuste d'une erreur inconnue.

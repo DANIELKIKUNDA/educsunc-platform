@@ -72,9 +72,11 @@ export class ModifierCoteUseCase {
       await this.eventBusPort?.publier(fiche.recupererEvenements());
       await this.serviceAuditBulletin.journaliser({
         action: 'MODIFIER_COTE',
+        idOrganisation: input.idOrganisation,
         idEcole: fiche.obtenirIdEcole(),
         idUtilisateur: input.idUtilisateur,
         referenceMetier: fiche.obtenirId(),
+        operationId: `${input.codeColonne}:${input.versionAttendue}`,
         details: { codeColonne: input.codeColonne },
       });
       const sortie = this.serviceProjectionLecture.projeterFiche(fiche);

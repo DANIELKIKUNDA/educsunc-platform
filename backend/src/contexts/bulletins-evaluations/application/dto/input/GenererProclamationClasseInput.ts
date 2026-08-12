@@ -3,6 +3,7 @@ import type { TypeProclamation } from 'contexts/bulletins-evaluations/domain/val
 
 // Ce DTO porte les informations necessaires a la generation d'une proclamation.
 export interface GenererProclamationClasseInput {
+  idOrganisation?: string;
   idClassePedagogique: string;
   idAnneeScolaire: string;
   codeColonne: CodeColonneBulletin;

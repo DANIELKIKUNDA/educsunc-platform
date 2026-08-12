@@ -82,3 +82,40 @@ test('AuditAdapter persiste un audit shared pour l ouverture de caisse', async (
     'CAISSE-2026-06-13',
   );
 });
+
+test('AuditAdapter raccorde annulation et recu officiel sans confondre leurs ressources', async () => {
+  const testRepository = creerRepositoryTest();
+  const adaptateur = new AuditAdapter(testRepository.writer);
+
+  await adaptateur.journaliserActionFinanciere({
+    action: 'ANNULER_PAIEMENT',
+    idOrganisation: 'ORG-001',
+    idEcole: 'ECOLE-001',
+    idUtilisateur: 'USER-CAISSIER-001',
+    referenceMetier: 'PAIEMENT-001',
+    details: { idAnnulation: 'ANNULATION-001' },
+  });
+  await adaptateur.journaliserActionFinanciere({
+    action: 'GENERER_RECU_OFFICIEL',
+    idOrganisation: 'ORG-001',
+    idEcole: 'ECOLE-001',
+    idUtilisateur: 'USER-CAISSIER-001',
+    referenceMetier: 'RECU-001',
+    details: { idPaiement: 'PAIEMENT-001' },
+  });
+
+  assert.deepEqual(
+    testRepository.entrees.map((entree) => entree.obtenirActionAudit().obtenirValeur()),
+    ['PAIEMENT_ANNULE', 'RECU_GENERE'],
+  );
+  assert.deepEqual(
+    testRepository.entrees.map(
+      (entree) => entree.obtenirRessourceAudit().obtenirTypeRessource().obtenirValeur(),
+    ),
+    ['PAIEMENT', 'RECU'],
+  );
+  assert.equal(testRepository.entrees.every(
+    (entree) => entree.obtenirTenantAudit().obtenirOrganisationId() === 'ORG-001'
+      && entree.obtenirTenantAudit().obtenirEcoleId() === 'ECOLE-001',
+  ), true);
+});

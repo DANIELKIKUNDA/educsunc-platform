@@ -199,6 +199,14 @@ export class EnregistrerPaiementUseCase {
         montant: input.montant.obtenirMontant(),
         devise: input.montant.obtenirDevise(),
       });
+      await this.auditPort?.journaliserActionFinanciere({
+        action: 'GENERER_RECU_OFFICIEL',
+        idOrganisation: input.idOrganisation,
+        idEcole: input.idEcole,
+        idUtilisateur: input.idCaissier,
+        referenceMetier: recus[0]!.obtenirId(),
+        details: { idPaiement: paiement.obtenirId() },
+      });
       await this.eventBus?.publier(paiement.recupererEvenements(), {
         organisationId: input.idOrganisation,
         ecoleId: input.idEcole,
