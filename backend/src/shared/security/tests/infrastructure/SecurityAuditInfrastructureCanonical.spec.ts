@@ -9,8 +9,10 @@ import { SecurityAuditInfrastructureService } from 'shared/security/infrastructu
 
 class WriterMemoire implements AuditCanonicalWritePort {
   public readonly entrees: AuditEntry[] = [];
-  public async ecrire(entree: AuditEntry): Promise<AuditCanonicalWriteResult> {
+  public readonly clesIdempotence: string[] = [];
+  public async ecrire(entree: AuditEntry, cleIdempotence: string): Promise<AuditCanonicalWriteResult> {
     this.entrees.push(entree);
+    this.clesIdempotence.push(cleIdempotence);
     return { duplicate: false, eventId: entree.obtenirId(), idOutbox: 'outbox-security' };
   }
 }
@@ -54,4 +56,29 @@ test('les autorisations positives de lecture ne gonflent pas le registre Audit',
   await service.journaliser({ action: 'SECURITY_PERMISSION_GRANTED', succes: true });
   await service.journaliser({ action: 'SECURITY_SCOPE_GRANTED', succes: true });
   assert.equal(writer.entrees.length, 0);
+});
+
+test('deux decisions Security distinctes d une meme correlation ne sont pas fusionnees', async () => {
+  const writer = new WriterMemoire();
+  const service = new SecurityAuditInfrastructureService(
+    clientLecture,
+    new CanonicalAuditProducer(writer),
+  );
+  const details = { traceId: 'trace-gouvernance', niveauScope: 'PLATEFORME' };
+
+  await service.journaliser({
+    action: 'COMPTE_CREE',
+    idUtilisateur: 'manager-1',
+    succes: true,
+    details: { ...details, cibleId: 'utilisateur-1' },
+  });
+  await service.journaliser({
+    action: 'COMPTE_SUSPENDU',
+    idUtilisateur: 'manager-1',
+    succes: true,
+    details: { ...details, cibleId: 'utilisateur-1' },
+  });
+
+  assert.equal(writer.entrees.length, 2);
+  assert.equal(new Set(writer.clesIdempotence).size, 2);
 });

@@ -41,6 +41,7 @@ export class SecurityAuditInfrastructureService implements AuditSecurityPort {
         ?? this.texte(details.correlationId)
         ?? this.texte(details.sessionId)
         ?? randomUUID();
+      const cibleId = this.texte(details.cibleId) ?? params.idUtilisateur;
       await this.producteurCanonique.produire({
         action: mapping.action,
         resultat: mapping.resultat,
@@ -48,13 +49,13 @@ export class SecurityAuditInfrastructureService implements AuditSecurityPort {
         tenant: this.resoudreTenant(details),
         ressource: {
           type: mapping.typeRessource,
-          id: this.texte(details.cibleId) ?? params.idUtilisateur,
+          id: cibleId,
           libelle: params.action,
         },
         contexte: { correlationId, sessionId: this.texte(details.sessionId), source: 'HTTP_API' },
         nouvelEtat: mapping.snapshot ? details.apres ?? details : undefined,
         metadata: { ...details, actionSource: params.action },
-        idempotencyKey: `SECURITY:${mapping.action}:${correlationId}`,
+        idempotencyKey: `SECURITY:${params.action}:${correlationId}:${cibleId ?? 'SANS_CIBLE'}`,
       });
     }
     await SecurityAuditInfrastructureService.obtenirOrchestrateur().publier({ ...params, details });
