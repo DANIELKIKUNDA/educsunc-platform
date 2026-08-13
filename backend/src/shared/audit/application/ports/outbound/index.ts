@@ -11,3 +11,4 @@ export * from './DeviceContextPort';
 export * from './CorrelationContextPort';
 export * from './AuditCanonicalWritePort';
 export * from './AuditReadRepositoryPort';
+export * from './AuditRetentionOperationsPort';

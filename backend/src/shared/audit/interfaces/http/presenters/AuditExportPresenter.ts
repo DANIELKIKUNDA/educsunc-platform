@@ -10,17 +10,21 @@ export class AuditExportPresenter {
         format: sortie.format,
         nombreElements: sortie.nombreElements,
         dateGeneration: sortie.dateGeneration,
+        statut: sortie.statut,
         urlTemporaire: sortie.urlTemporaire,
       },
     };
   }
 
-  public static presenterStatut(exportId: string, statut: string): AuditHttpSuccessBody<unknown> {
+  public static presenterStatut(exportId: string, statut: string, details: Record<string, unknown> = {}): AuditHttpSuccessBody<unknown> {
     return {
       success: true,
       data: {
         exportId,
         statut,
+        nombreElements: details.nombreElements,
+        erreur: details.erreur,
+        expireLe: details.expireLe,
       },
     };
   }

@@ -1,16 +1,23 @@
 import type { SearchAuditQuery } from '../dto/queries/SearchAuditQuery';
 import type { AuditSearchResultOutput } from '../dto/outputs/AuditSearchResultOutput';
 import type { AuditAnalyticsOutput } from '../dto/outputs/AuditAnalyticsOutput';
+import type { AuditRetentionOperationsPort } from '../ports/outbound/AuditRetentionOperationsPort';
 
 // Ce service applicatif orchestre une famille de workflows Audit.
 export class AuditRetentionApplicationService {
+  public constructor(private readonly operations: AuditRetentionOperationsPort) {}
+
   public async preparerArchivageAudit(payload: SearchAuditQuery): Promise<AuditAnalyticsOutput> {
-    return { periode: undefined, valeurs: { candidatsArchivage: 0 }, compteurs: { organisationId: payload.organisationId ? 1 : 0 } };
+    return this.operations.preparer(payload);
   }
   public async archiverAudits(payload: SearchAuditQuery): Promise<AuditAnalyticsOutput> {
-    return { periode: undefined, valeurs: { archives: 0 }, compteurs: { ecoleId: payload.ecoleId ? 1 : 0 } };
+    return this.operations.archiver(payload);
   }
   public async consulterArchivesAudit(payload: SearchAuditQuery): Promise<AuditSearchResultOutput> {
-    return { total: 0, page: payload.page ?? 1, taillePage: payload.taillePage ?? 25, totalPages: 0, hasNextPage: false, items: [], pagination: { page: payload.page ?? 1, taille: payload.taillePage ?? 25, total: 0, totalPages: 0, hasNextPage: false } };
+    return this.operations.consulter(payload);
+  }
+
+  public async apercuPurge(payload: SearchAuditQuery): Promise<AuditAnalyticsOutput> {
+    return this.operations.apercuPurge(payload);
   }
 }

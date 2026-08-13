@@ -1,4 +1,5 @@
 import type { FastifyReply, FastifyRequest } from 'fastify';
+import { createReadStream } from 'node:fs';
 import type { DependancesRoutesAudit } from './DependancesRoutesAudit';
 
 interface AuditRoutePolicies {
@@ -15,6 +16,37 @@ interface AuditRoutePolicies {
   readonly exports?: boolean;
   readonly monitoring?: boolean;
   readonly security?: boolean;
+}
+
+export async function executerTelechargementAudit(
+  dependances: DependancesRoutesAudit,
+  requete: FastifyRequest,
+  reponse: FastifyReply,
+  operation: () => Promise<{ nomFichier: string; mimeType: string; cheminPrive: string; tailleOctets: number }>,
+): Promise<FastifyReply> {
+  try {
+    const fichier = await operation();
+    const nomFichier = fichier.nomFichier.replaceAll(/[^a-zA-Z0-9._-]/g, '_');
+    await dependances.middlewares?.apresSucces?.(requete, reponse, { export: nomFichier });
+    return reponse
+      .header('Content-Type', fichier.mimeType)
+      .header('Content-Length', String(fichier.tailleOctets))
+      .header('Content-Disposition', `attachment; filename="${nomFichier}"`)
+      .header('Cache-Control', 'private, no-store')
+      .header('X-Content-Type-Options', 'nosniff')
+      .send(createReadStream(fichier.cheminPrive));
+  } catch (erreur) {
+    await dependances.middlewares?.apresErreur?.(requete, reponse, erreur);
+    const normalisee = await dependances.middlewares?.gererErreur?.(erreur, requete, reponse);
+    if (normalisee) return reponse.code(normalisee.statutHttp).send(normalisee.corps);
+    return reponse.code(500).send({
+      success: false,
+      erreur: 'AUDIT_EXPORT_DOWNLOAD_ERROR',
+      message: erreur instanceof Error ? erreur.message : "Le telechargement de l'export a echoue.",
+      requestId: requete.context?.requestId,
+      correlationId: requete.context?.correlationId,
+    });
+  }
 }
 
 export async function appliquerPoliciesRouteAudit(

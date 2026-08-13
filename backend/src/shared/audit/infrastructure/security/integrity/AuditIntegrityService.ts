@@ -1,51 +1,29 @@
-import { createHash } from 'node:crypto';
-import { PostgresAuditDocumentStore } from '../../persistence/postgres/repositories/PostgresAuditDocumentStore';
 import { PostgresAuditEntryRepository } from '../../persistence/postgres/repositories/PostgresAuditEntryRepository';
 import type { AuditIntegritySnapshot } from '../SecurityTypes';
+import { PostgresAuditIntegrityStore } from './PostgresAuditIntegrityStore';
 
-function calculerEmpreinte(payload: Record<string, unknown>): string {
-  return createHash('sha256').update(JSON.stringify(payload)).digest('hex');
-}
-
-// L intégrité historique protège la vérité append-only contre la corruption silencieuse.
+// L integrite historique protege la verite append-only contre la corruption silencieuse.
 export class AuditIntegrityService {
   public constructor(
-    private readonly documents = new PostgresAuditDocumentStore(),
     private readonly entries = new PostgresAuditEntryRepository(),
+    private readonly integrity = new PostgresAuditIntegrityStore(),
   ) {}
 
-  public async scellerEntree(idAuditEntry: string, payload: Record<string, unknown>): Promise<string> {
-    const empreinte = calculerEmpreinte(payload);
-    await this.documents.enregistrer('INTEGRITY_SEAL', idAuditEntry, { idAuditEntry, empreinte });
-    return empreinte;
+  public async verifierEntree(idAuditEntry: string) {
+    return this.integrity.verifier(idAuditEntry);
   }
 
   public async verifier(): Promise<AuditIntegritySnapshot> {
     const anomalies: string[] = [];
-    const empreintes = new Map((await this.documents.lister<{ idAuditEntry: string; empreinte: string }>('INTEGRITY_SEAL'))
-      .map((sceau) => [sceau.idAuditEntry, sceau.empreinte]));
+    let totalEmpreintes = 0;
     const entries = await this.entries.listerSelonFiltres({});
 
     for (const entry of entries) {
-      const payload = {
-        id: entry.obtenirId(),
-        action: entry.obtenirActionAudit().obtenirValeur(),
-        resultat: entry.obtenirResultatAudit().obtenirValeur(),
-        dateAction: entry.obtenirHorodatageAudit().obtenirDateAction().toISOString(),
-        organisationId: entry.obtenirTenantAudit().obtenirOrganisationId(),
-        ecoleId: entry.obtenirTenantAudit().obtenirEcoleId(),
-      };
-      const empreinte = calculerEmpreinte(payload);
-      const attendue = empreintes.get(entry.obtenirId());
-      if (attendue && attendue !== empreinte) {
-        anomalies.push(`INTEGRITY_MISMATCH:${entry.obtenirId()}`);
-      }
+      const verification = await this.integrity.verifier(entry.obtenirId());
+      if (verification.statut === 'VALID' || verification.statut === 'CORRUPTED') totalEmpreintes += 1;
+      if (verification.statut === 'CORRUPTED') anomalies.push(`INTEGRITY_MISMATCH:${entry.obtenirId()}`);
     }
 
-    return {
-      totalEntries: entries.length,
-      totalEmpreintes: empreintes.size,
-      anomalies,
-    };
+    return { totalEntries: entries.length, totalEmpreintes, anomalies };
   }
 }

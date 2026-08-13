@@ -74,6 +74,15 @@ test('le contexte authentifie ignore les en-tetes tenant forges', () => {
   assert.equal(contexte.authorizedScope, 'PLATEFORME');
 });
 
+test('un acteur plateforme conserve son scope global malgre un contexte tenant residuel', () => {
+  const contexte = extraireContexteRuntime({
+    context: creerContexte({ organisationId: 'organisation-residuelle', ecoleId: 'ecole-residuelle' }),
+  });
+  assert.equal(contexte.authorizedScope, 'PLATEFORME');
+  assert.equal(contexte.organisationId, 'organisation-residuelle');
+  assert.equal(contexte.ecoleId, 'ecole-residuelle');
+});
+
 test('une lecture plateforme reste globale malgre un ancien contexte tenant de session', () => {
   const resultat = enrichirTenant(
     { organisationId: 'organisation-b', ecoleId: 'ecole-b' },

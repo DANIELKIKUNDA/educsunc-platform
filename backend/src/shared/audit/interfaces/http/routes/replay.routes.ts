@@ -1,13 +1,13 @@
 import type { FastifyPluginAsync } from 'fastify';
 import type { DependancesRoutesAudit } from './DependancesRoutesAudit';
 import { appliquerPoliciesRouteAudit, executerRouteAudit } from './_route-helpers';
+import { auditReplayOpenApi } from './AuditL5OpenApi';
 
 export const creerReplayRoutes = (dependances: DependancesRoutesAudit): FastifyPluginAsync => async (serveur) => {
-  serveur.post('/api/v1/replay/projections', (requete, reponse) =>
+  serveur.post('/api/v1/replay/projections', { schema: auditReplayOpenApi }, (requete, reponse) =>
     executerRouteAudit(dependances, requete, reponse, async () => {
       await appliquerPoliciesRouteAudit(dependances, requete, reponse, {
         permission: 'audit.replay',
-        scope: 'ORGANISATION',
         admin: true,
         throttled: true,
         replay: true,
@@ -19,11 +19,10 @@ export const creerReplayRoutes = (dependances: DependancesRoutesAudit): FastifyP
       });
     }, 202));
 
-  serveur.post('/api/v1/replay/analytics', (requete, reponse) =>
+  serveur.post('/api/v1/replay/analytics', { schema: auditReplayOpenApi }, (requete, reponse) =>
     executerRouteAudit(dependances, requete, reponse, async () => {
       await appliquerPoliciesRouteAudit(dependances, requete, reponse, {
         permission: 'audit.replay',
-        scope: 'ORGANISATION',
         admin: true,
         throttled: true,
         replay: true,
@@ -35,11 +34,10 @@ export const creerReplayRoutes = (dependances: DependancesRoutesAudit): FastifyP
       });
     }, 202));
 
-  serveur.post('/api/v1/replay/forensic', (requete, reponse) =>
+  serveur.post('/api/v1/replay/forensic', { schema: auditReplayOpenApi }, (requete, reponse) =>
     executerRouteAudit(dependances, requete, reponse, async () => {
       await appliquerPoliciesRouteAudit(dependances, requete, reponse, {
         permission: 'forensic.replay',
-        scope: 'ORGANISATION',
         admin: true,
         throttled: true,
         replay: true,

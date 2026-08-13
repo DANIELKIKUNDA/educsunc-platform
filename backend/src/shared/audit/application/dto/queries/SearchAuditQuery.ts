@@ -19,4 +19,7 @@ export interface SearchAuditQuery {
   readonly dateFin?: string;
   readonly organisationId?: string;
   readonly ecoleId?: string;
+  readonly scope?: 'PLATEFORME' | 'ORGANISATION' | 'ECOLE';
+  readonly demandeurId?: string;
+  readonly raison?: string;
 }

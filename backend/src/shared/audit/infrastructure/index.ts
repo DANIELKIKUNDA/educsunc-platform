@@ -11,3 +11,4 @@ export * from './producers';
 export * from './security';
 export * from './configuration';
 export * from './outbox';
+export * from './replay';

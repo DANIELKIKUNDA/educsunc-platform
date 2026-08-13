@@ -24,7 +24,11 @@ export class AuditRetentionController {
   public async purge(requete: AuditHttpRequest<SearchAuditQuery>): Promise<AuditHttpControllerResponse<unknown>> {
     const startedAt = Date.now();
     const contexte = extraireContexteRuntime(requete);
-    const payload = enrichirTenant(AuditRetentionCommandValidator.valider(requete.body ?? requete.query), contexte);
+    const payload = {
+      ...enrichirTenant(AuditRetentionCommandValidator.valider(requete.body ?? requete.query), contexte),
+      scope: contexte.authorizedScope,
+      demandeurId: contexte.utilisateurId,
+    };
     const sortie = this.purgerAudits ? await this.purgerAudits(payload) : { accepte: true, payload };
     return envelopperReponse(AuditMonitoringPresenter.presenter(sortie), contexte, startedAt);
   }
@@ -36,7 +40,11 @@ export class AuditRetentionController {
   ): Promise<AuditHttpControllerResponse<unknown>> {
     const startedAt = Date.now();
     const contexte = extraireContexteRuntime(requete);
-    const sortie = await executerDependance(dependance, enrichirTenant(payload, contexte));
+    const sortie = await executerDependance(dependance, {
+      ...enrichirTenant(payload, contexte),
+      scope: contexte.authorizedScope,
+      demandeurId: contexte.utilisateurId,
+    });
     return envelopperReponse(
       dependance === this.consulterArchives
         ? AuditRetentionPresenter.presenterStatut(sortie as never)

@@ -4,5 +4,6 @@ export interface AuditExportOutput {
   readonly format: string;
   readonly nombreElements: number;
   readonly dateGeneration: string;
+  readonly statut?: string;
   readonly urlTemporaire?: string;
 }

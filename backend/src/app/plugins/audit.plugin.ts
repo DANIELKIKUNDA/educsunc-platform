@@ -23,7 +23,15 @@ export const auditPlugin: PluginGlobal = Object.assign(
     }
 
     serveur.audit.outboxWorker.start();
-    serveur.addHook('onClose', async () => serveur.audit.outboxWorker.stop());
+    await serveur.audit.replayOperations.reprendreInterrompus();
+    await serveur.audit.retentionOperations.reprendreInterrompus();
+    await serveur.audit.exportWorker.start();
+    serveur.addHook('onClose', async () => {
+      await Promise.all([
+        serveur.audit.outboxWorker.stop(),
+        serveur.audit.exportWorker.stop(),
+      ]);
+    });
 
     const configuration = serveur.audit.configuration.obtenirParDefaut();
     serveur.log.info(

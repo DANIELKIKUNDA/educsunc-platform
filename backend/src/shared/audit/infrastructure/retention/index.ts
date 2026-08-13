@@ -13,3 +13,4 @@ export * from './scheduling/AuditRetentionSchedulingService';
 export * from './monitoring/AuditRetentionMonitoringService';
 export * from './recovery/AuditRetentionRecoveryService';
 export * from './workflow/AuditRetentionOrchestrator';
+export * from './AuditRetentionOperationsService';

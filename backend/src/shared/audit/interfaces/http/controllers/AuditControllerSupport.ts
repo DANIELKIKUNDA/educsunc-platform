@@ -29,11 +29,12 @@ export function extraireContexteRuntime(
   const ecoleId = contexteAuthentifie
     ? contexteAuthentifie.ecoleActiveId
     : lireHeader(requete.headers, 'x-ecole-id');
-  const authorizedScope = AuditTenantScopePolicy.inferer(
-    requete.authorizedScope,
-    organisationId,
-    ecoleId,
-  );
+  const roleActif = contexteAuthentifie?.roleActif;
+  const acteurPlateforme = roleActif !== undefined
+    && ['MANAGER_SYSTEME', 'OPERATEUR_SYSTEME', 'SUPPORT_SYSTEME'].includes(roleActif);
+  const authorizedScope = acteurPlateforme && !requete.authorizedScope
+    ? 'PLATEFORME'
+    : AuditTenantScopePolicy.inferer(requete.authorizedScope, organisationId, ecoleId);
 
   return {
     requestId: contexteAuthentifie?.requestId ?? lireHeader(requete.headers, 'x-request-id'),
@@ -47,7 +48,7 @@ export function extraireContexteRuntime(
     deviceId: contexteAuthentifie?.deviceId ?? lireHeader(requete.headers, 'x-device-id'),
     utilisateurId: contexteAuthentifie?.utilisateurId,
     sessionId: contexteAuthentifie?.sessionId,
-    roleActif: contexteAuthentifie?.roleActif,
+    roleActif,
   };
 }
 

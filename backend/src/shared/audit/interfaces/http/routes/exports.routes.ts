@@ -1,13 +1,18 @@
 import type { FastifyPluginAsync } from 'fastify';
 import type { DependancesRoutesAudit } from './DependancesRoutesAudit';
-import { appliquerPoliciesRouteAudit, executerRouteAudit } from './_route-helpers';
+import { appliquerPoliciesRouteAudit, executerRouteAudit, executerTelechargementAudit } from './_route-helpers';
+import {
+  auditExportCreateOpenApi,
+  auditExportDeleteOpenApi,
+  auditExportDownloadOpenApi,
+  auditExportStatusOpenApi,
+} from './AuditL5OpenApi';
 
 export const creerExportsRoutes = (dependances: DependancesRoutesAudit): FastifyPluginAsync => async (serveur) => {
-  serveur.post('/api/v1/exports/audit', (requete, reponse) =>
+  serveur.post('/api/v1/exports/audit', { schema: auditExportCreateOpenApi }, (requete, reponse) =>
     executerRouteAudit(dependances, requete, reponse, async () => {
       await appliquerPoliciesRouteAudit(dependances, requete, reponse, {
         permission: 'audit.export',
-        scope: 'ECOLE',
         throttled: true,
         exports: true,
       });
@@ -15,15 +20,13 @@ export const creerExportsRoutes = (dependances: DependancesRoutesAudit): Fastify
         body: requete.body as never,
         headers: requete.headers,
         context: requete.context,
-        authorizedScope: 'ECOLE',
       });
     }, 202));
 
-  serveur.post('/api/v1/exports/forensic', (requete, reponse) =>
+  serveur.post('/api/v1/exports/forensic', { schema: auditExportCreateOpenApi }, (requete, reponse) =>
     executerRouteAudit(dependances, requete, reponse, async () => {
       await appliquerPoliciesRouteAudit(dependances, requete, reponse, {
         permission: 'forensic.export',
-        scope: 'ECOLE',
         throttled: true,
         exports: true,
         forensic: true,
@@ -32,15 +35,13 @@ export const creerExportsRoutes = (dependances: DependancesRoutesAudit): Fastify
         body: requete.body as never,
         headers: requete.headers,
         context: requete.context,
-        authorizedScope: 'ECOLE',
       });
     }, 202));
 
-  serveur.post('/api/v1/exports/analytics', (requete, reponse) =>
+  serveur.post('/api/v1/exports/analytics', { schema: auditExportCreateOpenApi }, (requete, reponse) =>
     executerRouteAudit(dependances, requete, reponse, async () => {
       await appliquerPoliciesRouteAudit(dependances, requete, reponse, {
         permission: 'audit.analytics.export',
-        scope: 'ORGANISATION',
         throttled: true,
         exports: true,
         monitoring: true,
@@ -49,54 +50,47 @@ export const creerExportsRoutes = (dependances: DependancesRoutesAudit): Fastify
         body: requete.body as never,
         headers: requete.headers,
         context: requete.context,
-        authorizedScope: 'ORGANISATION',
       });
     }, 202));
 
-  serveur.get('/api/v1/exports/:id/status', (requete, reponse) =>
+  serveur.get('/api/v1/exports/:id/status', { schema: auditExportStatusOpenApi }, (requete, reponse) =>
     executerRouteAudit(dependances, requete, reponse, async () => {
       await appliquerPoliciesRouteAudit(dependances, requete, reponse, {
         permission: 'audit.export.read',
-        scope: 'ECOLE',
         exports: true,
       });
       return dependances.auditExportsController.obtenirStatut({
         params: requete.params as never,
         headers: requete.headers,
         context: requete.context,
-        authorizedScope: 'ECOLE',
       });
     }));
 
-  serveur.get('/api/v1/exports/:id/download', (requete, reponse) =>
-    executerRouteAudit(dependances, requete, reponse, async () => {
+  serveur.get('/api/v1/exports/:id/download', { schema: auditExportDownloadOpenApi }, (requete, reponse) =>
+    executerTelechargementAudit(dependances, requete, reponse, async () => {
       await appliquerPoliciesRouteAudit(dependances, requete, reponse, {
         permission: 'audit.export.download',
-        scope: 'ECOLE',
         throttled: true,
         exports: true,
       });
-      return dependances.auditExportsController.telecharger({
+      return dependances.auditExportsController.preparerFichier({
         params: requete.params as never,
         headers: requete.headers,
         context: requete.context,
-        authorizedScope: 'ECOLE',
       });
     }));
 
-  serveur.delete('/api/v1/exports/:id', (requete, reponse) =>
+  serveur.delete('/api/v1/exports/:id', { schema: auditExportDeleteOpenApi }, (requete, reponse) =>
     executerRouteAudit(dependances, requete, reponse, async () => {
       await appliquerPoliciesRouteAudit(dependances, requete, reponse, {
         permission: 'audit.export.delete',
-        scope: 'ECOLE',
         admin: true,
         exports: true,
       });
-      return {
-        donnee: {
-          exportId: (requete.params as { id?: string }).id,
-          supprime: true,
-        },
-      };
+      return dependances.auditExportsController.supprimer({
+        params: requete.params as never,
+        headers: requete.headers,
+        context: requete.context,
+      });
     }));
 };
