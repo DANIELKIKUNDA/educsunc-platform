@@ -14,6 +14,8 @@ export class AuditRetentionCommandValidator {
       action: ValidationHttpAudit.lireChaineOptionnelle(donnees, 'action'),
       gravite: ValidationHttpAudit.lireChaineOptionnelle(donnees, 'gravite'),
       resultat: ValidationHttpAudit.lireChaineOptionnelle(donnees, 'resultat'),
+      dateFin: ValidationHttpAudit.lireDateIsoOptionnelle(donnees, 'dateFin'),
+      raison: ValidationHttpAudit.lireChaineOptionnelle(donnees, 'raison'),
     };
   }
 }

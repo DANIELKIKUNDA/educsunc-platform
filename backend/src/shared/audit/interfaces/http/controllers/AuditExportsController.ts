@@ -22,6 +22,10 @@ export class AuditExportsController {
       exportId: string,
       contexte: ReturnType<typeof extraireContexteRuntime>,
     ) => Promise<unknown>) | undefined = undefined,
+    private readonly supprimerExport: ((
+      exportId: string,
+      contexte: ReturnType<typeof extraireContexteRuntime>,
+    ) => Promise<void>) | undefined = undefined,
   ) {}
 
   public async exporterAudit(
@@ -58,7 +62,11 @@ export class AuditExportsController {
       ? await this.obtenirStatutExport(identifiant.exportId, contexte)
       : { exportId: identifiant.exportId, statut: 'INCONNU' };
     return envelopperReponse(
-      AuditExportPresenter.presenterStatut(identifiant.exportId, String((sortie as { statut?: string }).statut ?? 'INCONNU')),
+      AuditExportPresenter.presenterStatut(
+        identifiant.exportId,
+        String((sortie as { statut?: string }).statut ?? 'INCONNU'),
+        sortie as Record<string, unknown>,
+      ),
       contexte,
       startedAt,
     );
@@ -83,6 +91,31 @@ export class AuditExportsController {
     );
   }
 
+  public async preparerFichier(
+    requete: AuditHttpRequest<never, { id?: string }>,
+  ): Promise<{ nomFichier: string; mimeType: string; cheminPrive: string; tailleOctets: number }> {
+    const contexte = extraireContexteRuntime(requete);
+    const identifiant = AuditExportDownloadValidator.valider(requete.params);
+    if (!this.telechargerExport) throw new Error("Le telechargement des exports n'est pas disponible.");
+    return this.telechargerExport(identifiant.exportId, contexte) as Promise<{
+      nomFichier: string;
+      mimeType: string;
+      cheminPrive: string;
+      tailleOctets: number;
+    }>;
+  }
+
+  public async supprimer(
+    requete: AuditHttpRequest<never, { id?: string }>,
+  ): Promise<AuditHttpControllerResponse<{ exportId: string; supprime: true }>> {
+    const startedAt = Date.now();
+    const contexte = extraireContexteRuntime(requete);
+    const identifiant = AuditExportDownloadValidator.valider(requete.params);
+    if (!this.supprimerExport) throw new Error("La suppression des exports n'est pas disponible.");
+    await this.supprimerExport(identifiant.exportId, contexte);
+    return envelopperReponse({ exportId: identifiant.exportId, supprime: true }, contexte, startedAt);
+  }
+
   private async executer(
     dependance: AuditExecutable<AuditExportQuery, unknown>,
     requete: AuditHttpRequest,
@@ -93,6 +126,13 @@ export class AuditExportsController {
     const filtresTenant = enrichirTenant(body.filtres ?? {}, contexte);
     const sortie = await executerDependance(dependance, {
       ...body,
+      demandeurId: contexte.utilisateurId,
+      scope: contexte.authorizedScope,
+      organisationId: contexte.organisationId,
+      ecoleId: contexte.ecoleId,
+      requestId: contexte.requestId,
+      correlationId: contexte.correlationId,
+      idempotencyKey: this.lireCleIdempotence(requete.headers),
       filtres: {
         ...filtresTenant,
         correlationId: contexte.correlationId,
@@ -101,5 +141,16 @@ export class AuditExportsController {
       },
     });
     return envelopperReponse(AuditExportPresenter.presenter(sortie as never), contexte, startedAt);
+  }
+
+  private lireCleIdempotence(headers: AuditHttpRequest['headers']): string | undefined {
+    const valeur = headers?.['idempotency-key'];
+    const cle = Array.isArray(valeur) ? valeur[0] : valeur;
+    if (cle === undefined) return undefined;
+    const normalisee = cle.trim();
+    if (!/^[A-Za-z0-9:_-]{8,160}$/.test(normalisee)) {
+      throw new Error("La cle d'idempotence de l'export est invalide.");
+    }
+    return normalisee;
   }
 }

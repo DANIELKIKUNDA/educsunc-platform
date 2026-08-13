@@ -1,13 +1,17 @@
 import type { FastifyPluginAsync } from 'fastify';
 import type { DependancesRoutesAudit } from './DependancesRoutesAudit';
 import { appliquerPoliciesRouteAudit, executerRouteAudit } from './_route-helpers';
+import {
+  auditRetentionArchiveOpenApi,
+  auditRetentionPreviewOpenApi,
+  auditRetentionStatusOpenApi,
+} from './AuditL5OpenApi';
 
 export const creerRetentionRoutes = (dependances: DependancesRoutesAudit): FastifyPluginAsync => async (serveur) => {
-  serveur.post('/api/v1/retention/archive', (requete, reponse) =>
+  serveur.post('/api/v1/retention/archive', { schema: auditRetentionArchiveOpenApi }, (requete, reponse) =>
     executerRouteAudit(dependances, requete, reponse, async () => {
       await appliquerPoliciesRouteAudit(dependances, requete, reponse, {
         permission: 'audit.retention.archive',
-        scope: 'ORGANISATION',
         admin: true,
         throttled: true,
         monitoring: true,
@@ -20,11 +24,10 @@ export const creerRetentionRoutes = (dependances: DependancesRoutesAudit): Fasti
       });
     }, 202));
 
-  serveur.post('/api/v1/retention/purge', (requete, reponse) =>
+  serveur.post('/api/v1/retention/purge', { schema: auditRetentionPreviewOpenApi }, (requete, reponse) =>
     executerRouteAudit(dependances, requete, reponse, async () => {
       await appliquerPoliciesRouteAudit(dependances, requete, reponse, {
         permission: 'audit.retention.purge',
-        scope: 'ORGANISATION',
         admin: true,
         throttled: true,
         monitoring: true,
@@ -37,11 +40,10 @@ export const creerRetentionRoutes = (dependances: DependancesRoutesAudit): Fasti
       });
     }, 202));
 
-  serveur.get('/api/v1/retention/status', (requete, reponse) =>
+  serveur.get('/api/v1/retention/status', { schema: auditRetentionStatusOpenApi }, (requete, reponse) =>
     executerRouteAudit(dependances, requete, reponse, async () => {
       await appliquerPoliciesRouteAudit(dependances, requete, reponse, {
         permission: 'audit.retention.read',
-        scope: 'ORGANISATION',
         monitoring: true,
       });
       return dependances.auditRetentionController.statut({

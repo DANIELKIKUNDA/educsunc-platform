@@ -15,3 +15,4 @@ export * from './orchestration/AuditExportOrchestrator';
 export * from './monitoring/AuditExportMonitoringService';
 export * from './tracking/AuditExportTrackingService';
 export * from './retention/AuditExportRetentionBridge';
+export * from './industrialized';

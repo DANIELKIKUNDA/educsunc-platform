@@ -16,8 +16,9 @@ export class AuditReplayBatchValidator {
     const donnees = ValidationHttpAudit.obtenirObjet(corps ?? {}, 'body');
     return {
       replayId: ValidationHttpAudit.lireChaineOptionnelle(donnees, 'replayId'),
-      raison: ValidationHttpAudit.lireChaineOptionnelle(donnees, 'raison'),
-      limite: ValidationHttpAudit.lireEntierDansBornes(donnees, 'limite', 1, 10_000),
+      raison: ValidationHttpAudit.lireChaineRequise(donnees, 'raison'),
+      mode: ValidationHttpAudit.lireEnumOptionnel(donnees, 'mode', ['DRY_RUN', 'EXECUTE'] as const) ?? 'DRY_RUN',
+      limite: ValidationHttpAudit.lireEntierDansBornes(donnees, 'limite', 1, 1_000),
       profondeur: ValidationHttpAudit.lireEntierDansBornes(donnees, 'profondeur', 1, 100_000),
       correlationId: ValidationHttpAudit.lireChaineOptionnelle(donnees, 'correlationId'),
     };

@@ -217,6 +217,145 @@ export class MigrateurPostgresAudit {
         `);
         await client.query("INSERT INTO audit_schema_migrations(version,nom) VALUES (5,'industrialize_audit_read_keyset_indexes')");
       }
+      const governanceMigration = await client.query('SELECT 1 FROM audit_schema_migrations WHERE version=6');
+      if (!governanceMigration.rowCount) {
+        await client.query(`
+          CREATE TABLE IF NOT EXISTS audit_export_jobs (
+            id_export TEXT PRIMARY KEY,
+            requester_id TEXT,
+            scope TEXT NOT NULL CHECK (scope IN ('PLATEFORME','ORGANISATION','ECOLE')),
+            organisation_id TEXT,
+            ecole_id TEXT,
+            format TEXT NOT NULL CHECK (format IN ('CSV','JSON','PDF')),
+            statut TEXT NOT NULL CHECK (statut IN (
+              'REQUESTED','PROCESSING','COMPLETED','FAILED','EXPIRED','DELETED'
+            )),
+            filtres JSONB NOT NULL DEFAULT '{}'::jsonb,
+            file_key TEXT,
+            file_name TEXT,
+            mime_type TEXT,
+            taille_octets BIGINT,
+            nombre_elements INTEGER,
+            checksum_sha256 TEXT,
+            erreur TEXT,
+            tentative_count INTEGER NOT NULL DEFAULT 0 CHECK (tentative_count >= 0),
+            idempotency_key TEXT NOT NULL UNIQUE,
+            request_id TEXT,
+            correlation_id TEXT,
+            demande_le TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            commence_le TIMESTAMPTZ,
+            termine_le TIMESTAMPTZ,
+            expire_le TIMESTAMPTZ NOT NULL,
+            modifie_le TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            CONSTRAINT audit_export_jobs_tenant_check CHECK (
+              (scope='PLATEFORME' AND organisation_id IS NULL AND ecole_id IS NULL)
+              OR (scope='ORGANISATION' AND organisation_id IS NOT NULL AND ecole_id IS NULL)
+              OR (scope='ECOLE' AND organisation_id IS NOT NULL AND ecole_id IS NOT NULL)
+            )
+          )
+        `);
+        await client.query(`
+          CREATE INDEX IF NOT EXISTS audit_export_jobs_dispatch_idx
+          ON audit_export_jobs (statut,demande_le)
+          WHERE statut IN ('REQUESTED','PROCESSING')
+        `);
+        await client.query(`
+          CREATE INDEX IF NOT EXISTS audit_export_jobs_tenant_idx
+          ON audit_export_jobs (organisation_id,ecole_id,demande_le DESC)
+        `);
+        await client.query(`
+          CREATE TABLE IF NOT EXISTS audit_replay_runs (
+            id_replay TEXT PRIMARY KEY,
+            cible TEXT NOT NULL CHECK (cible IN ('PROJECTIONS','ANALYTICS','FORENSIC')),
+            mode TEXT NOT NULL CHECK (mode IN ('DRY_RUN','EXECUTE')),
+            statut TEXT NOT NULL CHECK (statut IN ('VALIDATED','PROCESSING','COMPLETED','FAILED')),
+            requester_id TEXT,
+            scope TEXT NOT NULL CHECK (scope IN ('PLATEFORME','ORGANISATION','ECOLE')),
+            organisation_id TEXT,
+            ecole_id TEXT,
+            raison TEXT NOT NULL,
+            idempotency_key TEXT NOT NULL UNIQUE,
+            correlation_id TEXT,
+            resultat JSONB,
+            erreur TEXT,
+            demande_le TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            termine_le TIMESTAMPTZ,
+            CONSTRAINT audit_replay_runs_tenant_check CHECK (
+              (scope='PLATEFORME' AND organisation_id IS NULL AND ecole_id IS NULL)
+              OR (scope='ORGANISATION' AND organisation_id IS NOT NULL AND ecole_id IS NULL)
+              OR (scope='ECOLE' AND organisation_id IS NOT NULL AND ecole_id IS NOT NULL)
+            )
+          )
+        `);
+        await client.query(`
+          CREATE INDEX IF NOT EXISTS audit_replay_runs_tenant_idx
+          ON audit_replay_runs (organisation_id,ecole_id,demande_le DESC)
+        `);
+        await client.query(`
+          CREATE TABLE IF NOT EXISTS audit_integrity_seals (
+            audit_entry_id TEXT PRIMARY KEY REFERENCES audit_entries(id_audit_entry) ON DELETE RESTRICT,
+            canonical_version INTEGER NOT NULL CHECK (canonical_version > 0),
+            hash_algorithm TEXT NOT NULL CHECK (hash_algorithm='SHA-256'),
+            checksum TEXT NOT NULL,
+            sealed_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+          )
+        `);
+        await client.query(`
+          DROP TRIGGER IF EXISTS audit_integrity_seals_append_only ON audit_integrity_seals;
+          CREATE TRIGGER audit_integrity_seals_append_only
+          BEFORE UPDATE OR DELETE ON audit_integrity_seals
+          FOR EACH ROW EXECUTE FUNCTION audit_reject_append_only_mutation()
+        `);
+        await client.query(`
+          CREATE TABLE IF NOT EXISTS audit_retention_runs (
+            id_run TEXT PRIMARY KEY,
+            operation TEXT NOT NULL CHECK (operation IN ('EVALUATION','ARCHIVE','PURGE_PREVIEW')),
+            statut TEXT NOT NULL CHECK (statut IN ('PROCESSING','COMPLETED','FAILED')),
+            scope TEXT NOT NULL CHECK (scope IN ('PLATEFORME','ORGANISATION','ECOLE')),
+            organisation_id TEXT,
+            ecole_id TEXT,
+            requester_id TEXT,
+            politique JSONB NOT NULL,
+            candidats INTEGER NOT NULL DEFAULT 0,
+            traites INTEGER NOT NULL DEFAULT 0,
+            erreur TEXT,
+            commence_le TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            termine_le TIMESTAMPTZ,
+            CONSTRAINT audit_retention_runs_tenant_check CHECK (
+              (scope='PLATEFORME' AND organisation_id IS NULL AND ecole_id IS NULL)
+              OR (scope='ORGANISATION' AND organisation_id IS NOT NULL AND ecole_id IS NULL)
+              OR (scope='ECOLE' AND organisation_id IS NOT NULL AND ecole_id IS NOT NULL)
+            )
+          )
+        `);
+        await client.query(`
+          CREATE INDEX IF NOT EXISTS audit_retention_runs_tenant_idx
+          ON audit_retention_runs (organisation_id,ecole_id,commence_le DESC)
+        `);
+        await client.query("INSERT INTO audit_schema_migrations(version,nom) VALUES (6,'audit_l5_governance_operations')");
+      }
+      const archiveMembershipMigration = await client.query('SELECT 1 FROM audit_schema_migrations WHERE version=7');
+      if (!archiveMembershipMigration.rowCount) {
+        await client.query(`
+          CREATE TABLE IF NOT EXISTS audit_archive_memberships (
+            audit_entry_id TEXT PRIMARY KEY REFERENCES audit_entries(id_audit_entry) ON DELETE RESTRICT,
+            retention_run_id TEXT NOT NULL REFERENCES audit_retention_runs(id_run) ON DELETE RESTRICT,
+            raison TEXT NOT NULL,
+            archived_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+          )
+        `);
+        await client.query(`
+          CREATE INDEX IF NOT EXISTS audit_archive_memberships_date_idx
+          ON audit_archive_memberships (archived_at DESC,audit_entry_id)
+        `);
+        await client.query(`
+          DROP TRIGGER IF EXISTS audit_archive_memberships_append_only ON audit_archive_memberships;
+          CREATE TRIGGER audit_archive_memberships_append_only
+          BEFORE UPDATE OR DELETE ON audit_archive_memberships
+          FOR EACH ROW EXECUTE FUNCTION audit_reject_append_only_mutation()
+        `);
+        await client.query("INSERT INTO audit_schema_migrations(version,nom) VALUES (7,'audit_l5_logical_archive_memberships')");
+      }
       await client.query('COMMIT');
     } catch (erreur) {
       await client.query('ROLLBACK');

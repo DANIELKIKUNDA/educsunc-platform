@@ -54,6 +54,7 @@ import {
 import { DeferredOfflineAuditSynchronizationService } from 'shared/audit/infrastructure/offline';
 import {
   PostgresAuditCanonicalStorage,
+  PostgresAuditEntryRepository,
   PostgresAuditReadRepository,
   PostgresAuditOutboxRepository,
   PostgresAuditProjectionRepository,
@@ -64,7 +65,18 @@ import {
 } from 'shared/audit/infrastructure/persistence/postgres/projections';
 import { PostgresAuditEventBus } from 'shared/audit/infrastructure/event-bus';
 import { AuditWorkerOrchestrator } from 'shared/audit/infrastructure/workers';
+import { AuditReplayOperationsService } from 'shared/audit/infrastructure/replay';
+import { AuditIntegrityOperationsService } from 'shared/audit/infrastructure/security';
+import { CanonicalAuditProducer } from 'shared/audit/infrastructure/producers';
+import {
+  AuditExportFileGenerator,
+  AuditExportOperationsService,
+  AuditExportWorker,
+  PrivateAuditExportFileStore,
+  PostgresAuditExportJobStore,
+} from 'shared/audit/infrastructure/exports';
 import { AuditConfigurationFacade } from 'shared/audit/infrastructure/configuration';
+import { AuditRetentionOperationsService } from 'shared/audit/infrastructure/retention';
 import { AuditSynchronizationOrchestrator } from 'shared/audit/infrastructure/synchronization';
 import {
   AuditCanonicalEventMapper,
@@ -90,15 +102,40 @@ class AuditRuntimeFacade {
   public readonly configuration = new AuditConfigurationFacade();
   public readonly creation = new AuditCreationApplicationService();
   public readonly lectures = new PostgresAuditReadRepository();
+  public readonly l5AuditProducer = new CanonicalAuditProducer();
   public readonly search = new AuditSearchApplicationService(this.lectures);
   public readonly timeline = new AuditTimelineApplicationService(this.lectures);
   public readonly forensic = new AuditForensicApplicationService(this.lectures);
   public readonly investigation = new AuditInvestigationApplicationService(this.lectures);
-  public readonly exports = new AuditExportApplicationService();
+  public readonly exportJobs = new PostgresAuditExportJobStore();
+  public readonly exportFiles = new PrivateAuditExportFileStore();
+  public readonly exportGenerator = new AuditExportFileGenerator(this.lectures, this.exportFiles);
+  public readonly exportWorker = new AuditExportWorker(
+    this.exportJobs,
+    this.exportGenerator,
+    2_000,
+    () => undefined,
+    (job, resultat) => this.auditerOperationL5('EXPORT_GENERE', resultat, {
+      exportId: job.idExport, demandeurId: job.requesterId, scope: job.scope,
+      organisationId: job.organisationId, ecoleId: job.ecoleId, format: job.format,
+    }),
+  );
+  public readonly exportOperations = new AuditExportOperationsService(
+    this.exportJobs,
+    this.exportFiles,
+    () => this.exportWorker.reveiller(),
+    (operation, payload) => this.auditerOperationL5(operation, 'SUCCESS', { ...payload }),
+  );
+  public readonly exports = new AuditExportApplicationService(this.exportOperations);
   public readonly analytics = new AuditAnalyticsApplicationService(this.lectures);
   public readonly offline = new AuditOfflineApplicationService();
   public readonly replay = new AuditReplayApplicationService();
-  public readonly retention = new AuditRetentionApplicationService();
+  public readonly retentionOperations = new AuditRetentionOperationsService(
+    this.lectures,
+    undefined,
+    (payload, resultat, idRun) => this.auditerOperationL5('ARCHIVAGE_AUDIT_EXECUTE', resultat, { ...payload, idRun }),
+  );
+  public readonly retention = new AuditRetentionApplicationService(this.retentionOperations);
   public readonly security = new AuditSecurityApplicationService();
   public readonly projections = new AuditProjectionApplicationService();
 
@@ -122,6 +159,21 @@ class AuditRuntimeFacade {
 
   public readonly projectionHandler = new PostgresAuditProjectionHandler(
     new PostgresAuditProjectionProjector(new PostgresAuditProjectionRepository()),
+  );
+  public readonly replayOperations = new AuditReplayOperationsService(
+    this.lectures,
+    new PostgresAuditEntryRepository(),
+    this.projectionHandler,
+    undefined,
+    (payload, resultat) => this.auditerOperationL5('REPLAY_PROJECTION_EXECUTE', resultat, payload),
+  );
+  public readonly integrityOperations = new AuditIntegrityOperationsService(
+    this.lectures,
+    undefined,
+    async (payload, anomalie) => {
+      await this.auditerOperationL5('VERIFICATION_INTEGRITE_EXECUTEE', anomalie ? 'FAILED' : 'SUCCESS', payload);
+      if (anomalie) await this.auditerOperationL5('ANOMALIE_INTEGRITE_DETECTEE', 'FAILED', payload);
+    },
   );
 
   public readonly eventBus = new PostgresAuditEventBus(this.projectionHandler);
@@ -183,6 +235,27 @@ class AuditRuntimeFacade {
     return this.forensic.lancerInvestigation(payload);
   }
 
+  private async auditerOperationL5(
+    action: 'EXPORT_GENERE' | 'EXPORT_DEMANDE' | 'EXPORT_TELECHARGE' | 'REPLAY_PROJECTION_EXECUTE' | 'ARCHIVAGE_AUDIT_EXECUTE' | 'VERIFICATION_INTEGRITE_EXECUTEE' | 'ANOMALIE_INTEGRITE_DETECTEE',
+    resultat: 'SUCCESS' | 'FAILED' | 'IGNORED_DUPLICATE',
+    payload: Record<string, unknown>,
+  ): Promise<void> {
+    const scope = payload.scope === 'PLATEFORME' || payload.scope === 'ORGANISATION' || payload.scope === 'ECOLE'
+      ? payload.scope
+      : 'PLATEFORME';
+    const texte = (cle: string) => typeof payload[cle] === 'string' ? payload[cle] as string : undefined;
+    await this.l5AuditProducer.produire({
+      action,
+      resultat,
+      acteur: { id: texte('demandeurId') ?? texte('requesterId'), type: texte('demandeurId') || texte('requesterId') ? 'UTILISATEUR' : 'SYSTEME' },
+      tenant: { scope, organisationId: texte('organisationId'), ecoleId: texte('ecoleId') },
+      ressource: { type: 'AUDIT', id: texte('exportId') ?? texte('replayId') ?? texte('idRun') ?? texte('idAuditEntry'), libelle: action },
+      contexte: { requestId: texte('requestId'), correlationId: texte('correlationId'), source: 'SYSTEM' },
+      metadata: { operation: action, mode: payload.mode, format: payload.format },
+      idempotencyKey: `L5:${action}:${texte('exportId') ?? texte('replayId') ?? texte('idRun') ?? texte('idAuditEntry') ?? texte('correlationId') ?? 'GLOBAL'}:${resultat}`,
+    });
+  }
+
   private creerDependancesRoutes(): DependancesRoutesAudit {
     return {
       auditController: new AuditController(
@@ -203,12 +276,30 @@ class AuditRuntimeFacade {
         new AuditExecutableAdapter(this.exports.exporterAuditForensic.bind(this.exports)),
         new AuditExecutableAdapter(this.exports.exporterAuditsAnalytics.bind(this.exports)),
         new AuditExecutableAdapter(this.exports.exporterAuditsSecurite.bind(this.exports)),
+        (exportId, contexte) => this.exportOperations.obtenirStatut(exportId, {
+          demandeurId: contexte.utilisateurId,
+          scope: contexte.authorizedScope,
+          organisationId: contexte.organisationId,
+          ecoleId: contexte.ecoleId,
+        }),
+        (exportId, contexte) => this.exportOperations.preparerTelechargement(exportId, {
+          demandeurId: contexte.utilisateurId,
+          scope: contexte.authorizedScope,
+          organisationId: contexte.organisationId,
+          ecoleId: contexte.ecoleId,
+        }),
+        (exportId, contexte) => this.exportOperations.supprimer(exportId, {
+          demandeurId: contexte.utilisateurId,
+          scope: contexte.authorizedScope,
+          organisationId: contexte.organisationId,
+          ecoleId: contexte.ecoleId,
+        }),
       ),
       auditReplayController: new AuditReplayController(
         new AuditExecutableAdapter(this.replay.rejouer.bind(this.replay)),
-        this.projections.projeterAudit.bind(this.projections),
-        this.projections.projeterAnalytics.bind(this.projections),
-        async (payload) => this.investigation.investiguerWorkflow(payload as never),
+        this.replayOperations.executer.bind(this.replayOperations),
+        this.replayOperations.executer.bind(this.replayOperations),
+        this.replayOperations.executer.bind(this.replayOperations),
       ),
       auditRetryController: new AuditRetryController(
         async (payload) => ({ accepte: true, type: 'JOB', payload }),
@@ -244,13 +335,15 @@ class AuditRuntimeFacade {
         new AuditExecutableAdapter(this.retention.preparerArchivageAudit.bind(this.retention)),
         new AuditExecutableAdapter(this.retention.archiverAudits.bind(this.retention)),
         new AuditExecutableAdapter(this.retention.consulterArchivesAudit.bind(this.retention)),
-        async (payload) => ({ accepte: true, purge: true, payload }),
+        this.retention.apercuPurge.bind(this.retention),
       ),
       auditSecurityController: new AuditSecurityController(
         new AuditExecutableAdapter(this.security.investiguerIncidentSecurite.bind(this.security)),
         new AuditExecutableAdapter(this.security.detecterEchecsSecuriteRepetees.bind(this.security)),
         new AuditExecutableAdapter(this.security.detecterExportMassif.bind(this.security)),
         async (payload) => ({ acces: 'RESTREINT', payload }),
+        this.integrityOperations.verifierEntree.bind(this.integrityOperations),
+        this.integrityOperations.verifierPlage.bind(this.integrityOperations),
       ),
       auditHealthController: new AuditHealthController(
         async () => this.monitoring.health.verifier(),

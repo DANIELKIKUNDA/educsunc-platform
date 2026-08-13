@@ -43,6 +43,8 @@ export class AuditReplayController {
       ? await dependance({
           ...payload,
           correlationId: contexte.correlationId,
+          requesterId: contexte.utilisateurId,
+          scope: contexte.authorizedScope,
           organisationId: contexte.organisationId,
           ecoleId: contexte.ecoleId,
           modeOffline: contexte.modeOffline,

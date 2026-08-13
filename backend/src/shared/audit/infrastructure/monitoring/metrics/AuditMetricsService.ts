@@ -35,9 +35,25 @@ export class AuditMetricsService {
     const horodatage = new Date().toISOString();
     const syncLagMs =
       sync.dernierSyncAt === undefined ? 0 : Math.max(0, Date.now() - new Date(sync.dernierSyncAt).getTime());
+    const retention = await this.reader.statistiquesRetentionL5();
 
     return [
       { nom: 'audit_entries_total', valeur: await this.reader.compterEntrees(), horodatage },
+      { nom: 'audit_exports_requested_total', valeur: await this.reader.compterExportsL5(), horodatage },
+      { nom: 'audit_exports_completed_total', valeur: await this.reader.compterExportsL5('COMPLETED'), horodatage },
+      { nom: 'audit_exports_failed_total', valeur: await this.reader.compterExportsL5('FAILED'), horodatage },
+      { nom: 'audit_exports_in_progress', valeur: await this.reader.compterExportsL5('PROCESSING'), horodatage },
+      { nom: 'audit_export_duration_seconds', valeur: await this.reader.sommeExportsL5('duree_secondes'), horodatage },
+      { nom: 'audit_export_size_bytes', valeur: await this.reader.sommeExportsL5('taille_octets'), horodatage },
+      { nom: 'audit_replay_requested_total', valeur: await this.reader.compterReplaysL5(), horodatage },
+      { nom: 'audit_replay_success_total', valeur: await this.reader.compterReplaysL5('COMPLETED'), horodatage },
+      { nom: 'audit_replay_failed_total', valeur: await this.reader.compterReplaysL5('FAILED'), horodatage },
+      { nom: 'audit_replay_duration_seconds', valeur: await this.reader.sommeDureeReplaysL5(), horodatage },
+      { nom: 'audit_retention_archived_total', valeur: retention.archives, horodatage },
+      { nom: 'audit_retention_deleted_total', valeur: 0, horodatage },
+      { nom: 'audit_retention_job_duration_seconds', valeur: retention.dureeSecondes, horodatage },
+      { nom: 'audit_integrity_checks_total', valeur: await this.reader.compterVerificationsIntegrite(), horodatage },
+      { nom: 'audit_integrity_failures_total', valeur: await this.reader.compterEchecsIntegrite(), horodatage },
       { nom: 'audit_projections_total', valeur: await this.reader.compterDocuments('PROJECTION'), horodatage },
       { nom: 'audit_exports_total', valeur: exports.totalExports, horodatage },
       { nom: 'audit_exports_failures_total', valeur: exports.totalFailures, horodatage },
