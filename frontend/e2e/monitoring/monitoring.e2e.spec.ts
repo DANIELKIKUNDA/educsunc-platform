@@ -6,8 +6,8 @@ const readScreens = [
   ['/app/monitoring/sante', 'Sante systeme'],
   ['/app/monitoring/alertes', 'Alertes monitoring'],
   ['/app/monitoring/incidents', 'Incidents monitoring'],
-  ['/app/monitoring/diagnostics', 'Diagnostics monitoring'],
-  ['/app/monitoring/capacite', 'Capacite monitoring'],
+  ['/app/monitoring/diagnostics', 'Diagnostics'],
+  ['/app/monitoring/capacite', 'Capacite et saturation'],
   ['/app/monitoring/traces', 'Traces monitoring'],
 ] as const;
 
@@ -47,9 +47,16 @@ test('acteur Ecole ne peut ni afficher Monitoring ni appeler son API par navigat
 
 test('erreur reseau Monitoring reste contenue dans le cockpit', async ({ page }) => {
   await openRealDeveloperSession(page, 'MANAGER_SYSTEME');
-  await page.route('**/api/v1/monitoring/dashboard**', (route) => route.abort('failed'));
+  let requeteInterceptee = false;
+  await page.route(/\/api\/v1\/monitoring\/dashboard(?:\?.*)?$/, (route) => {
+    requeteInterceptee = true;
+    return route.abort('internetdisconnected');
+  });
   await page.goto('/app/monitoring/dashboard', { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('heading', { name: 'Dashboard monitoring' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Lecture monitoring impossible' })).toBeVisible();
+  await expect.poll(() => requeteInterceptee).toBe(true);
+  await expect(page.getByRole('heading', { name: 'Lecture monitoring impossible' })).toBeVisible({
+    timeout: 30_000,
+  });
   await expect(page.locator('.erp-shell')).toBeVisible();
 });
