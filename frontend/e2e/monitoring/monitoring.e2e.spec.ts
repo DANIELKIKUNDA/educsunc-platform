@@ -46,12 +46,12 @@ test('acteur Ecole ne peut ni afficher Monitoring ni appeler son API par navigat
 });
 
 test('erreur reseau Monitoring reste contenue dans le cockpit', async ({ page }) => {
-  await openRealDeveloperSession(page, 'MANAGER_SYSTEME');
   let requeteInterceptee = false;
   await page.route('**/api/v1/monitoring/dashboard*', (route) => {
     requeteInterceptee = true;
     return route.abort('internetdisconnected');
   });
+  await openRealDeveloperSession(page, 'MANAGER_SYSTEME');
   await page.goto('/app/monitoring/dashboard', { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('heading', { name: 'Dashboard monitoring' })).toBeVisible();
   await expect.poll(() => requeteInterceptee).toBe(true);
