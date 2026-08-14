@@ -18,7 +18,7 @@ for (const actor of ['MANAGER_SYSTEME', 'OPERATEUR_SYSTEME'] as const) {
     expect(profile.permissionsEffectives).toContain('monitoring.read');
     for (const [path, heading] of readScreens) {
       await page.goto(path, { waitUntil: 'domcontentloaded' });
-      await expect(page.getByRole('heading', { name: heading })).toBeVisible();
+      await expect(page.getByRole('heading', { name: heading, exact: true })).toBeVisible();
     }
   });
 }
@@ -48,7 +48,7 @@ test('acteur Ecole ne peut ni afficher Monitoring ni appeler son API par navigat
 test('erreur reseau Monitoring reste contenue dans le cockpit', async ({ page }) => {
   await openRealDeveloperSession(page, 'MANAGER_SYSTEME');
   let requeteInterceptee = false;
-  await page.route(/\/api\/v1\/monitoring\/dashboard(?:\?.*)?$/, (route) => {
+  await page.route('**/api/v1/monitoring/dashboard*', (route) => {
     requeteInterceptee = true;
     return route.abort('internetdisconnected');
   });
