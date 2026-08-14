@@ -105,7 +105,7 @@ Ces corrections ne modifient aucune permission ni aucun perimetre. Elles retabli
 
 ## Tests
 
-- `npm run test:audit` frontend: `7/7`, contrats, mapper, routes, permissions, pagination et architecture;
+- `npm run test:audit` frontend: `8/8`, contrats, mapper, routes, permissions, pagination, architecture et isolation Playwright;
 - `npm run test:audit` backend: `53` reussis, `3` integrations PostgreSQL deleguees aux suites dediees, aucun echec;
 - `npm run test:e2e:audit`: `18/18`, aucun echec et aucun scenario ignore;
 - le jeu E2E contient `36` evenements Plateforme persistants, idempotents et append-only;

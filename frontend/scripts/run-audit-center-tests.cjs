@@ -128,3 +128,14 @@ test('L6 conserve MVVM et des composants dédiés', () => {
     'PlatformAuditTabsContent.vue', 'PlatformAuditActionModals.vue', 'PlatformAuditModalHeader.vue',
   ]) assert.equal(fs.existsSync(path.join(sourceRoot, 'components', component)), true, component);
 });
+
+test('L6 isole explicitement la session developpeur dans le serveur Playwright', () => {
+  for (const configPath of [
+    'e2e/audit/playwright.audit.config.ts',
+    'e2e/g1/playwright.g1.config.ts',
+  ]) {
+    const config = read(configPath);
+    assert.match(config, /APP_ENV:\s*'development'/, configPath);
+    assert.match(config, /NODE_ENV:\s*'development'/, configPath);
+  }
+});

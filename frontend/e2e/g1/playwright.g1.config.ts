@@ -40,6 +40,7 @@ export default defineConfig({
       cwd: path.join(repositoryRoot, 'backend'),
       env: {
         ...process.env,
+        APP_ENV: 'development',
         NODE_ENV: 'development',
       },
       url: `${backendUrl}/api/auth/initialisation`,

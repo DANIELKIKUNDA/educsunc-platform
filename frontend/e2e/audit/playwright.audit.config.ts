@@ -31,7 +31,7 @@ export default defineConfig({
     {
       command: 'node --require ./scripts/load-optional-local-env.cjs --import tsx src/main.ts',
       cwd: path.join(repositoryRoot, 'backend'),
-      env: { ...process.env, NODE_ENV: 'development' },
+      env: { ...process.env, APP_ENV: 'development', NODE_ENV: 'development' },
       url: `${backendUrl}/api/auth/initialisation`,
       reuseExistingServer: reuseLocalServices,
       timeout: 120_000,
