@@ -15,7 +15,7 @@ for (const actor of ['MANAGER_SYSTEME', 'OPERATEUR_SYSTEME'] as const) {
   test(`${actor} accede au cockpit Monitoring et aux ecrans operationnels`, async ({ page }) => {
     const profile = await openRealDeveloperSession(page, actor);
     expect(profile.contexte.governanceLevel).toBe('PLATEFORME');
-    expect(profile.permissionsEffectives).toContain('monitoring.consulter');
+    expect(profile.permissionsEffectives).toContain('monitoring.read');
     for (const [path, heading] of readScreens) {
       await page.goto(path, { waitUntil: 'domcontentloaded' });
       await expect(page.getByRole('heading', { name: heading })).toBeVisible();
@@ -38,7 +38,7 @@ test('SUPPORT_SYSTEME lit Monitoring mais ne voit aucune mutation', async ({ pag
 test('acteur Ecole ne peut ni afficher Monitoring ni appeler son API par navigation', async ({ page }) => {
   const profile = await openRealDeveloperSession(page, 'CAISSIER');
   expect(profile.contexte.governanceLevel).toBe('ECOLE');
-  const calls = observeRequests(page, (url) => url.pathname.startsWith('/api/monitoring'));
+  const calls = observeRequests(page, (url) => url.pathname.startsWith('/api/v1/monitoring'));
   await page.goto('/app/monitoring/dashboard', { waitUntil: 'domcontentloaded' });
   await expect(page).not.toHaveURL(/\/app\/monitoring\/dashboard$/);
   await expect(page.getByRole('heading', { name: 'Dashboard monitoring' })).toHaveCount(0);
@@ -47,9 +47,9 @@ test('acteur Ecole ne peut ni afficher Monitoring ni appeler son API par navigat
 
 test('erreur reseau Monitoring reste contenue dans le cockpit', async ({ page }) => {
   await openRealDeveloperSession(page, 'MANAGER_SYSTEME');
-  await page.route('**/api/monitoring/dashboard**', (route) => route.abort('failed'));
+  await page.route('**/api/v1/monitoring/dashboard**', (route) => route.abort('failed'));
   await page.goto('/app/monitoring/dashboard', { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('heading', { name: 'Dashboard monitoring' })).toBeVisible();
-  await expect(page.getByText(/indisponible|erreur/i).first()).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Lecture monitoring impossible' })).toBeVisible();
   await expect(page.locator('.erp-shell')).toBeVisible();
 });

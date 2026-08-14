@@ -1396,7 +1396,7 @@ export const pageDoctrine: readonly FrontendPageDoctrine[] = [
     sectionLabel: 'Incidents',
     pageType: 'centre',
     icon: 'Siren',
-    actorCodes: ['MANAGER_SYSTEME', 'OPERATEUR_SYSTEME'],
+    actorCodes: monitoringReadActors,
     governanceLevels: ['PLATEFORME'],
     visibleActions: [
       { code: 'monitoring.incidents.read', label: 'Lire les incidents' },
@@ -1414,7 +1414,7 @@ export const pageDoctrine: readonly FrontendPageDoctrine[] = [
     sectionLabel: 'Alertes',
     pageType: 'centre',
     icon: 'BellRing',
-    actorCodes: ['MANAGER_SYSTEME', 'OPERATEUR_SYSTEME'],
+    actorCodes: monitoringReadActors,
     governanceLevels: ['PLATEFORME'],
     visibleActions: [
       { code: 'monitoring.alerts.read', label: 'Lire les alertes' },
