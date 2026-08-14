@@ -106,16 +106,29 @@ Permettre aux acteurs plateforme de consulter les traces d'audit techniques expo
 - detail d'un audit
 - timeline chronologique
 - historique filtre
+- synthese du lot PostgreSQL actuellement charge, sans statistique fabriquee
+- exports demandes pendant la session courante
+- archives logiques accessibles
+- resultats des controles d'integrite executes
 
 ### Actions visibles
 
 - filtrer
 - ouvrir un detail
 - basculer entre liste, timeline et historique
+- charger la suite avec le curseur opaque retourne par le backend
+- demander, suivre et telecharger un export selon `audit.export*`
+- demander un export d'investigation selon `forensic.export`
+- verifier puis reconstruire une projection selon `audit.replay`
+- consulter ou archiver logiquement selon `audit.retention.*`
+- verifier l'integrite selon `audit.security.read`
 
 ### Actions masquees ou interdites
 
-- aucune mutation
+- aucune mutation metier scolaire
+- aucune action L5 sans la permission backend correspondante
+- aucune suppression physique des evenements canoniques
+- aucun replay forensic, le backend L5 ne le prend pas en charge
 - ne pas presenter cet ecran comme audit ecole metier
 
 ### Etats obligatoires
@@ -137,14 +150,28 @@ Permettre aux acteurs plateforme de consulter les traces d'audit techniques expo
 - table d'audit
 - panneau detail
 - composant timeline
+- cockpit de synthese du lot
+- centre des exports de la session
+- operations controlees replay, conservation et integrite
 
 ### Routes frontend candidates
 
 - `/audit/plateforme`
+- `/audit/plateforme/evenements/:auditId` pour le deep-link de detail
 
 ### Sources backend
 
 - `SHD-AUD-01`
+- lectures L3 `GET /api/v1/audit*`
+- operations L5 `/api/v1/exports/*`, `/api/v1/replay/*`, `/api/v1/retention/*`, `/api/v1/security/integrity/*`
+
+### Limites explicites
+
+- la pagination est uniquement keyset: le curseur reste opaque et seul le chargement suivant est propose
+- aucun historique global des exports n'est invente; seuls les exports demandes dans la session courante sont suivis
+- les routes forensic detaillees sont bornees au scope ecole dans le backend; le Centre Plateforme exploite la timeline globale et l'export forensic autorise
+- le statut d'integrite affiche uniquement le dernier controle demande dans la session, faute de route de synthese globale
+- la retention est un archivage logique et un apercu non destructif; aucune purge physique n'est exposee
 
 ## Ecran `SCR-AUD-002`
 

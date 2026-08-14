@@ -10,8 +10,6 @@ import {
 
 const PLATFORM_AUDIT_PATHS = [
   '/api/v1/audit',
-  '/api/v1/audit/history',
-  '/api/v1/audit/timeline',
 ] as const;
 
 const SCHOOL_FINANCE_AUDIT_PATHS = [
@@ -60,7 +58,7 @@ test.describe('G1 - gouvernance globale des accès frontend', () => {
 
     await page.goto('/app/audit/plateforme', { waitUntil: 'domcontentloaded' });
     await expect(page).toHaveURL(/\/app\/audit\/plateforme$/);
-    await expect(page.getByRole('heading', { name: 'Audit plateforme' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Centre Audit' })).toBeVisible();
     await assertResponsesSuccessful(await Promise.all(responses), 'Audit plateforme');
 
     expect(auditRequests).toHaveLength(PLATFORM_AUDIT_PATHS.length);
@@ -76,7 +74,7 @@ test.describe('G1 - gouvernance globale des accès frontend', () => {
   test('SUPPORT_SYSTEME ne voit ni menu ni action interdits et une URL directe est refusée', async ({ page }) => {
     await openRealDeveloperSession(page, 'SUPPORT_SYSTEME');
     await page.goto('/app/audit/plateforme', { waitUntil: 'domcontentloaded' });
-    await expect(page.getByRole('heading', { name: 'Audit plateforme' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Centre Audit' })).toBeVisible();
 
     const sidebar = page.locator('.erp-sidebar');
     await expect(
@@ -161,7 +159,7 @@ test.describe('G1 - gouvernance globale des accès frontend', () => {
     await installForbiddenTextProbe(page, ['Audit plateforme']);
     await page.goto('/app/audit/plateforme', { waitUntil: 'domcontentloaded' });
     await expect(page).not.toHaveURL(/\/app\/audit\/plateforme$/);
-    await expect(page.getByRole('heading', { name: 'Audit plateforme' })).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: 'Centre Audit' })).toHaveCount(0);
     await expectNoForbiddenTextFlash(page);
     expect(forbiddenPlatformCalls).toHaveLength(0);
   });

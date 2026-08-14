@@ -371,6 +371,9 @@ jobs:
       - name: Certifier le socle hors ligne
         run: npm --prefix frontend run test:e2e:offline
 
+      - name: Certifier le Centre Audit Plateforme
+        run: npm --prefix frontend run test:e2e:audit
+
       - name: Conserver les preuves
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -380,6 +383,8 @@ jobs:
             artifacts/security-production-certification
             artifacts/quality/e2e
             frontend/artifacts/offline-playwright-results
+            frontend/artifacts/audit-playwright-results
+            frontend/artifacts/audit-playwright-report
           if-no-files-found: warn
 
   performance-light:

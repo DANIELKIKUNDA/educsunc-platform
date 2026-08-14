@@ -7,7 +7,16 @@ export type AuditBackendPermission =
   | 'audit.analytics.read'
   | 'audit.security.read'
   | 'audit.finance.read'
-  | 'audit.technical.read';
+  | 'audit.technical.read'
+  | 'audit.export'
+  | 'audit.export.read'
+  | 'audit.export.download'
+  | 'audit.export.delete'
+  | 'audit.replay'
+  | 'audit.retention.read'
+  | 'audit.retention.archive'
+  | 'audit.retention.purge'
+  | 'forensic.export';
 
 export const TITULARIAT_EFFECTIF = 'TITULAIRE_EFFECTIF' as const;
 

@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 
 export type G1ActorCode =
   | 'MANAGER_SYSTEME'
+  | 'OPERATEUR_SYSTEME'
   | 'SUPPORT_SYSTEME'
   | 'PROMOTEUR_ORGANISATION'
   | 'ADMIN_SYSTEME_ORGANISATION'
@@ -42,6 +43,7 @@ interface BrowserDeveloperSessionResult {
 
 const actorLabels: Record<G1ActorCode, RegExp> = {
   MANAGER_SYSTEME: /Manager syst[eè]me/i,
+  OPERATEUR_SYSTEME: /Op[eé]rateur syst[eè]me/i,
   SUPPORT_SYSTEME: /Support syst[eè]me/i,
   PROMOTEUR_ORGANISATION: /Promoteur/i,
   ADMIN_SYSTEME_ORGANISATION: /Admin syst[eè]me organisation/i,
@@ -57,7 +59,7 @@ const actorLabels: Record<G1ActorCode, RegExp> = {
 function actorGovernanceLevel(
   actorCode: G1ActorCode,
 ): G1EffectiveProfile['contexte']['governanceLevel'] {
-  if (actorCode === 'MANAGER_SYSTEME' || actorCode === 'SUPPORT_SYSTEME') {
+  if (actorCode === 'MANAGER_SYSTEME' || actorCode === 'OPERATEUR_SYSTEME' || actorCode === 'SUPPORT_SYSTEME') {
     return 'PLATEFORME';
   }
   if (

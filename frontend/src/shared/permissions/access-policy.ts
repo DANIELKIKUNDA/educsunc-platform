@@ -331,6 +331,61 @@ const actionPolicyEntries: ReadonlyArray<readonly [string, UiActionPolicy]> = [
     permissionsAnyOf: ['audit.read'],
     scope: 'CURRENT',
   }),
+  ...policy(['audit.platform.timeline.read'], {
+    permissionsAnyOf: ['audit.timeline.read'],
+    scope: 'CURRENT',
+  }),
+  ...policy(['audit.platform.history.read'], {
+    permissionsAnyOf: ['audit.history.read'],
+    scope: 'CURRENT',
+  }),
+  ...policy(['audit.platform.export'], {
+    permissionsAnyOf: ['audit.export'],
+    scope: 'CURRENT',
+    mutation: true,
+  }),
+  ...policy(['audit.platform.export.read'], {
+    permissionsAnyOf: ['audit.export.read'],
+    scope: 'CURRENT',
+  }),
+  ...policy(['audit.platform.export.download'], {
+    permissionsAnyOf: ['audit.export.download'],
+    scope: 'CURRENT',
+  }),
+  ...policy(['audit.platform.export.delete'], {
+    permissionsAnyOf: ['audit.export.delete'],
+    scope: 'CURRENT',
+    mutation: true,
+  }),
+  ...policy(['audit.platform.forensic.export'], {
+    permissionsAnyOf: ['forensic.export'],
+    scope: 'CURRENT',
+    mutation: true,
+  }),
+  ...policy(['audit.platform.replay'], {
+    permissionsAnyOf: ['audit.replay'],
+    scope: 'CURRENT',
+    mutation: true,
+  }),
+  ...policy(['audit.platform.retention.read'], {
+    permissionsAnyOf: ['audit.retention.read'],
+    scope: 'CURRENT',
+  }),
+  ...policy(['audit.platform.retention.archive'], {
+    permissionsAnyOf: ['audit.retention.archive'],
+    scope: 'CURRENT',
+    mutation: true,
+  }),
+  ...policy(['audit.platform.retention.preview'], {
+    permissionsAnyOf: ['audit.retention.purge'],
+    scope: 'CURRENT',
+    mutation: true,
+  }),
+  ...policy(['audit.platform.integrity.read'], {
+    permissionsAnyOf: ['audit.security.read'],
+    scope: 'CURRENT',
+    mutation: true,
+  }),
   ...policy(['audit.organization.read'], {
     permissionsAnyOf: ['audit.monitoring.read', 'audit.analytics.read', 'audit.security.read'],
     scope: 'CURRENT',

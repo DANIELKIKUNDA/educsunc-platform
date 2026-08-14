@@ -17,6 +17,8 @@
     "certify:platform-governance-navigation": "node scripts/certify-platform-governance-navigation.cjs",
     "test:e2e:g1": "playwright test --config e2e/g1/playwright.g1.config.ts",
     "test:e2e:g1:list": "playwright test --config e2e/g1/playwright.g1.config.ts --list",
+    "test:e2e:audit": "playwright test --config e2e/audit/playwright.audit.config.ts",
+    "test:e2e:audit:list": "playwright test --config e2e/audit/playwright.audit.config.ts --list",
     "test:e2e:offline": "npm run build && playwright test --config e2e/offline/playwright.offline.config.ts",
     "test:access": "node --test scripts/run-effective-access-tests.cjs scripts/run-frontend-lifecycle-tests.cjs scripts/run-frontend-data-tests.cjs",
     "test:data": "node --test scripts/run-frontend-data-tests.cjs",
@@ -24,7 +26,8 @@
     "test:design-system": "node --test scripts/run-design-system-tests.cjs",
     "test:offline": "node --test scripts/run-offline-first-tests.cjs",
     "test:performance": "node --test scripts/run-performance-tests.cjs",
-    "test": "vue-tsc --noEmit && npm run test:forms && npm run test:access && npm run test:design-system && npm run test:performance && npm run test:offline"
+    "test:audit": "node --test scripts/run-audit-center-tests.cjs",
+    "test": "vue-tsc --noEmit && npm run test:forms && npm run test:access && npm run test:audit && npm run test:design-system && npm run test:performance && npm run test:offline"
   },
   "dependencies": {
     "dexie": "4.4.4",

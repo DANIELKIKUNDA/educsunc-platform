@@ -23,12 +23,18 @@ export function extraireContexteRuntime(
   requete: AuditHttpRequest<unknown, unknown, unknown>,
 ): AuditControllerRuntimeContext {
   const contexteAuthentifie = requete.context;
-  const organisationId = contexteAuthentifie
+  const organisationIdBrut = contexteAuthentifie
     ? contexteAuthentifie.organisationActiveId
     : lireHeader(requete.headers, 'x-organisation-id');
-  const ecoleId = contexteAuthentifie
+  const ecoleIdBrut = contexteAuthentifie
     ? contexteAuthentifie.ecoleActiveId
     : lireHeader(requete.headers, 'x-ecole-id');
+  const organisationId = typeof organisationIdBrut === 'string' && organisationIdBrut.trim()
+    ? organisationIdBrut
+    : undefined;
+  const ecoleId = typeof ecoleIdBrut === 'string' && ecoleIdBrut.trim()
+    ? ecoleIdBrut
+    : undefined;
   const roleActif = contexteAuthentifie?.roleActif;
   const acteurPlateforme = roleActif !== undefined
     && ['MANAGER_SYSTEME', 'OPERATEUR_SYSTEME', 'SUPPORT_SYSTEME'].includes(roleActif);
@@ -57,10 +63,7 @@ export function enrichirTenant<T extends object>(
   contexte: AuditControllerRuntimeContext,
 ): T {
   const inputAvecTenant = input as T & { organisationId?: string; ecoleId?: string };
-  return {
-    ...AuditTenantScopePolicy.appliquer(inputAvecTenant, contexte),
-    correlationId: (input as { correlationId?: string }).correlationId ?? contexte.correlationId,
-  };
+  return AuditTenantScopePolicy.appliquer(inputAvecTenant, contexte);
 }
 
 export async function executerDependance<TInput, TOutput>(
