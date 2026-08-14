@@ -16,6 +16,7 @@ export const creerRoutesCapaciteMonitoring = (
       return dependances.controleurCapaciteMonitoringHttp.lister({
         query: requete.query as never,
         headers: requete.headers,
+        context: (requete as { context?: unknown }).context,
       });
     }));
 
@@ -28,6 +29,7 @@ export const creerRoutesCapaciteMonitoring = (
       return dependances.controleurCapaciteMonitoringHttp.calculerCapacite({
         body: requete.body as never,
         headers: requete.headers,
+        context: (requete as { context?: unknown }).context,
       });
     }));
 
@@ -40,6 +42,7 @@ export const creerRoutesCapaciteMonitoring = (
       return dependances.controleurCapaciteMonitoringHttp.calculerSaturation({
         body: requete.body as never,
         headers: requete.headers,
+        context: (requete as { context?: unknown }).context,
       });
     }));
 };

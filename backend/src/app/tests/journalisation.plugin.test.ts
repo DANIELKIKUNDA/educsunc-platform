@@ -71,7 +71,12 @@ test('la journalisation HTTP contient methode, route, statut et duree', async ()
     assert.equal(entree.methode, 'GET');
     assert.equal(entree.route, '/journal-test/:id');
     assert.equal(entree.statut, 200);
+    assert.equal(entree.service, 'edusync-backend');
+    assert.equal(entree.composant, 'http');
     assert.equal(typeof entree.dureeMs, 'number');
+    assert.equal('utilisateurId' in entree, false);
+    assert.equal('organisationActiveId' in entree, false);
+    assert.equal('ecoleActiveId' in entree, false);
   } finally {
     await serveur.close();
   }

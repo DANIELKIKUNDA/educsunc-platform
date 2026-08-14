@@ -16,6 +16,7 @@ export const creerRoutesDiagnosticsMonitoring = (
       return dependances.controleurDiagnosticsMonitoringHttp.lister({
         query: requete.query as never,
         headers: requete.headers,
+        context: (requete as { context?: unknown }).context,
       });
     }));
 
@@ -29,6 +30,7 @@ export const creerRoutesDiagnosticsMonitoring = (
         params: requete.params as never,
         body: requete.body as never,
         headers: requete.headers,
+        context: (requete as { context?: unknown }).context,
       });
     }));
 };

@@ -9,6 +9,7 @@ const tests = [
   'src/app/tests/http-route-authentication-policy.test.ts',
   'src/app/tests/journalisation.plugin.test.ts',
   'src/app/tests/observabilite-http.plugin.test.ts',
+  'src/app/tests/observability-deployment.test.ts',
   'src/app/tests/openapi.plugin.test.ts',
 ];
 const args = ['--import', 'tsx', '--test', '--test-force-exit'];

@@ -10,3 +10,5 @@ export * from './schedulers';
 export * from './health';
 export * from './mappers';
 export * from './services';
+
+export * from './retention';

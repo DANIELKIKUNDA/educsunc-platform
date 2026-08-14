@@ -11,11 +11,21 @@ export interface DefinitionRoleSysteme {
 
 const lecturePlateforme: PermissionSecuriteValeur[] = [
   'referentiel.read', 'audit.read', 'audit.security.read', 'monitoring.read',
-  'monitoring.dashboard.read', 'configuration.read', 'configuration.effective.read',
+  'monitoring.dashboard.read', 'monitoring.observability.read', 'monitoring.health.read',
+  'monitoring.health.snapshot.read', 'monitoring.incidents.read', 'monitoring.alerts.read',
+  'monitoring.diagnostics.read', 'monitoring.capacity.read', 'monitoring.traces.read',
+  'configuration.read', 'configuration.effective.read',
   'configuration.modules.read', 'security.center.read', 'security.accounts.read',
   'security.admin.organizations.read', 'security.admin.schools.read', 'security.roles.read',
   'security.assignments.read', 'security.sessions.read', 'security.attempts.read',
   'security.audit.read', 'security.policies.read',
+];
+
+const operationsMonitoringPlateforme: PermissionSecuriteValeur[] = [
+  'monitoring.incidents.create', 'monitoring.incidents.escalate',
+  'monitoring.alerts.create', 'monitoring.alerts.resolve',
+  'monitoring.diagnostics.create', 'monitoring.capacity.calculate',
+  'monitoring.saturation.calculate', 'monitoring.traces.create',
 ];
 
 const administrationSecuritePlateforme: PermissionSecuriteValeur[] = [
@@ -49,7 +59,7 @@ const administrationEcole: PermissionSecuriteValeur[] = [
 
 export const CATALOGUE_ROLES_SYSTEME: readonly DefinitionRoleSysteme[] = [
   { code: 'MANAGER_SYSTEME', libelle: 'Manager système', niveau: 'PLATEFORME', permissions: [...PERMISSIONS_SECURITE] },
-  { code: 'OPERATEUR_SYSTEME', libelle: 'Opérateur système', niveau: 'PLATEFORME', permissions: [...lecturePlateforme, ...administrationSecuritePlateforme, 'referentiel.write', 'configuration.create', 'configuration.update', 'configuration.validate'] },
+  { code: 'OPERATEUR_SYSTEME', libelle: 'Opérateur système', niveau: 'PLATEFORME', permissions: [...lecturePlateforme, ...operationsMonitoringPlateforme, ...administrationSecuritePlateforme, 'referentiel.write', 'configuration.create', 'configuration.update', 'configuration.validate'] },
   { code: 'SUPPORT_SYSTEME', libelle: 'Support système', niveau: 'PLATEFORME', permissions: lecturePlateforme },
   { code: 'PROMOTEUR_ORGANISATION', libelle: 'Promoteur organisation', niveau: 'ORGANISATION', permissions: ['referentiel.read', 'eleves.read', 'paiements.read', 'utilisateurs.read', 'audit.monitoring.read', 'audit.analytics.read', 'audit.security.read', 'configuration.read', 'configuration.modules.read', 'security.center.read', 'security.admin.schools.read', 'security.audit.read'] },
   { code: 'ADMIN_SYSTEME_ORGANISATION', libelle: 'Administrateur système organisation', niveau: 'ORGANISATION', permissions: administrationOrganisation },

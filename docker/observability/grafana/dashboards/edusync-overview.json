@@ -1,0 +1,14 @@
+{
+  "title": "EduSync - Backend Overview",
+  "uid": "edusync-backend-overview",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "time": {"from": "now-1h", "to": "now"},
+  "panels": [
+    {"id":1,"type":"timeseries","title":"Requetes HTTP / seconde","datasource":{"type":"prometheus","uid":"prometheus"},"targets":[{"expr":"sum(rate(edusync_http_requests_total[5m])) by (route)","legendFormat":"{{route}}"}],"gridPos":{"h":8,"w":12,"x":0,"y":0}},
+    {"id":2,"type":"timeseries","title":"Latence HTTP p95","datasource":{"type":"prometheus","uid":"prometheus"},"targets":[{"expr":"histogram_quantile(0.95, sum(rate(edusync_http_request_duration_seconds_bucket[5m])) by (le, route))","legendFormat":"{{route}}"}],"gridPos":{"h":8,"w":12,"x":12,"y":0}},
+    {"id":3,"type":"timeseries","title":"Reponses HTTP 5xx / seconde","datasource":{"type":"prometheus","uid":"prometheus"},"targets":[{"expr":"sum(rate(edusync_http_requests_total{status_code=~\"5..\"}[5m])) by (route)","legendFormat":"{{route}}"}],"gridPos":{"h":8,"w":12,"x":0,"y":8}},
+    {"id":4,"type":"timeseries","title":"Memoire Node.js","datasource":{"type":"prometheus","uid":"prometheus"},"targets":[{"expr":"edusync_process_resident_memory_bytes","legendFormat":"RSS"},{"expr":"edusync_nodejs_heap_size_used_bytes","legendFormat":"Heap utilise"}],"gridPos":{"h":8,"w":12,"x":12,"y":8}}
+  ]
+}

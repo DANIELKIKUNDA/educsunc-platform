@@ -1,13 +1,20 @@
-import type { RealtimeMonitoringEvenement } from '../RealtimeMonitoringIntegrationTypes';
+import type { PublierEvenementTempsReelCommand } from '../../../application';
 
-const journal: RealtimeMonitoringEvenement[] = [];
+export type RealtimeMonitoringSink = (commande: PublierEvenementTempsReelCommand) => Promise<void>;
 
 export class RealtimeMonitoringPublisher {
-  public async publier(evenement: RealtimeMonitoringEvenement): Promise<void> {
-    journal.push(evenement);
+  private readonly messages: PublierEvenementTempsReelCommand[] = [];
+
+  constructor(private readonly sink?: RealtimeMonitoringSink) {}
+
+  public async publier(commande: PublierEvenementTempsReelCommand): Promise<void> {
+    // Le journal borne permet diagnostic/test sans devenir une seconde infrastructure de transport.
+    this.messages.push(commande);
+    if (this.messages.length > 200) this.messages.splice(0, this.messages.length - 200);
+    if (this.sink) await this.sink(commande);
   }
 
-  public journal(): readonly RealtimeMonitoringEvenement[] {
-    return [...journal];
+  public journal(): readonly PublierEvenementTempsReelCommand[] {
+    return [...this.messages];
   }
 }

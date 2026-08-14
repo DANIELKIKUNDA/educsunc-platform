@@ -52,6 +52,16 @@ export const executerRouteMonitoring = async (
       return;
     }
 
+    if (erreur instanceof Error && erreur.name === 'MonitoringValidationException') {
+      reponse.status(400).send({ code: 'MONITORING_VALIDATION_ERROR', message: erreur.message });
+      return;
+    }
+
+    if (erreur instanceof Error && erreur.name === 'MonitoringNotFoundException') {
+      reponse.status(404).send({ code: 'MONITORING_NOT_FOUND', message: erreur.message });
+      return;
+    }
+
     if (
       typeof erreur === 'object'
       && erreur !== null
@@ -65,7 +75,7 @@ export const executerRouteMonitoring = async (
 
     reponse.status(500).send({
       code: 'MONITORING_ROUTE_ERROR',
-      message: erreur instanceof Error ? erreur.message : 'Erreur Monitoring inconnue.',
+      message: 'Une erreur interne est survenue dans le module Monitoring.',
     });
   }
 

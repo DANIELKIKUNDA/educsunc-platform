@@ -39,6 +39,7 @@ const startedAt = new Date();
 let status = 'passed';
 let failure;
 let k6Result;
+let monitoringK6Result;
 
 try {
   await adminPool.query(`CREATE SCHEMA ${schema} AUTHORIZATION CURRENT_USER`);
@@ -66,6 +67,24 @@ try {
     },
     outputFile: path.join(reportDirectory, 'k6.log'),
   });
+
+  monitoringK6Result = await runCommand({
+    id: 'k6-monitoring',
+    command: process.platform === 'win32' ? 'k6.exe' : 'k6',
+    args: [
+      'run',
+      '--summary-export',
+      path.join(reportDirectory, 'monitoring-summary-export.json'),
+      path.join(repositoryRoot, 'performance', 'k6', 'monitoring-baseline.js'),
+    ],
+    env: {
+      EDUCSYN_PERF_BASE_URL: baseUrl,
+      EDUCSYN_PERF_EMAIL: email,
+      EDUCSYN_PERF_PASSWORD: motDePasse,
+      EDUCSYN_MONITORING_PERF_SUMMARY_PATH: path.join(reportDirectory, 'monitoring-k6-summary.json'),
+    },
+    outputFile: path.join(reportDirectory, 'monitoring-k6.log'),
+  });
 } catch (error) {
   status = 'failed';
   failure = error;
@@ -83,6 +102,7 @@ try {
     finishedAt: finishedAt.toISOString(),
     durationMs: finishedAt.getTime() - startedAt.getTime(),
     result: k6Result,
+    monitoringResult: monitoringK6Result,
   });
 }
 

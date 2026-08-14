@@ -83,6 +83,7 @@ jobs:
           npm --prefix backend run test:global
           npm --prefix backend run test:security
           npm --prefix backend run test:audit
+          npm --prefix backend run test:monitoring
           npm --prefix backend run test:ci
 
       - name: Verifier la couverture de l observabilite
@@ -127,7 +128,10 @@ jobs:
         run: npm run lint:frontend
 
       - name: Executer les tests frontend
-        run: npm --prefix frontend test
+        run: |
+          npm --prefix frontend test
+          npm --prefix frontend run test:monitoring
+          npm --prefix frontend run test:monitoring:realtime
 
       - name: Construire le frontend
         run: npm --prefix frontend run build
@@ -368,6 +372,9 @@ jobs:
       - name: Certifier les parcours sensibles
         run: npm run verify:e2e
 
+      - name: Certifier les parcours Monitoring Plateforme
+        run: npm --prefix frontend run test:e2e:monitoring
+
       - name: Certifier le socle hors ligne
         run: npm --prefix frontend run test:e2e:offline
 
@@ -385,6 +392,8 @@ jobs:
             frontend/artifacts/offline-playwright-results
             frontend/artifacts/audit-playwright-results
             frontend/artifacts/audit-playwright-report
+            frontend/artifacts/monitoring-playwright-results
+            frontend/artifacts/monitoring-playwright-report
           if-no-files-found: warn
 
   performance-light:

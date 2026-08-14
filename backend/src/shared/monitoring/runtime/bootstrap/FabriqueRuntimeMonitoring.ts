@@ -1,5 +1,6 @@
 import {
   ApplicationAlertMonitoringService,
+  ApplicationAlertingEngineService,
   ApplicationHealthMonitoringService,
   ApplicationIncidentMonitoringService,
   ApplicationObservabilityService,
@@ -19,12 +20,16 @@ import {
 import {
   FacadeInfrastructureMonitoring,
   HealthcheckMonitoringInfrastructure,
+  CollecteurEtatDependancesMonitoring,
+  CollecteurEtatRuntimeMonitoring,
   PublisherSignauxMonitoring,
-  RepositoryAlerteMonitoringMemoire,
-  RepositoryIncidentMonitoringMemoire,
-  RepositoryMetriqueMonitoringMemoire,
-  RepositoryTraceMonitoringMemoire,
+  RepositoryAlerteMonitoringPostgres,
+  RepositoryIncidentMonitoringPostgres,
+  RepositoryMetriqueMonitoringPostgres,
+  RepositoryTraceMonitoringPostgres,
 } from '../../infrastructure';
+import { obtenirPoolPostgresAuth } from '../../../auth/infrastructure';
+import { ConfigurationRedisShared, FabriqueConnexionRedisShared } from '../../../infrastructure/redis';
 import { RuntimeMonitoringCoordinator } from '../coordinators';
 import { RuntimeMonitoringRegistry } from '../registry';
 import {
@@ -64,15 +69,23 @@ export class FabriqueRuntimeMonitoring {
   public creer() {
     const facadeInfrastructure = new FacadeInfrastructureMonitoring();
     const registreInfrastructure = facadeInfrastructure.composants();
-    const healthPort = new HealthcheckMonitoringInfrastructure();
-    const alertRepository = new RepositoryAlerteMonitoringMemoire();
-    const incidentRepository = new RepositoryIncidentMonitoringMemoire();
-    const traceRepository = new RepositoryTraceMonitoringMemoire();
-    const metricRepository = new RepositoryMetriqueMonitoringMemoire();
+    const poolPostgres = obtenirPoolPostgresAuth();
+    const configurationRedis = ConfigurationRedisShared.lireDepuisEnvironnement();
+    const redis = FabriqueConnexionRedisShared.obtenirClient(configurationRedis);
+    const healthPort = new HealthcheckMonitoringInfrastructure(
+      undefined,
+      new CollecteurEtatDependancesMonitoring(poolPostgres, redis),
+      new CollecteurEtatRuntimeMonitoring(configurationRedis),
+    );
+    const alertRepository = new RepositoryAlerteMonitoringPostgres(poolPostgres);
+    const incidentRepository = new RepositoryIncidentMonitoringPostgres(poolPostgres);
+    const traceRepository = new RepositoryTraceMonitoringPostgres(poolPostgres);
+    const metricRepository = new RepositoryMetriqueMonitoringPostgres(poolPostgres);
     const publisher = new PublisherSignauxMonitoring();
 
     const healthService = new ApplicationHealthMonitoringService(healthPort);
     const alertService = new ApplicationAlertMonitoringService(alertRepository);
+    const alertingEngine = new ApplicationAlertingEngineService(alertService);
     const incidentService = new ApplicationIncidentMonitoringService(
       incidentRepository,
       traceRepository,
@@ -85,7 +98,7 @@ export class FabriqueRuntimeMonitoring {
 
     const useCases = {
       getSystemState: new GetSystemStateUseCase(healthService),
-      collectHealthSnapshot: new CollectHealthSnapshotUseCase(healthService),
+      collectHealthSnapshot: new CollectHealthSnapshotUseCase(healthService, alertingEngine),
       createAlert: new CreateAlertUseCase(alertService),
       resolveAlert: new ResolveAlertUseCase(alertService),
       escalateIncident: new EscalateIncidentUseCase(incidentService),

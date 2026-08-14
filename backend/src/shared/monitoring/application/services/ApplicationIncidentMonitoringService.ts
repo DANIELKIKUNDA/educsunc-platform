@@ -24,6 +24,13 @@ export class ApplicationIncidentMonitoringService {
   /** Cette methode ouvre un incident. */
   public async ouvrir(commande: OpenIncidentCommand): Promise<IncidentDto> {
     this.validateurContexte.valider(commande.contexte);
+
+    // L'ouverture est idempotente sur l'identifiant officiel de l'incident.
+    const existant = await this.incidentPort.retrouverIncident(commande.incidentId);
+    if (existant) {
+      return this.sortieIncident.versDto(existant);
+    }
+
     const incident = new IncidentSysteme(
       MonitoringId.creer(commande.incidentId),
       commande.resume,

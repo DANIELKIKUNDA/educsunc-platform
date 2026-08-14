@@ -19,16 +19,12 @@ export const journalisationPlugin: PluginGlobal = Object.assign(
 
       serveur.log.info(
         {
-          contexte: {
-            requestId: requete.context?.requestId,
-            correlationId: requete.context?.correlationId,
-            utilisateurId: requete.context?.utilisateurId,
-            roleActif: requete.context?.roleActif,
-            organisationActiveId: requete.context?.organisationActiveId,
-            ecoleActiveId: requete.context?.ecoleActiveId,
-          },
+          requestId: requete.context?.requestId,
+          correlationId: requete.context?.correlationId,
+          service: 'edusync-backend',
+          composant: 'http',
           methode: requete.method,
-          route: requete.routeOptions.url ?? requete.url,
+          route: requete.routeOptions.url ?? 'route_inconnue',
           statut: reponse.statusCode,
           dureeMs: dureeMs === undefined ? undefined : Number(dureeMs.toFixed(2)),
         },

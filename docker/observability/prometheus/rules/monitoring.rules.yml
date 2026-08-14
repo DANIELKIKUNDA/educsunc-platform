@@ -1,0 +1,12 @@
+groups:
+  - name: edusync-monitoring-availability
+    rules:
+      - alert: EduSyncBackendMetricsUnavailable
+        expr: up{job="edusync-backend"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: api
+        annotations:
+          summary: "Le backend EduSync n'est plus joignable par Prometheus"
+          description: "La cible Prometheus edusync-backend est indisponible."

@@ -310,9 +310,24 @@ const actionPolicyEntries: ReadonlyArray<readonly [string, UiActionPolicy]> = [
     scope: 'CURRENT',
     mutation: true,
   }),
+  ...policy(['monitoring.saturation.compute'], {
+    permissionsAnyOf: ['monitoring.saturation.calculate'],
+    scope: 'CURRENT',
+    mutation: true,
+  }),
   ...policy(['monitoring.traces.read'], {
     permissionsAnyOf: ['monitoring.traces.read'],
     scope: 'CURRENT',
+  }),
+  ...policy(['monitoring.traces.capture'], {
+    permissionsAnyOf: ['monitoring.traces.create'],
+    scope: 'CURRENT',
+    mutation: true,
+  }),
+  ...policy(['monitoring.diagnostics.generate'], {
+    permissionsAnyOf: ['monitoring.diagnostics.create'],
+    scope: 'CURRENT',
+    mutation: true,
   }),
 
   ...policy(['audit.consulter'], {

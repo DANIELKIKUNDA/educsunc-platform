@@ -1,8 +1,8 @@
 import {
-  CapaciteSysteme,
   MetriqueTechnique,
   SignalSysteme,
-  Saturation,
+  ServiceCalculCapacite,
+  ServiceCalculSaturation,
   TraceOperation,
   ValeurMetrique,
 } from '../../domain';
@@ -29,6 +29,8 @@ export class ApplicationObservabilityService {
     private readonly validateurTrace = new ValidateTraceCapture(),
     private readonly mapper = new MonitoringContextMapper(),
     private readonly sortieTrace = new TraceMapper(),
+    private readonly calculCapacite = new ServiceCalculCapacite(),
+    private readonly calculSaturation = new ServiceCalculSaturation(),
   ) {}
 
   /** Cette methode enregistre un signal d observabilite. */
@@ -81,14 +83,11 @@ export class ApplicationObservabilityService {
   /** Cette methode enregistre une capacite calculee. */
   public async enregistrerCapacite(commande: CalculateCapacityCommand): Promise<CapacityDto> {
     this.validateurContexte.valider(commande.contexte);
-    const capacite = new CapaciteSysteme({
-      ressource: commande.ressource,
-      utilisationActuelle: commande.utilisationActuelle,
-      capaciteMax: commande.capaciteMax,
-      margeDisponible: Math.max(0, commande.capaciteMax - commande.utilisationActuelle),
-      niveau: commande.utilisationActuelle >= commande.capaciteMax * 0.9 ? 'CRITICAL' : 'DEGRADED',
-      estimeeLe: new Date(),
-    });
+    const capacite = this.calculCapacite.calculer(
+      commande.ressource,
+      commande.utilisationActuelle,
+      commande.capaciteMax,
+    );
     await this.metricsPort.enregistrerCapacite(capacite);
     return capacite.valeur();
   }
@@ -96,13 +95,7 @@ export class ApplicationObservabilityService {
   /** Cette methode enregistre une saturation calculee. */
   public async enregistrerSaturation(commande: CalculateSaturationCommand): Promise<SaturationDto> {
     this.validateurContexte.valider(commande.contexte);
-    const saturation = new Saturation({
-      ressource: commande.ressource,
-      taux: commande.taux,
-      niveau: commande.taux >= 90 ? 'CRITICAL' : commande.taux >= 70 ? 'DEGRADED' : 'HEALTHY',
-      goulot: commande.taux >= 95,
-      observeeLe: new Date(),
-    });
+    const saturation = this.calculSaturation.calculer(commande.ressource, commande.taux);
     await this.metricsPort.enregistrerSaturation(saturation);
     return saturation.valeur();
   }

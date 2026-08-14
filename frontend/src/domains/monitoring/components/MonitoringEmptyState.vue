@@ -1,0 +1,3 @@
+<template><div class="mon-empty" role="status"><div class="mon-empty__icon"><Inbox/></div><strong>{{ title }}</strong><p>{{ message }}</p></div></template>
+<script setup lang="ts">import { Inbox } from 'lucide-vue-next'; defineProps<{title:string;message:string}>();</script>
+<style scoped>.mon-empty{text-align:center;padding:2.5rem 1rem;color:#64748b}.mon-empty__icon{width:48px;height:48px;border-radius:16px;background:#f1f5f9;display:grid;place-items:center;margin:0 auto .8rem}.mon-empty__icon svg{width:22px}.mon-empty strong{display:block;color:#24364b}.mon-empty p{margin:.35rem 0 0}</style>

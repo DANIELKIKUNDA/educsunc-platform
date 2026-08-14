@@ -1,6 +1,7 @@
 import type { FastifyPluginAsync } from 'fastify';
 import {
   ApplicationAlertMonitoringService,
+  ApplicationAlertingEngineService,
   ApplicationHealthMonitoringService,
   ApplicationIncidentMonitoringService,
   ApplicationObservabilityService,
@@ -29,10 +30,10 @@ import {
   HealthcheckMonitoringInfrastructure,
   OpenIncidentUseCase,
   PublisherSignauxMonitoring,
-  RepositoryAlerteMonitoringMemoire,
-  RepositoryIncidentMonitoringMemoire,
-  RepositoryMetriqueMonitoringMemoire,
-  RepositoryTraceMonitoringMemoire,
+  RepositoryAlerteMonitoringPostgres,
+  RepositoryIncidentMonitoringPostgres,
+  RepositoryMetriqueMonitoringPostgres,
+  RepositoryTraceMonitoringPostgres,
   ResolveAlertUseCase,
   creerRoutesAlertesMonitoring,
   creerRoutesCapaciteMonitoring,
@@ -43,6 +44,9 @@ import {
   creerRoutesTracesMonitoring,
   type DependancesRoutesMonitoring,
 } from '../../shared/monitoring';
+import { obtenirPoolPostgresAuth } from '../../shared/auth/infrastructure';
+import { ConfigurationRedisShared, FabriqueConnexionRedisShared } from '../../shared/infrastructure/redis';
+import { CollecteurEtatDependancesMonitoring, CollecteurEtatRuntimeMonitoring } from '../../shared/monitoring/infrastructure/monitoring';
 
 type PluginRoutesMonitoring = FastifyPluginAsync & {
   nom: string;
@@ -50,20 +54,29 @@ type PluginRoutesMonitoring = FastifyPluginAsync & {
 };
 
 function composerRoutesMonitoring(): DependancesRoutesMonitoring {
-  const healthPort = new HealthcheckMonitoringInfrastructure();
-  const alertes = new RepositoryAlerteMonitoringMemoire();
-  const incidents = new RepositoryIncidentMonitoringMemoire();
-  const traces = new RepositoryTraceMonitoringMemoire();
-  const metriques = new RepositoryMetriqueMonitoringMemoire();
+  // Monitoring reutilise les infrastructures transverses : aucun second PostgreSQL/Redis/BullMQ.
+  const poolPostgres = obtenirPoolPostgresAuth();
+  const configurationRedis = ConfigurationRedisShared.lireDepuisEnvironnement();
+  const redis = FabriqueConnexionRedisShared.obtenirClient(configurationRedis);
+  const healthPort = new HealthcheckMonitoringInfrastructure(
+    undefined,
+    new CollecteurEtatDependancesMonitoring(poolPostgres, redis),
+    new CollecteurEtatRuntimeMonitoring(configurationRedis),
+  );
+  const alertes = new RepositoryAlerteMonitoringPostgres(poolPostgres);
+  const incidents = new RepositoryIncidentMonitoringPostgres(poolPostgres);
+  const traces = new RepositoryTraceMonitoringPostgres(poolPostgres);
+  const metriques = new RepositoryMetriqueMonitoringPostgres(poolPostgres);
   const signaux = new PublisherSignauxMonitoring();
 
   const healthService = new ApplicationHealthMonitoringService(healthPort);
   const alertService = new ApplicationAlertMonitoringService(alertes);
+  const alertingEngine = new ApplicationAlertingEngineService(alertService);
   const incidentService = new ApplicationIncidentMonitoringService(incidents, traces);
   const observabilityService = new ApplicationObservabilityService(signaux, metriques, traces);
 
   const getSystemStateUseCase = new GetSystemStateUseCase(healthService);
-  const collectHealthSnapshotUseCase = new CollectHealthSnapshotUseCase(healthService);
+  const collectHealthSnapshotUseCase = new CollectHealthSnapshotUseCase(healthService, alertingEngine);
   const createAlertUseCase = new CreateAlertUseCase(alertService);
   const resolveAlertUseCase = new ResolveAlertUseCase(alertService);
   const getAlertsUseCase = new GetAlertsUseCase(alertes);
