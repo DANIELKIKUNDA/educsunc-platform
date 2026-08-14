@@ -39,7 +39,6 @@ jobs:
     env:
       EDUCSYN_REDIS_MODE: reel
       EDUCSYN_REDIS_HOST: localhost
-      EDUCSYN_MONITORING_TEST_REDIS_MODE: reel
     services:
       postgres:
         image: postgres:16-alpine
@@ -83,6 +82,9 @@ jobs:
         run: |
           npm ci
           npm --prefix backend ci
+
+      - name: Certifier Redis partage
+        run: npm --prefix backend run notifications:redis:ping
 
       - name: Linter le backend
         run: npm run lint:backend

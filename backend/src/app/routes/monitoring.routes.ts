@@ -53,7 +53,10 @@ type PluginRoutesMonitoring = FastifyPluginAsync & {
   prefixe: string;
 };
 
-function composerRoutesMonitoring(): DependancesRoutesMonitoring {
+function composerRoutesMonitoring(): {
+  dependances: DependancesRoutesMonitoring;
+  fermer: () => Promise<void>;
+} {
   // Monitoring reutilise les infrastructures transverses : aucun second PostgreSQL/Redis/BullMQ.
   const poolPostgres = obtenirPoolPostgresAuth();
   const configurationRedis = ConfigurationRedisShared.lireDepuisEnvironnement();
@@ -103,7 +106,7 @@ function composerRoutesMonitoring(): DependancesRoutesMonitoring {
     metriques,
   );
 
-  return {
+  const dependances: DependancesRoutesMonitoring = {
     controleurMonitoringHttp: new ControleurMonitoringHttp(
       getSystemStateUseCase,
       getDashboardUseCase,
@@ -181,11 +184,19 @@ function composerRoutesMonitoring(): DependancesRoutesMonitoring {
       },
     },
   };
+
+  return {
+    dependances,
+    fermer: () => redis.deconnecter(),
+  };
 }
 
 export const routeMonitoring: PluginRoutesMonitoring = Object.assign(
   async (serveur: Parameters<FastifyPluginAsync>[0]) => {
-    const dependances = composerRoutesMonitoring();
+    const runtime = composerRoutesMonitoring();
+    const { dependances } = runtime;
+
+    serveur.addHook('onClose', runtime.fermer);
 
     await serveur.register(creerRoutesMonitoring(dependances));
     await serveur.register(creerRoutesHealthMonitoring(dependances));
