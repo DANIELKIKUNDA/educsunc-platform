@@ -7,6 +7,12 @@ import {
 } from 'shared/security/domain';
 import { ApplicationError } from 'shared/exceptions/ApplicationError';
 import { ValidationError } from 'shared/exceptions/ValidationError';
+import {
+  AuditConflictException,
+  AuditForbiddenException,
+  AuditNotFoundException,
+  AuditValidationException,
+} from '../../../../application/exceptions/communes';
 import type { AuditMiddlewareResultatErreur } from '../AuditMiddlewareTypes';
 import { lireHeaderTexte, obtenirContexte } from '../AuditMiddlewareSupport';
 
@@ -20,6 +26,22 @@ export class AuditErrorMiddleware {
 
     if (erreur instanceof ValidationError) {
       return this.creerErreur(400, erreur.code, erreur.message, requestId, correlationId);
+    }
+
+    if (erreur instanceof AuditValidationException) {
+      return this.creerErreur(400, 'AUDIT_VALIDATION_ERROR', erreur.message, requestId, correlationId);
+    }
+
+    if (erreur instanceof AuditNotFoundException) {
+      return this.creerErreur(404, 'AUDIT_NOT_FOUND', erreur.message, requestId, correlationId);
+    }
+
+    if (erreur instanceof AuditForbiddenException) {
+      return this.creerErreur(403, 'AUDIT_FORBIDDEN', erreur.message, requestId, correlationId);
+    }
+
+    if (erreur instanceof AuditConflictException) {
+      return this.creerErreur(409, 'AUDIT_CONFLICT', erreur.message, requestId, correlationId);
     }
 
     if (erreur instanceof ErreurAuthentification) {

@@ -135,7 +135,6 @@ export class AuditExportsController {
       idempotencyKey: this.lireCleIdempotence(requete.headers),
       filtres: {
         ...filtresTenant,
-        correlationId: contexte.correlationId,
         modeOffline: contexte.modeOffline,
         deviceId: contexte.deviceId,
       },

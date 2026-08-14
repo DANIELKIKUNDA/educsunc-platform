@@ -57,5 +57,8 @@ export default defineConfig({
   plugins: [vue(), bundleBudgetPlugin()],
   server: {
     port: 4174,
+    watch: {
+      ignored: ['**/artifacts/**'],
+    },
   },
 });

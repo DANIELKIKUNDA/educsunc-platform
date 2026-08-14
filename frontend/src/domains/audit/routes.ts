@@ -14,6 +14,12 @@ export const routesAudit: RouteRecordRaw[] = [
     meta: { title: 'Audit plateforme' },
   },
   {
+    path: 'audit/plateforme/evenements/:auditId',
+    name: 'audit-platform-event-detail',
+    component: () => import('./views/AuditPlatformView.vue'),
+    meta: { title: 'Detail evenement audit' },
+  },
+  {
     path: 'audit/organisation',
     name: 'audit-organization',
     component: () => import('./views/AuditOrganizationView.vue'),

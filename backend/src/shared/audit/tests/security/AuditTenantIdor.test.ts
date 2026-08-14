@@ -83,6 +83,21 @@ test('un acteur plateforme conserve son scope global malgre un contexte tenant r
   assert.equal(contexte.ecoleId, 'ecole-residuelle');
 });
 
+test('un tenant SQL absent ne devient jamais un filtre NULL sur une lecture plateforme', () => {
+  const contexte = extraireContexteRuntime({
+    context: {
+      ...creerContexte({}),
+      organisationActiveId: null,
+      ecoleActiveId: null,
+    } as never,
+    authorizedScope: 'PLATEFORME',
+  });
+
+  assert.equal(contexte.organisationId, undefined);
+  assert.equal(contexte.ecoleId, undefined);
+  assert.equal(contexte.authorizedScope, 'PLATEFORME');
+});
+
 test('une lecture plateforme reste globale malgre un ancien contexte tenant de session', () => {
   const resultat = enrichirTenant(
     { organisationId: 'organisation-b', ecoleId: 'ecole-b' },
@@ -91,6 +106,15 @@ test('une lecture plateforme reste globale malgre un ancien contexte tenant de s
 
   assert.equal(resultat.organisationId, 'organisation-b');
   assert.equal(resultat.ecoleId, 'ecole-b');
+});
+
+test('la correlation HTTP reste une trace et ne devient pas un filtre de lecture implicite', () => {
+  const resultat = enrichirTenant(
+    { taillePage: 25 },
+    { ...contexteRuntime('PLATEFORME'), correlationId: 'correlation-http-courante' },
+  );
+
+  assert.equal('correlationId' in resultat, false);
 });
 
 test('un filtre organisation forge ne remplace jamais l organisation de session', () => {

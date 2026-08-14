@@ -165,9 +165,26 @@ async function ensureCertificationTenant(
         description: 'Tenant reel reserve a la certification automatisee G1.',
       }),
     });
-    await assertResponse(creationResponse, 'G1_CREATION_ORGANISATION_ECHOUEE');
-    const creation = await readJson(creationResponse);
-    organisation = creation.donnee as OrganisationPayload | undefined;
+    if (creationResponse.ok) {
+      const creation = await readJson(creationResponse);
+      organisation = creation.donnee as OrganisationPayload | undefined;
+    } else {
+      const verificationResponse = await fetch(
+        `${backendUrl}/api/organisations?page=1&taillePage=100`,
+        { headers },
+      );
+      await assertResponse(verificationResponse, 'G1_VERIFICATION_ORGANISATION_INDISPONIBLE');
+      const verificationPayload = await readJson(verificationResponse);
+      const verificationItems = Array.isArray(verificationPayload.donnees)
+        ? verificationPayload.donnees as OrganisationPayload[]
+        : [];
+      organisation = verificationItems.find(
+        (candidate) => candidate.code === CERTIFICATION_ORGANISATION_CODE,
+      );
+      if (!organisation?.id) {
+        await assertResponse(creationResponse, 'G1_CREATION_ORGANISATION_ECHOUEE');
+      }
+    }
   }
 
   if (!organisation?.id) {
@@ -204,9 +221,24 @@ async function ensureCertificationTenant(
         modeExploitation: 'SYNC',
       }),
     });
-    await assertResponse(creationResponse, 'G1_CREATION_ECOLE_ECHOUEE');
-    const creation = await readJson(creationResponse);
-    ecole = creation.donnee as EcolePayload | undefined;
+    if (creationResponse.ok) {
+      const creation = await readJson(creationResponse);
+      ecole = creation.donnee as EcolePayload | undefined;
+    } else {
+      const verificationResponse = await fetch(
+        `${backendUrl}/api/organisations/${organisation.id}/ecoles?page=1&taillePage=100`,
+        { headers: { ...headers, 'x-lecture-organisation': 'true' } },
+      );
+      await assertResponse(verificationResponse, 'G1_VERIFICATION_ECOLE_INDISPONIBLE');
+      const verificationPayload = await readJson(verificationResponse);
+      const verificationItems = Array.isArray(verificationPayload.donnees)
+        ? verificationPayload.donnees as EcolePayload[]
+        : [];
+      ecole = verificationItems.find((candidate) => candidate.code === CERTIFICATION_ECOLE_CODE);
+      if (!ecole?.id) {
+        await assertResponse(creationResponse, 'G1_CREATION_ECOLE_ECHOUEE');
+      }
+    }
   }
 
   if (!ecole?.id) {
