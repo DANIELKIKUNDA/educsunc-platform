@@ -23,7 +23,7 @@ async function ouvrirEcranMonitoring(
   await expect(link).toBeVisible();
   await link.click();
   await expect(page).toHaveURL(new RegExp(`${path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`));
-  await expect(page.getByRole('heading', { name: heading, exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: heading, exact: true, level: 1 })).toBeVisible();
 }
 
 for (const actor of ['MANAGER_SYSTEME', 'OPERATEUR_SYSTEME'] as const) {
