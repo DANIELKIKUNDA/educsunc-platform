@@ -53,15 +53,16 @@ test('erreur reseau Monitoring reste contenue dans le cockpit', async ({ page })
   await expect(page).toHaveURL(/\/app\/monitoring$/);
   await expect(page.getByRole('heading', { name: 'Centre Monitoring' })).toBeVisible();
 
-  await page.context().setOffline(true);
-  try {
-    await page.getByRole('link', { name: 'Ouvrir le dashboard' }).click();
-    await expect(page).toHaveURL(/\/app\/monitoring\/dashboard$/);
-    await expect(page.getByRole('heading', { name: 'Lecture monitoring impossible' })).toBeVisible({
-      timeout: 30_000,
-    });
-    await expect(page.locator('.erp-shell')).toBeVisible();
-  } finally {
-    await page.context().setOffline(false);
-  }
+  let requeteInterceptee = false;
+  await page.route('**/api/v1/monitoring/dashboard*', (route) => {
+    requeteInterceptee = true;
+    return route.abort('internetdisconnected');
+  });
+  await page.getByRole('link', { name: 'Ouvrir le dashboard' }).click();
+  await expect(page).toHaveURL(/\/app\/monitoring\/dashboard$/);
+  await expect.poll(() => requeteInterceptee).toBe(true);
+  await expect(page.getByRole('heading', { name: 'Lecture monitoring impossible' })).toBeVisible({
+    timeout: 30_000,
+  });
+  await expect(page.locator('.erp-shell')).toBeVisible();
 });
