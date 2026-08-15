@@ -16,6 +16,7 @@ export const creerRoutesIncidentsMonitoring = (
       return dependances.controleurIncidentsMonitoringHttp.lister({
         query: requete.query as never,
         headers: requete.headers,
+        context: (requete as { context?: unknown }).context,
       });
     }));
 
@@ -28,6 +29,7 @@ export const creerRoutesIncidentsMonitoring = (
       return dependances.controleurIncidentsMonitoringHttp.ouvrir({
         body: requete.body as never,
         headers: requete.headers,
+        context: (requete as { context?: unknown }).context,
       });
     }));
 
@@ -40,6 +42,7 @@ export const creerRoutesIncidentsMonitoring = (
       return dependances.controleurIncidentsMonitoringHttp.escalader({
         params: requete.params as never,
         headers: requete.headers,
+        context: (requete as { context?: unknown }).context,
       });
     }));
 };

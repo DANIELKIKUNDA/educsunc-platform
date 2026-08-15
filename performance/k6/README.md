@@ -18,3 +18,10 @@ fin de campagne. Les rapports p50, p95, p99, debit et erreurs sont ecrits dans
 Les parcours eleves et paiements exigent des comptes et donnees metier dedies.
 Ils seront ajoutes au meme harnais lorsque leur seed de performance deterministe
 sera disponible ; aucune donnee artificielle n est injectee dans la base normale.
+
+## Monitoring
+
+M13 ajoute `monitoring-baseline.js`, execute par le meme `npm run verify:performance`
+apres la baseline generale. La campagne mesure le cockpit Monitoring (`state`,
+`dashboard`, `observability`, `health`) avec un rapport separe
+`monitoring-k6-summary.json`.

@@ -57,9 +57,12 @@ async function verifyCode() {
     () => runNpm('tests-backend-globaux', 'backend', 'test:global'),
     () => runNpm('tests-backend-sécurité', 'backend', 'test:security'),
     () => runNpm('tests-backend-audit', 'backend', 'test:audit'),
+    () => runNpm('tests-backend-monitoring', 'backend', 'test:monitoring'),
     () => runNpm('tests-backend-ci', 'backend', 'test:ci'),
     () => runNpm('couverture-backend-observabilite', 'backend', 'test:coverage'),
     () => runNpm('tests-frontend', 'frontend', 'test'),
+    () => runNpm('tests-frontend-monitoring', 'frontend', 'test:monitoring'),
+    () => runNpm('tests-frontend-monitoring-realtime', 'frontend', 'test:monitoring:realtime'),
   ]));
   results.push(...await runParallel('Compilations', [
     () => runNpm('build-backend', 'backend', 'build'),

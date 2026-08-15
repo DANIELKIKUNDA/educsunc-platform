@@ -1,0 +1,10 @@
+apiVersion: 1
+providers:
+  - name: EduSync
+    orgId: 1
+    folder: EduSync
+    type: file
+    disableDeletion: true
+    editable: false
+    options:
+      path: /var/lib/grafana/dashboards

@@ -16,6 +16,7 @@ export const creerRoutesAlertesMonitoring = (
       return dependances.controleurAlertesMonitoringHttp.lister({
         query: requete.query as never,
         headers: requete.headers,
+        context: (requete as { context?: unknown }).context,
       });
     }));
 
@@ -28,6 +29,7 @@ export const creerRoutesAlertesMonitoring = (
       return dependances.controleurAlertesMonitoringHttp.creer({
         body: requete.body as never,
         headers: requete.headers,
+        context: (requete as { context?: unknown }).context,
       });
     }));
 
@@ -41,6 +43,7 @@ export const creerRoutesAlertesMonitoring = (
         params: requete.params as never,
         body: requete.body as never,
         headers: requete.headers,
+        context: (requete as { context?: unknown }).context,
       });
     }));
 };

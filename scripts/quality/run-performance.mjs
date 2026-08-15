@@ -39,12 +39,13 @@ const startedAt = new Date();
 let status = 'passed';
 let failure;
 let k6Result;
+let monitoringK6Result;
 
 try {
   await adminPool.query(`CREATE SCHEMA ${schema} AUTHORIZATION CURRENT_USER`);
   backend = startBackend();
   await waitForHealth(backend);
-  await initializePlatform();
+  const certificationAccessToken = await initializePlatform();
   await seedScopeData();
 
   k6Result = await runCommand({
@@ -66,6 +67,25 @@ try {
     },
     outputFile: path.join(reportDirectory, 'k6.log'),
   });
+
+  monitoringK6Result = await runCommand({
+    id: 'k6-monitoring',
+    command: process.platform === 'win32' ? 'k6.exe' : 'k6',
+    args: [
+      'run',
+      '--summary-export',
+      path.join(reportDirectory, 'monitoring-summary-export.json'),
+      path.join(repositoryRoot, 'performance', 'k6', 'monitoring-baseline.js'),
+    ],
+    env: {
+      EDUCSYN_PERF_BASE_URL: baseUrl,
+      EDUCSYN_PERF_EMAIL: email,
+      EDUCSYN_PERF_PASSWORD: motDePasse,
+      EDUCSYN_PERF_ACCESS_TOKEN: certificationAccessToken,
+      EDUCSYN_MONITORING_PERF_SUMMARY_PATH: path.join(reportDirectory, 'monitoring-k6-summary.json'),
+    },
+    outputFile: path.join(reportDirectory, 'monitoring-k6.log'),
+  });
 } catch (error) {
   status = 'failed';
   failure = error;
@@ -83,6 +103,7 @@ try {
     finishedAt: finishedAt.toISOString(),
     durationMs: finishedAt.getTime() - startedAt.getTime(),
     result: k6Result,
+    monitoringResult: monitoringK6Result,
   });
 }
 
@@ -163,6 +184,11 @@ async function initializePlatform() {
   if (![201, 409].includes(response.status)) {
     throw new Error(`Initialisation de la baseline refusee : HTTP ${response.status}.`);
   }
+  const payload = await response.json();
+  if (response.status === 201 && typeof payload?.accessToken === 'string' && payload.accessToken) {
+    return payload.accessToken;
+  }
+  throw new Error("L initialisation de la baseline n a pas fourni de session de certification.");
 }
 
 async function seedScopeData() {

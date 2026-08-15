@@ -267,7 +267,7 @@ export const pageDoctrine: readonly FrontendPageDoctrine[] = [
     sectionLabel: 'Centre plateforme',
     pageType: 'home',
     icon: 'LayoutGrid',
-    actorCodes: ['MANAGER_SYSTEME', 'OPERATEUR_SYSTEME'],
+    actorCodes: monitoringReadActors,
     governanceLevels: ['PLATEFORME'],
     visibleActions: [{ code: 'platform.consulter', label: 'Consulter le centre plateforme' }],
   },
@@ -281,7 +281,7 @@ export const pageDoctrine: readonly FrontendPageDoctrine[] = [
     sectionLabel: 'Referentiel officiel',
     pageType: 'liste',
     icon: 'LibraryBig',
-    actorCodes: ['MANAGER_SYSTEME', 'OPERATEUR_SYSTEME'],
+    actorCodes: monitoringReadActors,
     governanceLevels: ['PLATEFORME'],
     visibleActions: [{ code: 'platform.referentiel.read', label: 'Lire le referentiel officiel' }],
   },
@@ -1396,7 +1396,7 @@ export const pageDoctrine: readonly FrontendPageDoctrine[] = [
     sectionLabel: 'Incidents',
     pageType: 'centre',
     icon: 'Siren',
-    actorCodes: ['MANAGER_SYSTEME', 'OPERATEUR_SYSTEME'],
+    actorCodes: monitoringReadActors,
     governanceLevels: ['PLATEFORME'],
     visibleActions: [
       { code: 'monitoring.incidents.read', label: 'Lire les incidents' },
@@ -1414,7 +1414,7 @@ export const pageDoctrine: readonly FrontendPageDoctrine[] = [
     sectionLabel: 'Alertes',
     pageType: 'centre',
     icon: 'BellRing',
-    actorCodes: ['MANAGER_SYSTEME', 'OPERATEUR_SYSTEME'],
+    actorCodes: monitoringReadActors,
     governanceLevels: ['PLATEFORME'],
     visibleActions: [
       { code: 'monitoring.alerts.read', label: 'Lire les alertes' },
@@ -1434,7 +1434,10 @@ export const pageDoctrine: readonly FrontendPageDoctrine[] = [
     icon: 'Stethoscope',
     actorCodes: monitoringReadActors,
     governanceLevels: ['PLATEFORME'],
-    visibleActions: [{ code: 'monitoring.diagnostics.read', label: 'Lire les diagnostics' }],
+    visibleActions: [
+      { code: 'monitoring.diagnostics.read', label: 'Lire les diagnostics' },
+      { code: 'monitoring.diagnostics.generate', label: 'Generer un diagnostic' },
+    ],
   },
   {
     code: 'MON-008',
@@ -1446,11 +1449,12 @@ export const pageDoctrine: readonly FrontendPageDoctrine[] = [
     sectionLabel: 'Capacite',
     pageType: 'analyse',
     icon: 'ChartNoAxesCombined',
-    actorCodes: ['MANAGER_SYSTEME', 'OPERATEUR_SYSTEME'],
+    actorCodes: monitoringReadActors,
     governanceLevels: ['PLATEFORME'],
     visibleActions: [
       { code: 'monitoring.capacity.read', label: 'Lire la capacite' },
-      { code: 'monitoring.capacity.compute', label: 'Calculer la saturation' },
+      { code: 'monitoring.capacity.compute', label: 'Calculer la capacite' },
+      { code: 'monitoring.saturation.compute', label: 'Calculer la saturation' },
     ],
   },
   {
@@ -1465,7 +1469,10 @@ export const pageDoctrine: readonly FrontendPageDoctrine[] = [
     icon: 'ScanSearch',
     actorCodes: monitoringReadActors,
     governanceLevels: ['PLATEFORME'],
-    visibleActions: [{ code: 'monitoring.traces.read', label: 'Lire les traces' }],
+    visibleActions: [
+      { code: 'monitoring.traces.read', label: 'Lire les traces' },
+      { code: 'monitoring.traces.capture', label: 'Capturer une trace' },
+    ],
   },
 
   {

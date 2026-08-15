@@ -39,6 +39,7 @@
     "test:audit:l2:postgres": "node --require ./scripts/load-optional-local-env.cjs scripts/run-audit-outbox-postgres-test.cjs",
     "test:audit:l3:postgres": "node --require ./scripts/load-optional-local-env.cjs scripts/run-audit-read-postgres-test.cjs",
     "test:audit:l5:postgres": "node --require ./scripts/load-optional-local-env.cjs scripts/run-audit-l5-postgres-test.cjs",
+    "test:monitoring": "node --require ./scripts/load-optional-local-env.cjs scripts/run-shared-monitoring-tests.cjs",
     "test:security": "node scripts/run-shared-security-tests.cjs",
     "test:global": "node scripts/run-shared-global-tests.cjs",
     "test:workflows": "node scripts/run-workflow-scenario-tests.cjs",

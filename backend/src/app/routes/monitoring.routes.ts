@@ -1,6 +1,7 @@
 import type { FastifyPluginAsync } from 'fastify';
 import {
   ApplicationAlertMonitoringService,
+  ApplicationAlertingEngineService,
   ApplicationHealthMonitoringService,
   ApplicationIncidentMonitoringService,
   ApplicationObservabilityService,
@@ -29,10 +30,10 @@ import {
   HealthcheckMonitoringInfrastructure,
   OpenIncidentUseCase,
   PublisherSignauxMonitoring,
-  RepositoryAlerteMonitoringMemoire,
-  RepositoryIncidentMonitoringMemoire,
-  RepositoryMetriqueMonitoringMemoire,
-  RepositoryTraceMonitoringMemoire,
+  RepositoryAlerteMonitoringPostgres,
+  RepositoryIncidentMonitoringPostgres,
+  RepositoryMetriqueMonitoringPostgres,
+  RepositoryTraceMonitoringPostgres,
   ResolveAlertUseCase,
   creerRoutesAlertesMonitoring,
   creerRoutesCapaciteMonitoring,
@@ -43,27 +44,42 @@ import {
   creerRoutesTracesMonitoring,
   type DependancesRoutesMonitoring,
 } from '../../shared/monitoring';
+import { obtenirPoolPostgresAuth } from '../../shared/auth/infrastructure';
+import { ConfigurationRedisShared, FabriqueConnexionRedisShared } from '../../shared/infrastructure/redis';
+import { CollecteurEtatDependancesMonitoring, CollecteurEtatRuntimeMonitoring } from '../../shared/monitoring/infrastructure/monitoring';
 
 type PluginRoutesMonitoring = FastifyPluginAsync & {
   nom: string;
   prefixe: string;
 };
 
-function composerRoutesMonitoring(): DependancesRoutesMonitoring {
-  const healthPort = new HealthcheckMonitoringInfrastructure();
-  const alertes = new RepositoryAlerteMonitoringMemoire();
-  const incidents = new RepositoryIncidentMonitoringMemoire();
-  const traces = new RepositoryTraceMonitoringMemoire();
-  const metriques = new RepositoryMetriqueMonitoringMemoire();
+function composerRoutesMonitoring(): {
+  dependances: DependancesRoutesMonitoring;
+  fermer: () => Promise<void>;
+} {
+  // Monitoring reutilise les infrastructures transverses : aucun second PostgreSQL/Redis/BullMQ.
+  const poolPostgres = obtenirPoolPostgresAuth();
+  const configurationRedis = ConfigurationRedisShared.lireDepuisEnvironnement();
+  const redis = FabriqueConnexionRedisShared.obtenirClient(configurationRedis);
+  const healthPort = new HealthcheckMonitoringInfrastructure(
+    undefined,
+    new CollecteurEtatDependancesMonitoring(poolPostgres, redis),
+    new CollecteurEtatRuntimeMonitoring(configurationRedis),
+  );
+  const alertes = new RepositoryAlerteMonitoringPostgres(poolPostgres);
+  const incidents = new RepositoryIncidentMonitoringPostgres(poolPostgres);
+  const traces = new RepositoryTraceMonitoringPostgres(poolPostgres);
+  const metriques = new RepositoryMetriqueMonitoringPostgres(poolPostgres);
   const signaux = new PublisherSignauxMonitoring();
 
   const healthService = new ApplicationHealthMonitoringService(healthPort);
   const alertService = new ApplicationAlertMonitoringService(alertes);
+  const alertingEngine = new ApplicationAlertingEngineService(alertService);
   const incidentService = new ApplicationIncidentMonitoringService(incidents, traces);
   const observabilityService = new ApplicationObservabilityService(signaux, metriques, traces);
 
   const getSystemStateUseCase = new GetSystemStateUseCase(healthService);
-  const collectHealthSnapshotUseCase = new CollectHealthSnapshotUseCase(healthService);
+  const collectHealthSnapshotUseCase = new CollectHealthSnapshotUseCase(healthService, alertingEngine);
   const createAlertUseCase = new CreateAlertUseCase(alertService);
   const resolveAlertUseCase = new ResolveAlertUseCase(alertService);
   const getAlertsUseCase = new GetAlertsUseCase(alertes);
@@ -90,7 +106,7 @@ function composerRoutesMonitoring(): DependancesRoutesMonitoring {
     metriques,
   );
 
-  return {
+  const dependances: DependancesRoutesMonitoring = {
     controleurMonitoringHttp: new ControleurMonitoringHttp(
       getSystemStateUseCase,
       getDashboardUseCase,
@@ -168,11 +184,19 @@ function composerRoutesMonitoring(): DependancesRoutesMonitoring {
       },
     },
   };
+
+  return {
+    dependances,
+    fermer: () => redis.deconnecter(),
+  };
 }
 
 export const routeMonitoring: PluginRoutesMonitoring = Object.assign(
   async (serveur: Parameters<FastifyPluginAsync>[0]) => {
-    const dependances = composerRoutesMonitoring();
+    const runtime = composerRoutesMonitoring();
+    const { dependances } = runtime;
+
+    serveur.addHook('onClose', runtime.fermer);
 
     await serveur.register(creerRoutesMonitoring(dependances));
     await serveur.register(creerRoutesHealthMonitoring(dependances));

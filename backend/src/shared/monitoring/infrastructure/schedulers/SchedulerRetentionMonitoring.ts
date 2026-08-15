@@ -1,9 +1,16 @@
-// Ce fichier declare le scheduler local de retention Monitoring.
+import type { RapportRetentionMonitoring, ServiceRetentionMonitoringPostgres } from '../retention';
 
-/** Cette classe represente le scheduler local de retention. */
+/** Planificateur Monitoring: l'intervalle ne declenche aucune purge implicite. */
 export class SchedulerRetentionMonitoring {
-  /** Cette methode retourne un plan local simple d execution. */
-  public planifier(): { readonly nom: string; readonly intervalleMillisecondes: number } {
-    return { nom: 'scheduler-retention', intervalleMillisecondes: 3_600_000 };
+  public constructor(private readonly service?: ServiceRetentionMonitoringPostgres) {}
+
+  public planifier(): { readonly nom: string; readonly intervalleMillisecondes: number; readonly executionAutomatique: false } {
+    return { nom: 'scheduler-retention', intervalleMillisecondes: 3_600_000, executionAutomatique: false };
+  }
+
+  /** Une execution doit etre demandee explicitement par l'orchestrateur d'exploitation. */
+  public async executerMaintenant(): Promise<RapportRetentionMonitoring> {
+    if (!this.service) throw new Error('Service de retention Monitoring non configure.');
+    return this.service.executer();
   }
 }

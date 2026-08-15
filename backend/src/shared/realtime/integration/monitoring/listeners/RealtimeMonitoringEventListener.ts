@@ -1,7 +1,7 @@
-import type { RealtimeMonitoringEvenement } from '../RealtimeMonitoringIntegrationTypes';
+import type { RealtimeMonitoringSignal } from '../RealtimeMonitoringIntegrationTypes';
 
 export class RealtimeMonitoringEventListener {
-  public consommer(evenement: RealtimeMonitoringEvenement): RealtimeMonitoringEvenement {
-    return evenement;
+  public consommer(signal: RealtimeMonitoringSignal): RealtimeMonitoringSignal {
+    return signal;
   }
 }

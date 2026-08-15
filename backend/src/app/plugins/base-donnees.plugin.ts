@@ -2,6 +2,7 @@ import type { FastifyPluginAsync } from 'fastify';
 import { MigrateurPostgresAuth, obtenirPoolPostgresAuth } from '../../shared/auth/infrastructure';
 import { MigrateurPostgresAudit } from '../../shared/audit/infrastructure';
 import { MigrateurPostgresSecurity } from '../../shared/security/infrastructure';
+import { migrerPostgresMonitoring } from '../../shared/monitoring/infrastructure';
 
 type PluginGlobal = FastifyPluginAsync & { nom: string };
 
@@ -14,7 +15,11 @@ export const baseDonneesPlugin: PluginGlobal = Object.assign(
       await new MigrateurPostgresAuth(poolPostgres).executerToutes();
       await new MigrateurPostgresAudit(poolPostgres).executerToutes();
       await new MigrateurPostgresSecurity(poolPostgres).executerToutes();
-      serveur.log.info({ composant: 'auth' }, 'Migrations PostgreSQL Auth appliquees.');
+      await migrerPostgresMonitoring(poolPostgres);
+      serveur.log.info(
+        { composant: 'base-donnees' },
+        'Migrations PostgreSQL transverses appliquees (Auth, Audit, Security, Monitoring).',
+      );
     } catch (erreur) {
       serveur.log.error(
         {

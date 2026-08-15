@@ -1,22 +1,32 @@
 import { RealtimeMonitoringMapper } from '../mappers/RealtimeMonitoringMapper';
-import { RealtimeMonitoringPublisher } from '../publishers/RealtimeMonitoringPublisher';
-import type {
-  RealtimeMonitoringEvenement,
-  RealtimeMonitoringProjection,
-} from '../RealtimeMonitoringIntegrationTypes';
+import { RealtimeMonitoringPublisher, type RealtimeMonitoringSink } from '../publishers/RealtimeMonitoringPublisher';
+import type { RealtimeMonitoringProjection, RealtimeMonitoringSignal, RealtimeMonitoringSnapshot } from '../RealtimeMonitoringIntegrationTypes';
 
 export class RealtimeMonitoringIntegrationOrchestrator {
-  public readonly publisher = new RealtimeMonitoringPublisher();
-  private projection: RealtimeMonitoringProjection = {
-    totalSignaux: 0,
-  };
+  public readonly publisher: RealtimeMonitoringPublisher;
+  private projection: RealtimeMonitoringProjection = { totalSignaux: 0 };
+  private readonly antiTempete = new Map<string, number>();
 
-  public async publier(evenement: RealtimeMonitoringEvenement): Promise<void> {
-    await this.publisher.publier(evenement);
-    this.projection = RealtimeMonitoringMapper.appliquer(this.projection, evenement);
+  constructor(sink?: RealtimeMonitoringSink, private readonly fenetreDedupMs = 1_000) {
+    this.publisher = new RealtimeMonitoringPublisher(sink);
   }
 
-  public snapshot(): RealtimeMonitoringProjection {
-    return { ...this.projection };
+  public async publier(signal: RealtimeMonitoringSignal): Promise<boolean> {
+    const maintenant = Date.now();
+    const cle = `${signal.type}:${signal.correlationId ?? signal.evenementId}`;
+    const derniere = this.antiTempete.get(cle);
+    if (derniere !== undefined && maintenant - derniere < this.fenetreDedupMs) return false;
+    this.antiTempete.set(cle, maintenant);
+    if (this.antiTempete.size > 500) {
+      for (const [k, instant] of this.antiTempete) if (maintenant - instant > this.fenetreDedupMs * 4) this.antiTempete.delete(k);
+    }
+    const commande = RealtimeMonitoringMapper.versCommande(signal);
+    await this.publisher.publier(commande);
+    this.projection = RealtimeMonitoringMapper.appliquer(this.projection, signal);
+    return true;
+  }
+
+  public snapshot(): RealtimeMonitoringSnapshot {
+    return { ...this.projection, messages: this.publisher.journal() };
   }
 }

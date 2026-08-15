@@ -1,92 +1,12 @@
-<template>
-  <PageContainer>
-    <PageHeader :eyebrow="screenCode" :title="title" :description="description">
-      <template #actions>
-        <RouterLink class="mon-pill" to="/app/monitoring">
-          <ArrowLeft />
-          <span>Retour monitoring</span>
-        </RouterLink>
-      </template>
-    </PageHeader>
-
-    <SectionBlock :title="sectionTitle" :description="sectionDescription">
-      <div class="mon-actions">
-        <button class="mon-pill mon-pill--action" type="button" @click="load">Rafraichir</button>
-      </div>
-    </SectionBlock>
-
-    <LoadingState v-if="store.state.status === 'loading'" title="Monitoring en cours" :message="loadingMessage" />
-    <ErrorState v-else-if="store.state.status === 'error'" title="Lecture monitoring impossible" :message="store.state.errorMessage ?? 'La lecture monitoring a echoue.'" />
-
-    <template v-else>
-      <SectionBlock title="Projection principale" description="Le frontend expose la lecture backend brute sans moteur parallele.">
-        <pre class="mon-preview">{{ store.formatJson(mainData) }}</pre>
-      </SectionBlock>
-
-      <SectionBlock v-if="mode === 'health'" title="Snapshot health" description="Snapshot technique complementaire de la sante systeme.">
-        <pre class="mon-preview">{{ store.formatJson(store.state.healthSnapshotData) }}</pre>
-      </SectionBlock>
-    </template>
-  </PageContainer>
-</template>
-
-<script setup lang="ts">
-import { computed } from 'vue';
-import { RouterLink } from 'vue-router';
-import { ArrowLeft } from 'lucide-vue-next';
-import PageContainer from '../../../shared/layout/PageContainer.vue';
-import PageHeader from '../../../shared/layout/PageHeader.vue';
-import SectionBlock from '../../../shared/layout/SectionBlock.vue';
-import LoadingState from '../../../shared/ui/LoadingState.vue';
-import ErrorState from '../../../shared/ui/ErrorState.vue';
-import type { MonitoringOverviewMode } from '../models/monitoring.model';
-import { useMonitoringStore } from '../stores/monitoring.store';
-
-const props = defineProps<{
-  screenCode: string;
-  title: string;
-  description: string;
-  sectionTitle: string;
-  sectionDescription: string;
-  loadingMessage: string;
-  mode: MonitoringOverviewMode;
-}>();
-
-const store = useMonitoringStore();
-
-const mainData = computed(() => {
-  if (props.mode === 'state') {
-    return store.state.stateData;
-  }
-  if (props.mode === 'dashboard') {
-    return store.state.dashboardData;
-  }
-  if (props.mode === 'observability') {
-    return store.state.observabilityData;
-  }
-  return store.state.healthData;
-});
-
-async function load(): Promise<void> {
-  if (props.mode === 'state') {
-    await store.chargerEtat();
-    return;
-  }
-  if (props.mode === 'dashboard') {
-    await store.chargerDashboard();
-    return;
-  }
-  if (props.mode === 'observability') {
-    await store.chargerObservabilite();
-    return;
-  }
-  await store.chargerHealth();
-}
-</script>
-
-<style scoped>
-.mon-actions{display:flex;flex-wrap:wrap;gap:.75rem}
-.mon-pill{border:1px solid rgba(17,40,63,.14);background:#fff;color:#11283f;border-radius:999px;padding:.75rem 1rem;display:inline-flex;align-items:center;gap:.5rem;font-weight:600;text-decoration:none}
-.mon-pill--action{background:linear-gradient(135deg,#0b5d7a,#1487a8);color:#fff;border-color:transparent}
-.mon-preview{margin:0;white-space:pre-wrap;word-break:break-word;padding:1rem;border-radius:20px;background:#102844;color:#edf5fb}
-</style>
+<template><PageContainer><PageHeader :eyebrow="screenCode" :title="title" :description="description"><template #actions><RouterLink class="mon-pill" to="/app/monitoring"><ArrowLeft/>Retour monitoring</RouterLink><button class="mon-btn mon-btn--primary" type="button" :disabled="store.state.status==='loading'" @click="load"><RefreshCw/>Rafraichir</button></template></PageHeader>
+<LoadingState v-if="store.state.status==='loading'" title="Actualisation monitoring" :message="loadingMessage"/><ErrorState v-else-if="store.state.status==='error'" title="Lecture monitoring impossible" :message="store.state.errorMessage??'Erreur technique.'"/>
+<template v-else-if="system"><SectionBlock title="Vue operationnelle" :description="sectionDescription"><div class="mon-kpi-grid"><MonitoringKpiCard label="Etat global" :value="labelLevel(system.niveau)" hint="Synthese plateforme" :icon="Activity"/><MonitoringKpiCard label="Composants" :value="system.composants.length" hint="Checks applicatifs" :icon="Boxes"/><MonitoringKpiCard label="Dependances" :value="system.dependances.length" hint="Services techniques" :icon="Network"/><MonitoringKpiCard label="Jobs en retard" :value="system.runtime.jobsEnRetard" hint="Runtime de supervision" :icon="TimerReset"/></div></SectionBlock>
+<SectionBlock title="Sante des composants" description="Checks reels exposes par le backend Monitoring."><MonitoringHealthGrid :items="system.composants"/></SectionBlock>
+<SectionBlock v-if="dashboard" title="Activite operationnelle" description="Incidents, alertes et capacite sans panneau mutationnel generique."><div class="mon-kpi-grid"><MonitoringKpiCard label="Incidents actifs" :value="activeIncidents" hint="Non resolus" :icon="Siren"/><MonitoringKpiCard label="Alertes ouvertes" :value="openAlerts" hint="Signaux a traiter" :icon="BellRing"/><MonitoringKpiCard label="Diagnostics" :value="dashboard.diagnostics.length" hint="Analyses disponibles" :icon="Stethoscope"/><MonitoringKpiCard label="Capacites" :value="dashboard.capacites.length" hint="Ressources observees" :icon="Gauge"/></div></SectionBlock>
+<SectionBlock v-if="healthSnapshot" title="Disponibilite" description="Dernier snapshot de sante consolide."><div class="mon-panel"><div class="mon-toolbar"><div><strong class="mon-big">{{ healthSnapshot.scoreDisponibilite }}%</strong><div class="mon-muted">Score de disponibilite</div></div><MonitoringStatusBadge :level="healthSnapshot.etat.niveau"/></div></div></SectionBlock>
+</template><SectionBlock v-else :title="sectionTitle" description="Aucune donnee monitoring disponible pour cette vue."><MonitoringEmptyState title="Aucune mesure" message="Rafraichissez la vue lorsque l'infrastructure Monitoring est disponible."/></SectionBlock></PageContainer></template>
+<script setup lang="ts">import { computed,onMounted,onUnmounted } from 'vue';import { RouterLink } from 'vue-router';import { Activity,ArrowLeft,BellRing,Boxes,Gauge,Network,RefreshCw,Siren,Stethoscope,TimerReset } from 'lucide-vue-next';import PageContainer from '../../../shared/layout/PageContainer.vue';import PageHeader from '../../../shared/layout/PageHeader.vue';import SectionBlock from '../../../shared/layout/SectionBlock.vue';import LoadingState from '../../../shared/ui/LoadingState.vue';import ErrorState from '../../../shared/ui/ErrorState.vue';import MonitoringKpiCard from '../components/MonitoringKpiCard.vue';import MonitoringHealthGrid from '../components/MonitoringHealthGrid.vue';import MonitoringStatusBadge from '../components/MonitoringStatusBadge.vue';import MonitoringEmptyState from '../components/MonitoringEmptyState.vue';import type { MonitoringOverviewMode,SystemStateResponse } from '../models/monitoring.model';import { useMonitoringStore } from '../stores/monitoring.store';import { createMonitoringRealtimeFallback } from '../realtime/monitoring-realtime';import '../monitoring.css';
+const props=defineProps<{screenCode:string;title:string;description:string;sectionTitle:string;sectionDescription:string;loadingMessage:string;mode:MonitoringOverviewMode}>();const store=useMonitoringStore();
+const dashboard=computed(()=>props.mode==='dashboard'?store.state.dashboardData:null);const healthSnapshot=computed(()=>props.mode==='health'?store.state.healthSnapshotData:null);const system=computed<SystemStateResponse|null>(()=>props.mode==='state'?store.state.stateData:props.mode==='dashboard'?store.state.dashboardData?.etatSysteme??null:props.mode==='observability'?store.state.observabilityData?.etatSysteme??null:store.state.healthData);const activeIncidents=computed(()=>dashboard.value?.incidents.filter(x=>x.statut!=='RESOLVED').length??0);const openAlerts=computed(()=>dashboard.value?.alertes.filter(x=>x.statut==='OPEN'||x.statut==='ACKNOWLEDGED').length??0);const labelLevel=(l:string)=>({HEALTHY:'Sain',DEGRADED:'Degrade',CRITICAL:'Critique',UNKNOWN:'Inconnu'}[l]??l);async function load(){if(props.mode==='state')await store.chargerEtat();else if(props.mode==='dashboard')await store.chargerDashboard();else if(props.mode==='observability')await store.chargerObservabilite();else await store.chargerHealth();}
+const realtime=createMonitoringRealtimeFallback(load,30_000);onMounted(()=>{void load();realtime.start()});onUnmounted(()=>realtime.stop());
+</script><style scoped>.mon-big{font-size:2.2rem;color:#102844}</style>

@@ -40,6 +40,14 @@ export class EtatSysteme {
       return 'DEGRADED';
     }
 
+    if (
+      this.composants.some((composant) => composant.valeur().niveau === 'UNKNOWN')
+      || this.dependances.some((dependance) => dependance.valeur().niveau === 'UNKNOWN')
+      || this.runtime.valeur().niveau === 'UNKNOWN'
+    ) {
+      return 'UNKNOWN';
+    }
+
     return 'HEALTHY';
   }
 

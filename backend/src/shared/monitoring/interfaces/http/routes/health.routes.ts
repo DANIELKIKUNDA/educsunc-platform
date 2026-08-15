@@ -16,6 +16,7 @@ export const creerRoutesHealthMonitoring = (
       return dependances.controleurHealthMonitoringHttp.consulterEtat({
         query: requete.query as never,
         headers: requete.headers,
+        context: (requete as { context?: unknown }).context,
       });
     }));
 
@@ -28,6 +29,7 @@ export const creerRoutesHealthMonitoring = (
       return dependances.controleurHealthMonitoringHttp.consulterSnapshot({
         query: requete.query as never,
         headers: requete.headers,
+        context: (requete as { context?: unknown }).context,
       });
     }));
 };

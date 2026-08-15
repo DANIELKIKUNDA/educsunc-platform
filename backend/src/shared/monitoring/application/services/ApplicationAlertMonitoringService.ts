@@ -21,6 +21,27 @@ export class ApplicationAlertMonitoringService {
   /** Cette methode cree une alerte. */
   public async creer(commande: CreateAlertCommand): Promise<AlertDto> {
     this.validateur.valider(commande);
+
+    // Idempotence stricte sur l'identifiant fourni par l'appelant.
+    const memeIdentifiant = await this.alertPort.retrouverAlerte(commande.alertId);
+    if (memeIdentifiant) {
+      return this.sortie.versDto(memeIdentifiant);
+    }
+
+    // Deduplication operationnelle : une meme condition active sur un meme composant
+    // ne doit pas produire une tempete d'alertes a chaque cycle de collecte.
+    const alertesActives = (await this.alertPort.listerAlertes()).filter((alerte) =>
+      this.politique.estActive(alerte),
+    );
+    const doublon = alertesActives.find((alerte) => {
+      const valeur = alerte.valeur();
+      return valeur.indicateur === commande.indicateur
+        && (valeur.contexte.composant ?? '') === (commande.contexte.composant ?? '');
+    });
+    if (doublon) {
+      return this.sortie.versDto(doublon);
+    }
+
     const seuil = new SeuilAlerte({
       indicateur: commande.indicateur,
       warning: commande.warning,
@@ -45,6 +66,11 @@ export class ApplicationAlertMonitoringService {
 
     await this.alertPort.enregistrerAlerte(alerte);
     return this.sortie.versDto(alerte);
+  }
+
+  /** Expose les entites actives au moteur interne sans contourner le port applicatif. */
+  public async listerEntites(): Promise<readonly Alerte[]> {
+    return this.alertPort.listerAlertes();
   }
 
   /** Cette methode resolut une alerte existante. */
