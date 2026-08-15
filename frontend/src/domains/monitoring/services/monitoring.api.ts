@@ -1,10 +1,10 @@
 import { clientApi } from '../../../shared/http/api.client';
-import { construireEntetesContexteActif, lireContexteApiActif } from '../../../shared/session/api-context';
+import { construireEntetesPilotageActif, lireContexteApiPlateformeGlobal } from '../../../shared/session/api-context';
 import type { AlertResponse, CapacityPayload, CapacityResponse, CaptureTracePayload, DiagnosticResponse, GenerateDiagnosticPayload, HealthSnapshotResponse, IncidentResponse, MonitoringApiContext, MonitoringDashboardResponse, ObservabilityResponse, OpenIncidentPayload, SaturationPayload, SaturationResponse, SystemStateResponse, TraceResponse, CreateAlertPayload } from '../models/monitoring.model';
 function idempotency(prefixe:string){return `${prefixe}-${typeof crypto!=='undefined'&&crypto.randomUUID?crypto.randomUUID():`${Date.now()}-${Math.random().toString(36).slice(2)}`}`}
-function headers(c:MonitoringApiContext){if(!c.utilisateurId)throw new Error('Le contexte utilisateur du monitoring est indisponible.');return construireEntetesContexteActif(c,{includeSchoolHeader:false});}
+function headers(c:MonitoringApiContext){if(!c.utilisateurId)throw new Error('Le contexte utilisateur du monitoring est indisponible.');return construireEntetesPilotageActif(c,{inclureOrganisationActive:false,inclureEcoleActive:false});}
 function mutation(c:MonitoringApiContext,p:string){return {...headers(c),'idempotency-key':idempotency(p)}}
-export const lireContexteApiMonitoring=():MonitoringApiContext=>lireContexteApiActif();
+export const lireContexteApiMonitoring=():MonitoringApiContext=>lireContexteApiPlateformeGlobal();
 export const monitoringApi={
  lireEtat:(c:MonitoringApiContext)=>clientApi.envoyer<SystemStateResponse>({chemin:'/api/v1/monitoring/state',entetes:headers(c)}),
  lireDashboard:(c:MonitoringApiContext)=>clientApi.envoyer<MonitoringDashboardResponse>({chemin:'/api/v1/monitoring/dashboard',entetes:headers(c)}),

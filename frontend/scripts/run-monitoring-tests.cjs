@@ -15,7 +15,9 @@ test('M11 gouverne toutes les mutations par permissions',()=>{assert.match(read(
 
 test('M11 fournit focus, responsive et accessibilite de validation',()=>{const css=read('monitoring.css');assert.match(css,/focus-visible/);assert.match(css,/@media/);assert.match(read('views/MonitoringAlertsView.vue'),/aria-invalid/);});
 
-test('M11 service API couvre lectures et mutations avec idempotence',()=>{const s=read('services/monitoring.api.ts');for(const route of ['/state','/dashboard','/observability','/health','/incidents','/alerts','/diagnostics','/capacity','/traces'])assert.match(s,new RegExp(route.replaceAll('/','\\/')));assert.match(s,/idempotency-key/);assert.match(s,/includeSchoolHeader:false/);});
+test('M11 service API couvre lectures et mutations avec idempotence',()=>{const s=read('services/monitoring.api.ts');for(const route of ['/state','/dashboard','/observability','/health','/incidents','/alerts','/diagnostics','/capacity','/traces'])assert.match(s,new RegExp(route.replaceAll('/','\\/')));assert.match(s,/idempotency-key/);});
+
+test('M11 utilise exclusivement le contexte global de la plateforme',()=>{const s=read('services/monitoring.api.ts');assert.match(s,/lireContexteApiPlateformeGlobal/);assert.match(s,/construireEntetesPilotageActif/);assert.match(s,/inclureOrganisationActive:false/);assert.match(s,/inclureEcoleActive:false/);assert.doesNotMatch(s,/construireEntetesContexteActif|lireContexteApiActif/);});
 
 test('M11 store couvre loading, ready, error et reset',()=>{const s=read('stores/monitoring.store.ts');assert.match(s,/state\.status='loading'/);assert.match(s,/state\.status='ready'/);assert.match(s,/state\.status='error'/);assert.match(s,/errorMessage/);assert.match(s,/reinitialiser/);assert.match(s,/registerScopedLifecycleStore/);});
 

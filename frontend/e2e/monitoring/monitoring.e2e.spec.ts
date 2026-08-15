@@ -11,14 +11,28 @@ const readScreens = [
   ['/app/monitoring/traces', 'Traces monitoring'],
 ] as const;
 
+async function ouvrirEcranMonitoring(
+  page: Parameters<typeof openRealDeveloperSession>[0],
+  path: string,
+  heading: string,
+): Promise<void> {
+  const link = page.locator(`a[href="${path}"]`).first();
+  if (!await link.isVisible()) {
+    await page.getByRole('button', { name: /^Monitoring\b/ }).click();
+  }
+  await expect(link).toBeVisible();
+  await link.click();
+  await expect(page).toHaveURL(new RegExp(`${path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`));
+  await expect(page.getByRole('heading', { name: heading, exact: true })).toBeVisible();
+}
+
 for (const actor of ['MANAGER_SYSTEME', 'OPERATEUR_SYSTEME'] as const) {
   test(`${actor} accede au cockpit Monitoring et aux ecrans operationnels`, async ({ page }) => {
     const profile = await openRealDeveloperSession(page, actor);
     expect(profile.contexte.governanceLevel).toBe('PLATEFORME');
     expect(profile.permissionsEffectives).toContain('monitoring.read');
     for (const [path, heading] of readScreens) {
-      await page.goto(path, { waitUntil: 'domcontentloaded' });
-      await expect(page.getByRole('heading', { name: heading, exact: true })).toBeVisible();
+      await ouvrirEcranMonitoring(page, path, heading);
     }
   });
 }
@@ -26,11 +40,10 @@ for (const actor of ['MANAGER_SYSTEME', 'OPERATEUR_SYSTEME'] as const) {
 test('SUPPORT_SYSTEME lit Monitoring mais ne voit aucune mutation', async ({ page }) => {
   const profile = await openRealDeveloperSession(page, 'SUPPORT_SYSTEME');
   expect(profile.contexte.governanceLevel).toBe('PLATEFORME');
-  await page.goto('/app/monitoring/alertes', { waitUntil: 'domcontentloaded' });
-  await expect(page.getByRole('heading', { name: 'Alertes monitoring' })).toBeVisible();
+  await ouvrirEcranMonitoring(page, '/app/monitoring/alertes', 'Alertes monitoring');
   await expect(page.getByRole('heading', { name: 'Creer une alerte' })).toHaveCount(0);
   await expect(page.getByRole('button', { name: /Resoudre/i })).toHaveCount(0);
-  await page.goto('/app/monitoring/incidents', { waitUntil: 'domcontentloaded' });
+  await ouvrirEcranMonitoring(page, '/app/monitoring/incidents', 'Incidents monitoring');
   await expect(page.getByRole('heading', { name: 'Ouvrir un incident' })).toHaveCount(0);
   await expect(page.getByRole('button', { name: /Escalader/i })).toHaveCount(0);
 });
@@ -47,22 +60,34 @@ test('acteur Ecole ne peut ni afficher Monitoring ni appeler son API par navigat
 
 test('erreur reseau Monitoring reste contenue dans le cockpit', async ({ page }) => {
   await openRealDeveloperSession(page, 'MANAGER_SYSTEME');
-  await page.goto('/app/monitoring/dashboard', { waitUntil: 'domcontentloaded' });
-  await expect(page.getByRole('heading', { name: 'Dashboard monitoring' })).toBeVisible();
-  await page.getByRole('link', { name: 'Retour monitoring' }).click();
-  await expect(page).toHaveURL(/\/app\/monitoring$/);
-  await expect(page.getByRole('heading', { name: 'Centre Monitoring' })).toBeVisible();
-
-  let requeteInterceptee = false;
-  await page.route('**/api/v1/monitoring/dashboard*', (route) => {
-    requeteInterceptee = true;
-    return route.abort('internetdisconnected');
+  await ouvrirEcranMonitoring(page, '/app/monitoring/dashboard', 'Dashboard monitoring');
+  await expect(page.getByText('Vue operationnelle', { exact: true })).toBeVisible();
+  await page.evaluate(() => {
+    const originalFetch = window.fetch.bind(window);
+    const probe = { interceptee: false };
+    Object.defineProperty(window, '__monitoringNetworkProbe', {
+      configurable: true,
+      value: probe,
+    });
+    window.fetch = (input: RequestInfo | URL, init?: RequestInit) => {
+      const rawUrl = typeof input === 'string'
+        ? input
+        : input instanceof URL
+          ? input.toString()
+          : input.url;
+      const pathname = new URL(rawUrl, window.location.href).pathname;
+      if (pathname === '/api/v1/monitoring/dashboard') {
+        probe.interceptee = true;
+        return Promise.reject(new TypeError('Failed to fetch'));
+      }
+      return originalFetch(input, init);
+    };
   });
-  await page.getByRole('link', { name: 'Ouvrir le dashboard' }).click();
-  await expect(page).toHaveURL(/\/app\/monitoring\/dashboard$/);
   await page.getByRole('button', { name: 'Rafraichir' }).click();
-  await expect.poll(() => requeteInterceptee).toBe(true);
-  await expect(page.getByRole('heading', { name: 'Lecture monitoring impossible' })).toBeVisible({
+  await expect.poll(() => page.evaluate(() => (
+    window as Window & { __monitoringNetworkProbe?: { interceptee: boolean } }
+  ).__monitoringNetworkProbe?.interceptee ?? false)).toBe(true);
+  await expect(page.getByText('Lecture monitoring impossible', { exact: true })).toBeVisible({
     timeout: 30_000,
   });
   await expect(page.locator('.erp-shell')).toBeVisible();
