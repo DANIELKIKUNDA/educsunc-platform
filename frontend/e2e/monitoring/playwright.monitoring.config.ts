@@ -18,7 +18,7 @@ export default defineConfig({
   timeout: 120_000,
   expect: { timeout: 15_000 },
   reporter: [['line'], ['html', { open: 'never', outputFolder: path.join(frontendRoot, 'artifacts', 'monitoring-playwright-report') }]],
-  use: { ...devices['Desktop Chrome'], baseURL: frontendUrl, trace: 'retain-on-failure', screenshot: 'only-on-failure', video: 'retain-on-failure', viewport: { width: 1440, height: 1000 } },
+  use: { ...devices['Desktop Chrome'], baseURL: frontendUrl, serviceWorkers: 'block', trace: 'retain-on-failure', screenshot: 'only-on-failure', video: 'retain-on-failure', viewport: { width: 1440, height: 1000 } },
   webServer: [
     { command: 'npm run start', cwd: path.join(repositoryRoot, 'backend'), env: { ...process.env, APP_ENV: 'development', NODE_ENV: 'development', EDUCSYN_REDIS_MODE: process.env.EDUCSYN_MONITORING_E2E_REDIS_MODE ?? 'simulation' }, url: `${backendUrl}/api/auth/initialisation`, reuseExistingServer: !process.env.CI, timeout: 420_000, stdout: 'ignore', stderr: 'pipe' },
     { command: 'npm run dev -- --host 127.0.0.1', cwd: frontendRoot, env: { ...process.env, VITE_API_URL: backendUrl, VITE_AUTH_ENTRY_MODE: 'developer' }, url: frontendUrl, reuseExistingServer: !process.env.CI, timeout: 120_000, stdout: 'ignore', stderr: 'pipe' },
