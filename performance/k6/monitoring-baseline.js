@@ -5,6 +5,7 @@ import { Rate } from 'k6/metrics';
 const baseUrl = __ENV.EDUCSYN_PERF_BASE_URL;
 const email = __ENV.EDUCSYN_PERF_EMAIL;
 const motDePasse = __ENV.EDUCSYN_PERF_PASSWORD;
+const accessTokenCertification = __ENV.EDUCSYN_PERF_ACCESS_TOKEN;
 const reportPath = __ENV.EDUCSYN_MONITORING_PERF_SUMMARY_PATH || 'artifacts/quality/performance/monitoring-k6-summary.json';
 const serverErrors = new Rate('monitoring_http_5xx');
 
@@ -25,6 +26,7 @@ export const options = {
 };
 
 export function setup() {
+  if (accessTokenCertification) return { accessToken: accessTokenCertification };
   const response = http.post(`${baseUrl}/api/auth/login`, JSON.stringify({ email, motDePasse, deviceId: 'k6-monitoring' }), {
     headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, tags: { module: 'monitoring', operation: 'login' },
   });
