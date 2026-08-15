@@ -60,6 +60,7 @@ test('erreur reseau Monitoring reste contenue dans le cockpit', async ({ page })
   });
   await page.getByRole('link', { name: 'Ouvrir le dashboard' }).click();
   await expect(page).toHaveURL(/\/app\/monitoring\/dashboard$/);
+  await page.getByRole('button', { name: 'Rafraichir' }).click();
   await expect.poll(() => requeteInterceptee).toBe(true);
   await expect(page.getByRole('heading', { name: 'Lecture monitoring impossible' })).toBeVisible({
     timeout: 30_000,
