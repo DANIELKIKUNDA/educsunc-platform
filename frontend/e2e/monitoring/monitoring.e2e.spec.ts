@@ -46,17 +46,21 @@ test('acteur Ecole ne peut ni afficher Monitoring ni appeler son API par navigat
 });
 
 test('erreur reseau Monitoring reste contenue dans le cockpit', async ({ page }) => {
-  let requeteInterceptee = false;
-  await page.route('**/api/v1/monitoring/dashboard*', (route) => {
-    requeteInterceptee = true;
-    return route.abort('internetdisconnected');
-  });
   await openRealDeveloperSession(page, 'MANAGER_SYSTEME');
   await page.goto('/app/monitoring/dashboard', { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('heading', { name: 'Dashboard monitoring' })).toBeVisible();
-  await expect.poll(() => requeteInterceptee).toBe(true);
-  await expect(page.getByRole('heading', { name: 'Lecture monitoring impossible' })).toBeVisible({
-    timeout: 30_000,
-  });
-  await expect(page.locator('.erp-shell')).toBeVisible();
+  await page.goto('/app/monitoring', { waitUntil: 'domcontentloaded' });
+  await expect(page.getByRole('heading', { name: 'Centre Monitoring' })).toBeVisible();
+
+  await page.context().setOffline(true);
+  try {
+    await page.getByRole('link', { name: 'Ouvrir le dashboard' }).click();
+    await expect(page).toHaveURL(/\/app\/monitoring\/dashboard$/);
+    await expect(page.getByRole('heading', { name: 'Lecture monitoring impossible' })).toBeVisible({
+      timeout: 30_000,
+    });
+    await expect(page.locator('.erp-shell')).toBeVisible();
+  } finally {
+    await page.context().setOffline(false);
+  }
 });
