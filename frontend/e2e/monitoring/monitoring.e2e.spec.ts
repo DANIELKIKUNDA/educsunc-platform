@@ -49,7 +49,8 @@ test('erreur reseau Monitoring reste contenue dans le cockpit', async ({ page })
   await openRealDeveloperSession(page, 'MANAGER_SYSTEME');
   await page.goto('/app/monitoring/dashboard', { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('heading', { name: 'Dashboard monitoring' })).toBeVisible();
-  await page.goto('/app/monitoring', { waitUntil: 'domcontentloaded' });
+  await page.getByRole('link', { name: 'Retour monitoring' }).click();
+  await expect(page).toHaveURL(/\/app\/monitoring$/);
   await expect(page.getByRole('heading', { name: 'Centre Monitoring' })).toBeVisible();
 
   await page.context().setOffline(true);
