@@ -158,19 +158,19 @@
           </SectionBlock>
 
           <SectionBlock v-if="store.state.detail" title="Detail notification" description="Detail stable relu depuis le backend.">
-            <pre class="notif-preview">{{ store.formatJson(store.state.detail) }}</pre>
+            <NotificationDataSummary :data="store.state.detail" />
           </SectionBlock>
 
           <SectionBlock v-if="store.state.timeline.length > 0" title="Timeline notification" description="Chronologie officielle de la notification cible.">
-            <pre class="notif-preview">{{ store.formatJson(store.state.timeline) }}</pre>
+            <NotificationDataSummary :data="store.state.timeline" />
           </SectionBlock>
 
           <SectionBlock v-if="store.state.monitoring" title="Monitoring local" description="Signaux locaux de supervision des notifications d ecole.">
-            <pre class="notif-preview">{{ store.formatJson(store.state.monitoring) }}</pre>
+            <NotificationDataSummary :data="store.state.monitoring" />
           </SectionBlock>
 
           <SectionBlock v-if="store.state.lastMutation" title="Derniere mutation" description="Retour backend des mutations locales de notification.">
-            <pre class="notif-preview">{{ store.formatJson(store.state.lastMutation) }}</pre>
+            <NotificationDataSummary :data="store.state.lastMutation" />
           </SectionBlock>
         </template>
       </template>
@@ -179,6 +179,7 @@
 </template>
 
 <script setup lang="ts">
+import NotificationDataSummary from '../components/NotificationDataSummary.vue';
 import { computed, ref } from 'vue';
 import { RouterLink, useRoute } from 'vue-router';
 import { ArrowLeft } from 'lucide-vue-next';

@@ -99,7 +99,11 @@ jobs:
           npm --prefix backend run test:security
           npm --prefix backend run test:audit
           npm --prefix backend run test:monitoring
+          npm --prefix backend run test:notifications
           npm --prefix backend run test:ci
+
+      - name: Verifier la consolidation Notifications
+        run: node scripts/quality/verify-notifications-consolidation.mjs
 
       - name: Verifier la couverture de l observabilite
         run: npm --prefix backend run test:coverage
@@ -200,6 +204,9 @@ jobs:
 
       - name: Certifier exports, replay, retention et integrite Audit
         run: npm --prefix backend run test:audit:l5:postgres
+
+      - name: Certifier la persistance et les lectures PostgreSQL Notifications
+        run: npm --prefix backend run test:notifications:postgres
 
       - name: Conserver le rapport PostgreSQL
         if: always()

@@ -65,11 +65,11 @@
 
         <template v-else>
           <SectionBlock v-if="store.state.realtime" title="Capacites" description="Capacites temps reel preparatoires exposees au frontend.">
-            <pre class="notif-preview">{{ store.formatJson(store.state.realtime) }}</pre>
+            <NotificationDataSummary :data="store.state.realtime" />
           </SectionBlock>
 
           <SectionBlock v-if="store.state.lastMutation" title="Retour de publication" description="Resultat brut de la publication de test.">
-            <pre class="notif-preview">{{ store.formatJson(store.state.lastMutation) }}</pre>
+            <NotificationDataSummary :data="store.state.lastMutation" />
           </SectionBlock>
         </template>
       </template>
@@ -78,6 +78,7 @@
 </template>
 
 <script setup lang="ts">
+import NotificationDataSummary from '../components/NotificationDataSummary.vue';
 import { computed, reactive } from 'vue';
 import { RouterLink } from 'vue-router';
 import { ArrowLeft } from 'lucide-vue-next';

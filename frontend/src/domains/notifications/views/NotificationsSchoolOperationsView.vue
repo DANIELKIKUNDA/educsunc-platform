@@ -89,19 +89,19 @@
 
         <template v-else>
           <SectionBlock title="Dead-letter" description="Projection des notifications locales en echec durable.">
-            <pre class="notif-preview">{{ store.formatJson(store.state.deadLetters) }}</pre>
+            <NotificationDataSummary :data="store.state.deadLetters" />
           </SectionBlock>
 
           <SectionBlock v-if="store.state.retries.length > 0" title="Historique retry" description="Historique officiel des retries de la notification cible.">
-            <pre class="notif-preview">{{ store.formatJson(store.state.retries) }}</pre>
+            <NotificationDataSummary :data="store.state.retries" />
           </SectionBlock>
 
           <SectionBlock v-if="store.state.replayDiagnostic" title="Diagnostic replay" description="Diagnostic de rejeu relu depuis le backend.">
-            <pre class="notif-preview">{{ store.formatJson(store.state.replayDiagnostic) }}</pre>
+            <NotificationDataSummary :data="store.state.replayDiagnostic" />
           </SectionBlock>
 
           <SectionBlock v-if="store.state.lastMutation" title="Derniere mutation technique" description="Retour brut de l operation retry ou replay.">
-            <pre class="notif-preview">{{ store.formatJson(store.state.lastMutation) }}</pre>
+            <NotificationDataSummary :data="store.state.lastMutation" />
           </SectionBlock>
         </template>
       </template>
@@ -110,6 +110,7 @@
 </template>
 
 <script setup lang="ts">
+import NotificationDataSummary from '../components/NotificationDataSummary.vue';
 import { computed, ref } from 'vue';
 import { RouterLink } from 'vue-router';
 import { ArrowLeft } from 'lucide-vue-next';

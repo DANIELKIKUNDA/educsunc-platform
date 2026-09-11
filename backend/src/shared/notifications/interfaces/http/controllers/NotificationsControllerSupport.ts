@@ -26,9 +26,9 @@ export function extraireContexteRuntime(
   return {
     requestId: requete.context?.requestId ?? lireHeader(requete.headers, 'x-request-id'),
     correlationId: requete.context?.correlationId ?? lireHeader(requete.headers, 'x-correlation-id'),
-    organisationId:
-      requete.context?.organisationActiveId ?? lireHeader(requete.headers, 'x-organisation-id'),
-    ecoleId: requete.context?.ecoleActiveId ?? lireHeader(requete.headers, 'x-ecole-id'),
+    // L'autorite tenant vient exclusivement de la session authentifiee.
+    organisationId: requete.context?.organisationActiveId,
+    ecoleId: requete.context?.ecoleActiveId,
     modeOffline:
       requete.context?.modeOffline ?? lireHeader(requete.headers, 'x-offline-mode') === 'true',
     deviceId: requete.context?.deviceId ?? lireHeader(requete.headers, 'x-device-id'),
@@ -43,11 +43,12 @@ export function enrichirContexte<T extends object>(
 ): T {
   return {
     ...entree,
-    organisationId: (entree as { organisationId?: string }).organisationId ?? contexte.organisationId,
-    ecoleId: (entree as { ecoleId?: string }).ecoleId ?? contexte.ecoleId,
+    // Un payload client ne peut jamais forger l'autorite tenant.
+    organisationId: contexte.organisationId,
+    ecoleId: contexte.ecoleId,
     correlationId: (entree as { correlationId?: string }).correlationId ?? contexte.correlationId,
     requestId: (entree as { requestId?: string }).requestId ?? contexte.requestId,
-    acteurId: (entree as { acteurId?: string }).acteurId ?? contexte.utilisateurId,
+    acteurId: contexte.utilisateurId,
   };
 }
 

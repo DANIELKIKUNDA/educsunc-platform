@@ -108,7 +108,10 @@ export class NotificationsTestSupport {
     const registreFilesNotifications = new RegistreFilesNotifications();
     const registreProvidersNotification = new RegistreProvidersNotification();
     registreProvidersNotification.enregistrer(new ProviderNotificationInApp());
-    registreProvidersNotification.enregistrer(new ProviderNotificationEmail());
+    registreProvidersNotification.enregistrer(new ProviderNotificationEmail({
+      envoyer: async () => ({ identifiantLivraison: 'email-test' }),
+      verifierDisponibilite: async () => true,
+    }));
 
     const collecteurMetriquesNotification = new CollecteurMetriquesNotification();
     const surveillanceQueuesNotification = new SurveillanceQueuesNotification(registreFilesNotifications);

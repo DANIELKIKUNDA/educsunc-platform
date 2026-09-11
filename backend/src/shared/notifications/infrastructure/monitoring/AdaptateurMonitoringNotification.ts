@@ -1,7 +1,6 @@
 import { PortMonitoringNotification } from '../../application';
 import { CollecteurMetriquesNotification } from './CollecteurMetriquesNotification';
 import { SurveillanceProvidersNotification } from './SurveillanceProvidersNotification';
-import { SurveillanceQueuesNotification } from './SurveillanceQueuesNotification';
 import { SnapshotMonitoringNotification } from './TypesMonitoringNotification';
 
 // Ce fichier relie les signaux applicatifs a la supervision technique Notifications.
@@ -11,7 +10,7 @@ export class AdaptateurMonitoringNotification implements PortMonitoringNotificat
   /** Ce constructeur assemble le collecteur et les surveillances techniques. */
   constructor(
     private readonly collecteurMetriquesNotification: CollecteurMetriquesNotification,
-    private readonly surveillanceQueuesNotification: SurveillanceQueuesNotification,
+    private readonly surveillanceQueuesNotification: { observer(): import('./TypesMonitoringNotification').VueSurveillanceFilesNotifications },
     private readonly surveillanceProvidersNotification: SurveillanceProvidersNotification,
   ) {}
 

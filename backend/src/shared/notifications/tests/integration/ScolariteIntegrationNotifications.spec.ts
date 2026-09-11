@@ -7,7 +7,7 @@ test('le pont scolarite-eleves traduit une inscription validee en notification s
   const orchestrateur = new NotificationsScolariteIntegrationOrchestrator();
   const evenement: NotificationScolariteEvenementLike = {
     idEvenement: 'evt-inscription-1',
-    typeEvenement: 'INSCRIPTION_VALIDEE',
+    typeEvenement: 'InscriptionScolaireValidee',
     idOrganisation: 'org-1',
     idEcole: 'ecole-1',
     declenchePar: 'acteur-1',

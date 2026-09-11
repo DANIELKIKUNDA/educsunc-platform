@@ -12,6 +12,7 @@ import { routeReferentielAcademique } from './referentiel-academique.routes';
 import { routeSecurity } from './security.routes';
 import { routeScolariteEleves } from './scolarite-eleves.routes';
 import type { TypeModuleConfiguration } from '../../shared/configuration/domain/enums/TypeModuleConfiguration';
+import { obtenirNotificationsRuntime } from '../plugins/notifications-runtime';
 
 type RouteGlobale = FastifyPluginAsync & { prefixe: string };
 
@@ -48,6 +49,13 @@ export const registerGlobalRoutes: FastifyPluginAsync = async (serveur) => {
   await serveur.register(routeAuth);
   await serveur.register(routeSecurity);
   await serveur.register(routeConfiguration);
+  obtenirNotificationsRuntime().configurerVerificationActivation(async ({ organisationId, ecoleId }) =>
+    moduleActivationConfigurationService.moduleActif({
+      organisationId,
+      ecoleId,
+      module: 'NOTIFICATIONS',
+    }),
+  );
   await enregistrerRouteModule(serveur, routeAudit, 'AUDIT');
   await enregistrerRouteModule(serveur, routeMonitoring, 'MONITORING');
   await enregistrerRouteModule(serveur, routeNotifications, 'NOTIFICATIONS');

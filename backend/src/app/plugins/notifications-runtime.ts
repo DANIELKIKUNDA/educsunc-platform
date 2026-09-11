@@ -2,8 +2,6 @@ import type { DependancesRoutesNotifications } from '../../shared/notifications'
 import {
   AccuserReceptionNotification,
   AdaptateurMonitoringNotification,
-  CanalSseNotificationFutur,
-  CanalWebSocketNotificationFutur,
   CollecteurMetriquesNotification,
   ConfigurationNotificationRuntime,
   ControleurAdministrationNotificationsHttp,
@@ -14,16 +12,18 @@ import {
   ControleurTempsReelNotificationFuturHttp,
   ControlerRetryNotification,
   CreerNotification,
-  DepotLectureNotificationsMemoire,
+  DepotLectureNotificationsPostgres,
   DepotModelesNotificationsMemoire,
   DepotNotificationsMemoire,
+  DepotNotificationsPostgres,
+  DepotNotificationsComposite,
   DepotPreferencesNotificationsMemoire,
   DiffuseurTempsReelNotification,
   EscaladerNotification,
-  FileEscaladeNotifications,
-  FileNotifications,
-  FileReplayNotifications,
-  FileRetryNotifications,
+  FileEscaladeNotificationsBullMq,
+  FileNotificationsBullMq,
+  FileReplayNotificationsBullMq,
+  FileRetryNotificationsBullMq,
   ListerNotifications,
   ObtenirArchivesNotifications,
   ObtenirChronologieNotification,
@@ -42,13 +42,14 @@ import {
   OrchestrateurTempsReelNotification,
   ProviderNotificationEmail,
   ProviderNotificationInApp,
-  RegistreFilesNotifications,
+  ProviderNotificationSms,
+  ProviderNotificationPush,
   RegistreNotificationsMemoire,
   RegistreProvidersNotification,
   RejouerNotification,
   ServiceApplicationNotifications,
   SurveillanceProvidersNotification,
-  SurveillanceQueuesNotification,
+  SurveillanceQueuesNotificationBullMq,
 } from '../../shared/notifications';
 import type { NotificationConfigurationChange } from '../../shared/notifications/integration/configuration';
 import { NotificationsConfigurationIntegrationOrchestrator } from '../../shared/notifications/integration/configuration';
@@ -69,51 +70,57 @@ import type {
   NotificationScolariteIntegrationRequest,
 } from '../../shared/notifications/integration/scolarite-eleves/NotificationsScolariteIntegrationTypes';
 import { obtenirSharedEventBus, reinitialiserSharedEventBus } from '../../shared/infrastructure/bus';
+import { obtenirPoolPostgresAuth } from '../../shared/auth/infrastructure';
 import type { SharedBusEventEnvelope, SharedBusEventHandler } from '../../shared/infrastructure/bus';
 
 type PolitiqueScopeNotifications = 'ECOLE' | 'ORGANISATION' | 'PLATEFORME';
+type VerificateurActivationNotifications = (contexte: {
+  readonly organisationId: string;
+  readonly ecoleId: string;
+}) => Promise<boolean>;
 
 class NotificationsRuntimeFacade {
   private readonly registreNotificationsMemoire = new RegistreNotificationsMemoire();
-  private readonly registreFilesNotifications = new RegistreFilesNotifications();
   private readonly registreProvidersNotification = new RegistreProvidersNotification();
   private readonly collecteurMetriquesNotification = new CollecteurMetriquesNotification();
-  private readonly surveillanceQueuesNotification = new SurveillanceQueuesNotification(
-    this.registreFilesNotifications,
-  );
   private readonly surveillanceProvidersNotification = new SurveillanceProvidersNotification(
     this.registreProvidersNotification,
-  );
-  private readonly adaptateurMonitoringNotification = new AdaptateurMonitoringNotification(
-    this.collecteurMetriquesNotification,
-    this.surveillanceQueuesNotification,
-    this.surveillanceProvidersNotification,
   );
   private readonly configurationNotificationRuntime = new ConfigurationNotificationRuntime();
   private readonly integrationConfigurationNotifications =
     new NotificationsConfigurationIntegrationOrchestrator({
       configurationNotificationRuntime: this.configurationNotificationRuntime,
     });
-  private readonly depotNotifications = new DepotNotificationsMemoire(this.registreNotificationsMemoire);
+  private readonly depotNotificationsMemoire = new DepotNotificationsMemoire(this.registreNotificationsMemoire);
+  private readonly depotNotifications = new DepotNotificationsComposite(
+    new DepotNotificationsPostgres(obtenirPoolPostgresAuth()),
+    this.depotNotificationsMemoire,
+  );
   private readonly depotModelesNotifications = new DepotModelesNotificationsMemoire(
     this.registreNotificationsMemoire,
   );
   private readonly depotPreferencesNotifications = new DepotPreferencesNotificationsMemoire(
     this.registreNotificationsMemoire,
   );
-  private readonly depotLectureNotifications = new DepotLectureNotificationsMemoire(
-    this.registreNotificationsMemoire,
+  private readonly depotLectureNotifications = new DepotLectureNotificationsPostgres(
+    obtenirPoolPostgresAuth(),
   );
-  private readonly fileNotifications = new FileNotifications(this.registreFilesNotifications);
-  private readonly fileRetryNotifications = new FileRetryNotifications(this.registreFilesNotifications);
-  private readonly fileReplayNotifications = new FileReplayNotifications(this.registreFilesNotifications);
-  private readonly fileEscaladeNotifications = new FileEscaladeNotifications(
-    this.registreFilesNotifications,
+  private readonly fileNotifications = new FileNotificationsBullMq();
+  private readonly fileRetryNotifications = new FileRetryNotificationsBullMq();
+  private readonly fileReplayNotifications = new FileReplayNotificationsBullMq();
+  private readonly fileEscaladeNotifications = new FileEscaladeNotificationsBullMq();
+  private readonly surveillanceQueuesNotification = new SurveillanceQueuesNotificationBullMq({
+    dispatch: this.fileNotifications,
+    retry: this.fileRetryNotifications,
+    replay: this.fileReplayNotifications,
+    escalade: this.fileEscaladeNotifications,
+  });
+  private readonly adaptateurMonitoringNotification = new AdaptateurMonitoringNotification(
+    this.collecteurMetriquesNotification,
+    this.surveillanceQueuesNotification,
+    this.surveillanceProvidersNotification,
   );
-  private readonly diffuseurTempsReelNotification = new DiffuseurTempsReelNotification([
-    new CanalWebSocketNotificationFutur(),
-    new CanalSseNotificationFutur(),
-  ]);
+  private readonly diffuseurTempsReelNotification = new DiffuseurTempsReelNotification([]);
   private readonly clesIdempotenceNotifications = new Set<string>();
   private readonly auditPort = {
     async enregistrer() {},
@@ -145,11 +152,14 @@ class NotificationsRuntimeFacade {
   private readonly integrationPaiements = new NotificationsPaiementsIntegrationOrchestrator();
   private readonly integrationBulletins = new NotificationsBulletinsIntegrationOrchestrator();
   private readonly integrationScolarite = new NotificationsScolariteIntegrationOrchestrator();
+  private verifierActivationNotifications: VerificateurActivationNotifications = async () => false;
   public readonly routesDependances: DependancesRoutesNotifications;
 
   public constructor() {
     this.registreProvidersNotification.enregistrer(new ProviderNotificationInApp());
     this.registreProvidersNotification.enregistrer(new ProviderNotificationEmail());
+    this.registreProvidersNotification.enregistrer(new ProviderNotificationSms());
+    this.registreProvidersNotification.enregistrer(new ProviderNotificationPush());
     this.routesDependances = this.creerDependancesRoutes();
     this.enregistrerHandlersSharedBus();
   }
@@ -162,6 +172,13 @@ class NotificationsRuntimeFacade {
 
   public obtenirSnapshotConfiguration() {
     return this.integrationConfigurationNotifications.obtenirSnapshot();
+  }
+
+  /** Injecte la resolution officielle des modules sans coupler Notifications a Configuration. */
+  public configurerVerificationActivation(
+    verifierActivationNotifications: VerificateurActivationNotifications,
+  ): void {
+    this.verifierActivationNotifications = verifierActivationNotifications;
   }
 
   private creerDependancesRoutes(): DependancesRoutesNotifications {
@@ -270,7 +287,7 @@ class NotificationsRuntimeFacade {
           ) {
             return { statutHttp: 400, corps: { code: 'NOTIFICATIONS_BAD_REQUEST', message } };
           }
-          return { statutHttp: 500, corps: { code: 'NOTIFICATIONS_INTERNAL_ERROR', message } };
+          return { statutHttp: 500, corps: { code: 'NOTIFICATIONS_INTERNAL_ERROR', message: 'Erreur interne Notifications.' } };
         },
       },
     };
@@ -293,9 +310,9 @@ class NotificationsRuntimeFacade {
         'RecuPaiementEmis',
       ],
       handle: async (envelope) => {
-        const intention = await this.integrationPaiements.traiterEvenement(
-          this.construireRequetePaiements(envelope),
-        );
+        const requete = this.construireRequetePaiements(envelope);
+        if (!await this.notificationAutomatiqueAutorisee(requete)) return;
+        const intention = await this.integrationPaiements.traiterEvenement(requete);
         if (intention !== null) {
           await this.creerNotificationUseCase.executer(
             normaliserCommandeCreation(intention.intention),
@@ -318,9 +335,9 @@ class NotificationsRuntimeFacade {
         'EleveMarqueNonClasse',
       ],
       handle: async (envelope) => {
-        const intention = await this.integrationBulletins.traiterEvenement(
-          this.construireRequeteBulletins(envelope),
-        );
+        const requete = this.construireRequeteBulletins(envelope);
+        if (!await this.notificationAutomatiqueAutorisee(requete)) return;
+        const intention = await this.integrationBulletins.traiterEvenement(requete);
         if (intention !== null) {
           await this.creerNotificationUseCase.executer(
             normaliserCommandeCreation(intention.intention),
@@ -343,9 +360,12 @@ class NotificationsRuntimeFacade {
         'EleveCree',
       ],
       handle: async (envelope) => {
-        const intention = await this.integrationScolarite.traiterEvenement(
-          this.construireRequeteScolarite(envelope),
-        );
+        const requete = this.construireRequeteScolarite(envelope);
+        if (!await this.notificationAutomatiqueAutorisee({
+          organisationId: requete.evenement.idOrganisation,
+          ecoleId: requete.evenement.idEcole,
+        })) return;
+        const intention = await this.integrationScolarite.traiterEvenement(requete);
         if (intention !== null) {
           await this.creerNotificationUseCase.executer(
             normaliserCommandeCreation(intention.intention),
@@ -360,7 +380,7 @@ class NotificationsRuntimeFacade {
   ): NotificationPaiementsIntegrationRequest {
     return {
       evenement: envelope.payload as unknown as NotificationPaiementsIntegrationRequest['evenement'],
-      organisationId: envelope.metadata.organisationId,
+      organisationId: envelope.metadata.organisationId ?? this.extraireChamp(envelope.payload, 'idOrganisation'),
       ecoleId: envelope.metadata.ecoleId ?? this.extraireChamp(envelope.payload, 'idEcole'),
       acteurId: envelope.metadata.utilisateurId ?? this.extraireChamp(envelope.payload, 'declenchePar'),
     };
@@ -371,8 +391,8 @@ class NotificationsRuntimeFacade {
   ): NotificationBulletinsIntegrationRequest {
     return {
       evenement: envelope.payload as unknown as NotificationBulletinsIntegrationRequest['evenement'],
-      organisationId: envelope.metadata.organisationId,
-      ecoleId: envelope.metadata.ecoleId,
+      organisationId: envelope.metadata.organisationId ?? this.extraireChamp(envelope.payload, 'idOrganisation'),
+      ecoleId: envelope.metadata.ecoleId ?? this.extraireChamp(envelope.payload, 'idEcole'),
       acteurId: envelope.metadata.utilisateurId,
     };
   }
@@ -388,6 +408,18 @@ class NotificationsRuntimeFacade {
   private extraireChamp(payload: Record<string, unknown>, cle: string): string | undefined {
     const valeur = payload[cle];
     return typeof valeur === 'string' ? valeur : undefined;
+  }
+
+  private async notificationAutomatiqueAutorisee(contexte: {
+    readonly organisationId?: string;
+    readonly ecoleId?: string;
+  }): Promise<boolean> {
+    if (!contexte.ecoleId) return true;
+    if (!contexte.organisationId) return false;
+    return this.verifierActivationNotifications({
+      organisationId: contexte.organisationId,
+      ecoleId: contexte.ecoleId,
+    });
   }
 }
 

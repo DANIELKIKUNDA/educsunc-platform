@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import Fastify from 'fastify';
-import { reinitialiserNotificationsRuntime } from '../../app/plugins/notifications-runtime';
+import {
+  obtenirNotificationsRuntime,
+  reinitialiserNotificationsRuntime,
+} from '../../app/plugins/notifications-runtime';
 import { requestContextPlugin } from '../../app/plugins/request-context.plugin';
 import { tenancyPlugin } from '../../app/plugins/tenancy.plugin';
 import { routeNotifications } from '../../app/routes/notifications.routes';
@@ -15,6 +18,7 @@ import { GlobalTestBootstrap } from '../../shared/tests/setup/GlobalTestBootstra
 
 test('un evenement paiements publie sur le bus partage cree une notification relisible via l API', async () => {
   reinitialiserNotificationsRuntime();
+  obtenirNotificationsRuntime().configurerVerificationActivation(async () => true);
   const bootstrap = new GlobalTestBootstrap();
   const adminSystemeEcole = await bootstrap.creerActeur({
     ...ROLE_FIXTURES.ADMIN_SYSTEME_ECOLE,
@@ -53,6 +57,7 @@ test('un evenement paiements publie sur le bus partage cree une notification rel
 
 test('un evenement scolarite publie sur le bus partage cree une notification relisible via l API', async () => {
   reinitialiserNotificationsRuntime();
+  obtenirNotificationsRuntime().configurerVerificationActivation(async () => true);
   const bootstrap = new GlobalTestBootstrap();
   const adminSystemeEcole = await bootstrap.creerActeur({
     ...ROLE_FIXTURES.ADMIN_SYSTEME_ECOLE,
@@ -91,6 +96,7 @@ test('un evenement scolarite publie sur le bus partage cree une notification rel
 
 test('un evenement bulletins publie sur le bus partage cree une notification relisible via l API', async () => {
   reinitialiserNotificationsRuntime();
+  obtenirNotificationsRuntime().configurerVerificationActivation(async () => true);
   const bootstrap = new GlobalTestBootstrap();
   const adminSystemeEcole = await bootstrap.creerActeur({
     ...ROLE_FIXTURES.ADMIN_SYSTEME_ECOLE,

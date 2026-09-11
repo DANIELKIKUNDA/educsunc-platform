@@ -14,5 +14,6 @@ test('le registre providers resout un provider principal par canal et publie un 
   assert.equal(providerInApp?.obtenirNom(), 'provider-notification-in-app');
   assert.equal(providerEmail?.obtenirNom(), 'provider-notification-email');
   assert.equal(sante.length, 2);
-  assert.equal(sante.every((rapport) => rapport.etat === 'SAIN'), true);
+  assert.equal(sante.find((rapport) => rapport.canal === 'IN_APP')?.etat, 'SAIN');
+  assert.equal(sante.find((rapport) => rapport.canal === 'EMAIL')?.etat, 'INDISPONIBLE');
 });

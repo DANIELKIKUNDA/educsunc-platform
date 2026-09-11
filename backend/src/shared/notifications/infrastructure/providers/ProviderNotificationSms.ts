@@ -1,64 +1,20 @@
-import { randomUUID } from 'node:crypto';
 import { CanalNotification } from '../../domain';
-import {
-  ChargeLivraisonNotification,
-  ProviderNotificationTechnique,
-  RapportSanteProviderNotification,
-  ResultatLivraisonProviderNotification,
-} from './TypesProvidersNotification';
+import type { PortTransportSms } from './PortsTransportNotification';
+import { ChargeLivraisonNotification, ProviderNotificationTechnique, RapportSanteProviderNotification, ResultatLivraisonProviderNotification } from './TypesProvidersNotification';
 
-// Ce fichier implemente le provider technique SMS du moteur Notifications.
-
-/** Cette classe simule la livraison technique des notifications SMS. */
 export class ProviderNotificationSms implements ProviderNotificationTechnique {
-  /** Cette methode expose le nom technique du provider. */
-  public obtenirNom(): string {
-    return 'provider-notification-sms';
-  }
-
-  /** Cette methode expose le canal pris en charge par ce provider. */
-  public obtenirCanal(): CanalNotification {
-    return 'SMS';
-  }
-
-  /** Cette methode effectue une livraison technique SMS avec un controle de longueur simple. */
+  constructor(private readonly transport?: PortTransportSms) {}
+  public obtenirNom(): string { return 'provider-notification-sms'; }
+  public obtenirCanal(): CanalNotification { return 'SMS'; }
   public async envoyer(charge: ChargeLivraisonNotification): Promise<ResultatLivraisonProviderNotification> {
-    if (charge.message.length > 480) {
-      return {
-        succes: false,
-        canal: 'SMS',
-        fournisseur: this.obtenirNom(),
-        horodatage: new Date(),
-        erreur: 'Le message SMS depasse la limite technique configuree.',
-        metadata: {
-          longueurMessage: charge.message.length,
-        },
-      };
-    }
-
-    return {
-      succes: true,
-      canal: 'SMS',
-      fournisseur: this.obtenirNom(),
-      identifiantLivraison: randomUUID(),
-      horodatage: new Date(),
-      metadata: {
-        destinataire: charge.destinataire,
-        longueurMessage: charge.message.length,
-      },
-    };
+    if (charge.message.length > 480) return { succes: false, canal: 'SMS', fournisseur: this.obtenirNom(), horodatage: new Date(), erreur: 'Le message SMS depasse la limite technique configuree.', metadata: { longueurMessage: charge.message.length } };
+    if (!this.transport) return this.indisponible('Aucun agregateur SMS reel n est configure.');
+    try { const resultat = await this.transport.envoyer(charge); return { succes: true, canal: 'SMS', fournisseur: this.obtenirNom(), identifiantLivraison: resultat.identifiantLivraison, horodatage: new Date(), metadata: { longueurMessage: charge.message.length, ...(resultat.metadata ?? {}) } }; }
+    catch { return this.indisponible('L agregateur SMS a refuse ou interrompu la livraison.'); }
   }
-
-  /** Cette methode retourne l'etat de sante instantane du provider SMS. */
   public async verifierSante(): Promise<RapportSanteProviderNotification> {
-    return {
-      fournisseur: this.obtenirNom(),
-      canal: 'SMS',
-      etat: 'SAIN',
-      verifieLe: new Date(),
-      details: {
-        limiteLongueur: 480,
-      },
-    };
+    const disponible = this.transport ? (await this.transport.verifierDisponibilite?.().catch(() => false) ?? true) : false;
+    return { fournisseur: this.obtenirNom(), canal: 'SMS', etat: disponible ? 'SAIN' : 'INDISPONIBLE', verifieLe: new Date(), details: { configure: Boolean(this.transport), limiteLongueur: 480 } };
   }
+  private indisponible(erreur: string): ResultatLivraisonProviderNotification { return { succes: false, canal: 'SMS', fournisseur: this.obtenirNom(), horodatage: new Date(), erreur, metadata: { configure: Boolean(this.transport) } }; }
 }
