@@ -17,7 +17,11 @@ check('push provider is vendor neutral and fail closed', push.includes('PortTran
 check('in-app uses durable notification id', !inapp.includes('randomUUID') && inapp.includes('charge.identifiantNotification'));
 check('runtime does not instantiate future SSE/WebSocket', !runtime.includes('new CanalWebSocketNotificationFutur') && !runtime.includes('new CanalSseNotificationFutur'));
 check('runtime writes aggregates to PostgreSQL', runtime.includes('new DepotNotificationsPostgres(obtenirPoolPostgresAuth())'));
-check('runtime uses shared BullMQ queues', runtime.includes('new FileNotificationsBullMq()') && runtime.includes('new FileRetryNotificationsBullMq()'));
+check(
+  'runtime uses shared BullMQ queues',
+  /new FileNotificationsBullMq\([^)]*\)/.test(runtime)
+    && /new FileRetryNotificationsBullMq\([^)]*\)/.test(runtime),
+);
 check('runtime registers push/sms providers', runtime.includes('new ProviderNotificationPush()') && runtime.includes('new ProviderNotificationSms()'));
 check('frontend has no raw JSON preview', !views.includes('store.formatJson') && !views.includes('<pre class="notif-preview">'));
 check('internal 500 details are not exposed', runtime.includes("message: 'Erreur interne Notifications.'"));
