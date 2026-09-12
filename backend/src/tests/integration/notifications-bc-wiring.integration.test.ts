@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import test from 'node:test';
+import test, { after } from 'node:test';
 import Fastify from 'fastify';
 import {
   obtenirNotificationsRuntime,
@@ -15,6 +15,12 @@ import { EleveAbandonne } from '../../contexts/scolarite-eleves/domain/events/El
 import { ROLE_FIXTURES, TENANT_FIXTURES } from '../../shared/tests/fixtures/GlobalFixtures';
 import { injecterCommeActeur } from '../../shared/tests/helpers/GlobalTestHelpers';
 import { GlobalTestBootstrap } from '../../shared/tests/setup/GlobalTestBootstrap';
+import { obtenirPoolPostgresAuth } from '../../shared/auth/infrastructure';
+
+after(async () => {
+  await reinitialiserNotificationsRuntime();
+  await obtenirPoolPostgresAuth().end();
+});
 
 test('un evenement paiements publie sur le bus partage cree une notification relisible via l API', async () => {
   await reinitialiserNotificationsRuntime();

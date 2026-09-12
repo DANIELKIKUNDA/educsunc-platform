@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import test from 'node:test';
+import test, { after } from 'node:test';
 import Fastify from 'fastify';
 import { requestContextPlugin } from '../../app/plugins/request-context.plugin';
 import { tenancyPlugin } from '../../app/plugins/tenancy.plugin';
@@ -8,6 +8,12 @@ import { routeNotifications } from '../../app/routes/notifications.routes';
 import { ROLE_FIXTURES, TENANT_FIXTURES } from '../../shared/tests/fixtures/GlobalFixtures';
 import { injecterCommeActeur } from '../../shared/tests/helpers/GlobalTestHelpers';
 import { GlobalTestBootstrap } from '../../shared/tests/setup/GlobalTestBootstrap';
+import { obtenirPoolPostgresAuth } from '../../shared/auth/infrastructure';
+
+after(async () => {
+  await reinitialiserNotificationsRuntime();
+  await obtenirPoolPostgresAuth().end();
+});
 
 test('les routes notifications ecole ouvrent la lecture et la creation aux acteurs ecole autorises et refusent les operations techniques au role non systeme', async () => {
   await reinitialiserNotificationsRuntime();
