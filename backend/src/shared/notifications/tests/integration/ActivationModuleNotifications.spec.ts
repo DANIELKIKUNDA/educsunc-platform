@@ -7,7 +7,7 @@ import {
 import { obtenirSharedEventBus } from '../../../infrastructure/bus';
 
 test('une notification automatique d ecole est bloquee quand le module effectif est inactif', async () => {
-  reinitialiserNotificationsRuntime();
+  await reinitialiserNotificationsRuntime();
   const contextesVerifies: Array<{ organisationId: string; ecoleId: string }> = [];
   obtenirNotificationsRuntime().configurerVerificationActivation(async (contexte) => {
     contextesVerifies.push(contexte);
@@ -27,5 +27,5 @@ test('une notification automatique d ecole est bloquee quand le module effectif 
     organisationId: 'organisation-module-inactif',
     ecoleId: 'ecole-module-inactif',
   }]);
-  reinitialiserNotificationsRuntime();
+  await reinitialiserNotificationsRuntime();
 });

@@ -10,7 +10,7 @@ import { injecterCommeActeur } from '../../shared/tests/helpers/GlobalTestHelper
 import { GlobalTestBootstrap } from '../../shared/tests/setup/GlobalTestBootstrap';
 
 test('les routes notifications ecole ouvrent la lecture et la creation aux acteurs ecole autorises et refusent les operations techniques au role non systeme', async () => {
-  reinitialiserNotificationsRuntime();
+  await reinitialiserNotificationsRuntime();
   const bootstrap = new GlobalTestBootstrap();
   const adminSystemeEcole = await bootstrap.creerActeur({
     ...ROLE_FIXTURES.ADMIN_SYSTEME_ECOLE,
@@ -104,7 +104,7 @@ test('les routes notifications ecole ouvrent la lecture et la creation aux acteu
 });
 
 test('les routes notifications organisationnelles ouvrent la supervision aux acteurs organisationnels reels et refusent un acteur ecole', async () => {
-  reinitialiserNotificationsRuntime();
+  await reinitialiserNotificationsRuntime();
   const bootstrap = new GlobalTestBootstrap();
   const promoteur = await bootstrap.creerActeur({
     ...ROLE_FIXTURES.PROMOTEUR_ORGANISATION,

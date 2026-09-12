@@ -71,6 +71,7 @@ import type {
 } from '../../shared/notifications/integration/scolarite-eleves/NotificationsScolariteIntegrationTypes';
 import { obtenirSharedEventBus, reinitialiserSharedEventBus } from '../../shared/infrastructure/bus';
 import { obtenirPoolPostgresAuth } from '../../shared/auth/infrastructure';
+import { FabriqueBullMqShared } from '../../shared/infrastructure/queues/bullmq';
 import type { SharedBusEventEnvelope, SharedBusEventHandler } from '../../shared/infrastructure/bus';
 
 type PolitiqueScopeNotifications = 'ECOLE' | 'ORGANISATION' | 'PLATEFORME';
@@ -80,6 +81,7 @@ type VerificateurActivationNotifications = (contexte: {
 }) => Promise<boolean>;
 
 class NotificationsRuntimeFacade {
+  private readonly fabriqueBullMqShared = new FabriqueBullMqShared();
   private readonly registreNotificationsMemoire = new RegistreNotificationsMemoire();
   private readonly registreProvidersNotification = new RegistreProvidersNotification();
   private readonly collecteurMetriquesNotification = new CollecteurMetriquesNotification();
@@ -105,10 +107,10 @@ class NotificationsRuntimeFacade {
   private readonly depotLectureNotifications = new DepotLectureNotificationsPostgres(
     obtenirPoolPostgresAuth(),
   );
-  private readonly fileNotifications = new FileNotificationsBullMq();
-  private readonly fileRetryNotifications = new FileRetryNotificationsBullMq();
-  private readonly fileReplayNotifications = new FileReplayNotificationsBullMq();
-  private readonly fileEscaladeNotifications = new FileEscaladeNotificationsBullMq();
+  private readonly fileNotifications = new FileNotificationsBullMq(this.fabriqueBullMqShared);
+  private readonly fileRetryNotifications = new FileRetryNotificationsBullMq(this.fabriqueBullMqShared);
+  private readonly fileReplayNotifications = new FileReplayNotificationsBullMq(this.fabriqueBullMqShared);
+  private readonly fileEscaladeNotifications = new FileEscaladeNotificationsBullMq(this.fabriqueBullMqShared);
   private readonly surveillanceQueuesNotification = new SurveillanceQueuesNotificationBullMq({
     dispatch: this.fileNotifications,
     retry: this.fileRetryNotifications,
@@ -172,6 +174,11 @@ class NotificationsRuntimeFacade {
 
   public obtenirSnapshotConfiguration() {
     return this.integrationConfigurationNotifications.obtenirSnapshot();
+  }
+
+  /** Libere les connexions techniques detenues par le runtime Notifications. */
+  public async fermer(): Promise<void> {
+    await this.fabriqueBullMqShared.fermer();
   }
 
   /** Injecte la resolution officielle des modules sans coupler Notifications a Configuration. */
@@ -480,7 +487,9 @@ export function obtenirNotificationsRuntime(): NotificationsRuntimeFacade {
   return runtimeNotifications;
 }
 
-export function reinitialiserNotificationsRuntime(): void {
+export async function reinitialiserNotificationsRuntime(): Promise<void> {
+  const runtimeCourant = runtimeNotifications;
   runtimeNotifications = null;
   reinitialiserSharedEventBus();
+  await runtimeCourant?.fermer();
 }

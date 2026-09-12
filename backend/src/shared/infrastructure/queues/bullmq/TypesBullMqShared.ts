@@ -66,6 +66,7 @@ export interface ContratQueueBullMqShared<TCharge = Readonly<Record<string, unkn
   marquerComplete(jobId: string): Promise<void>;
   marquerEchec(jobId: string, erreur: string): Promise<void>;
   observer(): SnapshotQueueBullMqShared;
+  fermer(): Promise<void>;
 }
 
 /** Cette interface formalise le contrat minimal d un worker partage. */

@@ -17,7 +17,7 @@ import { injecterCommeActeur } from '../../shared/tests/helpers/GlobalTestHelper
 import { GlobalTestBootstrap } from '../../shared/tests/setup/GlobalTestBootstrap';
 
 test('un evenement paiements publie sur le bus partage cree une notification relisible via l API', async () => {
-  reinitialiserNotificationsRuntime();
+  await reinitialiserNotificationsRuntime();
   obtenirNotificationsRuntime().configurerVerificationActivation(async () => true);
   const bootstrap = new GlobalTestBootstrap();
   const adminSystemeEcole = await bootstrap.creerActeur({
@@ -56,7 +56,7 @@ test('un evenement paiements publie sur le bus partage cree une notification rel
 });
 
 test('un evenement scolarite publie sur le bus partage cree une notification relisible via l API', async () => {
-  reinitialiserNotificationsRuntime();
+  await reinitialiserNotificationsRuntime();
   obtenirNotificationsRuntime().configurerVerificationActivation(async () => true);
   const bootstrap = new GlobalTestBootstrap();
   const adminSystemeEcole = await bootstrap.creerActeur({
@@ -95,7 +95,7 @@ test('un evenement scolarite publie sur le bus partage cree une notification rel
 });
 
 test('un evenement bulletins publie sur le bus partage cree une notification relisible via l API', async () => {
-  reinitialiserNotificationsRuntime();
+  await reinitialiserNotificationsRuntime();
   obtenirNotificationsRuntime().configurerVerificationActivation(async () => true);
   const bootstrap = new GlobalTestBootstrap();
   const adminSystemeEcole = await bootstrap.creerActeur({

@@ -53,6 +53,13 @@ export class FabriqueBullMqShared {
   ): ContratWorkerBullMqShared<TCharge> {
     return new BullMqWorkerMemoireShared(configuration, queue);
   }
+
+  /** Cette methode libere toutes les connexions BullMQ creees par la fabrique. */
+  public async fermer(): Promise<void> {
+    const queues = [...new Set(this.queues.values())];
+    this.queues.clear();
+    await Promise.all(queues.map((queue) => queue.fermer()));
+  }
 }
 
 /** Cette classe simule une queue BullMQ partagee tout en gardant un contrat stable. */
@@ -149,6 +156,9 @@ class BullMqQueueMemoireShared<TCharge> implements ContratQueueBullMqShared<TCha
     };
   }
 
+  /** La variante memoire ne conserve aucune ressource externe. */
+  public async fermer(): Promise<void> {}
+
   /** Cette methode applique un statut terminal a un job existant. */
   private async marquerTerminal(
     jobId: string,
@@ -204,8 +214,8 @@ class BullMqQueueMemoireShared<TCharge> implements ContratQueueBullMqShared<TCha
 /** Cette classe exploite la vraie lib BullMQ quand Redis est disponible, sinon replie sur la memoire locale. */
 class BullMqQueueHybrideShared<TCharge> implements ContratQueueBullMqShared<TCharge> {
   private readonly queueMemoire: BullMqQueueMemoireShared<TCharge>;
-  private readonly queueReelle: Queue<any, unknown, string>;
-  private readonly workerExtraction: Worker<any, unknown, string>;
+  private queueReelle?: Queue<any, unknown, string>;
+  private workerExtraction?: Worker<any, unknown, string>;
   private readonly jobsActifs = new Map<string, EntreeActiveBullMqReelleShared>();
   private snapshotCourant: SnapshotQueueBullMqShared;
   private timerStalledDemarre = false;
@@ -216,21 +226,6 @@ class BullMqQueueHybrideShared<TCharge> implements ContratQueueBullMqShared<TCha
     private readonly clientRedisShared: ClientRedisShared,
   ) {
     this.queueMemoire = new BullMqQueueMemoireShared(configuration, clientRedisShared);
-    this.queueReelle = new Queue<any, unknown, string>(configuration.nom, {
-      prefix: configuration.prefix,
-      connection: this.construireConnexionBullMq(),
-      defaultJobOptions: this.construireOptionsParDefaut(),
-    });
-    this.workerExtraction = new Worker<any, unknown, string>(
-      configuration.nom,
-      async () => undefined,
-      {
-        autorun: false,
-        concurrency: 1,
-        connection: this.construireConnexionBullMq(),
-        prefix: configuration.prefix,
-      },
-    );
     this.snapshotCourant = {
       nom: configuration.nom,
       totalJobs: 0,
@@ -253,7 +248,11 @@ class BullMqQueueHybrideShared<TCharge> implements ContratQueueBullMqShared<TCha
       return this.queueMemoire.ajouter(nom, charge, options);
     }
 
-    const job = await this.queueReelle.add(nom, charge, this.construireOptionsAjout(options));
+    const job = await this.obtenirQueueReelle().add(
+      nom,
+      charge,
+      this.construireOptionsAjout(options),
+    );
     await this.actualiserSnapshot();
     return this.mapperJobReel(job, await this.resoudreStatut(job));
   }
@@ -267,7 +266,7 @@ class BullMqQueueHybrideShared<TCharge> implements ContratQueueBullMqShared<TCha
 
     await this.initialiserWorkerExtraction();
     const token = randomUUID();
-    const job = await this.workerExtraction.getNextJob(token, { block: false });
+    const job = await this.obtenirWorkerExtraction().getNextJob(token, { block: false });
     if (!job) {
       void this.actualiserSnapshot();
       return null;
@@ -321,8 +320,25 @@ class BullMqQueueHybrideShared<TCharge> implements ContratQueueBullMqShared<TCha
       return this.queueMemoire.observer();
     }
 
-    void this.actualiserSnapshot();
+    if (this.queueReelle) {
+      void this.actualiserSnapshot().catch(() => undefined);
+    }
     return this.snapshotCourant;
+  }
+
+  /** Cette methode ferme les connexions natives ouvertes par BullMQ. */
+  public async fermer(): Promise<void> {
+    const fermetures: Promise<void>[] = [];
+    if (this.workerExtraction) {
+      fermetures.push(this.workerExtraction.close());
+    }
+    if (this.queueReelle) {
+      fermetures.push(this.queueReelle.close());
+    }
+    await Promise.all(fermetures);
+    this.workerExtraction = undefined;
+    this.queueReelle = undefined;
+    this.timerStalledDemarre = false;
   }
 
   /** Cette methode initialise le worker d extraction manuelle une seule fois. */
@@ -331,14 +347,19 @@ class BullMqQueueHybrideShared<TCharge> implements ContratQueueBullMqShared<TCha
       return;
     }
 
-    await this.workerExtraction.waitUntilReady();
-    await this.workerExtraction.startStalledCheckTimer();
+    const worker = this.obtenirWorkerExtraction();
+    await worker.waitUntilReady();
+    await worker.startStalledCheckTimer();
     this.timerStalledDemarre = true;
   }
 
   /** Cette methode reconstruit un snapshot BullMQ lisible. */
   private async actualiserSnapshot(): Promise<void> {
-    const compteurs = await this.queueReelle.getJobCounts(
+    const queue = this.queueReelle;
+    if (!queue) {
+      return;
+    }
+    const compteurs = await queue.getJobCounts(
       'wait',
       'active',
       'completed',
@@ -368,6 +389,35 @@ class BullMqQueueHybrideShared<TCharge> implements ContratQueueBullMqShared<TCha
       failed: compteurs.failed ?? 0,
       delayed: compteurs.delayed ?? 0,
     };
+  }
+
+  /** Cette methode ouvre la queue native uniquement apres validation du mode Redis reel. */
+  private obtenirQueueReelle(): Queue<any, unknown, string> {
+    if (!this.queueReelle) {
+      this.queueReelle = new Queue<any, unknown, string>(this.configuration.nom, {
+        prefix: this.configuration.prefix,
+        connection: this.construireConnexionBullMq(),
+        defaultJobOptions: this.construireOptionsParDefaut(),
+      });
+    }
+    return this.queueReelle;
+  }
+
+  /** Cette methode ouvre le worker natif uniquement lorsqu une extraction reelle est demandee. */
+  private obtenirWorkerExtraction(): Worker<any, unknown, string> {
+    if (!this.workerExtraction) {
+      this.workerExtraction = new Worker<any, unknown, string>(
+        this.configuration.nom,
+        async () => undefined,
+        {
+          autorun: false,
+          concurrency: 1,
+          connection: this.construireConnexionBullMq(),
+          prefix: this.configuration.prefix,
+        },
+      );
+    }
+    return this.workerExtraction;
   }
 
   /** Cette methode convertit le statut BullMQ natif vers le statut partage du socle. */
