@@ -22,10 +22,17 @@ test('les vues de demarrage et les centres transversaux restent charges a la dem
   assert.match(coreRoutes, /component:\s*\(\)\s*=>\s*import\(/);
   assert.doesNotMatch(coreRoutes, /^import\s+.*View\s+from/m);
 
-  for (const domain of ['audit', 'monitoring', 'notifications', 'security']) {
+  const lazyEntryViews = {
+    audit: 'AuditEntryView',
+    monitoring: 'MonitoringOverviewView',
+    notifications: 'NotificationsEntryView',
+    security: 'ModuleHomeView',
+  };
+
+  for (const [domain, entryView] of Object.entries(lazyEntryViews)) {
     const routes = read(`src/domains/${domain}/routes.ts`);
     assert.doesNotMatch(routes, /^import\s+ModuleHomeView\s+from/m);
-    assert.match(routes, /import\('\.\/views\/ModuleHomeView\.vue'\)/);
+    assert.match(routes, new RegExp(`import\\('\\.\\/views\\/${entryView}\\.vue'\\)`));
   }
 });
 

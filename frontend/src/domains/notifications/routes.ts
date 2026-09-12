@@ -4,7 +4,7 @@ export const routesNotifications: RouteRecordRaw[] = [
   {
     path: 'notifications',
     name: 'notifications-home',
-    component: () => import('./views/ModuleHomeView.vue'),
+    component: () => import('./views/NotificationsEntryView.vue'),
     meta: { title: 'Notifications' },
   },
   {

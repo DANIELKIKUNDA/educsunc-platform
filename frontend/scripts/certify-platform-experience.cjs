@@ -1,0 +1,11 @@
+const fs=require('fs'); const checks=[]; const read=p=>fs.readFileSync(p,'utf8'); const check=(name,ok)=>checks.push([name,!!ok]);
+const home=read('src/domains/plateforme/views/ModuleHomeView.vue'), side=read('src/shell/components/AppSidebar.vue'), top=read('src/shell/components/AppTopbar.vue'), mobile=read('src/shell/AppShellMobile.vue'), nav=read('src/shared/navigation/platform-experience.ts'), routes=read('src/domains/configuration/routes.ts'), doctrine=read('src/shared/doctrine/frontend-doctrine.ts');
+check('P1 contrats rôles', ['MANAGER_SYSTEME','OPERATEUR_SYSTEME','SUPPORT_SYSTEME'].every(x=>nav.includes(x)));
+check('P1 groupes IA', ['Pilotage','Opérations','Gouvernance','Système'].every(x=>nav.includes(x)));
+check('P2 route Mon compte', routes.includes("name: 'me-preferences'")); check('P2 redirection ancienne route', routes.includes("redirect: { name: 'me-preferences' }"));
+check('P3 tooltip compact', side.includes(':aria-label="entry.label"')); check('P3 bottom nav', mobile.includes('PlatformBottomNav'));
+check('P4 recherche clavier', top.includes('handleGlobalSearchShortcut')); check('P4 notifications réelles', top.includes('notificationsAccessible')&&!top.includes('MessagesSquare'));
+check('P5 cockpit manager', home.includes('Vue exécutive')||nav.includes('Vue exécutive')); check('P6 cockpit opérateur', nav.includes('Cockpit opérations')); check('P7 cockpit support', nav.includes('Cockpit support')&&doctrine.includes("homeRoute: '/app/plateforme'"));
+check('P8 adaptive', read('src/styles/shell-core.css').includes('prefers-reduced-motion')&&read('src/styles/shell-core.css').includes('safe-area-inset-bottom'));
+check('P9 aucun faux compteur topbar', !top.includes('<span>0</span>')); check('P10 documentation', fs.existsSync('../docs/quality/PLATFORM_EXPERIENCE_FINAL_CONSOLIDATION.md'));
+for(const [n,ok] of checks) console.log(`${ok?'PASS':'FAIL'} ${n}`); const passed=checks.filter(x=>x[1]).length; console.log(`\n${passed}/${checks.length} PASS`); if(passed!==checks.length)process.exit(1);

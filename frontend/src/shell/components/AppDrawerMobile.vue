@@ -11,7 +11,9 @@
       </div>
 
       <nav class="erp-drawer__modules">
-        <section v-for="entry in entries" :key="entry.code" class="erp-drawer__module">
+        <div v-for="group in navigationGroups" :key="group.code" class="erp-drawer__group">
+          <p v-if="group.label" class="erp-drawer__group-label">{{ group.label }}</p>
+          <section v-for="entry in group.entries" :key="entry.code" class="erp-drawer__module">
           <button type="button" class="erp-drawer__module-trigger" @click="toggleModule(entry.code)">
             <span class="erp-drawer__module-leading">
               <component :is="resolveIcon(entry.icon)" class="erp-drawer__icon" />
@@ -35,16 +37,19 @@
               <span>{{ child.label }}</span>
             </RouterLink>
           </div>
-        </section>
+          </section>
+        </div>
       </nav>
     </aside>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ChevronDown, LayoutGrid } from 'lucide-vue-next';
+import { sessionStore } from '../../shared/auth/session.store';
+import { groupPlatformNavigation } from '../../shared/navigation/platform-experience';
 import type { NavigationEntry } from '../../shared/navigation/navigation.types';
 import { shellIconMap } from '../icon-map';
 import { preloadRouteOnIntent } from '../../router/route-preloader';
@@ -61,6 +66,9 @@ defineEmits<{
 
 const route = useRoute();
 const router = useRouter();
+const navigationGroups = computed(() =>
+  groupPlatformNavigation(props.entries, sessionStore.state.actorCode),
+);
 const openCode = ref(props.entries.find((entry) => route.path.startsWith(entry.route))?.code ?? props.entries[0]?.code ?? '');
 
 watch(

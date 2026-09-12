@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
+    <title>Actualisation EduSync</title>
+    <style>
+      :root {
+        color: #17324d;
+        background: #f4f8fb;
+        font-family: "Segoe UI", sans-serif;
+      }
+
+      body {
+        min-height: 100vh;
+        margin: 0;
+        display: grid;
+        place-items: center;
+      }
+
+      main {
+        width: min(28rem, calc(100% - 2rem));
+        padding: 2rem;
+        border: 1px solid #d9e4ec;
+        border-radius: 1.25rem;
+        background: #fff;
+        box-shadow: 0 1.25rem 3rem rgb(23 50 77 / 12%);
+        text-align: center;
+      }
+
+      .spinner {
+        width: 2rem;
+        height: 2rem;
+        margin: 0 auto 1rem;
+        border: .2rem solid #d7e8ef;
+        border-top-color: #0b5d7a;
+        border-radius: 50%;
+        animation: spin .8s linear infinite;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 1.15rem;
+      }
+
+      p {
+        margin: .6rem 0 0;
+        color: #5d7286;
+        line-height: 1.5;
+      }
+
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+    </style>
+  </head>
+  <body>
+    <main aria-live="polite">
+      <div class="spinner" aria-hidden="true"></div>
+      <h1>Actualisation d'EduSync</h1>
+      <p>La version de développement la plus récente est en cours de préparation.</p>
+    </main>
+    <script>
+      const CACHE_PREFIX = 'edusync-shell-';
+      const requestedTarget = new URLSearchParams(window.location.search).get('target') || '/';
+      const target = requestedTarget.startsWith('/') ? requestedTarget : '/';
+
+      async function clearDevelopmentShellCache() {
+        if ('serviceWorker' in navigator) {
+          const registrations = await navigator.serviceWorker.getRegistrations();
+          await Promise.all(
+            registrations
+              .filter((registration) => registration.scope.startsWith(window.location.origin))
+              .map((registration) => registration.unregister()),
+          );
+        }
+
+        if ('caches' in window) {
+          const cacheNames = await caches.keys();
+          await Promise.all(
+            cacheNames
+              .filter((cacheName) => cacheName.startsWith(CACHE_PREFIX))
+              .map((cacheName) => caches.delete(cacheName)),
+          );
+        }
+      }
+
+      clearDevelopmentShellCache()
+        .catch(() => undefined)
+        .finally(() => {
+          const separator = target.includes('?') ? '&' : '?';
+          window.location.replace(`${target}${separator}devFresh=${Date.now()}`);
+        });
+    </script>
+  </body>
+</html>

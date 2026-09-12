@@ -47,7 +47,7 @@ export const actorProfiles: readonly FrontendActorProfile[] = [
     code: 'SUPPORT_SYSTEME',
     label: 'Support systeme',
     displayName: 'Sarah Mbuyi',
-    homeRoute: '/app/monitoring',
+    homeRoute: '/app/plateforme',
     governanceLevels: ['PLATEFORME'],
   },
   {
@@ -267,7 +267,7 @@ export const pageDoctrine: readonly FrontendPageDoctrine[] = [
     sectionLabel: 'Centre plateforme',
     pageType: 'home',
     icon: 'LayoutGrid',
-    actorCodes: monitoringReadActors,
+    actorCodes: ['MANAGER_SYSTEME', 'OPERATEUR_SYSTEME', 'SUPPORT_SYSTEME'],
     governanceLevels: ['PLATEFORME'],
     visibleActions: [{ code: 'platform.consulter', label: 'Consulter le centre plateforme' }],
   },

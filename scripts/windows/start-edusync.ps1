@@ -96,8 +96,10 @@ try {
     })
 
     $url = "http://localhost:$frontendPort/"
-    $browserOpen = @(Get-CimInstance Win32_Process -Filter "Name='chrome.exe' OR Name='msedge.exe'" -ErrorAction SilentlyContinue | Where-Object { $_.CommandLine -like "*$url*" }).Count -gt 0
-    if (-not $browserOpen) { Start-Process $url | Out-Null }
+    $refreshUrl = "http://localhost:$frontendPort/dev-reset.html?target=%2F"
+    # Cette page retire seulement les anciens caches PWA du shell.
+    # La session et les donnees hors connexion restent intactes.
+    Start-Process $refreshUrl | Out-Null
     Write-EduSyncMessage "EduSync est disponible : $url" 'OK'
 } catch {
     Write-EduSyncMessage $_.Exception.Message 'ERREUR'

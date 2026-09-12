@@ -4,7 +4,7 @@ export const routesAudit: RouteRecordRaw[] = [
   {
     path: 'audit',
     name: 'audit-home',
-    component: () => import('./views/ModuleHomeView.vue'),
+    component: () => import('./views/AuditEntryView.vue'),
     meta: { title: 'Audit' },
   },
   {

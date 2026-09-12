@@ -46,7 +46,7 @@ export const routesConfiguration: RouteRecordRaw[] = [
   {
     path: 'configuration/utilisateur/preferences',
     name: 'configuration-user-preferences',
-    component: () => import('./views/ConfigurationCenterView.vue'),
+    redirect: { name: 'me-preferences' },
     meta: { title: 'Preferences utilisateur' },
   },
   {

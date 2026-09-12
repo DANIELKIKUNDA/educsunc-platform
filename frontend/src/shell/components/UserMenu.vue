@@ -57,6 +57,15 @@
         <strong>{{ session.userId }}</strong>
       </div>
 
+      <RouterLink
+        class="erp-user-menu__account-link"
+        to="/app/moi/preferences"
+        @click="menuOpen = false"
+      >
+        <span>Mon compte</span>
+        <strong>Profil et preferences personnelles</strong>
+      </RouterLink>
+
       <div class="erp-user-menu__context-copy erp-user-menu__theme">
         <div>
           <span>Apparence</span>
@@ -74,7 +83,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { RouterLink, useRouter } from 'vue-router';
 import { deconnecterUtilisateur, ouvrirSessionDeveloppeurActeurSelectionne } from '../../shared/auth/session.bootstrap';
 import { authEntryMode } from '../../shared/auth/auth-entry-mode';
 import {

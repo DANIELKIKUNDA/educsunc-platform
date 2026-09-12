@@ -3,6 +3,9 @@ $ErrorActionPreference = 'Stop'
 
 $scriptsRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $runtimeScript = Join-Path $scriptsRoot 'EduSync.Runtime.ps1'
+$projectRoot = [System.IO.Path]::GetFullPath((Join-Path $scriptsRoot '..\..'))
+$startScript = Join-Path $scriptsRoot 'start-edusync.ps1'
+$developmentResetPage = Join-Path $projectRoot 'frontend\dev-reset.html'
 
 function Assert-EduSync {
     param(
@@ -48,6 +51,21 @@ foreach ($script in $scripts) {
     try { Start-EduSyncPostgres | Out-Null } catch { $message = $_.Exception.Message }
     Assert-EduSync -Condition ($message -like '*Aucun service PostgreSQL Windows*') `
         -Message 'Le scénario PostgreSQL indisponible ne produit pas le message utilisateur attendu.'
+}
+
+$startSource = Get-Content -LiteralPath $startScript -Raw -Encoding UTF8
+$resetSource = Get-Content -LiteralPath $developmentResetPage -Raw -Encoding UTF8
+if ($startSource -notmatch [regex]::Escape('/dev-reset.html?target=%2F')) {
+    throw 'Le lanceur ne passe pas par la purge contrôlée du cache PWA.'
+}
+if ($resetSource -notmatch 'navigator\.serviceWorker\.getRegistrations\(\)') {
+    throw 'La page de reprise ne désinscrit pas les anciens Service Workers.'
+}
+if ($resetSource -notmatch "cacheName\.startsWith\(CACHE_PREFIX\)") {
+    throw 'La page de reprise ne cible pas explicitement les caches EduSync.'
+}
+if ($resetSource -match 'localStorage\.clear|sessionStorage\.clear|indexedDB\.deleteDatabase') {
+    throw 'La page de reprise ne doit jamais effacer la session ou les données hors connexion.'
 }
 
 Write-Host 'Certification statique et scénarios de panne contrôlés : OK' -ForegroundColor Green

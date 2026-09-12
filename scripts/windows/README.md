@@ -12,6 +12,14 @@ Double-cliquez sur le raccourci **EduSync** du Bureau. Le lanceur vérifie et d�
 
 Un second double-clic réutilise les services actifs et ne crée pas de doublon.
 
+Avant d'ouvrir l'application, le lanceur retire les anciens caches PWA du shell sur
+`localhost:4174`. Cette actualisation évite qu'une version précédente masque le code
+courant, sans supprimer la session ni les données métier conservées hors connexion.
+
+Le raccourci **EduSync École Offline** est une application installée distincte. Il ne
+reflète pas automatiquement les changements du dépôt et ne doit pas être confondu avec
+le raccourci **EduSync** utilisé pour le développement courant.
+
 ## Commandes manuelles
 
 Depuis PowerShell à la racine du projet :

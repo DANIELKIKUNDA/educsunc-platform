@@ -22,8 +22,18 @@
 
     <div v-if="!mobile" class="erp-topbar__search">
       <Search class="erp-topbar__search-icon" />
-      <input v-model="query" type="search" placeholder="Rechercher un ecran, un module ou une action..." />
-      <div v-if="query.trim() && searchResults.length > 0" class="erp-topbar__search-results">
+      <input
+        ref="searchInput"
+        v-model="query"
+        type="search"
+        placeholder="Rechercher..."
+        aria-label="Rechercher un ecran, un module ou une action"
+      />
+      <kbd class="erp-topbar__search-shortcut">{{ searchShortcutLabel }}</kbd>
+      <div v-if="query.trim()" class="erp-topbar__search-results">
+        <p v-if="searchResults.length === 0" class="erp-topbar__search-empty">
+          Aucun resultat accessible
+        </p>
         <RouterLink
           v-for="result in searchResults"
           :key="`${result.code}-${result.actionLabel ?? 'page'}`"
@@ -61,14 +71,16 @@
       <span v-if="session.authMode === 'dev'" class="erp-shell-badge erp-shell-badge--dev-topbar">
         Mode dev
       </span>
-      <button type="button" class="erp-topbar__signal">
+      <RouterLink
+        v-if="notificationsAccessible"
+        to="/app/notifications"
+        class="erp-topbar__signal"
+        aria-label="Ouvrir le centre de notifications"
+        @pointerenter="preload('/app/notifications')"
+        @focus="preload('/app/notifications')"
+      >
         <Bell />
-        <span>0</span>
-      </button>
-      <button type="button" class="erp-topbar__signal">
-        <MessagesSquare />
-        <span>0</span>
-      </button>
+      </RouterLink>
     </div>
 
     <UserMenu />
@@ -76,9 +88,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { Bell, MessagesSquare, PanelLeftClose, PanelLeftOpen, Search } from 'lucide-vue-next';
+import { Bell, PanelLeftClose, PanelLeftOpen, Search } from 'lucide-vue-next';
 import { resolvePageByRouteName } from '../../shared/doctrine/doctrine.resolver';
 import { flattenNavigation } from '../../shared/navigation/navigation.builder';
 import { sessionStore } from '../../shared/auth/session.store';
@@ -113,6 +125,11 @@ const router = useRouter();
 const context = activeContextStore.state;
 const session = sessionStore.state;
 const query = ref('');
+const searchInput = ref<HTMLInputElement | null>(null);
+const searchShortcutLabel =
+  typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform)
+    ? 'Cmd K'
+    : 'Ctrl K';
 
 const currentModule = computed(() => props.entries.find((entry) => route.path.startsWith(entry.route)) ?? props.entries[0]);
 const currentPage = computed(() => resolvePageByRouteName(route.name));
@@ -150,6 +167,10 @@ const breadcrumb = computed(() => {
   return items;
 });
 
+const notificationsAccessible = computed(() =>
+  flattenNavigation(props.entries).some((entry) => entry.route === '/app/notifications'),
+);
+
 const searchResults = computed(() => {
   const search = query.value.trim().toLowerCase();
   if (!search) {
@@ -180,6 +201,16 @@ const searchResults = computed(() => {
     .filter((entry) => entry.searchText.includes(search))
     .slice(0, 8);
 });
+
+function handleGlobalSearchShortcut(event: KeyboardEvent): void {
+  if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+    event.preventDefault();
+    searchInput.value?.focus();
+  }
+}
+
+onMounted(() => window.addEventListener('keydown', handleGlobalSearchShortcut));
+onUnmounted(() => window.removeEventListener('keydown', handleGlobalSearchShortcut));
 
 function preload(targetRoute: string): void {
   preloadRouteOnIntent(router, targetRoute);

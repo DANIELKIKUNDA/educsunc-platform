@@ -15,15 +15,24 @@
     </div>
 
     <nav class="erp-sidebar__modules">
-      <section
-        v-for="entry in entries"
-        :key="entry.code"
-        class="erp-sidebar__module"
-        :class="{ 'erp-sidebar__module--open': openCode === entry.code }"
+      <div
+        v-for="group in navigationGroups"
+        :key="group.code"
+        class="erp-sidebar__group"
       >
+        <p v-if="!compact && group.label" class="erp-sidebar__group-label">
+          {{ group.label }}
+        </p>
+        <section
+          v-for="entry in group.entries"
+          :key="entry.code"
+          class="erp-sidebar__module"
+          :class="{ 'erp-sidebar__module--open': openCode === entry.code }"
+        >
         <button
           type="button"
           class="erp-sidebar__module-trigger"
+          :aria-label="entry.label"
           :class="{ 'erp-sidebar__module-trigger--active': isModuleActive(entry.route) }"
           @pointerenter="preload(entry.route)"
           @focus="preload(entry.route)"
@@ -53,7 +62,8 @@
             <span>{{ child.label }}</span>
           </RouterLink>
         </div>
-      </section>
+        </section>
+      </div>
     </nav>
   </aside>
 </template>
@@ -63,6 +73,8 @@ import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ChevronDown, LayoutGrid } from 'lucide-vue-next';
 import { activeContextStore } from '../../shared/session/active-context.store';
+import { sessionStore } from '../../shared/auth/session.store';
+import { groupPlatformNavigation } from '../../shared/navigation/platform-experience';
 import type { NavigationEntry } from '../../shared/navigation/navigation.types';
 import { shellIconMap } from '../icon-map';
 import { preloadRouteOnIntent } from '../../router/route-preloader';
@@ -76,6 +88,9 @@ const props = defineProps<{
 const route = useRoute();
 const router = useRouter();
 const context = activeContextStore.state;
+const navigationGroups = computed(() =>
+  groupPlatformNavigation(props.entries, sessionStore.state.actorCode),
+);
 const openCode = ref(props.entries.find((entry) => route.path.startsWith(entry.route))?.code ?? props.entries[0]?.code ?? '');
 
 watch(

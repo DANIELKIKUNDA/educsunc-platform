@@ -2,9 +2,14 @@ import { buildDoctrineNavigation } from '../doctrine/doctrine.resolver';
 import { activeContextStore } from '../session/active-context.store';
 import { sessionStore } from '../auth/session.store';
 import type { NavigationEntry } from './navigation.types';
+import { enhancePlatformNavigation } from './platform-experience';
 
 export function buildVisibleNavigation(): NavigationEntry[] {
-  return buildDoctrineNavigation(sessionStore.state.actorCode, activeContextStore.state.governanceLevel) as NavigationEntry[];
+  const entries = buildDoctrineNavigation(
+    sessionStore.state.actorCode,
+    activeContextStore.state.governanceLevel,
+  ) as NavigationEntry[];
+  return enhancePlatformNavigation(entries, sessionStore.state.actorCode);
 }
 
 export function flattenNavigation(entries: readonly NavigationEntry[]) {
