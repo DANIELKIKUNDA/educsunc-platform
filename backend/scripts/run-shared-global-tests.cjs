@@ -5,6 +5,7 @@ require('./load-optional-local-env.cjs');
 
 // Ce script lance tous les tests globaux du backend places dans src/tests.
 const projectRoot = path.join(__dirname, '..');
+const testTimeoutMs = 120_000;
 
 function collectSpecFiles(directory) {
   const entries = fs.readdirSync(directory, { withFileTypes: true });
@@ -36,17 +37,25 @@ if (specFiles.length === 0) {
 const tsxCliPath = path.join(__dirname, '..', 'node_modules', 'tsx', 'dist', 'cli.mjs');
 for (const specFile of specFiles) {
   const specPath = path.relative(projectRoot, specFile);
-  const result = spawnSync(process.execPath, [tsxCliPath, '--test', specPath], {
-    stdio: 'inherit',
-    cwd: projectRoot,
-    env: {
-      ...process.env,
-      APP_ENV: 'test',
+  console.log(`[test:global] ${specPath}`);
+  const result = spawnSync(
+    process.execPath,
+    [tsxCliPath, '--test', '--test-force-exit', specPath],
+    {
+      stdio: 'inherit',
+      cwd: projectRoot,
+      timeout: testTimeoutMs,
+      env: {
+        ...process.env,
+        APP_ENV: 'test',
+      },
     },
-  });
+  );
 
   if (typeof result.status !== 'number') {
-    console.error(`Le lanceur des tests globaux n a pas retourne de code de sortie pour ${specPath}.`);
+    console.error(
+      `Le test global ${specPath} n a pas rendu la main sous ${testTimeoutMs / 1_000} secondes.`,
+    );
     if (result.error) {
       console.error(result.error);
     }

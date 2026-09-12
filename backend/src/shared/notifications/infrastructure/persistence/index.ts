@@ -4,3 +4,6 @@ export * from './RegistreNotificationsMemoire';
 export * from './MappeurPersistenceNotification';
 export * from './DepotsNotificationsMemoire';
 export * from './DepotLectureNotificationsMemoire';
+
+export * from './postgres';
+export * from './DepotNotificationsComposite';

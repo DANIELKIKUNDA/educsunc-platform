@@ -7,7 +7,10 @@ import {
   creerRoutesRetryNotifications,
   creerRoutesTempsReelFuturNotifications,
 } from '../../shared/notifications';
-import { obtenirNotificationsRuntime } from '../plugins/notifications-runtime';
+import {
+  obtenirNotificationsRuntime,
+  reinitialiserNotificationsRuntime,
+} from '../plugins/notifications-runtime';
 
 type PluginRoutesNotifications = FastifyPluginAsync & {
   nom: string;
@@ -17,6 +20,10 @@ type PluginRoutesNotifications = FastifyPluginAsync & {
 export const routeNotifications: PluginRoutesNotifications = Object.assign(
   async (serveur: Parameters<FastifyPluginAsync>[0]) => {
     const dependances = obtenirNotificationsRuntime().routesDependances;
+
+    serveur.addHook('onClose', async () => {
+      await reinitialiserNotificationsRuntime();
+    });
 
     await serveur.register(creerRoutesNotifications(dependances));
     await serveur.register(creerRoutesRetryNotifications(dependances));

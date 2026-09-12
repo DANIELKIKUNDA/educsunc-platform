@@ -4,5 +4,5 @@
 export interface DtoHttpTempsReelNotificationFutur {
   readonly disponible: boolean;
   readonly canaux: readonly string[];
-  readonly mode: 'PREPARATOIRE';
+  readonly mode: 'ACTIF_SHARED_REALTIME';
 }

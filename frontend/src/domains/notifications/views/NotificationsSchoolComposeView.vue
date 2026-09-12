@@ -76,7 +76,7 @@
         />
 
         <SectionBlock v-else title="Retour backend" description="Projection brute de la mutation effectuee.">
-          <pre class="notif-preview">{{ store.formatJson(store.state.lastMutation) }}</pre>
+          <NotificationDataSummary :data="store.state.lastMutation" />
         </SectionBlock>
       </template>
     </AccessBoundary>
@@ -84,6 +84,7 @@
 </template>
 
 <script setup lang="ts">
+import NotificationDataSummary from '../components/NotificationDataSummary.vue';
 import { computed, reactive, ref } from 'vue';
 import { RouterLink } from 'vue-router';
 import { ArrowLeft } from 'lucide-vue-next';

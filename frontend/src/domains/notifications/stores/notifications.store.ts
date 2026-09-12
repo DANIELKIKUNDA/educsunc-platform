@@ -1,7 +1,6 @@
 import { reactive } from 'vue';
 import { registerScopedLifecycleStore } from '../../../shared/lifecycle/frontend-lifecycle.runtime';
 import {
-  formatJson,
   lireArchives,
   lireDeadLettersNotification,
   lireDetailNotification,
@@ -249,6 +248,5 @@ export function useNotificationsStore() {
     publierTestRealtime,
     viderErreur,
     reinitialiser,
-    formatJson,
-  };
+    };
 }

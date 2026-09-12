@@ -5,6 +5,7 @@ export * from './ProviderNotificationInApp';
 export * from './ProviderNotificationSms';
 export * from './ProviderNotificationEmail';
 export * from './ProviderNotificationWhatsAppFutur';
-export * from './ProviderNotificationPushFutur';
+export * from './ProviderNotificationPush';
+export * from './PortsTransportNotification';
 export * from './ProviderNotificationWebhookFutur';
 export * from './AdaptateurPanneProviderNotification';

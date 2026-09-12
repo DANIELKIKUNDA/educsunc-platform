@@ -79,19 +79,19 @@
 
         <template v-else>
           <SectionBlock title="Archives" description="Projection consolidee des archives notifications.">
-            <pre class="notif-preview">{{ store.formatJson(store.state.archives) }}</pre>
+            <NotificationDataSummary :data="store.state.archives" />
           </SectionBlock>
 
           <SectionBlock v-if="store.state.tenant" title="Vue tenant" description="Consolidation organisationnelle par tenant et ecole.">
-            <pre class="notif-preview">{{ store.formatJson(store.state.tenant) }}</pre>
+            <NotificationDataSummary :data="store.state.tenant" />
           </SectionBlock>
 
           <SectionBlock v-if="store.state.escalades" title="Escalades" description="Historique d'escalade d'une notification relu au niveau organisationnel.">
-            <pre class="notif-preview">{{ store.formatJson(store.state.escalades) }}</pre>
+            <NotificationDataSummary :data="store.state.escalades" />
           </SectionBlock>
 
           <SectionBlock v-if="store.state.realtime" title="Capacites temps reel" description="Capacites preparatoires temps reel exposees a l organisation.">
-            <pre class="notif-preview">{{ store.formatJson(store.state.realtime) }}</pre>
+            <NotificationDataSummary :data="store.state.realtime" />
           </SectionBlock>
         </template>
       </template>
@@ -100,6 +100,7 @@
 </template>
 
 <script setup lang="ts">
+import NotificationDataSummary from '../components/NotificationDataSummary.vue';
 import { computed, ref } from 'vue';
 import { RouterLink } from 'vue-router';
 import { ArrowLeft } from 'lucide-vue-next';

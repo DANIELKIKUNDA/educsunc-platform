@@ -115,6 +115,33 @@ jobs:
       - name: Construire le backend
         run: npm --prefix backend run build
 
+  quality-notifications:
+    name: Qualite Notifications
+    timeout-minutes: 20
+    runs-on: ubuntu-latest
+    steps:
+      - name: Recuperer le code
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+
+      - name: Installer Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Aligner npm officiel
+        run: npm install -g npm@${{ env.NPM_VERSION }}
+
+      - name: Installer les dependances
+        run: npm --prefix backend ci
+
+      - name: Executer les tests Notifications
+        run: npm --prefix backend run test:notifications
+
+      - name: Verifier la consolidation Notifications
+        run: node scripts/quality/verify-notifications-consolidation.mjs
+
   quality-frontend:
     name: Qualite frontend
     runs-on: ubuntu-latest
@@ -200,6 +227,9 @@ jobs:
 
       - name: Certifier exports, replay, retention et integrite Audit
         run: npm --prefix backend run test:audit:l5:postgres
+
+      - name: Certifier la persistance et les lectures PostgreSQL Notifications
+        run: npm --prefix backend run test:notifications:postgres
 
       - name: Conserver le rapport PostgreSQL
         if: always()
@@ -339,6 +369,7 @@ jobs:
     timeout-minutes: 25
     needs:
       - quality-backend
+      - quality-notifications
       - quality-frontend
       - tests-backend-postgres
     runs-on: ubuntu-latest

@@ -60,12 +60,12 @@ export class PresentateurHttpAdministrationNotifications {
   public static presenterCapacitesTempsReel(): {
     readonly disponible: boolean;
     readonly canaux: readonly string[];
-    readonly mode: 'PREPARATOIRE';
+    readonly mode: 'ACTIF_SHARED_REALTIME';
   } {
     return {
       disponible: true,
-      canaux: ['SSE_FUTUR', 'WEBSOCKET_FUTUR'],
-      mode: 'PREPARATOIRE',
+      canaux: ['SHARED_REALTIME'],
+      mode: 'ACTIF_SHARED_REALTIME',
     };
   }
 

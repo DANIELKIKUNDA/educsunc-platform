@@ -1,49 +1,13 @@
-import { randomUUID } from 'node:crypto';
 import { CanalNotification } from '../../domain';
-import {
-  ChargeLivraisonNotification,
-  ProviderNotificationTechnique,
-  RapportSanteProviderNotification,
-  ResultatLivraisonProviderNotification,
-} from './TypesProvidersNotification';
+import { ChargeLivraisonNotification, ProviderNotificationTechnique, RapportSanteProviderNotification, ResultatLivraisonProviderNotification } from './TypesProvidersNotification';
 
-// Ce fichier implemente le provider technique In-App du moteur Notifications.
-
-/** Cette classe simule la livraison technique des notifications in-app. */
+/** IN_APP ne simule aucun transport externe : la notification durable elle-meme est la livraison. */
 export class ProviderNotificationInApp implements ProviderNotificationTechnique {
-  /** Cette methode expose le nom technique du provider. */
-  public obtenirNom(): string {
-    return 'provider-notification-in-app';
-  }
-
-  /** Cette methode expose le canal pris en charge par ce provider. */
-  public obtenirCanal(): CanalNotification {
-    return 'IN_APP';
-  }
-
-  /** Cette methode effectue une livraison technique in-app. */
+  public obtenirNom(): string { return 'provider-notification-in-app'; }
+  public obtenirCanal(): CanalNotification { return 'IN_APP'; }
   public async envoyer(charge: ChargeLivraisonNotification): Promise<ResultatLivraisonProviderNotification> {
-    return {
-      succes: true,
-      canal: 'IN_APP',
-      fournisseur: this.obtenirNom(),
-      identifiantLivraison: randomUUID(),
-      horodatage: new Date(),
-      metadata: {
-        destinataire: charge.destinataire,
-        notificationId: charge.identifiantNotification,
-      },
-    };
+    if (!charge.identifiantNotification) return { succes: false, canal: 'IN_APP', fournisseur: this.obtenirNom(), horodatage: new Date(), erreur: 'Identifiant de notification durable absent.', metadata: {} };
+    return { succes: true, canal: 'IN_APP', fournisseur: this.obtenirNom(), identifiantLivraison: charge.identifiantNotification, horodatage: new Date(), metadata: { notificationId: charge.identifiantNotification, persistanceRequise: true } };
   }
-
-  /** Cette methode retourne l'etat de sante instantane du provider. */
-  public async verifierSante(): Promise<RapportSanteProviderNotification> {
-    return {
-      fournisseur: this.obtenirNom(),
-      canal: 'IN_APP',
-      etat: 'SAIN',
-      verifieLe: new Date(),
-      details: {},
-    };
-  }
+  public async verifierSante(): Promise<RapportSanteProviderNotification> { return { fournisseur: this.obtenirNom(), canal: 'IN_APP', etat: 'SAIN', verifieLe: new Date(), details: { transportExterne: false, persistanceRequise: true } }; }
 }

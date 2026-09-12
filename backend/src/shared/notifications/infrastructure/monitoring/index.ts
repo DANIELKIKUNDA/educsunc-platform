@@ -4,3 +4,5 @@ export * from './CollecteurMetriquesNotification';
 export * from './SurveillanceQueuesNotification';
 export * from './SurveillanceProvidersNotification';
 export * from './AdaptateurMonitoringNotification';
+
+export * from './SurveillanceQueuesNotificationBullMq';
