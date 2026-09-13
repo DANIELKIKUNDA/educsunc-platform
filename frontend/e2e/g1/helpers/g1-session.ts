@@ -170,8 +170,10 @@ export async function openRealDeveloperSession(
     email: String(developerSession?.utilisateur.email),
   });
 
+  const expectedSessionId = String(developerSession?.sessionId);
   const profileResponse = page.waitForResponse((response) =>
-    isResponsePath(response, 'GET', '/api/auth/profil'));
+    isResponsePath(response, 'GET', '/api/auth/profil')
+    && response.request().headers()['x-session-id'] === expectedSessionId);
 
   await page.goto('/app', { waitUntil: 'domcontentloaded' });
   const profile = await profileResponse;

@@ -185,7 +185,7 @@ test.describe.serial('L6 - Centre Audit Plateforme', () => {
 
   test('17 - un filtre sans résultat affiche un état vide métier', async ({ page }) => {
     await openAudit(page);
-    await page.getByLabel('Action').fill(`ACTION_ABSENTE_${randomUUID()}`);
+    await page.getByLabel('Action', { exact: true }).fill(`ACTION_ABSENTE_${randomUUID()}`);
     await page.getByRole('button', { name: 'Appliquer' }).click();
     await expect(page.getByText('Aucun événement trouvé')).toBeVisible();
   });
