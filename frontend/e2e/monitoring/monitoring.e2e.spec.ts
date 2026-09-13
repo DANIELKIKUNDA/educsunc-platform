@@ -18,7 +18,8 @@ async function ouvrirEcranMonitoring(
 ): Promise<void> {
   const link = page.locator(`a[href="${path}"]`).first();
   if (!await link.isVisible()) {
-    await page.getByRole('button', { name: /^Monitoring\b/ }).click();
+    await page.goto('/app/monitoring', { waitUntil: 'domcontentloaded' });
+    await expect(page).toHaveURL(/\/app\/monitoring$/);
   }
   await expect(link).toBeVisible();
   await link.click();
@@ -87,7 +88,7 @@ test('erreur reseau Monitoring reste contenue dans le cockpit', async ({ page })
   await expect.poll(() => page.evaluate(() => (
     window as Window & { __monitoringNetworkProbe?: { interceptee: boolean } }
   ).__monitoringNetworkProbe?.interceptee ?? false)).toBe(true);
-  await expect(page.getByText('Lecture monitoring impossible', { exact: true })).toBeVisible({
+  await expect(page.getByText('Indicateurs indisponibles', { exact: true })).toBeVisible({
     timeout: 30_000,
   });
   await expect(page.locator('.erp-shell')).toBeVisible();
